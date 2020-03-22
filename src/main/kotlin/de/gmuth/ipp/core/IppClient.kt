@@ -4,9 +4,9 @@ package de.gmuth.ipp.core
  * Author: Gerhard Muth
  */
 
-import de.gmuth.http.HttpContent
-import de.gmuth.http.HttpPostContent
-import de.gmuth.http.HttpPostContentWithJava11HttpClient
+import de.gmuth.http.Http
+import de.gmuth.http.HttpByHttpURLConnection
+import de.gmuth.http.HttpByJava11HttpClient
 import java.io.IOException
 import java.io.InputStream
 import java.io.SequenceInputStream
@@ -18,7 +18,7 @@ class IppClient(
         val printerURI: URI,
         private val charset: Charset = Charsets.US_ASCII,
         private val naturalLanguage: String = "en",
-        private val httpContentPoster: HttpPostContent = HttpPostContentWithJava11HttpClient()
+        private val httpClient: Http = HttpByHttpURLConnection()
 
 ) {
     private val requestCounter = AtomicInteger(1)
@@ -39,13 +39,13 @@ class IppClient(
     private fun exchangeIpp(ippRequestStream: InputStream, documentInputStream: InputStream? = null): InputStream {
         val ippContentType = "application/ipp"
 
-        val ippRequestContent = HttpContent(
+        val ippRequestContent = Http.Content(
                 ippContentType,
                 if (documentInputStream == null) ippRequestStream
                 else SequenceInputStream(ippRequestStream, documentInputStream)
         )
 
-        val httpResponse = httpContentPoster.post(printerURI, ippRequestContent)
+        val httpResponse = httpClient.post(printerURI, ippRequestContent)
         with(httpResponse) {
             if (status == 200 && content.type == ippContentType) {
                 return content.stream
