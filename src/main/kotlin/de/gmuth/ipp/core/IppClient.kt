@@ -26,7 +26,8 @@ class IppClient(
     fun exchangeIpp(ippRequest: IppRequest, documentInputStream: InputStream? = null): IppResponse {
         println("send ipp request (${ippRequest.getCodeDescription()}) to $printerURI and read ipp response")
         ippRequest.requestId = requestCounter.getAndIncrement()
-        val ippResponseStream = exchangeIpp(ippRequest.toInputStream(charset, naturalLanguage), documentInputStream)
+        val ippRequestStream = ippRequest.toInputStream(charset, naturalLanguage)
+        val ippResponseStream = exchangeIpp(ippRequestStream, documentInputStream)
         val ippResponse = IppResponse.ofInputStream(ippResponseStream)
         with(ippResponse) {
             if (!IppMessage.verbose) println("status-code = $status")
