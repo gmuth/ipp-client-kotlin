@@ -47,17 +47,13 @@ class IppClient(
 
         val httpResponse = httpContentPoster.post(printerURI, ippRequestContent)
         with(httpResponse) {
-            if (content.type.startsWith("text")) {
-                // show what went wrong
-                println(String(content.stream.readAllBytes()))
+            if (status == 200 && content.type == ippContentType) {
+                return content.stream
+
+            } else {
+                val text = if (content.type.startsWith("text")) ", content = " + String(content.stream.readAllBytes()) else ""
+                throw IOException("response from $printerURI is invalid: http-status = $status, content-type = ${content.type}$text")
             }
-            if (content.type != ippContentType) {
-                throw IOException("response from $printerURI is not '$ippContentType'")
-            }
-            if (status != 200) {
-                throw IOException("post to $printerURI failed with http status $status")
-            }
-            return content.stream
         }
     }
 
