@@ -16,8 +16,8 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class IppClient(
         private val printerURI: URI,
-        val charset: Charset = Charsets.US_ASCII,
-        val naturalLanguage: String = "en",
+        private val charset: Charset = Charsets.US_ASCII,
+        private val naturalLanguage: String = "en",
         private val httpContentPoster: HttpPostContent = HttpPostContentWithJava11HttpClient()
 
 ) {
