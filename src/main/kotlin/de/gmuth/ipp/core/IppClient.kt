@@ -15,7 +15,7 @@ import java.nio.charset.Charset
 import java.util.concurrent.atomic.AtomicInteger
 
 class IppClient(
-        private val printerURI: URI,
+        val printerURI: URI,
         private val charset: Charset = Charsets.US_ASCII,
         private val naturalLanguage: String = "en",
         private val httpContentPoster: HttpPostContent = HttpPostContentWithJava11HttpClient()

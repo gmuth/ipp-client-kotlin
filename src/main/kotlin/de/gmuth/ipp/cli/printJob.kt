@@ -4,9 +4,9 @@ package de.gmuth.ipp.cli
  * Author: Gerhard Muth
  */
 
-import de.gmuth.ipp.IppPrintJobOperation
 import de.gmuth.ipp.core.IppClient
 import de.gmuth.ipp.core.IppMessage
+import de.gmuth.ipp.printDocument
 import java.io.File
 import java.io.FileInputStream
 import java.net.URI
@@ -20,11 +20,5 @@ fun main(args: Array<String>) {
     val file = File(args[1])
 
     IppMessage.verbose = true
-    val ippClient = IppClient(printerURI)
-    val ippRequest = IppPrintJobOperation(printerURI)
-    val ippResponse = ippClient.exchangeIpp(ippRequest, FileInputStream(file))
-
-    if (!ippResponse.status.successfulOk()) {
-        println("printing to $printerURI failed")
-    }
+    IppClient(printerURI).printDocument(FileInputStream(file))
 }

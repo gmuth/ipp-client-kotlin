@@ -4,10 +4,8 @@ package de.gmuth.ipp
  * Author: Gerhard Muth
  */
 
-import de.gmuth.ipp.core.IppOperation
-import de.gmuth.ipp.core.IppOutputStream
-import de.gmuth.ipp.core.IppRequest
-import de.gmuth.ipp.core.IppTag
+import de.gmuth.ipp.core.*
+import java.io.InputStream
 import java.net.URI
 
 class IppPrintJobOperation(
@@ -23,4 +21,13 @@ class IppPrintJobOperation(
         }
     }
 
+}
+
+fun IppClient.printDocument(inputStream: InputStream, documentFormat: String? = null): IppResponse {
+    val ippRequest = IppPrintJobOperation(printerURI, documentFormat)
+    val ippResponse = exchangeIpp(ippRequest, inputStream)
+    if (!ippResponse.status.successfulOk()) {
+        println("printing to $printerURI failed")
+    }
+    return ippResponse
 }
