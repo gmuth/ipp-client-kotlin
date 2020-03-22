@@ -1,4 +1,4 @@
-package de.gmuth.ipp
+package de.gmuth.ipp.core
 
 /**
  * Author: Gerhard Muth

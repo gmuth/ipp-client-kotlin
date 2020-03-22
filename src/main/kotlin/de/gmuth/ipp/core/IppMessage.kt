@@ -1,4 +1,4 @@
-package de.gmuth.ipp
+package de.gmuth.ipp.core
 
 /**
  * Author: Gerhard Muth
@@ -10,37 +10,25 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.nio.charset.Charset
 
-open class IppMessage(
-        var version: IppVersion = IppVersion(),
-        private var code: Short = 0,
-        var requestId: Int = 1,
-        // values for required operation attributes
-        var charset: Charset = Charsets.UTF_8,
-        var naturalLanguage: String = "en"
-) {
-    // request context
-    var operation: IppOperation
-        get() = IppOperation.fromShort(code)
-        set(value) {
-            code = value.code
-        }
+abstract class IppMessage {
 
-    // response context
-    val status: IppStatus
-        get() = IppStatus.fromShort(code)
+    var version: IppVersion = IppVersion()
+    protected var code: Short? = null
+    var requestId: Int? = null
 
-    var statusMessage: String? = null
+    // --------------------------------------------------------------------- IPP MESSAGE ENCODING
 
-    // --------------------------------------------------------------------- IPP ENCODING
+    fun writeTo(outputStream: OutputStream, charset: Charset, naturalLanguage: String) {
+        if (code == null) throw IllegalArgumentException("code must not be null!")
+        if (requestId == null) throw IllegalArgumentException("requestId must not be null!")
 
-    fun writeTo(outputStream: OutputStream) {
         with(IppOutputStream(outputStream, charset)) {
             writeVersion(version)
-            writeCode(code)
-            writeRequestId(requestId)
+            writeCode(code as Short)
+            writeRequestId(requestId as Int)
 
             writeTag(IppTag.Operation)
-            writeAttribute(IppTag.Charset, "attributes-charset", charset.name().toLowerCase())
+            writeAttribute(IppTag.Charset, "attributes-charset", this.charset.name().toLowerCase())
             writeAttribute(IppTag.NaturalLanguage, "attributes-natural-language", naturalLanguage)
             writeOperationAttributes(this)
 
@@ -58,41 +46,39 @@ open class IppMessage(
         // implement in subclass for extra attributes
     }
 
-    fun toByteArray(): ByteArray {
+    fun toByteArray(charset: Charset, naturalLanguage: String): ByteArray {
         val byteArrayOutputStream = ByteArrayOutputStream()
-        writeTo(byteArrayOutputStream)
+        writeTo(byteArrayOutputStream, charset, naturalLanguage)
         byteArrayOutputStream.close()
         return byteArrayOutputStream.toByteArray()
     }
 
-    fun toInputStream(): InputStream = ByteArrayInputStream(toByteArray())
+    fun toInputStream(charset: Charset, naturalLanguage: String): InputStream = ByteArrayInputStream(toByteArray(charset, naturalLanguage))
 
-    // --------------------------------------------------------------------- IPP DECODING
+    // --------------------------------------------------------------------- IPP MESSAGE DECODING
 
     companion object {
         var verbose: Boolean = false
-        fun ofInputStream(inputStream: InputStream) = IppMessage().apply { readFrom(inputStream) }
-        fun ofByteArray(byteArray: ByteArray) = ofInputStream(ByteArrayInputStream(byteArray))
     }
 
-    fun readFrom(inputStream: InputStream) {
-        val message = this
+    open fun readFrom(inputStream: InputStream): String? {
         val ippInputStream = IppInputStream(inputStream)
 
         val version = ippInputStream.readVersion()
         if (verbose) println("version = $version")
 
         code = ippInputStream.readCode()
-        if (verbose) println(String.format("code = %04X", code))
+        if (verbose) println(getCodeDescription())
 
         requestId = ippInputStream.readRequestId()
-        if (verbose) println("request id = $requestId")
+        if (verbose) println("request-id = $requestId")
 
         var tag: IppTag
         do {
             tag = ippInputStream.readTag()
             if (tag.isGroupTag()) {
-                if (verbose) println(String.format("%s group", tag))
+                if (tag != IppTag.End && verbose)
+                    println(String.format("%s group", tag))
 
             } else {
                 // attribute tags
@@ -101,9 +87,10 @@ open class IppMessage(
             }
         } while (tag != IppTag.End)
         ippInputStream.close()
-
-        // for response messages copy from ippInputStream
-        message.statusMessage = statusMessage
+        //this.charset = ippInputStream.charset
+        return ippInputStream.statusMessage;
     }
+
+    open fun getCodeDescription(): String = String.format("code = %04X", code)
 
 }

@@ -1,4 +1,4 @@
-package de.gmuth.ipp
+package de.gmuth.ipp.core
 
 /**
  * Author: Gerhard Muth
@@ -6,23 +6,29 @@ package de.gmuth.ipp
 
 enum class IppTag(val value: Byte) {
 
-    // Group Tags
+    // group tags
     Operation(0x01),
     Job(0x02),
     End(0x03),
     Printer(0x04),
-    Unsupported(0x05),
+    Unsupported_(0x05),
     Subscription(0x06),
     EventNotification(0x07),
 
-    // Attribute Tags
-    Unsupported_(0x10),
+    // out-of-band tags
+    Unsupported(0x10),
     Unknown(0x12),
     NoValue(0x13),
+    NotSettable(0x14),
     DeleteAttribute(0x16),
+    AdminDefine(0x17),
+
+    // Int
     Integer(0x21),
     Boolean(0x22),
     Enum(0x23),
+
+    // octet/compound string
     Octet(0x30),
     DateTime(0x31),
     Resolution(0x32),
@@ -31,6 +37,8 @@ enum class IppTag(val value: Byte) {
     TextWithLanguage(0x35),
     NameWithLanguage(0x36),
     EndCollection(0x37),
+
+    // normal string
     GenericCharactersString(0x40),
     TextWithoutLanguage(0x41),
     NameWithoutLanguage(0x42),
@@ -42,9 +50,10 @@ enum class IppTag(val value: Byte) {
     MimeMediaType(0x49),
     MemberAttrName(0x4A);
 
-    fun isGroupTag(): kotlin.Boolean = value < 0x10
+    fun isGroupTag() = value < 0x10
 
-    override fun toString(): String = name.toLowerCase()
+    override fun toString() = name
+            .replace("^[A-Z]".toRegex()) { it.value.toLowerCase() }
 
     companion object {
         private val map = values().associateBy(IppTag::value)

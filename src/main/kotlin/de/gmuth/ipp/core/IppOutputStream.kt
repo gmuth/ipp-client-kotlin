@@ -1,4 +1,4 @@
-package de.gmuth.ipp
+package de.gmuth.ipp.core
 
 /**
  * Author: Gerhard Muth
@@ -7,13 +7,9 @@ package de.gmuth.ipp
 import java.io.*
 import java.nio.charset.Charset
 
-class IppOutputStream(
+class IppOutputStream(private val outputStream: OutputStream, val charset: Charset = Charsets.US_ASCII) : Closeable, Flushable {
 
-        private val outputStream: OutputStream,
-        val charset: Charset = Charsets.US_ASCII,
-        private val dataOutputStream: DataOutputStream = DataOutputStream(outputStream)
-
-) : Closeable, Flushable {
+    private val dataOutputStream: DataOutputStream = DataOutputStream(outputStream)
 
     override fun close() {
         dataOutputStream.close()
@@ -35,7 +31,7 @@ class IppOutputStream(
 
     fun writeAttribute(tag: IppTag, name: String, value: Any) {
         writeTag(tag)
-        writeLengthAndBytes(name.toByteArray(charset))
+        writeLengthAndValue(name.toByteArray(charset))
         when (tag) {
 
             // value class Int
@@ -51,7 +47,7 @@ class IppOutputStream(
             IppTag.Charset,
             IppTag.NaturalLanguage,
             IppTag.MimeMediaType -> {
-                writeLengthAndBytes((value as String).toByteArray(charset))
+                writeLengthAndValue((value as String).toByteArray(charset))
             }
             else -> {
                 // if support for a specific tag is required kindly ask the author to implement it
@@ -60,7 +56,7 @@ class IppOutputStream(
         }
     }
 
-    private fun writeLengthAndBytes(value: ByteArray) {
+    private fun writeLengthAndValue(value: ByteArray) {
         dataOutputStream.writeShort(value.size)
         dataOutputStream.write(value)
     }

@@ -1,4 +1,4 @@
-package de.gmuth.ipp
+package de.gmuth.ipp.core
 
 /**
  * Author: Gerhard Muth
@@ -10,11 +10,11 @@ import java.io.IOException
 import java.io.InputStream
 import java.nio.charset.Charset
 
-class IppInputStream(
-        private val inputStream: InputStream,
-        private val dataInputStream: DataInputStream = DataInputStream(inputStream)
+class IppInputStream(private val inputStream: InputStream) : Closeable by inputStream {
 
-) : Closeable by inputStream {
+    private val dataInputStream: DataInputStream = DataInputStream(inputStream)
+    private var currentGroupTag: IppTag? = null
+    private var currentAttributeTag: IppTag? = null
 
     var charset = Charsets.US_ASCII
     var statusMessage: String? = null
@@ -30,11 +30,18 @@ class IppInputStream(
 
     fun readRequestId() = dataInputStream.readInt()
 
-    fun readTag() = IppTag.fromByte(dataInputStream.readByte())
+    fun readTag(): IppTag {
+        val tag = IppTag.fromByte(dataInputStream.readByte())
+        if (tag.isGroupTag())
+            currentGroupTag = tag
+        else
+            currentAttributeTag = tag
+        return tag
+    }
 
     fun readAttribute(tag: IppTag): Pair<String, Any> {
-        val name = String(readLengthAndBytes(), charset)
-        val value: Any = when (tag) {
+        val name = String(readLengthAndValue(), charset)
+        var value: Any = when (tag) {
 
             // value class Int
             IppTag.Integer,
@@ -50,24 +57,25 @@ class IppInputStream(
             IppTag.Charset,
             IppTag.NaturalLanguage,
             IppTag.MimeMediaType -> {
-                String(readLengthAndBytes(), charset)
+                String(readLengthAndValue(), charset)
             }
 
             else -> {
                 // if support for a specific tag is required kindly ask the author to implement it
-                readLengthAndBytes()
+                readLengthAndValue()
                 String.format("<decoding-tag-$tag(%02X)-not-implemented>", tag.value)
             }
         }
         // collect special attribute values
-        if (value is String) when (name) {
-            "attributes-charset" -> charset = Charset.forName(value)
-            "status-message" -> statusMessage = value
+        when (name) {
+            "attributes-charset" -> charset = Charset.forName(value as String)
+            "status-message" -> statusMessage = value as String
+            "job-state" -> value = IppJobState.fromInt(value as Int)
         }
         return Pair(name, value)
     }
 
-    private fun readLengthAndBytes(): ByteArray {
+    private fun readLengthAndValue(): ByteArray {
         val length = dataInputStream.readShort().toInt()
         // setOf not yet supported :-(
         if (length == 0) println("warn: found ipp value with 0 bytes")

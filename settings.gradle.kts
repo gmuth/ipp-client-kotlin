@@ -1,1 +1,1 @@
-rootProject.name = "ipp-client"
+rootProject.name = "ipp-client-kotlin"
