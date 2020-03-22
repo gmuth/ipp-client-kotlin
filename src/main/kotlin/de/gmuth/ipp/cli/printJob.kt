@@ -4,8 +4,8 @@ package de.gmuth.ipp.cli
  * Author: Gerhard Muth
  */
 
-import de.gmuth.ipp.core.IppClient
 import de.gmuth.ipp.IppPrintJobOperation
+import de.gmuth.ipp.core.IppClient
 import de.gmuth.ipp.core.IppMessage
 import java.io.File
 import java.io.FileInputStream

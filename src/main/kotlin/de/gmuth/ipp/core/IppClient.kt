@@ -11,16 +11,17 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.SequenceInputStream
 import java.net.URI
+import java.nio.charset.Charset
 import java.util.concurrent.atomic.AtomicInteger
 
 class IppClient(
         private val printerURI: URI,
+        val charset: Charset = Charsets.US_ASCII,
+        val naturalLanguage: String = "en",
         private val httpContentPoster: HttpPostContent = HttpPostContentWithJava11HttpClient()
-) {
 
+) {
     private val requestCounter = AtomicInteger(1)
-    private val charset = Charsets.US_ASCII
-    private val naturalLanguage = "en"
 
     fun exchangeIpp(ippRequest: IppRequest, documentInputStream: InputStream? = null): IppResponse {
         println("send ipp request (${ippRequest.getCodeDescription()}) to $printerURI and read ipp response")
