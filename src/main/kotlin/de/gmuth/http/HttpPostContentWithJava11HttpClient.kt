@@ -18,14 +18,8 @@ class HttpPostContentWithJava11HttpClient : HttpPostContent {
                 .POST(HttpRequest.BodyPublishers.ofInputStream { content.stream })
                 .uri(uri).build()
 
-        val httpResponse = HttpClient.newBuilder()
-                .build()
+        val httpResponse = HttpClient.newBuilder().build()
                 .send(httpRequest, java.net.http.HttpResponse.BodyHandlers.ofInputStream())
-
-        if (httpResponse.statusCode() != 200) {
-            for ((key, values) in httpResponse.headers().map())
-                println("$key: ${values.joinToString()}")
-        }
 
         with(httpResponse) {
             val responseContent = HttpContent(headers().firstValue("content-type").get(), body())
