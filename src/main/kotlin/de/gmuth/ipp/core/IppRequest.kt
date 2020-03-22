@@ -1,8 +1,5 @@
 package de.gmuth.ipp.core
 
-import de.gmuth.ipp.core.IppMessage
-import de.gmuth.ipp.core.IppOperation
-
 open class IppRequest(operation: IppOperation? = null) : IppMessage() {
 
     init {

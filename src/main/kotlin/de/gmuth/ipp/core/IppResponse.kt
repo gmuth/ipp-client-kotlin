@@ -1,6 +1,5 @@
 package de.gmuth.ipp.core
 
-import java.io.ByteArrayInputStream
 import java.io.InputStream
 
 class IppResponse : IppMessage() {
@@ -19,7 +18,6 @@ class IppResponse : IppMessage() {
 
     companion object {
         fun ofInputStream(inputStream: InputStream) = IppResponse().apply { readFrom(inputStream) }
-        fun ofByteArray(byteArray: ByteArray) = ofInputStream(ByteArrayInputStream(byteArray))
     }
 
 }

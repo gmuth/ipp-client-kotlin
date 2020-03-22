@@ -76,5 +76,4 @@ enum class IppStatus(val code: Short) {
         fun fromShort(code: Short): IppStatus = map[code] ?: throw IllegalArgumentException(String.format("ipp status %04X undefined", code))
     }
 
-
 }

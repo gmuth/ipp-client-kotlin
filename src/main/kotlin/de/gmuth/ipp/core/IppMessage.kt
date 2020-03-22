@@ -53,7 +53,9 @@ abstract class IppMessage {
         return byteArrayOutputStream.toByteArray()
     }
 
-    fun toInputStream(charset: Charset, naturalLanguage: String): InputStream = ByteArrayInputStream(toByteArray(charset, naturalLanguage))
+    fun toInputStream(charset: Charset, naturalLanguage: String): InputStream {
+        return ByteArrayInputStream(toByteArray(charset, naturalLanguage))
+    }
 
     // --------------------------------------------------------------------- IPP MESSAGE DECODING
 
@@ -87,7 +89,7 @@ abstract class IppMessage {
             }
         } while (tag != IppTag.End)
         ippInputStream.close()
-        //this.charset = ippInputStream.charset
+
         return ippInputStream.statusMessage;
     }
 
