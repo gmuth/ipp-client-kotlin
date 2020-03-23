@@ -1,5 +1,9 @@
 package de.gmuth.ipp.core
 
+/**
+ * Copyright (c) 2020 Gerhard Muth
+ */
+
 import java.io.InputStream
 
 class IppResponse : IppMessage() {

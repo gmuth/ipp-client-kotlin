@@ -1,7 +1,7 @@
 package de.gmuth.ipp
 
 /**
- * Author: Gerhard Muth
+ * Copyright (c) 2020 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.*
@@ -24,10 +24,10 @@ class IppPrintJobOperation(
 }
 
 fun IppClient.printDocument(inputStream: InputStream, documentFormat: String? = null): IppResponse {
-    val ippRequest = IppPrintJobOperation(printerURI, documentFormat)
+    val ippRequest = IppPrintJobOperation(printerUri, documentFormat)
     val ippResponse = exchangeIpp(ippRequest, inputStream)
     if (!ippResponse.status.successfulOk()) {
-        println("printing to $printerURI failed")
+        println("printing to $printerUri failed")
     }
     return ippResponse
 }

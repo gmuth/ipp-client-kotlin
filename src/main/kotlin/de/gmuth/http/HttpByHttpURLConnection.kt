@@ -1,7 +1,7 @@
 package de.gmuth.http
 
 /**
- * Author: Gerhard Muth
+ * Copyright (c) 2020 Gerhard Muth
  */
 
 import java.io.IOException

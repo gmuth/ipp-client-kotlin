@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Author: Gerhard Muth
+ * Copyright (c) 2020 Gerhard Muth
  */
 
 enum class IppOperation(val code: Short) {
@@ -66,7 +66,9 @@ enum class IppOperation(val code: Short) {
     CupsGetPPDs(0x400C),
     CupsMoveJob(0x400D);
 
-    override fun toString(): String = name.toLowerCase()
+    override fun toString(): String = name
+            .replace("[A-Z]".toRegex()) { "-" + it.value }
+            .replace("^-".toRegex(), "")
 
     companion object {
         private val map = values().associateBy(IppOperation::code)

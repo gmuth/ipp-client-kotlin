@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Author: Gerhard Muth
+ * Copyright (c) 2020 Gerhard Muth
  */
 
 enum class IppStatus(val code: Short) {

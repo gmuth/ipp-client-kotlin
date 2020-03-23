@@ -1,5 +1,9 @@
 package de.gmuth.ipp.core
 
+/**
+ * Copyright (c) 2020 Gerhard Muth
+ */
+
 open class IppRequest(operation: IppOperation? = null) : IppMessage() {
 
     init {

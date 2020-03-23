@@ -22,7 +22,7 @@ tasks.withType<ShadowJar>() {
     archiveBaseName.set("ippclient")
     archiveClassifier.set("")
     manifest {
-        attributes(mapOf("Main-Class" to "de.gmuth.ipp.cli.PrintJobKt"))
+        attributes(mapOf("Main-Class" to "de.gmuth.ipp.cli.PrintDocumentKt"))
     }
 }
 

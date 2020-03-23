@@ -1,7 +1,7 @@
 package de.gmuth.ipp.cli
 
 /**
- * Author: Gerhard Muth
+ * Copyright (c) 2020 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppClient
@@ -16,9 +16,9 @@ fun main(args: Array<String>) {
         println("usage: java -jar ippclient.jar <printer-uri> <file>")
         return
     }
-    val printerURI = URI.create(args[0])
+    val printerUri = URI.create(args[0])
     val file = File(args[1])
 
     IppMessage.verbose = true
-    IppClient(printerURI).printDocument(FileInputStream(file))
+    IppClient(printerUri).printDocument(FileInputStream(file))
 }
