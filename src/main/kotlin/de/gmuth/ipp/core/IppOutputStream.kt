@@ -7,19 +7,9 @@ package de.gmuth.ipp.core
 import java.io.*
 import java.nio.charset.Charset
 
-class IppOutputStream(private val outputStream: OutputStream, val attributesCharset: Charset = Charsets.UTF_8) : Closeable, Flushable {
+class IppOutputStream(outputStream: OutputStream, val attributesCharset: Charset = Charsets.UTF_8) : Closeable, Flushable {
 
     private val dataOutputStream: DataOutputStream = DataOutputStream(outputStream)
-
-    override fun close() {
-        dataOutputStream.close()
-        outputStream.close()
-    }
-
-    override fun flush() {
-        dataOutputStream.flush()
-        outputStream.flush()
-    }
 
     fun writeVersion(version: IppVersion) = with(dataOutputStream) { writeByte(version.major); writeByte(version.minor) }
 
@@ -66,6 +56,14 @@ class IppOutputStream(private val outputStream: OutputStream, val attributesChar
     private fun writeLengthAndValue(value: ByteArray) {
         dataOutputStream.writeShort(value.size)
         dataOutputStream.write(value)
+    }
+
+    override fun close() {
+        dataOutputStream.close()
+    }
+
+    override fun flush() {
+        dataOutputStream.flush()
     }
 
 }

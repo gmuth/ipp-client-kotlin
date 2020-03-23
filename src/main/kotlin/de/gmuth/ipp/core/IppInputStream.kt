@@ -10,7 +10,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.nio.charset.Charset
 
-class IppInputStream(private val inputStream: InputStream) : Closeable by inputStream {
+class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
 
     private val dataInputStream: DataInputStream = DataInputStream(inputStream)
     private var currentGroupTag: IppTag? = null
@@ -18,11 +18,6 @@ class IppInputStream(private val inputStream: InputStream) : Closeable by inputS
 
     private var attributesCharset: Charset? = null // encoding for text and name attributes, rfc 8011 4.1.4.1
     var statusMessage: String? = null
-
-    override fun close() {
-        dataInputStream.close()
-        inputStream.close()
-    }
 
     fun readVersion() = with(dataInputStream) { IppVersion(readByte().toInt(), readByte().toInt()) }
 
@@ -92,6 +87,10 @@ class IppInputStream(private val inputStream: InputStream) : Closeable by inputS
         if (length != expected) {
             throw IOException("expected value length of $expected bytes but found $length")
         }
+    }
+
+    override fun close() {
+        dataInputStream.close()
     }
 
 }
