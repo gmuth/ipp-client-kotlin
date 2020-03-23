@@ -7,7 +7,9 @@ package de.gmuth.ipp.core
 open class IppRequest(operation: IppOperation? = null) : IppMessage() {
 
     init {
+        version = IppVersion()
         code = operation?.code
+        naturalLanguage = "en"
     }
 
     val operation: IppOperation

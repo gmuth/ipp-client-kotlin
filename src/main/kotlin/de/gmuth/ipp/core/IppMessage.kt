@@ -8,28 +8,34 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
-import java.nio.charset.Charset
 
 abstract class IppMessage {
 
-    var version: IppVersion = IppVersion()
+    var version: IppVersion? = null
     protected var code: Short? = null
     var requestId: Int? = null
+    var naturalLanguage: String? = null
+
+    companion object {
+        var verbose: Boolean = false
+    }
 
     // --------------------------------------------------------------------- IPP MESSAGE ENCODING
 
-    fun writeTo(outputStream: OutputStream, charset: Charset, naturalLanguage: String) {
-        if (code == null) throw IllegalArgumentException("code must not be null!")
-        if (requestId == null) throw IllegalArgumentException("requestId must not be null!")
+    private fun writeTo(outputStream: OutputStream) {
+        if (version == null) throw IllegalArgumentException("version must not be null")
+        if (code == null) throw IllegalArgumentException("code must not be null")
+        if (requestId == null) throw IllegalArgumentException("requestId must not be null")
+        if (naturalLanguage == null) throw IllegalArgumentException("naturalLanguage must not be null")
 
-        with(IppOutputStream(outputStream, charset)) {
-            writeVersion(version)
+        with(IppOutputStream(outputStream)) {
+            writeVersion(version as IppVersion)
             writeCode(code as Short)
             writeRequestId(requestId as Int)
 
             writeTag(IppTag.Operation)
-            writeAttribute(IppTag.Charset, "attributes-charset", this.charset.name().toLowerCase())
-            writeAttribute(IppTag.NaturalLanguage, "attributes-natural-language", naturalLanguage)
+            writeAttribute(IppTag.Charset, "attributes-charset", this.attributesCharset.name().toLowerCase())
+            writeAttribute(IppTag.NaturalLanguage, "attributes-natural-language", naturalLanguage as String)
             writeOperationAttributes(this)
 
             writeJobGroups(this)
@@ -46,22 +52,18 @@ abstract class IppMessage {
         // implement in subclass for extra attributes
     }
 
-    fun toByteArray(charset: Charset, naturalLanguage: String): ByteArray {
+    fun toByteArray(): ByteArray {
         val byteArrayOutputStream = ByteArrayOutputStream()
-        writeTo(byteArrayOutputStream, charset, naturalLanguage)
+        writeTo(byteArrayOutputStream)
         byteArrayOutputStream.close()
         return byteArrayOutputStream.toByteArray()
     }
 
-    fun toInputStream(charset: Charset, naturalLanguage: String): InputStream {
-        return ByteArrayInputStream(toByteArray(charset, naturalLanguage))
+    fun toInputStream(): InputStream {
+        return ByteArrayInputStream(toByteArray())
     }
 
     // --------------------------------------------------------------------- IPP MESSAGE DECODING
-
-    companion object {
-        var verbose: Boolean = false
-    }
 
     open fun readFrom(inputStream: InputStream): String? {
         val ippInputStream = IppInputStream(inputStream)

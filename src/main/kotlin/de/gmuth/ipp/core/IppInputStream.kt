@@ -16,7 +16,7 @@ class IppInputStream(private val inputStream: InputStream) : Closeable by inputS
     private var currentGroupTag: IppTag? = null
     private var currentAttributeTag: IppTag? = null
 
-    var charset = Charsets.US_ASCII
+    private var attributesCharset: Charset? = null // encoding for text and name attributes, rfc 8011 4.1.4.1
     var statusMessage: String? = null
 
     override fun close() {
@@ -40,7 +40,7 @@ class IppInputStream(private val inputStream: InputStream) : Closeable by inputS
     }
 
     fun readAttribute(tag: IppTag): Pair<String, Any> {
-        val name = String(readLengthAndValue(), charset)
+        val name = String(readLengthAndValue(), Charsets.US_ASCII)
         var value: Any = when (tag) {
 
             // value class Int
@@ -50,14 +50,19 @@ class IppInputStream(private val inputStream: InputStream) : Closeable by inputS
                 dataInputStream.readInt()
             }
 
-            // value class String
-            IppTag.TextWithoutLanguage,
+            // value class String with rfc 8011 3.9 attribute value encoding
             IppTag.Keyword,
             IppTag.Uri,
+            IppTag.UriScheme,
             IppTag.Charset,
             IppTag.NaturalLanguage,
             IppTag.MimeMediaType -> {
-                String(readLengthAndValue(), charset)
+                String(readLengthAndValue(), Charsets.US_ASCII)
+            }
+            // value class String with rfc 8011 4.1.4.1 attributes-charset encoding
+            IppTag.TextWithoutLanguage,
+            IppTag.NameWithoutLanguage -> {
+                String(readLengthAndValue(), attributesCharset ?: throw IllegalStateException("missing attributes-charset"))
             }
 
             else -> {
@@ -68,7 +73,7 @@ class IppInputStream(private val inputStream: InputStream) : Closeable by inputS
         }
         // collect special attribute values
         when (name) {
-            "attributes-charset" -> charset = Charset.forName(value as String)
+            "attributes-charset" -> attributesCharset = Charset.forName(value as String)
             "status-message" -> statusMessage = value as String
             "job-state" -> value = IppJobState.fromInt(value as Int)
         }

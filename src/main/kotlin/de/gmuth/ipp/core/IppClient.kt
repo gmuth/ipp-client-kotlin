@@ -10,24 +10,20 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.SequenceInputStream
 import java.net.URI
-import java.nio.charset.Charset
 import java.util.concurrent.atomic.AtomicInteger
 
 class IppClient(
         val printerUri: URI,
-        private val charset: Charset = Charsets.US_ASCII,
-        private val naturalLanguage: String = "en",
         private val httpClient: Http = HttpByHttpURLConnection()
-
 ) {
     private val requestCounter = AtomicInteger(1)
 
     fun exchangeIpp(ippRequest: IppRequest, documentInputStream: InputStream? = null): IppResponse {
         println("send ${ippRequest.operation} request to $printerUri")
         ippRequest.requestId = requestCounter.getAndIncrement()
-        val ippRequestStream = ippRequest.toInputStream(charset, naturalLanguage)
+        val ippRequestStream = ippRequest.toInputStream()
         val ippResponseStream = exchangeIpp(ippRequestStream, documentInputStream)
-        val ippResponse = IppResponse.ofInputStream(ippResponseStream)
+        val ippResponse = IppResponse.fromInputStream(ippResponseStream)
         with(ippResponse) {
             if (!IppMessage.verbose) println("status-code = $status")
             if (statusMessage != null) println("status-message: $statusMessage")

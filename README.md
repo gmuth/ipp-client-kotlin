@@ -6,12 +6,12 @@ A basic client implementation of the ipp protocol written in kotlin
 
 This project is work in progress.
 
-**Supported encodings**
+**Encodings**
 
  * `integer`, `enum`
- * `textWithoutLanguage`, `uri`, `charset`, `naturalLanguage`, `mimeMediaType`
+ * `textWithoutLanguage`, `nameWithoutLanguage`, `uri`, `charset`, `naturalLanguage`, `mimeMediaType`
 
-**Supported models**
+**Model and semantics**
 
 * [IppOperation](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppOperation.kt),
   [IppStatus](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppStatus.kt)
@@ -29,7 +29,7 @@ Print a document
     IppMessage.verbose = true
     IppClient(printerUri).printDocument(FileInputStream(file))
 
-Output
+Console output
 
     send Print-Job request to ipp://colorjet:631/ipp/printer
     version = 1.1
@@ -46,6 +46,6 @@ Output
       
 ## Build
 
-To build `ippclient.jar` into `build/libs` you need an installed JDK.
+To build `ippclient.jar` into `build/libs` run
 
     ./gradlew

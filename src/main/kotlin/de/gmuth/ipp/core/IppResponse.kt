@@ -21,7 +21,7 @@ class IppResponse : IppMessage() {
     }
 
     companion object {
-        fun ofInputStream(inputStream: InputStream) = IppResponse().apply { readFrom(inputStream) }
+        fun fromInputStream(inputStream: InputStream) = IppResponse().apply { readFrom(inputStream) }
     }
 
 }
