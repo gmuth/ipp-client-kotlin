@@ -1,4 +1,4 @@
-package de.gmuth.ipp.core
+package de.gmuth.ipp.client
 
 /**
  * Copyright (c) 2020 Gerhard Muth
@@ -6,6 +6,9 @@ package de.gmuth.ipp.core
 
 import de.gmuth.http.Http
 import de.gmuth.http.HttpByHttpURLConnection
+import de.gmuth.ipp.core.IppMessage
+import de.gmuth.ipp.core.IppRequest
+import de.gmuth.ipp.core.IppResponse
 import java.io.IOException
 import java.io.InputStream
 import java.io.SequenceInputStream
