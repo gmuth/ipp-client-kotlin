@@ -6,12 +6,18 @@ package de.gmuth.http
 
 import java.io.InputStream
 import java.net.URI
+import java.time.Duration
 
 interface Http {
 
     class Content(val type: String, val stream: InputStream)
     class Response(val status: Int, val content: Content)
 
-    fun post(uri: URI, content: Content): Response
+    interface Client {
+
+        data class Config(val timeout: Duration = Duration.ofSeconds(5))
+
+        fun post(uri: URI, content: Content): Response
+    }
 
 }

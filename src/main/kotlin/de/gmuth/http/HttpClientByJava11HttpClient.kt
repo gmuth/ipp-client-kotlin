@@ -5,19 +5,22 @@ package de.gmuth.http
  */
 
 import java.net.URI
-import java.time.Duration
+import java.net.http.HttpClient
+import java.net.http.HttpResponse
 
-class HttpByJava11HttpClient : Http {
+class HttpClientByJava11HttpClient(
+        private val config: Http.Client.Config = Http.Client.Config()
+) : Http.Client {
 
     override fun post(uri: URI, content: Http.Content): Http.Response {
         val httpRequest = java.net.http.HttpRequest.newBuilder()
-                .timeout(Duration.ofSeconds(5))
+                .timeout(config.timeout)
                 .header("Content-Type", content.type)
                 .POST(java.net.http.HttpRequest.BodyPublishers.ofInputStream { content.stream })
                 .uri(uri).build()
 
-        val httpResponse = java.net.http.HttpClient.newBuilder().build()
-                .send(httpRequest, java.net.http.HttpResponse.BodyHandlers.ofInputStream())
+        val httpResponse = HttpClient.newBuilder().build()
+                .send(httpRequest, HttpResponse.BodyHandlers.ofInputStream())
 
         with(httpResponse) {
             val responseContent = Http.Content(headers().firstValue("content-type").get(), body())

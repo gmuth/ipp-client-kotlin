@@ -5,7 +5,8 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.http.Http
-import de.gmuth.http.HttpByHttpURLConnection
+import de.gmuth.http.HttpClientByHttpURLConnection
+import de.gmuth.http.HttpClientByJava11HttpClient
 import de.gmuth.ipp.core.IppMessage
 import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppResponse
@@ -17,7 +18,8 @@ import java.util.concurrent.atomic.AtomicInteger
 
 class IppClient(
         val printerUri: URI,
-        private val httpClient: Http = HttpByHttpURLConnection()
+        private val httpClient: Http.Client = HttpClientByHttpURLConnection()
+        //private val httpClient: Http.Client = HttpClientByJava11HttpClient()
 ) {
     private val requestCounter = AtomicInteger(1)
 
