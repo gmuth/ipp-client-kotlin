@@ -19,36 +19,47 @@ class IppOutputStream(outputStream: OutputStream, val attributesCharset: Charset
 
     fun writeTag(tag: IppTag) = dataOutputStream.writeByte(tag.value.toInt())
 
-    fun writeAttribute(tag: IppTag, name: String, value: Any) {
-        writeTag(tag)
-        writeLengthAndValue(name.toByteArray(Charsets.US_ASCII))
-        when (tag) {
+    fun writeGroup(attributesGroup: IppAttributesGroup) {
+        writeTag(attributesGroup.tag)
+        for (attribute in attributesGroup.values) {
+            writeAttribute(attribute)
+        }
+    }
 
-            // value class Int
-            IppTag.Integer,
-            IppTag.Enum -> {
-                dataOutputStream.writeShort(4)
-                dataOutputStream.writeInt(value as Int)
-            }
+    private fun writeAttribute(attribute: IppAttribute<*>) {
+        with(attribute) {
+            writeTag(tag)
+            writeLengthAndValue(name.toByteArray(Charsets.US_ASCII))
 
-            // value class String with rfc 8011 3.9 attribute value encoding
-            IppTag.Keyword,
-            IppTag.Uri,
-            IppTag.UriScheme,
-            IppTag.Charset,
-            IppTag.NaturalLanguage,
-            IppTag.MimeMediaType -> {
-                writeLengthAndValue((value as String).toByteArray(Charsets.US_ASCII))
-            }
-            // value class String with rfc 8011 4.1.4.1 attributes-charset encoding
-            IppTag.TextWithoutLanguage,
-            IppTag.NameWithoutLanguage -> {
-                writeLengthAndValue((value as String).toByteArray(attributesCharset))
-            }
+            //println("*** write value $tag $value --- ${value?.javaClass}")
+            when (tag) {
 
-            else -> {
-                // if support for a specific tag is required kindly ask the author to implement it
-                throw IOException(String.format("tag %s (%02X) encoding not implemented", tag, tag.value))
+                // value class Int
+                IppTag.Integer,
+                IppTag.Enum -> {
+                    dataOutputStream.writeShort(4)
+                    dataOutputStream.writeInt(value as Int)
+                }
+
+                // value class String with rfc 8011 3.9 attribute value encoding
+                IppTag.Keyword,
+                IppTag.Uri,
+                IppTag.UriScheme,
+                IppTag.Charset,
+                IppTag.NaturalLanguage,
+                IppTag.MimeMediaType -> {
+                    writeLengthAndValue((value as String).toByteArray(Charsets.US_ASCII))
+                }
+                // value class String with rfc 8011 4.1.4.1 attributes-charset encoding
+                IppTag.TextWithoutLanguage,
+                IppTag.NameWithoutLanguage -> {
+                    writeLengthAndValue((value as String).toByteArray(attributesCharset))
+                }
+
+                else -> {
+                    // if support for a specific tag is required kindly ask the author to implement it
+                    throw IOException(String.format("tag %s (%02X) encoding not implemented", tag, tag.value))
+                }
             }
         }
     }

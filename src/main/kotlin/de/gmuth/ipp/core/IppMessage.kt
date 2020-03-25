@@ -12,10 +12,6 @@ import java.nio.charset.Charset
 
 abstract class IppMessage {
 
-    companion object {
-        var verbose: Boolean = false
-    }
-
     // e.g. readFrom InputStream will set these members
     var version: IppVersion? = null
     var requestId: Int? = null
@@ -25,6 +21,12 @@ abstract class IppMessage {
     protected var code: Short? = null
     abstract val codeDescription: String
 
+    var operationGroup: IppAttributesGroup? = null
+    var jobGroups = mutableListOf<IppAttributesGroup>()
+
+    fun addOperationAttribute(name: String, tag: IppTag, value: Any) = operationGroup?.put(name, tag, value)
+    fun addOperationAttribute(name: String, value: Any) = operationGroup?.put(name, value)
+
     // --------------------------------------------------------------------- IPP MESSAGE ENCODING
 
     private fun writeTo(outputStream: OutputStream) {
@@ -33,29 +35,19 @@ abstract class IppMessage {
         if (requestId == null) throw IllegalArgumentException("requestId must not be null")
         if (attributesCharset == null) throw IllegalArgumentException("attributesCharset must not be null")
         if (naturalLanguage == null) throw IllegalArgumentException("naturalLanguage must not be null")
+        if (operationGroup == null) throw java.lang.IllegalArgumentException("operationGroup must not be null")
 
         with(IppOutputStream(outputStream, attributesCharset as Charset)) {
             writeVersion(version as IppVersion)
             writeCode(code as Short)
             writeRequestId(requestId as Int)
-
-            writeTag(IppTag.Operation)
-            writeAttribute(IppTag.Charset, "attributes-charset", this.attributesCharset.name().toLowerCase())
-            writeAttribute(IppTag.NaturalLanguage, "attributes-natural-language", naturalLanguage as String)
-            writeOperationAttributes(this)
-
-            writeJobGroups(this)
+            writeGroup(operationGroup as IppAttributesGroup)
+            for (jobGroup in jobGroups) {
+                writeGroup(jobGroup)
+            }
             writeTag(IppTag.End)
             close()
         }
-    }
-
-    open fun writeOperationAttributes(ippOutputStream: IppOutputStream) {
-        // implement in subclass for extra attributes
-    }
-
-    open fun writeJobGroups(ippOutputStream: IppOutputStream) {
-        // implement in subclass for extra attributes
     }
 
     fun toByteArray(): ByteArray {
@@ -74,31 +66,42 @@ abstract class IppMessage {
     fun readFrom(inputStream: InputStream): String? {
         val ippInputStream = IppInputStream(inputStream)
 
-        val version = ippInputStream.readVersion()
-        if (verbose) println("version = $version")
-
+        version = ippInputStream.readVersion()
         code = ippInputStream.readCode()
-        if (verbose) println("$codeDescription")
-
         requestId = ippInputStream.readRequestId()
-        if (verbose) println("request-id = $requestId")
 
         var tag: IppTag
+        var currentGroup: IppAttributesGroup? = null
         do {
             tag = ippInputStream.readTag()
             if (tag.isGroupTag()) {
-                if (tag != IppTag.End && verbose)
-                    println(String.format("%s group", tag))
-
+                if (tag != IppTag.End) {
+                    currentGroup = IppAttributesGroup(tag)
+                    when (tag) {
+                        IppTag.Operation -> operationGroup = currentGroup
+                        IppTag.Job -> jobGroups.add(currentGroup)
+                    }
+                }
             } else {
-                // attribute tags
-                val (name, value) = ippInputStream.readAttribute(tag)
-                if (verbose) println(String.format("  %s (%s) = %s", name, tag, value))
+                val attribute = ippInputStream.readAttribute(tag)
+                if (currentGroup == null)
+                    throw IppSpecViolation("unable to put attribute to a group because a delimiter wasn't found yet")
+                else
+                    currentGroup.put(attribute)
             }
         } while (tag != IppTag.End)
         ippInputStream.close()
-
         return ippInputStream.statusMessage;
+    }
+
+    // --------------------------------------------------------------------- LOGGING
+
+    fun logDetails(prefix : String) {
+        println("$prefix version = $version")
+        println("$prefix $codeDescription")
+        println("$prefix request-id = $requestId")
+        operationGroup?.logDetails(prefix)
+        for (job in jobGroups) job.logDetails(prefix)
     }
 
 }

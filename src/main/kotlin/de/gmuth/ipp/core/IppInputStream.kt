@@ -13,8 +13,6 @@ import java.nio.charset.Charset
 class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
 
     private val dataInputStream: DataInputStream = DataInputStream(inputStream)
-    private var currentGroupTag: IppTag? = null
-    private var currentAttributeTag: IppTag? = null
 
     private var attributesCharset: Charset? = null // encoding for text and name attributes, rfc 8011 4.1.4.1
     var statusMessage: String? = null
@@ -25,16 +23,9 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
 
     fun readRequestId() = dataInputStream.readInt()
 
-    fun readTag(): IppTag {
-        val tag = IppTag.fromByte(dataInputStream.readByte())
-        if (tag.isGroupTag())
-            currentGroupTag = tag
-        else
-            currentAttributeTag = tag
-        return tag
-    }
+    fun readTag(): IppTag = IppTag.fromByte(dataInputStream.readByte())
 
-    fun readAttribute(tag: IppTag): Pair<String, Any> {
+    fun readAttribute(tag: IppTag): IppAttribute<*> {
         val name = String(readLengthAndValue(), Charsets.US_ASCII)
         var value: Any = when (tag) {
 
@@ -72,7 +63,7 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
             "status-message" -> statusMessage = value as String
             "job-state" -> value = IppJobState.fromInt(value as Int)
         }
-        return Pair(name, value)
+        return IppAttribute(name, tag, value)
     }
 
     private fun readLengthAndValue(): ByteArray {

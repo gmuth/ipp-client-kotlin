@@ -6,8 +6,7 @@ package de.gmuth.ipp.client
 
 import de.gmuth.http.Http
 import de.gmuth.http.HttpClientByHttpURLConnection
-import de.gmuth.http.HttpClientByJava11HttpClient
-import de.gmuth.ipp.core.IppMessage
+import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppResponse
 import java.io.IOException
@@ -26,11 +25,14 @@ class IppClient(
     fun exchangeIpp(ippRequest: IppRequest, documentInputStream: InputStream? = null): IppResponse {
         println("send ${ippRequest.operation} request to $printerUri")
         ippRequest.requestId = requestCounter.getAndIncrement()
+        ippRequest.logDetails(">")
         val ippRequestStream = ippRequest.toInputStream()
         val ippResponseStream = exchangeIpp(ippRequestStream, documentInputStream)
+        println("read ipp response")
         val ippResponse = IppResponse.fromInputStream(ippResponseStream)
         with(ippResponse) {
-            if (!IppMessage.verbose) println("status-code = $status")
+            logDetails("<")
+            println("status-code = $status")
             if (statusMessage != null) println("status-message: $statusMessage")
         }
         return ippResponse
@@ -57,6 +59,18 @@ class IppClient(
         }
     }
 
+    fun printDocument(inputStream: InputStream, documentFormat: String? = null): IppResponse {
+        val ippRequest = IppRequest(IppOperation.PrintJob)
+        ippRequest.addOperationAttribute("printer-uri", printerUri.toString())
+        if (documentFormat != null) {
+            ippRequest.addOperationAttribute("document-format", documentFormat)
+        }
+        val ippResponse = exchangeIpp(ippRequest, inputStream)
+        if (!ippResponse.status.successfulOk()) {
+            println("printing to $printerUri failed")
+        }
+        return ippResponse
+    }
 }
 
 fun URI.replaceIppScheme(): URI {

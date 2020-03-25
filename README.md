@@ -17,21 +17,16 @@ This project is work in progress.
   [IppStatus](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppStatus.kt)
 * [IppJobState](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppJobState.kt)
  
-## Operations
+## Usage
 
-### [Print-Job](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/IppPrintJobOperation.kt)
-
-Print a document
+### Print a document
 
     val printerUri = URI.create("ipp://colorjet:631/ipp/printer")
     val file = File("A4-blank.pdf")
-
-    IppMessage.verbose = true
     IppClient(printerUri).printDocument(FileInputStream(file))
 
 Console output
 
-    send Print-Job request to ipp://colorjet:631/ipp/printer
     version = 1.1
     status-code = successful-ok
     request-id = 1
