@@ -9,6 +9,7 @@ open class IppRequest(operation: IppOperation) : IppMessage() {
     init {
         version = IppVersion()
         code = operation.code
+        attributesCharset = Charsets.UTF_8
         naturalLanguage = "en"
     }
 

@@ -7,7 +7,7 @@ package de.gmuth.ipp.core
 import java.io.*
 import java.nio.charset.Charset
 
-class IppOutputStream(outputStream: OutputStream, val attributesCharset: Charset = Charsets.UTF_8) : Closeable, Flushable {
+class IppOutputStream(outputStream: OutputStream, val attributesCharset: Charset) : Closeable, Flushable {
 
     private val dataOutputStream: DataOutputStream = DataOutputStream(outputStream)
 

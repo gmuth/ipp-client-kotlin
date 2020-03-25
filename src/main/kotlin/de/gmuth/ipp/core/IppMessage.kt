@@ -8,6 +8,7 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
+import java.nio.charset.Charset
 
 abstract class IppMessage {
 
@@ -15,8 +16,10 @@ abstract class IppMessage {
         var verbose: Boolean = false
     }
 
+    // e.g. readFrom InputStream will set these members
     var version: IppVersion? = null
     var requestId: Int? = null
+    var attributesCharset: Charset? = null
     var naturalLanguage: String? = null
 
     protected var code: Short? = null
@@ -28,9 +31,10 @@ abstract class IppMessage {
         if (version == null) throw IllegalArgumentException("version must not be null")
         if (code == null) throw IllegalArgumentException("code must not be null")
         if (requestId == null) throw IllegalArgumentException("requestId must not be null")
+        if (attributesCharset == null) throw IllegalArgumentException("attributesCharset must not be null")
         if (naturalLanguage == null) throw IllegalArgumentException("naturalLanguage must not be null")
 
-        with(IppOutputStream(outputStream)) {
+        with(IppOutputStream(outputStream, attributesCharset as Charset)) {
             writeVersion(version as IppVersion)
             writeCode(code as Short)
             writeRequestId(requestId as Int)
