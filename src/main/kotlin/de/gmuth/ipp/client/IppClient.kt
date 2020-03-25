@@ -46,8 +46,8 @@ class IppClient(
                 if (documentInputStream == null) ippRequestStream
                 else SequenceInputStream(ippRequestStream, documentInputStream)
         )
-
-        val httpResponse = httpClient.post(printerUri.replaceIppScheme(), ippRequestContent)
+        val httpUri = with(printerUri) { URI.create("${scheme.replace("ipp", "http")}:${schemeSpecificPart}") }
+        val httpResponse = httpClient.post(httpUri, ippRequestContent)
         with(httpResponse) {
             if (status == 200 && content.type == ippContentType) {
                 return content.stream
@@ -71,9 +71,4 @@ class IppClient(
         }
         return ippResponse
     }
-}
-
-fun URI.replaceIppScheme(): URI {
-    val httpScheme = scheme.replace("ipp", "http")
-    return URI.create("${httpScheme}:${schemeSpecificPart}")
 }
