@@ -11,14 +11,16 @@ import java.io.OutputStream
 
 abstract class IppMessage {
 
-    var version: IppVersion? = null
-    protected var code: Short? = null
-    var requestId: Int? = null
-    var naturalLanguage: String? = null
-
     companion object {
         var verbose: Boolean = false
     }
+
+    var version: IppVersion? = null
+    var requestId: Int? = null
+    var naturalLanguage: String? = null
+
+    protected var code: Short? = null
+    abstract val codeDescription: String
 
     // --------------------------------------------------------------------- IPP MESSAGE ENCODING
 
@@ -72,7 +74,7 @@ abstract class IppMessage {
         if (verbose) println("version = $version")
 
         code = ippInputStream.readCode()
-        if (verbose) println(getCodeDescription())
+        if (verbose) println("$codeDescription")
 
         requestId = ippInputStream.readRequestId()
         if (verbose) println("request-id = $requestId")
@@ -94,7 +96,5 @@ abstract class IppMessage {
 
         return ippInputStream.statusMessage;
     }
-
-    open fun getCodeDescription(): String = String.format("code = %04X", code)
 
 }

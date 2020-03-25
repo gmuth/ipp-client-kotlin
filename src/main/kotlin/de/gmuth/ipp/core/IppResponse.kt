@@ -8,12 +8,13 @@ import java.io.InputStream
 
 class IppResponse : IppMessage() {
 
+    override val codeDescription: String
+        get() = "status-code = $status"
+
     val status: IppStatus
         get() = IppStatus.fromShort(code ?: throw IllegalArgumentException("status-code must not be null"))
 
     var statusMessage: String? = null
-
-    override fun getCodeDescription() = "status-code = $status"
 
     override fun readFrom(inputStream: InputStream): String? {
         statusMessage = super.readFrom(inputStream)
