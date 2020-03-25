@@ -16,13 +16,8 @@ class IppResponse : IppMessage() {
 
     var statusMessage: String? = null
 
-    override fun readFrom(inputStream: InputStream): String? {
-        statusMessage = super.readFrom(inputStream)
-        return statusMessage
-    }
-
     companion object {
-        fun fromInputStream(inputStream: InputStream) = IppResponse().apply { readFrom(inputStream) }
+        fun fromInputStream(inputStream: InputStream) = IppResponse().apply { statusMessage = readFrom(inputStream) }
     }
 
 }

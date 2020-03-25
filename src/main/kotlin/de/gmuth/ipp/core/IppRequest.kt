@@ -13,10 +13,10 @@ open class IppRequest(operation: IppOperation) : IppMessage() {
         naturalLanguage = "en"
     }
 
-    val operation: IppOperation
-        get() = IppOperation.fromShort(code ?: throw IllegalArgumentException("operation-code must not be null"))
-
     override val codeDescription: String
         get() = "operation = $operation"
+
+    val operation: IppOperation
+        get() = IppOperation.fromShort(code ?: throw IllegalArgumentException("operation-code must not be null"))
 
 }

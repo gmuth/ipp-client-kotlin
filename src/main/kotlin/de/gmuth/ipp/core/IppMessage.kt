@@ -71,7 +71,7 @@ abstract class IppMessage {
 
     // --------------------------------------------------------------------- IPP MESSAGE DECODING
 
-    open fun readFrom(inputStream: InputStream): String? {
+    fun readFrom(inputStream: InputStream): String? {
         val ippInputStream = IppInputStream(inputStream)
 
         val version = ippInputStream.readVersion()
