@@ -27,39 +27,39 @@ class IppOutputStream(outputStream: OutputStream, val attributesCharset: Charset
     }
 
     private fun writeAttribute(attribute: IppAttribute<*>) {
-        with(attribute) {
-            writeTag(tag)
-            writeLengthAndValue(name.toByteArray(Charsets.US_ASCII))
+        val tag = attribute.tag
+        writeTag(tag)
+        writeLengthAndValue(attribute.name.toByteArray(Charsets.US_ASCII))
 
-            //println("*** write value $tag $value --- ${value?.javaClass}")
-            when (tag) {
+        val value = attribute.value
+        //println("*** write value $tag $value --- ${value?.javaClass}")
+        when (tag) {
 
-                // value class Int
-                IppTag.Integer,
-                IppTag.Enum -> {
-                    dataOutputStream.writeShort(4)
-                    dataOutputStream.writeInt(value as Int)
-                }
+            // value class Int
+            IppTag.Integer,
+            IppTag.Enum -> {
+                dataOutputStream.writeShort(4)
+                dataOutputStream.writeInt(value as Int)
+            }
 
-                // value class String with rfc 8011 3.9 attribute value encoding
-                IppTag.Keyword,
-                IppTag.Uri,
-                IppTag.UriScheme,
-                IppTag.Charset,
-                IppTag.NaturalLanguage,
-                IppTag.MimeMediaType -> {
-                    writeLengthAndValue((value as String).toByteArray(Charsets.US_ASCII))
-                }
-                // value class String with rfc 8011 4.1.4.1 attributes-charset encoding
-                IppTag.TextWithoutLanguage,
-                IppTag.NameWithoutLanguage -> {
-                    writeLengthAndValue((value as String).toByteArray(attributesCharset))
-                }
+            // value class String with rfc 8011 3.9 attribute value encoding
+            IppTag.Keyword,
+            IppTag.Uri,
+            IppTag.UriScheme,
+            IppTag.Charset,
+            IppTag.NaturalLanguage,
+            IppTag.MimeMediaType -> {
+                writeLengthAndValue((value as String).toByteArray(Charsets.US_ASCII))
+            }
+            // value class String with rfc 8011 4.1.4.1 attributes-charset encoding
+            IppTag.TextWithoutLanguage,
+            IppTag.NameWithoutLanguage -> {
+                writeLengthAndValue((value as String).toByteArray(attributesCharset))
+            }
 
-                else -> {
-                    // if support for a specific tag is required kindly ask the author to implement it
-                    throw IOException(String.format("tag %s (%02X) encoding not implemented", tag, tag.value))
-                }
+            else -> {
+                // if support for a specific tag is required kindly ask the author to implement it
+                throw IOException(String.format("tag %s (%02X) encoding not implemented", tag, tag.value))
             }
         }
     }
