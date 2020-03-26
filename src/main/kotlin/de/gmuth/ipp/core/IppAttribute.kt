@@ -15,7 +15,8 @@ class IppAttribute<T>(
     fun isSetOf() = values.size > 1
 
     val value: T
-        get() = if (values.size == 1) values.first() else throw IllegalStateException("found ${values.size} values but expected only 1 for '$name'")
+        get() = if (values.size == 1) values.first() else
+            throw IllegalStateException("found ${values.size.toPluralString("value")} but expected only 1 for '$name'")
 
     override fun toString() = String.format("%s (%s) = %s", name, if (isSetOf()) "1setOf $tag" else "$tag", values.joinToString(","))
 

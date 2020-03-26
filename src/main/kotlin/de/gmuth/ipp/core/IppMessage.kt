@@ -21,8 +21,8 @@ abstract class IppMessage {
     protected var code: Short? = null
     abstract val codeDescription: String
 
-    protected val operationGroup = IppAttributesGroup(IppTag.Operation)
-    protected val jobGroups = mutableListOf<IppAttributesGroup>()
+    val operationGroup = IppAttributesGroup(IppTag.Operation)
+    val jobGroups = mutableListOf<IppAttributesGroup>()
 
     fun addOperationAttribute(name: String, tag: IppTag, value: Any?) {
         if (value != null) operationGroup.put(name, tag, value)
@@ -37,6 +37,10 @@ abstract class IppMessage {
         jobGroups.add(jobGroup)
         return jobGroup
     }
+
+    fun getSingleJobGroup(): IppAttributesGroup =
+            if (jobGroups.size == 1) jobGroups.first()
+            else throw IllegalStateException("found ${jobGroups.size.toPluralString("job group")}")
 
     // --------------------------------------------------------------------- ENCODING
 
@@ -110,7 +114,7 @@ abstract class IppMessage {
             operationGroup.size.toPluralString("operation attribute"),
             jobGroups.size.toPluralString("job group")
     )
-    
+
     fun logDetails(prefix: String) {
         println("$prefix version = $version")
         println("$prefix $codeDescription")

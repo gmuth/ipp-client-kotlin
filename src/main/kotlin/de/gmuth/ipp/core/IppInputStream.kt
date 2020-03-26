@@ -8,6 +8,7 @@ import java.io.Closeable
 import java.io.DataInputStream
 import java.io.IOException
 import java.io.InputStream
+import java.net.URI
 import java.nio.charset.Charset
 
 class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
@@ -42,9 +43,8 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
             IppTag.UriScheme,
             IppTag.Charset,
             IppTag.NaturalLanguage,
-            IppTag.MimeMediaType -> {
-                String(readLengthAndValue(), Charsets.US_ASCII)
-            }
+            IppTag.MimeMediaType -> String(readLengthAndValue(), Charsets.US_ASCII)
+
             // value class String with rfc 8011 4.1.4.1 attributes-charset encoding
             IppTag.TextWithoutLanguage,
             IppTag.NameWithoutLanguage -> {
@@ -54,15 +54,22 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
             else -> {
                 // if support for a specific tag is required kindly ask the author to implement it
                 readLengthAndValue()
-                String.format("<decoding-tag-$tag(%02X)-not-implemented>", tag.value)
+                String.format("<$tag-decoding-not-implemented>")
             }
         }
+
+        // convert some types
+        when(tag) {
+            IppTag.Uri -> value = URI.create(value as String)
+        }
+
         // collect special attribute values
         when (name) {
             "attributes-charset" -> attributesCharset = Charset.forName(value as String)
             "status-message" -> statusMessage = value as String
-            "job-state" -> value = IppJobState.fromInt(value as Int)
+            "job-state" -> value = IppJobState.fromInt(value as Int) // type conversion
         }
+
         return IppAttribute(name, tag, value)
     }
 

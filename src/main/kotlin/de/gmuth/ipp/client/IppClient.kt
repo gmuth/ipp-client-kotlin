@@ -6,6 +6,7 @@ package de.gmuth.ipp.client
 
 import de.gmuth.http.Http
 import de.gmuth.http.HttpClientByHttpURLConnection
+import de.gmuth.ipp.core.IppJob
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppResponse
@@ -74,7 +75,13 @@ class IppClient(
         }
 
         val ippResponse = exchangeIpp(ippRequest, inputStream)
-        if (!ippResponse.status.successfulOk()) {
+        if (ippResponse.status.successfulOk()) {
+
+            val ippJobGroup = ippResponse.getSingleJobGroup()
+            val ippJob = IppJob.fromIppAttributesGroup(ippJobGroup)
+            println(ippJob)
+
+        } else {
             println("printing to $printerUri failed")
         }
         return ippResponse
