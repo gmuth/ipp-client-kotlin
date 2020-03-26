@@ -13,9 +13,10 @@ fun main(args: Array<String>) {
         println("usage: java -jar ippclient.jar <printer-uri> <file>")
         return
     }
-    val printerUri = URI.create(args[0])
+    val uri = URI.create(args[0])
     val file = File(args[1])
 
-    IppClient(printerUri)
-            .printDocument(FileInputStream(file))
+    val ippClient = IppClient(uri)
+    ippClient.verbose = false
+    val ippJob = ippClient.printDocument(FileInputStream(file))
 }

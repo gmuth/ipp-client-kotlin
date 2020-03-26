@@ -2,6 +2,51 @@
 
 A basic client implementation of the ipp protocol written in kotlin
 
+## Usage
+
+### IppClient API
+
+    val uri = URI.create("ipp://colorjet:631/ipp/printer")
+    val file = File("A4-blank.pdf")
+    
+    val ippJob = IppClient(uri).printDocument(FileInputStream(file))
+
+### IppMessage API
+
+    val uri = URI.create("ipp://colorjet:631/ipp/printer")
+    val file = File("A4-blank.pdf")
+
+    val ippRequest = IppRequest(IppOperation.PrintJob).apply {
+      addOperationAttribute("printer-uri", "$uri")
+      addOperationAttribute("document-format", "application/octet-stream")
+      addOperationAttribute("requesting-user-name", "kotlin-ipp")
+    }
+
+    val ippResponse = exchangeIpp(ippRequest, FileInputStream(file))
+    println(ippResponse.status)
+        
+### IppTool API
+ 
+    with(IppTool()) {
+        uri = URI.create("ipp://colorjet:631/ipp/printer")
+        val filename = "A4-blank.pdf"
+        
+        run(
+            "OPERATION Print-Job",
+            "GROUP operation-attributes-tag",
+            "ATTR charset attributes-charset utf-8",
+            "ATTR language attributes-natural-language en",
+            "ATTR uri printer-uri $uri",
+            "FILE $filename"
+        )
+    }
+          
+## Build
+
+To build `ippclient.jar` into `build/libs` run
+
+    ./gradlew
+
 ## Status
 
 This project is work in progress.
@@ -15,32 +60,5 @@ This project is work in progress.
 
 * [IppOperation](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppOperation.kt),
   [IppStatus](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppStatus.kt)
-* [IppJobState](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppJobState.kt)
- 
-## Usage
-
-### Print a document
-
-    val printerUri = URI.create("ipp://colorjet:631/ipp/printer")
-    val file = File("A4-blank.pdf")
-    IppClient(printerUri).printDocument(FileInputStream(file))
-
-Console output
-
-    version = 1.1
-    status-code = successful-ok
-    request-id = 1
-    operation group
-      attributes-charset (charset) = us-ascii
-      attributes-natural-language (naturalLanguage) = en
-    job group
-      job-uri (uri) = ipp://colorjet:631/jobs/352
-      job-id (integer) = 352
-      job-state (enum) = pending
-      job-state-reasons (keyword) = none
-      
-## Build
-
-To build `ippclient.jar` into `build/libs` run
-
-    ./gradlew
+* [IppJobState](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppJobState.kt),
+  [IppJob](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppJob.kt)

@@ -14,7 +14,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
         //with(newAttribute) { println("** put $name = $value --- ${value?.javaClass}") }
         val oldAttribute = put(newAttribute.name, newAttribute)
         if (oldAttribute != null) {
-            println(String.format("replaced attribute: %s -> %s", oldAttribute, newAttribute))
+            println(String.format("replaced '%s' with '%s'", oldAttribute, newAttribute))
         }
     }
 
