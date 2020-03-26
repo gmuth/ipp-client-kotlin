@@ -6,6 +6,10 @@ package de.gmuth.ipp.core
 
 class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*>>() {
 
+    init {
+        if (!tag.isGroupTag()) throw IllegalArgumentException("'$tag' is not a group tag")
+    }
+
     fun put(newAttribute: IppAttribute<*>) {
         //with(newAttribute) { println("** put $name = $value --- ${value?.javaClass}") }
         val oldAttribute = put(newAttribute.name, newAttribute)

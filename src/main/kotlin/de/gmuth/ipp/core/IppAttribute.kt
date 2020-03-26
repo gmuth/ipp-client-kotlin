@@ -25,6 +25,7 @@ class IppAttribute<T>(
             "attributes-natural-language" -> IppTag.NaturalLanguage
             "printer-uri" -> IppTag.Uri
             "document-format" -> IppTag.MimeMediaType
+            "requesting-user-name" -> IppTag.NameWithoutLanguage
 
             else -> throw IllegalArgumentException("tag for attribute '$name' not found, sorry - you have to specify the tag!")
         }

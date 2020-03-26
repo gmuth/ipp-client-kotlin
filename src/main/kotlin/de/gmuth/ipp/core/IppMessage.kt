@@ -21,13 +21,24 @@ abstract class IppMessage {
     protected var code: Short? = null
     abstract val codeDescription: String
 
-    var operationGroup: IppAttributesGroup? = null
-    var jobGroups = mutableListOf<IppAttributesGroup>()
+    protected val operationGroup = IppAttributesGroup(IppTag.Operation)
+    protected val jobGroups = mutableListOf<IppAttributesGroup>()
 
-    fun addOperationAttribute(name: String, tag: IppTag, value: Any) = operationGroup?.put(name, tag, value)
-    fun addOperationAttribute(name: String, value: Any) = operationGroup?.put(name, value)
+    fun addOperationAttribute(name: String, tag: IppTag, value: Any?) {
+        if (value != null) operationGroup.put(name, tag, value)
+    }
 
-    // --------------------------------------------------------------------- IPP MESSAGE ENCODING
+    fun addOperationAttribute(name: String, value: Any?) {
+        if (value != null) operationGroup.put(name, value)
+    }
+
+    private fun addNewJobGroup(): IppAttributesGroup {
+        val jobGroup = IppAttributesGroup(IppTag.Job)
+        jobGroups.add(jobGroup)
+        return jobGroup
+    }
+
+    // --------------------------------------------------------------------- ENCODING
 
     private fun writeTo(outputStream: OutputStream) {
         if (version == null) throw IllegalArgumentException("version must not be null")
@@ -35,16 +46,13 @@ abstract class IppMessage {
         if (requestId == null) throw IllegalArgumentException("requestId must not be null")
         if (attributesCharset == null) throw IllegalArgumentException("attributesCharset must not be null")
         if (naturalLanguage == null) throw IllegalArgumentException("naturalLanguage must not be null")
-        if (operationGroup == null) throw java.lang.IllegalArgumentException("operationGroup must not be null")
 
         with(IppOutputStream(outputStream, attributesCharset as Charset)) {
             writeVersion(version as IppVersion)
             writeCode(code as Short)
             writeRequestId(requestId as Int)
-            writeGroup(operationGroup as IppAttributesGroup)
-            for (jobGroup in jobGroups) {
-                writeGroup(jobGroup)
-            }
+            writeAttributesGroup(operationGroup)
+            jobGroups.forEach { jobGroup -> writeAttributesGroup(jobGroup) }
             writeTag(IppTag.End)
             close()
         }
@@ -61,7 +69,7 @@ abstract class IppMessage {
         return ByteArrayInputStream(toByteArray())
     }
 
-    // --------------------------------------------------------------------- IPP MESSAGE DECODING
+    // --------------------------------------------------------------------- DECODING
 
     fun readFrom(inputStream: InputStream): String? {
         val ippInputStream = IppInputStream(inputStream)
@@ -76,10 +84,9 @@ abstract class IppMessage {
             tag = ippInputStream.readTag()
             if (tag.isGroupTag()) {
                 if (tag != IppTag.End) {
-                    currentGroup = IppAttributesGroup(tag)
                     when (tag) {
-                        IppTag.Operation -> operationGroup = currentGroup
-                        IppTag.Job -> jobGroups.add(currentGroup)
+                        IppTag.Operation -> currentGroup = operationGroup
+                        IppTag.Job -> currentGroup = addNewJobGroup()
                     }
                 }
             } else {
@@ -96,11 +103,19 @@ abstract class IppMessage {
 
     // --------------------------------------------------------------------- LOGGING
 
-    fun logDetails(prefix : String) {
+    override fun toString(): String = String.format(
+            "%s: %s, %s, %s",
+            javaClass.simpleName,
+            codeDescription,
+            operationGroup.size.toPluralString("operation attribute"),
+            jobGroups.size.toPluralString("job group")
+    )
+    
+    fun logDetails(prefix: String) {
         println("$prefix version = $version")
         println("$prefix $codeDescription")
         println("$prefix request-id = $requestId")
-        operationGroup?.logDetails(prefix)
+        operationGroup.logDetails(prefix)
         for (job in jobGroups) job.logDetails(prefix)
     }
 

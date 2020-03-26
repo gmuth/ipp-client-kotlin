@@ -13,26 +13,27 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.SequenceInputStream
 import java.net.URI
-import java.util.concurrent.atomic.AtomicInteger
 
 class IppClient(
         val printerUri: URI,
         private val httpClient: Http.Client = HttpClientByHttpURLConnection()
         //private val httpClient: Http.Client = HttpClientByJava11HttpClient()
 ) {
-    private val requestCounter = AtomicInteger(1)
+    var verbose: Boolean = true
 
     fun exchangeIpp(ippRequest: IppRequest, documentInputStream: InputStream? = null): IppResponse {
+
         println("send ${ippRequest.operation} request to $printerUri")
-        ippRequest.requestId = requestCounter.getAndIncrement()
-        ippRequest.logDetails(">")
+        println(ippRequest)
+        if (verbose) ippRequest.logDetails(">")
         val ippRequestStream = ippRequest.toInputStream()
         val ippResponseStream = exchangeIpp(ippRequestStream, documentInputStream)
+
         println("read ipp response")
         val ippResponse = IppResponse.fromInputStream(ippResponseStream)
         with(ippResponse) {
-            logDetails("<")
-            println("status-code = $status")
+            if (verbose) logDetails("<")
+            println(ippResponse)
             if (statusMessage != null) println("status-message: $statusMessage")
         }
         return ippResponse
@@ -59,12 +60,19 @@ class IppClient(
         }
     }
 
-    fun printDocument(inputStream: InputStream, documentFormat: String? = null): IppResponse {
-        val ippRequest = IppRequest(IppOperation.PrintJob)
-        ippRequest.addOperationAttribute("printer-uri", printerUri.toString())
-        if (documentFormat != null) {
-            ippRequest.addOperationAttribute("document-format", documentFormat)
+    fun printDocument(
+            inputStream: InputStream,
+            documentFormat: String? = "application/octet-stream",
+            userName: String? = "ipp-client-kotlin"
+
+    ): IppResponse {
+
+        val ippRequest = IppRequest(IppOperation.PrintJob).apply {
+            addOperationAttribute("printer-uri", "$printerUri")
+            addOperationAttribute("document-format", documentFormat)
+            addOperationAttribute("requesting-user-name", userName)
         }
+
         val ippResponse = exchangeIpp(ippRequest, inputStream)
         if (!ippResponse.status.successfulOk()) {
             println("printing to $printerUri failed")

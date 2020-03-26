@@ -7,7 +7,7 @@ package de.gmuth.ipp.core
 import java.io.*
 import java.nio.charset.Charset
 
-class IppOutputStream(outputStream: OutputStream, val attributesCharset: Charset) : Closeable, Flushable {
+class IppOutputStream(outputStream: OutputStream, private val attributesCharset: Charset) : Closeable, Flushable {
 
     private val dataOutputStream: DataOutputStream = DataOutputStream(outputStream)
 
@@ -19,11 +19,9 @@ class IppOutputStream(outputStream: OutputStream, val attributesCharset: Charset
 
     fun writeTag(tag: IppTag) = dataOutputStream.writeByte(tag.value.toInt())
 
-    fun writeGroup(attributesGroup: IppAttributesGroup) {
+    fun writeAttributesGroup(attributesGroup: IppAttributesGroup) {
         writeTag(attributesGroup.tag)
-        for (attribute in attributesGroup.values) {
-            writeAttribute(attribute)
-        }
+        attributesGroup.values.forEach { attribute -> writeAttribute(attribute) }
     }
 
     private fun writeAttribute(attribute: IppAttribute<*>) {
