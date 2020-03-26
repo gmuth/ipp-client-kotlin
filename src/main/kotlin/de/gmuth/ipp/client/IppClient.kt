@@ -26,14 +26,14 @@ class IppClient(
 
         println("send ${ippRequest.operation} request to $printerUri")
         println(ippRequest)
-        if (verbose) ippRequest.logDetails(">")
+        if (verbose) ippRequest.logDetails(">> ")
         val ippRequestStream = ippRequest.toInputStream()
         val ippResponseStream = exchangeIpp(ippRequestStream, documentInputStream)
 
         println("read ipp response")
         val ippResponse = IppResponse.fromInputStream(ippResponseStream)
         with(ippResponse) {
-            if (verbose) logDetails("<")
+            if (verbose) logDetails("<< ")
             println(ippResponse)
             if (statusMessage != null) println("status-message: $statusMessage")
         }
@@ -66,7 +66,7 @@ class IppClient(
             documentFormat: String? = "application/octet-stream",
             userName: String? = "ipp-client-kotlin"
 
-    ): IppResponse {
+    ): IppJob {
 
         val ippRequest = IppRequest(IppOperation.PrintJob).apply {
             addOperationAttribute("printer-uri", "$printerUri")
@@ -80,10 +80,10 @@ class IppClient(
             val ippJobGroup = ippResponse.getSingleJobGroup()
             val ippJob = IppJob.fromIppAttributesGroup(ippJobGroup)
             println(ippJob)
+            return ippJob
 
         } else {
-            println("printing to $printerUri failed")
+            throw RuntimeException("printing to $printerUri failed")
         }
-        return ippResponse
     }
 }

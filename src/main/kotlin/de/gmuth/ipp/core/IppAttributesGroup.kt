@@ -32,8 +32,8 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     }
 
     fun logDetails(prefix: String) {
-        println("$prefix $tag group")
-        for (key in keys) println("$prefix   ${get(key)}")
+        println("${prefix}$tag group")
+        for (key in keys) println("${prefix}  ${get(key)}")
     }
 
 }

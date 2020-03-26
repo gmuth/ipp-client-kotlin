@@ -16,8 +16,6 @@ class IppResponse : IppMessage() {
 
     var statusMessage: String? = null
 
-
-
     companion object {
         fun fromInputStream(inputStream: InputStream) = IppResponse().apply { statusMessage = readFrom(inputStream) }
     }

@@ -16,7 +16,6 @@ abstract class IppMessage {
     var version: IppVersion? = null
     var requestId: Int? = null
     var attributesCharset: Charset? = null
-    var naturalLanguage: String? = null
 
     protected var code: Short? = null
     abstract val codeDescription: String
@@ -49,7 +48,6 @@ abstract class IppMessage {
         if (code == null) throw IllegalArgumentException("code must not be null")
         if (requestId == null) throw IllegalArgumentException("requestId must not be null")
         if (attributesCharset == null) throw IllegalArgumentException("attributesCharset must not be null")
-        if (naturalLanguage == null) throw IllegalArgumentException("naturalLanguage must not be null")
 
         with(IppOutputStream(outputStream, attributesCharset as Charset)) {
             writeVersion(version as IppVersion)
@@ -115,10 +113,10 @@ abstract class IppMessage {
             jobGroups.size.toPluralString("job group")
     )
 
-    fun logDetails(prefix: String) {
-        println("$prefix version = $version")
-        println("$prefix $codeDescription")
-        println("$prefix request-id = $requestId")
+    fun logDetails(prefix: String = "") {
+        println("${prefix}version = $version")
+        println("${prefix}$codeDescription")
+        println("${prefix}request-id = $requestId")
         operationGroup.logDetails(prefix)
         for (job in jobGroups) job.logDetails(prefix)
     }
