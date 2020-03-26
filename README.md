@@ -47,6 +47,9 @@ To build `ippclient.jar` into `build/libs` run
 
     ./gradlew
 
+No dependencies to CUPS or ipptool exist. Currently only the target `jvm` is supported. 
+In the future multi platform support will be added.
+
 ## Status
 
 This project is work in progress.
