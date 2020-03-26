@@ -48,7 +48,7 @@ To build `ippclient.jar` into `build/libs` run
     ./gradlew
 
 No dependencies to CUPS or ipptool exist. Currently only the target `jvm` is supported. 
-In the future multi platform support will be added.
+
 
 ## Status
 
@@ -65,3 +65,9 @@ This project is work in progress.
   [IppStatus](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppStatus.kt)
 * [IppJobState](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppJobState.kt),
   [IppJob](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppJob.kt)
+
+## ToDo
+
+* read types from iana registrations file
+* support more encodings
+* multi platform support
