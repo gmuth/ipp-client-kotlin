@@ -1,5 +1,9 @@
 package de.gmuth.ipp.core
 
+/**
+ * Copyright (c) 2020 Gerhard Muth
+ */
+
 class IppRegistrations {
     companion object {
         fun ippTagForAttribute(attributeName: String): IppTag = when (attributeName) {

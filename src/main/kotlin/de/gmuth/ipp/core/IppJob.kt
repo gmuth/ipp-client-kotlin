@@ -2,6 +2,10 @@ package de.gmuth.ipp.core
 
 import java.net.URI
 
+/**
+ * Copyright (c) 2020 Gerhard Muth
+ */
+
 class IppJob {
 
     var uri: URI? = null
