@@ -20,5 +20,7 @@ fun main(args: Array<String>) {
                 "ATTR uri printer-uri $uri",
                 "FILE $filename"
         )
+
+        println("status = ${response?.status}")
     }
 }

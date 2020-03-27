@@ -27,9 +27,9 @@ abstract class IppMessage {
         if (value != null) operationGroup.put(name, tag, value)
     }
 
-    fun addOperationAttribute(name: String, value: Any?) {
-        if (value != null) operationGroup.put(name, value)
-    }
+//    fun addOperationAttribute(name: String, value: Any?) {
+//        if (value != null) operationGroup.put(name, value)
+//    }
 
     private fun addNewJobGroup(): IppAttributesGroup {
         val jobGroup = IppAttributesGroup(IppTag.Job)

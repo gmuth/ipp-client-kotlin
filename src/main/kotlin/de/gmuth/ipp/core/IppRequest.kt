@@ -30,7 +30,7 @@ open class IppRequest() : IppMessage() {
         get() = "operation = $operation"
 
     var operation: IppOperation
-        get() = IppOperation.fromShort(code ?: throw IllegalArgumentException("operation-code must not be null"))
+        get() = IppOperation.fromCode(code ?: throw IllegalArgumentException("operation-code must not be null"))
         set(operation) {
             code = operation.code
         }

@@ -5,7 +5,6 @@ package de.gmuth.ipp.core
  */
 
 enum class IppOperation(val code: Short) {
-
     PrintJob(0x0002),
     PrintUri(0x0003),
     ValidateJob(0x0004),
@@ -50,6 +49,7 @@ enum class IppOperation(val code: Short) {
     ResumeJob(0x002F),
     PromoteJob(0x0030),
     ScheduleJobAfter(0x0031),
+    // a few more are missing
 
     // CUPS operations
     CupsGetDefault(0x4001),
@@ -66,13 +66,18 @@ enum class IppOperation(val code: Short) {
     CupsGetPPDs(0x400C),
     CupsMoveJob(0x400D);
 
-    override fun toString(): String = name
+    override fun toString(): String = registeredName()
+
+    // https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-10
+    private fun registeredName() = name
             .replace("[A-Z]".toRegex()) { "-" + it.value }
             .replace("^-".toRegex(), "")
 
     companion object {
-        private val map = values().associateBy(IppOperation::code)
-        fun fromShort(code: Short): IppOperation = map[code] ?: throw IllegalArgumentException(String.format("ipp operation %04X undefined", code))
+        private val codeMap = values().associateBy(IppOperation::code)
+        private val registeredNameMap = values().associateBy(IppOperation::registeredName)
+        fun fromCode(code: Short): IppOperation = codeMap[code] ?: throw IllegalArgumentException(String.format("operation code '%04X' not found", code))
+        fun fromRegisteredName(name: String): IppOperation = registeredNameMap[name] ?: throw IllegalArgumentException(String.format("operation name '%s' not found", name))
     }
 
 }

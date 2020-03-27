@@ -10,7 +10,7 @@ class IppAttribute<T>(
         val values: List<T>
 ) {
     constructor(name: String, tag: IppTag, vararg values: T) : this(name, tag, values.toList())
-    constructor(name: String, vararg values: T) : this(name, lookupIppTag(name), values.toList())
+    //constructor(name: String, vararg values: T) : this(name, lookupIppTag(name), values.toList())
 
     fun isSetOf() = values.size > 1
 
@@ -19,17 +19,5 @@ class IppAttribute<T>(
             throw IllegalStateException("found ${values.size.toPluralString("value")} but expected only 1 for '$name'")
 
     override fun toString() = String.format("%s (%s) = %s", name, if (isSetOf()) "1setOf $tag" else "$tag", values.joinToString(","))
-
-    companion object {
-        fun lookupIppTag(name: String): IppTag = when (name) {
-            "attributes-charset" -> IppTag.Charset
-            "attributes-natural-language" -> IppTag.NaturalLanguage
-            "printer-uri" -> IppTag.Uri
-            "document-format" -> IppTag.MimeMediaType
-            "requesting-user-name" -> IppTag.NameWithoutLanguage
-
-            else -> throw IllegalArgumentException("tag for attribute '$name' not found, sorry - you have to specify the tag!")
-        }
-    }
 
 }

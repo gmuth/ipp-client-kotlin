@@ -25,7 +25,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
         })
     }
 
-    fun put(name: String, value: Any) = put(name, IppAttribute.lookupIppTag(name), value)
+    //fun put(name: String, value: Any) = put(name, IppAttribute.lookupIppTag(name), value)
 
     override fun toString(): String {
         return String.format("IppAttributesGroup '%s' containing %d attributes", tag, size)

@@ -6,10 +6,7 @@ package de.gmuth.ipp.client
 
 import de.gmuth.http.Http
 import de.gmuth.http.HttpClientByHttpURLConnection
-import de.gmuth.ipp.core.IppJob
-import de.gmuth.ipp.core.IppOperation
-import de.gmuth.ipp.core.IppRequest
-import de.gmuth.ipp.core.IppResponse
+import de.gmuth.ipp.core.*
 import java.io.IOException
 import java.io.InputStream
 import java.io.SequenceInputStream
@@ -69,9 +66,9 @@ class IppClient(
     ): IppJob {
 
         val ippRequest = IppRequest(IppOperation.PrintJob).apply {
-            addOperationAttribute("printer-uri", "$printerUri")
-            addOperationAttribute("document-format", documentFormat)
-            addOperationAttribute("requesting-user-name", userName)
+            addOperationAttribute("printer-uri", IppTag.Uri, "$printerUri")
+            addOperationAttribute("document-format", IppTag.MimeMediaType, documentFormat)
+            addOperationAttribute("requesting-user-name", IppTag.NameWithoutLanguage, userName)
         }
 
         val ippResponse = exchangeIpp(ippRequest, inputStream)

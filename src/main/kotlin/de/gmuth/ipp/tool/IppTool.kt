@@ -1,10 +1,7 @@
 package de.gmuth.ipp.tool
 
 import de.gmuth.ipp.client.IppClient
-import de.gmuth.ipp.core.IppAttributesGroup
-import de.gmuth.ipp.core.IppOperation
-import de.gmuth.ipp.core.IppRequest
-import de.gmuth.ipp.core.IppTag
+import de.gmuth.ipp.core.*
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
@@ -16,8 +13,9 @@ class IppTool() {
     var uri: URI? = null
     var file: File? = null
     var verbose: Boolean = false
+    var response : IppResponse? = null
 
-    fun runResource(resource: String) = run(javaClass.getResourceAsStream(resource))
+    fun runResource(resource: String)  = run(javaClass.getResourceAsStream(resource))
     fun runFile(path: String) = runFile(File(path))
     fun runFile(file: File) = run(FileInputStream(file))
     fun run(inputStream: InputStream) = run(inputStream.reader())
@@ -25,16 +23,15 @@ class IppTool() {
     fun run(vararg lines: String) = if (lines.size == 1) run(lines[0].reader()) else run(lines.toList())
 
     fun run(lines: List<String>) {
-        val ippClient = IppClient(uri ?: throw IllegalArgumentException("uri must not be null"))
         val ippRequest = buildIppRequest(lines)
         val fileInputStream = if (file == null) null else FileInputStream(file)
-        ippClient.exchangeIpp(ippRequest, fileInputStream)
+        val ippClient = IppClient(uri ?: throw IllegalArgumentException("uri must not be null"))
+        response = ippClient.exchangeIpp(ippRequest, fileInputStream)
     }
 
     fun buildIppRequest(lines: List<String>): IppRequest {
-
-        val ippRequest = IppRequest()
         var currentGroup: IppAttributesGroup? = null
+        val ippRequest = IppRequest()
 
         for (line in lines) {
             val lineItems = line.trim().split("\\s+".toRegex())
@@ -44,13 +41,13 @@ class IppTool() {
 
             val firstArgument = lineItems[1]
             when (command) {
-                "OPERATION" -> ippRequest.operation = lookupIppOperation(firstArgument)
+                "OPERATION" -> ippRequest.operation = IppOperation.fromRegisteredName(firstArgument)
                 "GROUP" -> when (firstArgument) {
                     "operation-attributes-tag" -> currentGroup = ippRequest.operationGroup
                     else -> throw IllegalArgumentException("unsupported group '$firstArgument'")
                 }
                 "ATTR" -> {
-                    val tag = lookupIppTag(firstArgument)
+                    val tag = IppRegistrations.ippTag(firstArgument)
                     val name = lineItems[2]
                     var value = lineItems[3]
                     if (value == "\$uri") value = uri.toString()
@@ -69,21 +66,4 @@ class IppTool() {
         }
         return ippRequest
     }
-
-    fun lookupIppOperation(operationName: String): IppOperation =
-            when (operationName) {
-                "Print-Job" -> IppOperation.PrintJob
-                else -> throw IllegalArgumentException("unknown operation '$operationName'")
-            }
-
-
-    fun lookupIppTag(tagName: String): IppTag =
-            when (tagName) {
-                "operation-attributes-tag" -> IppTag.Operation
-                "charset" -> IppTag.Charset
-                "language" -> IppTag.NaturalLanguage
-                "uri" -> IppTag.Uri
-                else -> throw IllegalArgumentException("unknown tag '$tagName'")
-            }
-
 }

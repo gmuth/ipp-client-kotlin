@@ -15,15 +15,14 @@ A basic client implementation of the ipp protocol written in kotlin
 
     val uri = URI.create("ipp://colorjet:631/ipp/printer")
     val file = File("A4-blank.pdf")
-
+    
     val ippRequest = IppRequest(IppOperation.PrintJob).apply {
-      addOperationAttribute("printer-uri", "$uri")
-      addOperationAttribute("document-format", "application/octet-stream")
-      addOperationAttribute("requesting-user-name", "kotlin-ipp")
+      addOperationAttribute("printer-uri", IppTag.Uri, "$uri")
+      addOperationAttribute("document-format", IppTag.MimeMediaType, "application/octet-stream")
+      addOperationAttribute("requesting-user-name", IppTag.NameWithoutLanguage, "kotlin-ipp")
     }
-
-    val ippResponse = exchangeIpp(ippRequest, FileInputStream(file))
-    println(ippResponse.status)
+    
+    val ippResponse = IppClient(uri).exchangeIpp(ippRequest, FileInputStream(file))
         
 ### IppTool API
  
