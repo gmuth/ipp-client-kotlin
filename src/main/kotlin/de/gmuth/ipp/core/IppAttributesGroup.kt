@@ -10,25 +10,23 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
         if (!tag.isGroupTag()) throw IllegalArgumentException("'$tag' is not a group tag")
     }
 
-    fun put(newAttribute: IppAttribute<*>) {
+    fun put(attribute: IppAttribute<*>): IppAttribute<*>? {
         //with(newAttribute) { println("** put $name = $value --- ${value?.javaClass}") }
-        val oldAttribute = put(newAttribute.name, newAttribute)
-        if (oldAttribute != null) {
-            println(String.format("replaced '%s' with '%s'", oldAttribute, newAttribute))
+        val replaced = put(attribute.name, attribute)
+        if (replaced != null) {
+            println(String.format("replaced '%s' with '%s'", replaced, attribute))
         }
+        return replaced
     }
 
-    fun put(name: String, tag: IppTag, value: Any) {
-        put(when (value) {
-            is String -> IppAttribute<String>(name, tag, value)
-            else -> throw IllegalArgumentException()
-        })
+    fun put(name: String, tag: IppTag, value: Any): IppAttribute<*>? {
+        return put(IppAttribute(name, tag, value))
     }
 
     //fun put(name: String, value: Any) = put(name, IppAttribute.lookupIppTag(name), value)
 
     override fun toString(): String {
-        return String.format("IppAttributesGroup '%s' containing %d attributes", tag, size)
+        return "IppAttributesGroup '$tag' containing ${size.toPluralString("attribute")}"
     }
 
     fun logDetails(prefix: String) {
