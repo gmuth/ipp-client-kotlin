@@ -20,7 +20,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
 
     fun put(name: String, tag: IppTag, value: Any) {
         put(when (value) {
-            is String -> IppAttribute(name, tag, value)
+            is String -> IppAttribute<String>(name, tag, value)
             else -> throw IllegalArgumentException()
         })
     }
