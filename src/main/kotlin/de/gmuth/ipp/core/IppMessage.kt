@@ -23,7 +23,7 @@ abstract class IppMessage {
     val operationGroup = IppAttributesGroup(IppTag.Operation)
     val jobGroups = mutableListOf<IppAttributesGroup>()
     var printerGroup = IppAttributesGroup(IppTag.Printer)
-    var unsupportedGroup = IppAttributesGroup(IppTag.Unsupported_)
+    var unsupportedGroup = IppAttributesGroup(IppTag.Unsupported)
 
     fun addOperationAttribute(name: String, tag: IppTag, value: Any?) {
         if (value != null) operationGroup.put(name, tag, value)
@@ -86,7 +86,7 @@ abstract class IppMessage {
                     IppTag.Operation -> currentGroup = operationGroup
                     IppTag.Job -> currentGroup = newJobGroup()
                     IppTag.Printer -> currentGroup = printerGroup
-                    IppTag.Unsupported_ -> currentGroup = unsupportedGroup
+                    IppTag.Unsupported -> currentGroup = unsupportedGroup
                     IppTag.End -> break@loop
                     else -> {
                         if (tag.isGroupTag()) throw NotImplementedError("delimiter '$tag' not yet implemented")
