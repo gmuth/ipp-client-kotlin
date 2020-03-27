@@ -34,7 +34,7 @@ A basic client implementation of the ipp protocol written in kotlin
             "OPERATION Print-Job",
             "GROUP operation-attributes-tag",
             "ATTR charset attributes-charset utf-8",
-            "ATTR language attributes-natural-language en",
+            "ATTR naturalLanguage attributes-natural-language en",
             "ATTR uri printer-uri $uri",
             "FILE $filename"
         )
