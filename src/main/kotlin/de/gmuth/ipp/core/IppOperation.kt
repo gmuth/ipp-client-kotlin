@@ -75,9 +75,13 @@ enum class IppOperation(val code: Short) {
 
     companion object {
         private val codeMap = values().associateBy(IppOperation::code)
+        fun fromCode(code: Short): IppOperation = codeMap[code]
+                ?: throw IllegalArgumentException(String.format("operation code '%04X' not found", code))
+
         private val registeredNameMap = values().associateBy(IppOperation::registeredName)
-        fun fromCode(code: Short): IppOperation = codeMap[code] ?: throw IllegalArgumentException(String.format("operation code '%04X' not found", code))
-        fun fromRegisteredName(name: String): IppOperation = registeredNameMap[name] ?: throw IllegalArgumentException(String.format("operation name '%s' not found", name))
+        fun fromRegisteredName(name: String): IppOperation = registeredNameMap[name]
+                ?: throw IllegalArgumentException(String.format("operation name '%s' not found", name))
+
     }
 
 }

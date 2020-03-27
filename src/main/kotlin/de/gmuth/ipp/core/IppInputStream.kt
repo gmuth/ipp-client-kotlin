@@ -14,7 +14,6 @@ import java.nio.charset.Charset
 class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
 
     private val dataInputStream: DataInputStream = DataInputStream(inputStream)
-
     private var attributesCharset: Charset? = null // encoding for text and name attributes, rfc 8011 4.1.4.1
     var statusMessage: String? = null
 
@@ -24,7 +23,7 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
 
     fun readRequestId() = dataInputStream.readInt()
 
-    fun readTag(): IppTag = IppTag.fromByte(dataInputStream.readByte())
+    fun readTag(): IppTag = IppTag.fromCode(dataInputStream.readByte())
 
     fun readAttribute(tag: IppTag): IppAttribute<*> {
         val name = String(readLengthAndValue(), Charsets.US_ASCII)
@@ -67,7 +66,7 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
         when (name) {
             "attributes-charset" -> attributesCharset = Charset.forName(value as String)
             "status-message" -> statusMessage = value as String
-            "job-state" -> value = IppJobState.fromInt(value as Int) // type conversion
+            "job-state" -> value = IppJobState.fromCode(value as Int) // type conversion
         }
 
         return IppAttribute(name, tag, value)

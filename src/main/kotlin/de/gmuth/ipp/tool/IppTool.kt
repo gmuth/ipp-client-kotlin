@@ -15,7 +15,7 @@ class IppTool() {
     var verbose: Boolean = false
     var response : IppResponse? = null
 
-    fun runResource(resource: String)  = run(javaClass.getResourceAsStream(resource))
+    fun runResource(resource: String) = run(javaClass.getResourceAsStream(resource))
     fun runFile(path: String) = runFile(File(path))
     fun runFile(file: File) = run(FileInputStream(file))
     fun run(inputStream: InputStream) = run(inputStream.reader())
@@ -23,22 +23,16 @@ class IppTool() {
     fun run(vararg lines: String) = if (lines.size == 1) run(lines[0].reader()) else run(lines.toList())
 
     fun run(lines: List<String>) {
-        val ippRequest = buildIppRequest(lines)
-        val fileInputStream = if (file == null) null else FileInputStream(file)
-        val ippClient = IppClient(uri ?: throw IllegalArgumentException("uri must not be null"))
-        response = ippClient.exchangeIpp(ippRequest, fileInputStream)
-    }
-
-    fun buildIppRequest(lines: List<String>): IppRequest {
+        var fileInputStream: FileInputStream? = null
         var currentGroup: IppAttributesGroup? = null
         val ippRequest = IppRequest()
 
+        // parse commands and build ipp request
         for (line in lines) {
             val lineItems = line.trim().split("\\s+".toRegex())
             val command = lineItems.first()
             if (lineItems.size < 2 || command.startsWith("#")) continue
             if (verbose) println("| ${line.trim()}")
-
             val firstArgument = lineItems[1]
             when (command) {
                 "OPERATION" -> ippRequest.operation = IppOperation.fromRegisteredName(firstArgument)
@@ -47,7 +41,8 @@ class IppTool() {
                     else -> throw IllegalArgumentException("unsupported group '$firstArgument'")
                 }
                 "ATTR" -> {
-                    val tag = IppRegistrations.ippTag(firstArgument)
+                    //val tag = IppRegistrations.ippTag(firstArgument)
+                    val tag = IppTag.fromRegisteredName(firstArgument)
                     val name = lineItems[2]
                     var value = lineItems[3]
                     if (value == "\$uri") value = uri.toString()
@@ -60,10 +55,14 @@ class IppTool() {
                     } else {
                         file = File(firstArgument)
                     }
+                    fileInputStream = FileInputStream(file)
                 }
                 else -> println("ignore unknown command '$command'")
             }
         }
-        return ippRequest
+
+        // exchange ipp request with ipp client to
+        val ippClient = IppClient(uri ?: throw IllegalArgumentException("uri must not be null"))
+        response = ippClient.exchangeIpp(ippRequest, fileInputStream)
     }
 }

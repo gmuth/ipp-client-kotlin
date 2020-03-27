@@ -1,5 +1,7 @@
 package de.gmuth.ipp.tool
 
+import de.gmuth.ipp.core.IppJobState
+import de.gmuth.ipp.core.IppStatus
 import java.net.URI
 
 fun main(args: Array<String>) {
@@ -16,7 +18,7 @@ fun main(args: Array<String>) {
                 "OPERATION Print-Job",
                 "GROUP operation-attributes-tag",
                 "ATTR charset attributes-charset utf-8",
-                "ATTR language attributes-natural-language en",
+                "ATTR naturalLanguage attributes-natural-language en",
                 "ATTR uri printer-uri $uri",
                 "FILE $filename"
         )

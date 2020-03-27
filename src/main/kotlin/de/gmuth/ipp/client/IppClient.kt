@@ -20,34 +20,30 @@ class IppClient(
     var verbose: Boolean = true
 
     fun exchangeIpp(ippRequest: IppRequest, documentInputStream: InputStream? = null): IppResponse {
-
-        println("send ${ippRequest.operation} request to $printerUri")
-        println(ippRequest)
-        if (verbose) ippRequest.logDetails(">> ")
-        val ippRequestStream = ippRequest.toInputStream()
-        val ippResponseStream = exchangeIpp(ippRequestStream, documentInputStream)
-
-        println("read ipp response")
-        val ippResponse = IppResponse.fromInputStream(ippResponseStream)
-        with(ippResponse) {
-            if (verbose) logDetails("<< ")
-            println(ippResponse)
-            if (statusMessage != null) println("status-message: $statusMessage")
+        val ippResponseStream = with(ippRequest) {
+            println("send ${operation} request to $printerUri")
+            println(this)
+            if (verbose) logDetails(">> ")
+            exchangeIpp(toInputStream(), documentInputStream)
         }
-        return ippResponse
+        println("read ipp response")
+        with(IppResponse.fromInputStream(ippResponseStream)) {
+            if (verbose) logDetails("<< ")
+            println(this)
+            if (statusMessage != null) println("status-message: $statusMessage")
+            return this
+        }
     }
 
     private fun exchangeIpp(ippRequestStream: InputStream, documentInputStream: InputStream? = null): InputStream {
         val ippContentType = "application/ipp"
-
         val ippRequestContent = Http.Content(
                 ippContentType,
                 if (documentInputStream == null) ippRequestStream
                 else SequenceInputStream(ippRequestStream, documentInputStream)
         )
         val httpUri = with(printerUri) { URI.create("${scheme.replace("ipp", "http")}:${schemeSpecificPart}") }
-        val httpResponse = httpClient.post(httpUri, ippRequestContent)
-        with(httpResponse) {
+        with(httpClient.post(httpUri, ippRequestContent)) {
             if (status == 200 && content.type == ippContentType) {
                 return content.stream
 
@@ -72,8 +68,7 @@ class IppClient(
         }
 
         val ippResponse = exchangeIpp(ippRequest, inputStream)
-        if (ippResponse.status.successfulOk()) {
-
+        if (ippResponse.status.isSuccessful()) {
             val ippJobGroup = ippResponse.getSingleJobGroup()
             val ippJob = IppJob.fromIppAttributesGroup(ippJobGroup)
             println(ippJob)

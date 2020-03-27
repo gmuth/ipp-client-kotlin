@@ -22,6 +22,8 @@ abstract class IppMessage {
 
     val operationGroup = IppAttributesGroup(IppTag.Operation)
     val jobGroups = mutableListOf<IppAttributesGroup>()
+    var printerGroup = IppAttributesGroup(IppTag.Printer)
+    var unsupportedGroup = IppAttributesGroup(IppTag.Unsupported_)
 
     fun addOperationAttribute(name: String, tag: IppTag, value: Any?) {
         if (value != null) operationGroup.put(name, tag, value)
@@ -31,7 +33,7 @@ abstract class IppMessage {
 //        if (value != null) operationGroup.put(name, value)
 //    }
 
-    private fun addNewJobGroup(): IppAttributesGroup {
+    private fun newJobGroup(): IppAttributesGroup {
         val jobGroup = IppAttributesGroup(IppTag.Job)
         jobGroups.add(jobGroup)
         return jobGroup
@@ -74,33 +76,28 @@ abstract class IppMessage {
     // --------------------------------------------------------------------- DECODING
 
     fun readFrom(inputStream: InputStream): String? {
-        val ippInputStream = IppInputStream(inputStream)
-
-        version = ippInputStream.readVersion()
-        code = ippInputStream.readCode()
-        requestId = ippInputStream.readRequestId()
-
-        var tag: IppTag
-        var currentGroup: IppAttributesGroup? = null
-        do {
-            tag = ippInputStream.readTag()
-            if (tag.isGroupTag()) {
-                if (tag != IppTag.End) {
-                    when (tag) {
-                        IppTag.Operation -> currentGroup = operationGroup
-                        IppTag.Job -> currentGroup = addNewJobGroup()
+        with(IppInputStream(inputStream)) {
+            version = readVersion()
+            code = readCode()
+            requestId = readRequestId()
+            var currentGroup: IppAttributesGroup? = null
+            loop@ while (true) {
+                when (val tag = readTag()) {
+                    IppTag.Operation -> currentGroup = operationGroup
+                    IppTag.Job -> currentGroup = newJobGroup()
+                    IppTag.Printer -> currentGroup = printerGroup
+                    IppTag.Unsupported_ -> currentGroup = unsupportedGroup
+                    IppTag.End -> break@loop
+                    else -> {
+                        if (tag.isGroupTag()) throw NotImplementedError("delimiter '$tag' not yet implemented")
+                        val attribute = readAttribute(tag)
+                        currentGroup?.put(attribute)
                     }
                 }
-            } else {
-                val attribute = ippInputStream.readAttribute(tag)
-                if (currentGroup == null)
-                    throw IppSpecViolation("unable to put attribute to a group because a delimiter wasn't found yet")
-                else
-                    currentGroup.put(attribute)
             }
-        } while (tag != IppTag.End)
-        ippInputStream.close()
-        return ippInputStream.statusMessage;
+            close()
+            return statusMessage;
+        }
     }
 
     // --------------------------------------------------------------------- LOGGING
@@ -119,6 +116,8 @@ abstract class IppMessage {
         println("${prefix}request-id = $requestId")
         operationGroup.logDetails(prefix)
         for (job in jobGroups) job.logDetails(prefix)
+        printerGroup.logDetails(prefix)
+        unsupportedGroup.logDetails(prefix)
     }
 
 }

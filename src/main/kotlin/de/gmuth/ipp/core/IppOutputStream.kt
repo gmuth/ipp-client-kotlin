@@ -17,7 +17,7 @@ class IppOutputStream(outputStream: OutputStream, private val attributesCharset:
 
     fun writeRequestId(requestId: Int = 0) = dataOutputStream.writeInt(requestId)
 
-    fun writeTag(tag: IppTag) = dataOutputStream.writeByte(tag.value.toInt())
+    fun writeTag(tag: IppTag) = dataOutputStream.writeByte(tag.code.toInt())
 
     fun writeAttributesGroup(attributesGroup: IppAttributesGroup) {
         writeTag(attributesGroup.tag)
@@ -57,7 +57,7 @@ class IppOutputStream(outputStream: OutputStream, private val attributesCharset:
 
             else -> {
                 // if support for a specific tag is required kindly ask the author to implement it
-                throw IOException(String.format("tag %s (%02X) encoding not implemented", tag, tag.value))
+                throw IOException(String.format("tag %s (%02X) encoding not implemented", tag, tag.code))
             }
         }
     }

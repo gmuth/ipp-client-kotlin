@@ -4,18 +4,15 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
+// RFC 8011
 enum class IppStatus(val code: Short) {
 
     SuccessfulOk(0x0000),
     SuccessfulOkIgnoredOrSubstitutedAttributes(0x0001),
     SuccessfulOkConflictingAttributes(0x0002),
     SuccessfulOkIgnoredSubscriptions(0x0003),
-    SuccessfulOkIgnoredNotification(0x0004),
     SuccessfulOkTooManyEvents(0x0005),
-    SuccessfulOkButCancelSubscription(0x0006),
     SuccessfulOkEventsComplete(0x0007),
-
-    RedirectionOtherSite(0x0300),
 
     ClientErrorBadRequest(0x0400),
     ClientErrorForbidden(0x0401),
@@ -39,8 +36,6 @@ enum class IppStatus(val code: Short) {
     ClientErrorAttributesNotSettable(0x0413),
     ClientErrorIgnoredAllSubscriptions(0x0414),
     ClientErrorTooManySubscriptions(0x0415),
-    ClientErrorIgnoresAllNotifications(0x0416),
-    ClientErrorPrintSupportFileNotFound(0x0417),
     ClientErrorDocumentPasswordError(0x0418),
     ClientErrorDocumentPermissionError(0x0419),
     ClientErrorDocumentSecurityError(0x041A),
@@ -65,15 +60,26 @@ enum class IppStatus(val code: Short) {
     ServerErrorTooManyJobs(0x050B),
     ServerErrorTooManyDocuments(0x050c);
 
-    fun successfulOk() = code < 0x100
+    fun isSuccessful() = code in 0x000..0x00FF
+    fun isClientError() = code in 0x0400..0x04FF
+    fun isServerError() = code in 0x0500..0x05FF
 
-    override fun toString() = name
+    // https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-11
+    private fun registeredValue() = name
             .replace("[A-Z]".toRegex()) { "-" + it.value.toLowerCase() }
             .replace("^-".toRegex(), "")
 
+    override fun toString() = registeredValue()
+
     companion object {
-        private val map = values().associateBy(IppStatus::code)
-        fun fromShort(code: Short): IppStatus = map[code] ?: throw IllegalArgumentException(String.format("ipp status %04X undefined", code))
+        private val codeMap = values().associateBy(IppStatus::code)
+        fun fromCode(code: Short): IppStatus = codeMap[code]
+                ?: throw IllegalArgumentException(String.format("ipp status %04X undefined", code))
+
+        private val registeredValueMap = values().associateBy(IppStatus::registeredValue)
+        fun fromRegisteredValue(value: String): IppStatus = registeredValueMap[value]
+                ?: throw IllegalArgumentException(String.format("ipp status value '%s' not found", value))
+
     }
 
 }
