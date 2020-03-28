@@ -1,7 +1,5 @@
 package de.gmuth.ipp.tool
 
-import de.gmuth.ipp.core.IppJobState
-import de.gmuth.ipp.core.IppStatus
 import java.net.URI
 
 fun main(args: Array<String>) {
@@ -22,7 +20,5 @@ fun main(args: Array<String>) {
                 "ATTR uri printer-uri $uri",
                 "FILE $filename"
         )
-
-        println("status = ${response?.status}")
     }
 }

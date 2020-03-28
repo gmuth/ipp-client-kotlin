@@ -11,9 +11,8 @@ import java.nio.charset.Charset
 
 class IppTool() {
     var uri: URI? = null
-    var file: File? = null
+    var filename: String? = null
     var verbose: Boolean = false
-    var response : IppResponse? = null
 
     fun runResource(resource: String) = run(javaClass.getResourceAsStream(resource))
     fun runFile(path: String) = runFile(File(path))
@@ -51,11 +50,11 @@ class IppTool() {
                 }
                 "FILE" -> {
                     if (firstArgument == "\$file" || firstArgument == "\$filename") {
-                        if (file == null) throw IllegalArgumentException("$firstArgument undefined")
+                        if (filename == null) throw IllegalArgumentException("$firstArgument undefined")
                     } else {
-                        file = File(firstArgument)
+                        filename = firstArgument
                     }
-                    fileInputStream = FileInputStream(file)
+                    fileInputStream = FileInputStream(File(filename))
                 }
                 else -> println("ignore unknown command '$command'")
             }
@@ -63,6 +62,6 @@ class IppTool() {
 
         // exchange ipp request with ipp client to
         val ippClient = IppClient(uri ?: throw IllegalArgumentException("uri must not be null"))
-        response = ippClient.exchangeIpp(ippRequest, fileInputStream)
+        ippClient.exchangeIpp(ippRequest, fileInputStream)
     }
 }
