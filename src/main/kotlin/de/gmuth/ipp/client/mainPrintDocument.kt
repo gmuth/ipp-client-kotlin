@@ -17,6 +17,6 @@ fun main(args: Array<String>) {
     val file = File(args[1])
 
     val ippClient = IppClient(uri)
-    ippClient.verbose = false
+    ippClient.verbose = true
     val ippJob = ippClient.printDocument(FileInputStream(file))
 }

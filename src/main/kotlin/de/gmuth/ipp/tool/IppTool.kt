@@ -1,7 +1,10 @@
 package de.gmuth.ipp.tool
 
 import de.gmuth.ipp.client.IppClient
-import de.gmuth.ipp.core.*
+import de.gmuth.ipp.core.IppAttributesGroup
+import de.gmuth.ipp.core.IppOperation
+import de.gmuth.ipp.core.IppRequest
+import de.gmuth.ipp.core.IppTag
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
@@ -40,13 +43,17 @@ class IppTool() {
                     else -> throw IllegalArgumentException("unsupported group '$firstArgument'")
                 }
                 "ATTR" -> {
-                    //val tag = IppRegistrations.ippTag(firstArgument)
                     val tag = IppTag.fromRegisteredName(firstArgument)
                     val name = lineItems[2]
-                    var value = lineItems[3]
-                    if (value == "\$uri") value = uri.toString()
+                    val value: Any = with(lineItems[3]) {
+                        when {
+                            this == "\$uri" -> uri ?: throw java.lang.IllegalArgumentException("\$uri undefined")
+                            name.contains("-uri") -> URI.create(this)
+                            else -> this
+                        }
+                    }
                     currentGroup?.put(name, tag, value)
-                    if (name == "attributes-charset") ippRequest.attributesCharset = Charset.forName(value)
+                    if (name == "attributes-charset" && value is String) ippRequest.attributesCharset = Charset.forName(value)
                 }
                 "FILE" -> {
                     if (firstArgument == "\$file" || firstArgument == "\$filename") {

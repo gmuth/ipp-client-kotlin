@@ -62,6 +62,7 @@ enum class IppTag(val code: Byte, private val ianaName: String? = null) {
     fun isIntegerTag() = code in 0x20..0x2F
     fun isStringTag() = code in 0x40..0x4F
     fun isCollection() = this in listOf(BegCollection, EndCollection, MemberAttrName)
+    fun useAttributesCharsetEncoding() = this in listOf(TextWithoutLanguage, TextWithLanguage, NameWithoutLanguage, NameWithLanguage)
 
     private fun registeredName() = ianaName
             ?: name.replace("^[A-Z]".toRegex()) { it.value.toLowerCase() }

@@ -62,7 +62,7 @@ class IppClient(
     ): IppJob {
 
         val ippRequest = IppRequest(IppOperation.PrintJob).apply {
-            addOperationAttribute("printer-uri", IppTag.Uri, "$printerUri")
+            addOperationAttribute("printer-uri", IppTag.Uri, printerUri)
             addOperationAttribute("document-format", IppTag.MimeMediaType, documentFormat)
             addOperationAttribute("requesting-user-name", IppTag.NameWithoutLanguage, userName)
         }

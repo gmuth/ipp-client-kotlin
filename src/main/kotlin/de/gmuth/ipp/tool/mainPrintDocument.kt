@@ -10,15 +10,15 @@ fun main(args: Array<String>) {
 
     with(IppTool()) {
         uri = URI.create(args[0])
-        val filename = args[1]
+        filename = args[1]
 
         run(
                 "OPERATION Print-Job",
                 "GROUP operation-attributes-tag",
                 "ATTR charset attributes-charset utf-8",
                 "ATTR naturalLanguage attributes-natural-language en",
-                "ATTR uri printer-uri $uri",
-                "FILE $filename"
+                "ATTR uri printer-uri \$uri",
+                "FILE \$filename"
         )
     }
 }

@@ -4,7 +4,11 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import java.io.*
+import java.io.Closeable
+import java.io.DataOutputStream
+import java.io.Flushable
+import java.io.OutputStream
+import java.net.URI
 import java.nio.charset.Charset
 
 class IppOutputStream(outputStream: OutputStream, private val attributesCharset: Charset) : Closeable, Flushable {
@@ -27,7 +31,7 @@ class IppOutputStream(outputStream: OutputStream, private val attributesCharset:
     private fun writeAttribute(attribute: IppAttribute<*>) {
         val tag = attribute.tag
         writeTag(tag)
-        writeLengthAndValue(attribute.name.toByteArray(Charsets.US_ASCII))
+        writeString(attribute.name, Charsets.US_ASCII)
 
         val value = attribute.value
         //println("*** write value $tag $value --- ${value?.javaClass}")
@@ -40,26 +44,26 @@ class IppOutputStream(outputStream: OutputStream, private val attributesCharset:
                 dataOutputStream.writeInt(value as Int)
             }
 
-            // value class String with rfc 8011 3.9 attribute value encoding
+            // value class String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
+            IppTag.Uri -> writeString((value as URI).toString(), charsetForIppTag(tag))
             IppTag.Keyword,
-            IppTag.Uri,
             IppTag.UriScheme,
             IppTag.Charset,
             IppTag.NaturalLanguage,
-            IppTag.MimeMediaType -> {
-                writeLengthAndValue((value as String).toByteArray(Charsets.US_ASCII))
-            }
-            // value class String with rfc 8011 4.1.4.1 attributes-charset encoding
+            IppTag.MimeMediaType,
             IppTag.TextWithoutLanguage,
-            IppTag.NameWithoutLanguage -> {
-                writeLengthAndValue((value as String).toByteArray(attributesCharset))
-            }
+            IppTag.NameWithoutLanguage -> writeString(value as String, charsetForIppTag(tag))
 
-            else -> {
-                // if support for a specific tag is required kindly ask the author to implement it
-                throw IOException(String.format("tag %s (%02X) encoding not implemented", tag, tag.code))
-            }
+            else -> throw NotImplementedError(String.format("tag %s (%02X) encoding not implemented", tag, tag.code))
         }
+    }
+
+    private fun charsetForIppTag(ippTag: IppTag) =
+            if (ippTag.useAttributesCharsetEncoding()) attributesCharset
+            else Charsets.US_ASCII
+
+    private fun writeString(value: String, charset: Charset) {
+        writeLengthAndValue(value.toByteArray(charset))
     }
 
     private fun writeLengthAndValue(value: ByteArray) {

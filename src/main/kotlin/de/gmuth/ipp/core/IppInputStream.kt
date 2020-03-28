@@ -26,7 +26,7 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
     fun readTag(): IppTag = IppTag.fromCode(dataInputStream.readByte())
 
     fun readAttribute(tag: IppTag): IppAttribute<*> {
-        val name = String(readLengthAndValue(), Charsets.US_ASCII)
+        val name = readString(Charsets.US_ASCII)
         var value: Any = when (tag) {
 
             // value class Int
@@ -36,30 +36,21 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
                 dataInputStream.readInt()
             }
 
-            // value class String with rfc 8011 3.9 attribute value encoding
+            // value class String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
+            IppTag.Uri -> URI.create(readString(charsetForIppTag(tag)))
             IppTag.Keyword,
-            IppTag.Uri,
             IppTag.UriScheme,
             IppTag.Charset,
             IppTag.NaturalLanguage,
-            IppTag.MimeMediaType -> String(readLengthAndValue(), Charsets.US_ASCII)
-
-            // value class String with rfc 8011 4.1.4.1 attributes-charset encoding
+            IppTag.MimeMediaType,
             IppTag.TextWithoutLanguage,
-            IppTag.NameWithoutLanguage -> {
-                String(readLengthAndValue(), attributesCharset ?: throw IllegalStateException("missing attributes-charset"))
-            }
+            IppTag.NameWithoutLanguage -> readString(charsetForIppTag(tag))
 
             else -> {
                 // if support for a specific tag is required kindly ask the author to implement it
                 readLengthAndValue()
                 String.format("<$tag-decoding-not-implemented>")
             }
-        }
-
-        // convert some types
-        when(tag) {
-            IppTag.Uri -> value = URI.create(value as String)
         }
 
         // collect special attribute values
@@ -71,6 +62,12 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
 
         return IppAttribute(name, tag, value)
     }
+
+    private fun charsetForIppTag(ippTag: IppTag) =
+            if (ippTag.useAttributesCharsetEncoding()) attributesCharset ?: throw IllegalStateException("missing attributes-charset")
+            else Charsets.US_ASCII
+
+    private fun readString(charset: Charset): String = String(readLengthAndValue(), charset)
 
     private fun readLengthAndValue(): ByteArray {
         val length = dataInputStream.readShort().toInt()
