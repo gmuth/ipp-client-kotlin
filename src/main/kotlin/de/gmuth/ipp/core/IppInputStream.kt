@@ -27,7 +27,13 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
 
     fun readAttribute(tag: IppTag): IppAttribute<*> {
         val name = readString(Charsets.US_ASCII)
-        var value: Any = when (tag) {
+        var value: Any? = when (tag) {
+
+            // out-of-band
+            IppTag.NoValue -> {
+                assertValueLength(0)
+                null
+            }
 
             // value class Int
             IppTag.Integer,
@@ -53,11 +59,15 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
             }
         }
 
-        // collect special attribute values
-        when (name) {
+        // check tag
+        IppRegistrations.checkTagOfAttribute(name, tag)
+
+        // collect special attribute values or convert types
+
+        if (!tag.isOutOfBandTag()) when (name) {
             "attributes-charset" -> attributesCharset = Charset.forName(value as String)
             "status-message" -> statusMessage = value as String
-            "job-state" -> value = IppJobState.fromCode(value as Int) // type conversion
+            "job-state" -> value = IppJobState.fromCode(value as Int)
         }
 
         return IppAttribute(name, tag, value)

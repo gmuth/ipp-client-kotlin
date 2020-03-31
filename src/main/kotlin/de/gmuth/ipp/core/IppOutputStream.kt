@@ -35,7 +35,15 @@ class IppOutputStream(outputStream: OutputStream, private val attributesCharset:
 
         val value = attribute.value
         //println("*** write value $tag $value --- ${value?.javaClass}")
+
+        // check tag
+        IppRegistrations.checkTagOfAttribute(attribute.name, attribute.tag)
+
         when (tag) {
+            // out-of-band
+            IppTag.NoValue -> {
+                dataOutputStream.writeShort(0)
+            }
 
             // value class Int
             IppTag.Integer,
