@@ -11,6 +11,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.SequenceInputStream
 import java.net.URI
+import java.time.Duration
 
 class IppClient(
         val printerUri: URI,
@@ -21,15 +22,19 @@ class IppClient(
 
     fun exchangeIpp(ippRequest: IppRequest, documentInputStream: InputStream? = null): IppResponse {
         val ippResponseStream = with(ippRequest) {
-            println("send ${operation} request to $printerUri")
-            println(this)
-            if (verbose) logDetails(">> ")
+            if (verbose) {
+                println("send ${operation} request to $printerUri")
+                println(this)
+                logDetails(">> ")
+            }
             exchangeIpp(toInputStream(), documentInputStream)
         }
-        println("read ipp response")
         with(IppResponse.fromInputStream(ippResponseStream)) {
-            if (verbose) logDetails("<< ")
-            println(this)
+            if (verbose) {
+                println("read ipp response")
+                logDetails("<< ")
+                println(this)
+            }
             if (statusMessage != null) println("status-message: $statusMessage")
             return this
         }
@@ -54,6 +59,10 @@ class IppClient(
         }
     }
 
+    // ---------------------------
+    // DOCUMENT related operations
+    // ---------------------------
+
     fun printDocument(
             inputStream: InputStream,
             documentFormat: String? = "application/octet-stream",
@@ -62,9 +71,12 @@ class IppClient(
     ): IppJob {
 
         val ippRequest = IppRequest(IppOperation.PrintJob).apply {
-            addOperationAttribute("printer-uri", IppTag.Uri, printerUri)
-            addOperationAttribute("document-format", IppTag.MimeMediaType, documentFormat)
-            addOperationAttribute("requesting-user-name", IppTag.NameWithoutLanguage, userName)
+            //addOperationAttribute("printer-uri", IppTag.Uri, printerUri)
+            //addOperationAttribute("document-format", IppTag.MimeMediaType, documentFormat)
+            //addOperationAttribute("requesting-user-name", IppTag.NameWithoutLanguage, userName)
+            addOperationAttribute("printer-uri", printerUri)
+            addOperationAttribute("document-format", documentFormat)
+            addOperationAttribute("requesting-user-name", userName)
         }
 
         val ippResponse = exchangeIpp(ippRequest, inputStream)
@@ -78,4 +90,37 @@ class IppClient(
             throw RuntimeException("printing to $printerUri failed")
         }
     }
+
+    // ----------------------
+    // JOB related operations
+    // ----------------------
+
+    fun getJobAttributes(id: Int): IppResponse {
+        val ippRequest = IppRequest(IppOperation.GetJobAttributes).apply {
+            //addOperationAttribute("printer-uri", IppTag.Uri, printerUri)
+            //addOperationAttribute("job-id", IppTag.Integer, id)
+            addOperationAttribute("printer-uri", printerUri)
+            addOperationAttribute("job-id", id)
+        }
+        return exchangeIpp(ippRequest)
+    }
+
+    fun updateJobAttributes(ippJob: IppJob) {
+        val ippResponse = getJobAttributes(ippJob.id!!)
+        if (ippResponse.status.isSuccessful()) {
+            ippJob.readFrom(ippResponse.getSingleJobGroup())
+        } else {
+            println(ippResponse)
+            throw RuntimeException("updating job attributes failed")
+        }
+    }
+
+    fun waitForTermination(ippJob: IppJob, pollingInterval: Duration = Duration.ofMillis(1000)) {
+        do {
+            Thread.sleep(pollingInterval.toMillis())
+            updateJobAttributes(ippJob)
+            println("job-state = ${ippJob.state}")
+        } while (!ippJob.state?.isTerminated()!!)
+    }
+
 }
