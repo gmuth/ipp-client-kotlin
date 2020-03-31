@@ -60,7 +60,7 @@ enum class IppStatus(val code: Short) {
     ServerErrorTooManyJobs(0x050B),
     ServerErrorTooManyDocuments(0x050c);
 
-    fun isSuccessful() = code in 0x000..0x00FF
+    fun isSuccessful() = code in 0x0000..0x00FF
     fun isClientError() = code in 0x0400..0x04FF
     fun isServerError() = code in 0x0500..0x05FF
 
