@@ -9,7 +9,11 @@ A basic client implementation of the ipp protocol written in kotlin
     val uri = URI.create("ipp://colorjet:631/ipp/printer")
     val file = File("A4-blank.pdf")
     
-    val ippJob = IppClient(uri).printDocument(FileInputStream(file))
+    with(IppClient(uri)) {
+        val ippJob = printDocument(FileInputStream(file))
+        waitForTermination(ippJob)
+        ippJob.logDetails()
+    }
 
 ### IppMessage API
 
@@ -17,9 +21,9 @@ A basic client implementation of the ipp protocol written in kotlin
     val file = File("A4-blank.pdf")
     
     val ippRequest = IppRequest(IppOperation.PrintJob).apply {
-      addOperationAttribute("printer-uri", IppTag.Uri, "$uri")
-      addOperationAttribute("document-format", IppTag.MimeMediaType, "application/octet-stream")
-      addOperationAttribute("requesting-user-name", IppTag.NameWithoutLanguage, "kotlin-ipp")
+      addOperationAttribute("printer-uri", uri)
+      addOperationAttribute("document-format", "application/octet-stream")
+      addOperationAttribute("requesting-user-name", "kotlin-ipp")
     }
     
     val ippResponse = IppClient(uri).exchangeIpp(ippRequest, FileInputStream(file))
@@ -55,18 +59,21 @@ This project is work in progress.
 
 **Encodings**
 
+ * `no-value` 
  * `integer`, `enum`
- * `textWithoutLanguage`, `nameWithoutLanguage`, `uri`, `charset`, `naturalLanguage`, `mimeMediaType`
+ * `textWithoutLanguage`, `nameWithoutLanguage`, `uri`, `uriScheme`, `charset`, `naturalLanguage`,
+   `mimeMediaType`, `keyword`
 
 **Model and semantics**
 
 * [IppOperation](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppOperation.kt),
   [IppStatus](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppStatus.kt)
-* [IppJobState](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppJobState.kt),
-  [IppJob](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppJob.kt)
+* [IppJob](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppJob.kt),
+  [IppJobState](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppJobState.kt)
 
 ## ToDo
 
-* read types from iana registrations file
+* implement get-printer-attributes
 * support more encodings
 * multi platform support
+

@@ -17,6 +17,11 @@ fun main(args: Array<String>) {
     val file = File(args[1])
 
     val ippClient = IppClient(uri)
-    ippClient.verbose = true
-    val ippJob = ippClient.printDocument(FileInputStream(file))
+    with(ippClient) {
+        verbose = false
+        val ippJob = printDocument(FileInputStream(file))
+        waitForTermination(ippJob)
+        ippJob.logDetails()
+    }
+
 }
