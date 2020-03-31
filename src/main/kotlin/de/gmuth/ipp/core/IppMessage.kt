@@ -29,9 +29,9 @@ abstract class IppMessage {
         if (value != null) operationGroup.put(name, tag, value)
     }
 
-//    fun addOperationAttribute(name: String, value: Any?) {
-//        if (value != null) operationGroup.put(name, value)
-//    }
+    fun addOperationAttribute(name: String, value: Any?) {
+        addOperationAttribute(name, IppRegistrations.tagForAttribute(name), value)
+    }
 
     private fun newJobGroup(): IppAttributesGroup {
         val jobGroup = IppAttributesGroup(IppTag.Job)
@@ -56,6 +56,7 @@ abstract class IppMessage {
             writeCode(code as Short)
             writeRequestId(requestId as Int)
             writeAttributesGroup(operationGroup)
+            writeAttributesGroup(printerGroup)
             jobGroups.forEach { jobGroup -> writeAttributesGroup(jobGroup) }
             writeTag(IppTag.End)
             close()
