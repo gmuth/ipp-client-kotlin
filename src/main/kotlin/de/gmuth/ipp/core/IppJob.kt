@@ -25,11 +25,12 @@ class IppJob {
     var impressions: Int? = null
     var impressionsCompleted: Int? = null
 
+    @Suppress("UNCHECKED_CAST")
     fun readFrom(jobGroup: IppAttributesGroup) = with(jobGroup) {
         uri = get("job-uri")?.value as URI
         id = get("job-id")?.value as Int
         state = get("job-state")?.value as IppJobState
-        stateReasons = get("job-state-reasons")?.values as List<String>
+        stateReasons = get("job-state-reasons")?.values as List<String>?
 
         printerUri = get("job-printer-uri")?.value as URI?
         name = get("job-name")?.value as String?

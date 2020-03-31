@@ -76,6 +76,7 @@ abstract class IppMessage {
 
     // --------------------------------------------------------------------- DECODING
 
+    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
     fun readFrom(inputStream: InputStream): String? {
         with(IppInputStream(inputStream)) {
             version = readVersion()

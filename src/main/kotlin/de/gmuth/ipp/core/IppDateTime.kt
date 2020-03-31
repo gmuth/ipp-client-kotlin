@@ -15,9 +15,8 @@ class IppDateTime {
                 if (seconds == null) null
                 else LocalDateTime.ofInstant(Instant.ofEpochSecond(seconds.toLong()), ZoneId.systemDefault())
 
-        fun toInt(localDateTime: LocalDateTime) =
-                if (localDateTime == null) null
-                else localDateTime.toEpochSecond(ZoneOffset.MIN).toInt()
+        fun toInt(localDateTime: LocalDateTime?) =
+                localDateTime?.toEpochSecond(ZoneOffset.MIN)?.toInt()
 
     }
 
