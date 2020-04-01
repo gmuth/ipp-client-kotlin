@@ -7,7 +7,6 @@ package de.gmuth.ipp.client
 import de.gmuth.http.Http
 import de.gmuth.http.HttpClientByHttpURLConnection
 import de.gmuth.ipp.core.*
-import java.io.IOException
 import java.io.InputStream
 import java.io.SequenceInputStream
 import java.net.URI
@@ -37,8 +36,9 @@ class IppClient(
             }
             if (statusMessage != null) println("status-message: $statusMessage")
             if (!status.isSuccessful()) {
-                println("WARN: request failed: $ippRequest")
-                logDetails("WARN: ")
+                ippRequest.logDetails("IPP-REQUEST: ")
+                println("response from $printerUri")
+                logDetails("IPP-RESPONSE: ")
             }
             return this
         }
@@ -70,7 +70,8 @@ class IppClient(
     fun printDocument(
             inputStream: InputStream,
             documentFormat: String? = "application/octet-stream",
-            userName: String? = "ipp-client-kotlin"
+            userName: String? = "ipp-client-kotlin",
+            waitForTermination: Boolean = false
 
     ): IppJob {
 
@@ -81,47 +82,42 @@ class IppClient(
 
             // PWG 5100.13: "print-color-mode"
             // CUPS extension: "output-mode" = color,monochrome,auto
-            job.attribute("output-mode", IppTag.Keyword, "monochrome")
+            //jobGroup.attribute("output-mode", IppTag.Keyword, "monochrome")
         }
 
         val ippResponse = exchangeIpp(ippRequest, inputStream)
-        if (ippResponse.status.isSuccessful()) {
-            val ippJobGroup = ippResponse.job
-            val ippJob = ippJobGroup.toIppJob()
-            println(ippJob)
-            return ippJob
+        if (!ippResponse.status.isSuccessful())
+            throw IppException("PrintJob failed: $ippResponse")
 
-        } else {
-            throw RuntimeException("printing to $printerUri failed")
-        }
+        val ippJob = ippResponse.jobGroup.toIppJob()
+        if (waitForTermination) waitForTermination(ippJob)
+        return ippJob
     }
 
     // ----------------------
     // JOB related operations
     // ----------------------
 
-    fun getJobAttributes(id: Int): IppResponse {
+    fun getJobAttributesById(printerUri: URI, id: Int): IppResponse {
         val ippRequest = IppRequest(IppOperation.GetJobAttributes).apply {
             operationGroup.attribute("printer-uri", printerUri)
             operationGroup.attribute("job-id", id)
         }
-        return exchangeIpp(ippRequest)
-    }
-
-    fun updateJobAttributes(ippJob: IppJob) {
-        val ippResponse = getJobAttributes(ippJob.id)
-        if (ippResponse.status.isSuccessful()) {
-            ippJob.readFrom(ippResponse.job)
-        } else {
-            println(ippResponse)
-            throw IppException("updating job attributes failed")
+        with(exchangeIpp(ippRequest)) {
+            if (status.isSuccessful()) return this
+            else throw IppException("GetJobAttributes failed for job #$id: $status, $statusMessage")
         }
     }
 
-    fun waitForTermination(ippJob: IppJob, pollInterval: Duration = Duration.ofSeconds(1)) {
+    fun refreshJobAttributes(ippJob: IppJob) {
+        val ippResponse = getJobAttributesById(printerUri, ippJob.id)
+        ippJob.readFrom(ippResponse.jobGroup)
+    }
+
+    fun waitForTermination(ippJob: IppJob, refreshRate: Duration = Duration.ofSeconds(1)) {
         do {
-            Thread.sleep(pollInterval.toMillis())
-            updateJobAttributes(ippJob)
+            Thread.sleep(refreshRate.toMillis())
+            refreshJobAttributes(ippJob)
             println("job-state = ${ippJob.state}")
         } while (!ippJob.state.isTerminated())
     }
