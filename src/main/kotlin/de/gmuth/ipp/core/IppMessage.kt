@@ -26,7 +26,9 @@ abstract class IppMessage {
         return group
     }
 
-    fun getSingleAttributesGroup(tag: IppTag) = attributesGroups.filter { it.tag == tag }.single()
+    fun getAttributesGroups(tag: IppTag) = attributesGroups.filter { it.tag == tag }
+
+    fun getSingleAttributesGroup(tag: IppTag) = getAttributesGroups(tag).single()
 
     // --------------------------------------------------------------------- ENCODING
 
