@@ -86,6 +86,6 @@ class IppOutputStream(outputStream: OutputStream, private val attributesCharset:
 
     override fun close() = dataOutputStream.close()
 
-    override fun flush()= dataOutputStream.flush()
+    override fun flush() = dataOutputStream.flush()
 
 }
