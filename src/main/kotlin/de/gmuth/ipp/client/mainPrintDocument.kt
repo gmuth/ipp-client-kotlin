@@ -16,10 +16,9 @@ fun main(args: Array<String>) {
     val uri = URI.create(args[0])
     val file = File(args[1])
 
-    val ippClient = IppClient(uri)
-    with(ippClient) {
+    with(IppClient()) {
         verbose = false
-        val job = printFile(file, waitForTermination = true)
+        val job = printFile(uri, file, waitForTermination = true)
         job.logDetails()
     }
 

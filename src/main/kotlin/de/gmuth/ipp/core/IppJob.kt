@@ -1,5 +1,6 @@
 package de.gmuth.ipp.core
 
+import de.gmuth.ipp.client.IppClient
 import java.net.URI
 import java.time.LocalDateTime
 

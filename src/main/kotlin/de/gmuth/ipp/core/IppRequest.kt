@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger
 open class IppRequest() : IppMessage() {
 
     private val requestCounter = AtomicInteger(1)
+    val requestingUserName = System.getenv("USER") ?: "kotlin-ipp-client"
     val operationGroup = newAttributesGroup(IppTag.Operation)
     val jobGroup = newAttributesGroup(IppTag.Job)
 
@@ -27,6 +28,7 @@ open class IppRequest() : IppMessage() {
 
         operationGroup.attribute("attributes-charset", IppTag.Charset, attributesCharset?.name()?.toLowerCase())
         operationGroup.attribute("attributes-natural-language", IppTag.NaturalLanguage, naturalLanguage)
+        operationGroup.attribute("requesting-user-name", requestingUserName)
     }
 
     override val codeDescription: String

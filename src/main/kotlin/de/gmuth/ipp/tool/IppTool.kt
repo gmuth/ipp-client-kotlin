@@ -64,8 +64,8 @@ class IppTool() {
             }
         }
 
-        // exchange ipp request with ipp client to
-        val ippClient = IppClient(uri ?: throw IllegalArgumentException("uri must not be null"))
-        ippClient.exchangeIpp(ippRequest, fileInputStream)
+        // exchange ipp request with ipp client
+        val ippClient = IppClient()
+        ippClient.exchangeIpp(uri ?: throw IllegalArgumentException("uri must not be null"), ippRequest, fileInputStream)
     }
 }

@@ -15,20 +15,19 @@ import java.net.URI
 import java.time.Duration
 
 class IppClient(
-        val printerUri: URI,
         private val httpClient: Http.Client = HttpClientByHttpURLConnection()
         //private val httpClient: Http.Client = HttpClientByJava11HttpClient()
 ) {
     var verbose: Boolean = true
 
-    fun exchangeIpp(ippRequest: IppRequest, documentInputStream: InputStream? = null): IppResponse {
+    fun exchangeIpp(uri: URI, ippRequest: IppRequest, documentInputStream: InputStream? = null): IppResponse {
         val ippResponseStream = with(ippRequest) {
             if (verbose) {
-                println("send ${operation} request to $printerUri")
+                println("send ${operation} request to $uri")
                 println(this)
                 logDetails(">> ")
             }
-            exchangeIpp(toInputStream(), documentInputStream)
+            exchangeIpp(uri, toInputStream(), documentInputStream)
         }
         with(IppResponse.fromInputStream(ippResponseStream)) {
             if (verbose) {
@@ -39,40 +38,46 @@ class IppClient(
             if (statusMessage != null) println("status-message: $statusMessage")
             if (!status.isSuccessful()) {
                 ippRequest.logDetails("IPP-REQUEST: ")
-                println("response from $printerUri")
+                println("response from $uri")
                 logDetails("IPP-RESPONSE: ")
             }
             return this
         }
     }
 
-    private fun exchangeIpp(ippRequestStream: InputStream, documentInputStream: InputStream? = null): InputStream {
+    private fun exchangeIpp(uri: URI, ippRequestStream: InputStream, documentInputStream: InputStream? = null): InputStream {
         val ippContentType = "application/ipp"
         val ippRequestContent = Http.Content(
                 ippContentType,
                 if (documentInputStream == null) ippRequestStream
                 else SequenceInputStream(ippRequestStream, documentInputStream)
         )
-        val httpUri = with(printerUri) { URI.create("${scheme.replace("ipp", "http")}:${schemeSpecificPart}") }
+        val httpUri = with(uri) { URI.create("${scheme.replace("ipp", "http")}:${schemeSpecificPart}") }
         with(httpClient.post(httpUri, ippRequestContent)) {
             if (status == 200 && content.type == ippContentType) {
                 return content.stream
 
             } else {
                 val text = if (content.type.startsWith("text")) ", content = " + String(content.stream.readAllBytes()) else ""
-                throw IppException("response from $printerUri is invalid: http-status = $status, content-type = ${content.type}$text")
+                throw IppException("response from $uri is invalid: http-status = $status, content-type = ${content.type}$text")
             }
         }
     }
 
     // ---------------------------
-    // DOCUMENT related operations
+    // Printer related operations
     // ---------------------------
 
+
+
+    // ----------------------
+    // JOB related operations
+    // ----------------------
+
     fun printFile(
+            printerUri: URI,
             file: File,
             documentFormat: String? = "application/octet-stream",
-            userName: String? = System.getenv("USER"),
             waitForTermination: Boolean = false
 
     ): IppJob {
@@ -80,40 +85,19 @@ class IppClient(
         val ippRequest = IppRequest(IppOperation.PrintJob).apply {
             operationGroup.attribute("printer-uri", printerUri)
             operationGroup.attribute("document-format", documentFormat)
-            operationGroup.attribute("requesting-user-name", userName)
 
             jobGroup.attribute("job-name", file.name)
             // CUPS extension: "output-mode" = color,monochrome,auto
             //jobGroup.attribute("output-mode", IppTag.Keyword, "monochrome")
         }
 
-        val ippResponse = exchangeIpp(ippRequest, FileInputStream(file))
+        val ippResponse = exchangeIpp(printerUri, ippRequest, FileInputStream(file))
         if (!ippResponse.status.isSuccessful())
             throw IppException("PrintJob failed: $ippResponse")
 
-        val ippJob = ippResponse.jobGroup.toIppJob()
+        var ippJob = ippResponse.jobGroup.toIppJob()
         if (waitForTermination) waitForTermination(ippJob)
         return ippJob
-    }
-
-    // ----------------------
-    // JOB related operations
-    // ----------------------
-
-    fun getJobAttributesById(printerUri: URI, id: Int): IppResponse {
-        val ippRequest = IppRequest(IppOperation.GetJobAttributes).apply {
-            operationGroup.attribute("printer-uri", printerUri)
-            operationGroup.attribute("job-id", id)
-        }
-        with(exchangeIpp(ippRequest)) {
-            if (status.isSuccessful()) return this
-            else throw IppException("GetJobAttributes failed for job #$id: $status, $statusMessage")
-        }
-    }
-
-    fun refreshJobAttributes(ippJob: IppJob) {
-        val ippResponse = getJobAttributesById(printerUri, ippJob.id)
-        ippJob.readFrom(ippResponse.jobGroup)
     }
 
     fun waitForTermination(ippJob: IppJob, refreshRate: Duration = Duration.ofSeconds(1)) {
@@ -122,6 +106,34 @@ class IppClient(
             refreshJobAttributes(ippJob)
             println("job-state = ${ippJob.state}")
         } while (!ippJob.state.isTerminated())
+    }
+
+    fun refreshJobAttributes(ippJob: IppJob) {
+        val ippResponse = getJobAttributes(ippJob.uri)
+        ippJob.readFrom(ippResponse.jobGroup)
+    }
+
+    fun getJobAttributes(printerUri: URI, id: Int): IppResponse {
+        val ippRequest = IppRequest(IppOperation.GetJobAttributes).apply {
+            operationGroup.attribute("printer-uri", printerUri)
+            operationGroup.attribute("job-id", id)
+        }
+        val ippResponse = exchangeIpp(printerUri, ippRequest)
+        if (!ippResponse.status.isSuccessful())
+            with(ippResponse) { throw IppException("GetJobAttributes failed for job #$id: $status, $statusMessage") }
+
+        return ippResponse
+    }
+
+    fun getJobAttributes(jobUri: URI): IppResponse {
+        val ippRequest = IppRequest(IppOperation.GetJobAttributes).apply {
+            operationGroup.attribute("job-uri", jobUri)
+        }
+        val ippResponse = exchangeIpp(jobUri, ippRequest)
+        if (!ippResponse.status.isSuccessful())
+            with(ippResponse) { throw IppException("GetJobAttributes failed $jobUri: $status, $statusMessage") }
+
+        return ippResponse
     }
 
 }
