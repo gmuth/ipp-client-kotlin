@@ -24,6 +24,8 @@ class IppJob {
 
     var impressions: Int? = null
     var impressionsCompleted: Int? = null
+    var mediaSheets: Int? = null
+    var mediaSheetsCompleted: Int? = null
 
     @Suppress("UNCHECKED_CAST")
     fun readFrom(jobGroup: IppAttributesGroup) = with(jobGroup) {
@@ -44,9 +46,9 @@ class IppJob {
 
         impressions = get("job-impressions")?.value as Int?
         impressionsCompleted = get("job-impressions-completed")?.value as Int?
-
+        mediaSheets = get("job-media-sheets")?.value as Int?
+        mediaSheetsCompleted = get("job-media-sheets-completed")?.value as Int?
     }
-
 
     override fun toString(): String = String.format("IppJob: uri = %s, id = %d, state = %s, stateReasons = %s", uri, id, state, stateReasons)
 
@@ -63,8 +65,14 @@ class IppJob {
         println("  timeAtProcessing = $timeAtProcessing")
         println("  timeAtCompleted = $timeAtCompleted")
         println("  printerUpTime = $printerUpTime")
-        println("  impressions = $impressions")
-        println("  impressionsCompleted = $impressionsCompleted")
+        logAttributeIfValueNotNull("impressions", impressions)
+        logAttributeIfValueNotNull("impressionsCompleted", impressionsCompleted)
+        logAttributeIfValueNotNull("mediaSheets", mediaSheets)
+        logAttributeIfValueNotNull("mediaSheetsCompleted", mediaSheetsCompleted)
+    }
+
+    private fun logAttributeIfValueNotNull(name : String, value: Any?) {
+        if(value != null) println("  $name = $value")
     }
 
     companion object {
