@@ -6,7 +6,6 @@ package de.gmuth.ipp.core
 
 import java.io.Closeable
 import java.io.DataInputStream
-import java.io.IOException
 import java.io.InputStream
 import java.net.URI
 import java.nio.charset.Charset
@@ -43,14 +42,14 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
             }
 
             // value class String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
-            IppTag.Uri -> URI.create(readString(charsetForIppTag(tag)))
+            IppTag.Uri -> URI.create(readString(charsetForTag(tag)))
             IppTag.Keyword,
             IppTag.UriScheme,
             IppTag.Charset,
             IppTag.NaturalLanguage,
             IppTag.MimeMediaType,
             IppTag.TextWithoutLanguage,
-            IppTag.NameWithoutLanguage -> readString(charsetForIppTag(tag))
+            IppTag.NameWithoutLanguage -> readString(charsetForTag(tag))
 
             else -> {
                 // if support for a specific tag is required kindly ask the author to implement it
@@ -63,7 +62,6 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
         IppRegistrations.checkTagOfAttribute(name, tag)
 
         // collect special attribute values or convert types
-
         if (!tag.isOutOfBandTag()) when (name) {
             "attributes-charset" -> attributesCharset = Charset.forName(value as String)
             "status-message" -> statusMessage = value as String
@@ -73,28 +71,25 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
         return IppAttribute(name, tag, value)
     }
 
-    private fun charsetForIppTag(ippTag: IppTag) =
-            if (ippTag.useAttributesCharsetEncoding()) attributesCharset ?: throw IllegalStateException("missing attributes-charset")
+    private fun charsetForTag(tag: IppTag) =
+            if (tag.useAttributesCharset()) attributesCharset ?: throw IllegalStateException("missing attributes-charset")
             else Charsets.US_ASCII
 
     private fun readString(charset: Charset): String = String(readLengthAndValue(), charset)
 
     private fun readLengthAndValue(): ByteArray {
         val length = dataInputStream.readShort().toInt()
-        // setOf not yet supported :-(
-        if (length == 0) println("warn: found ipp value with 0 bytes")
+        if (length == 0) println("WARN: found ipp value with 0 bytes")
         return dataInputStream.readNBytes(length)
     }
 
     private fun assertValueLength(expected: Int) {
         val length = dataInputStream.readShort().toInt()
         if (length != expected) {
-            throw IOException("expected value length of $expected bytes but found $length")
+            throw IppSpecViolation("expected value length of $expected bytes but found $length")
         }
     }
 
-    override fun close() {
-        dataInputStream.close()
-    }
+    override fun close()= dataInputStream.close()
 
 }

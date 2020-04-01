@@ -7,11 +7,10 @@ package de.gmuth.ipp.core
 class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*>>() {
 
     init {
-        if (!tag.isGroupTag()) throw IllegalArgumentException("'$tag' is not a group tag")
+        if (!tag.isGroupTag()) throw IppException("'$tag' is not a group tag")
     }
 
     fun put(attribute: IppAttribute<*>): IppAttribute<*>? {
-        //with(newAttribute) { println("** put $name = $value --- ${value?.javaClass}") }
         val replaced = put(attribute.name, attribute)
         if (replaced != null) {
             println(String.format("replaced '%s' with '%s'", replaced, attribute))
@@ -19,11 +18,9 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
         return replaced
     }
 
-    fun put(name: String, tag: IppTag, value: Any): IppAttribute<*>? {
-        return put(IppAttribute(name, tag, value))
-    }
+    fun attribute(name: String, tag: IppTag, value: Any?) = put(IppAttribute(name, tag, value))
 
-    //fun put(name: String, value: Any) = put(name, IppAttribute.lookupIppTag(name), value)
+    fun attribute(name: String, value: Any?) = put(IppAttribute(name, value))
 
     override fun toString(): String {
         return "IppAttributesGroup '$tag' containing ${size.toPluralString("attribute")}"

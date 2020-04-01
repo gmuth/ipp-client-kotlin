@@ -1,10 +1,7 @@
 package de.gmuth.ipp.tool
 
 import de.gmuth.ipp.client.IppClient
-import de.gmuth.ipp.core.IppAttributesGroup
-import de.gmuth.ipp.core.IppOperation
-import de.gmuth.ipp.core.IppRequest
-import de.gmuth.ipp.core.IppTag
+import de.gmuth.ipp.core.*
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
@@ -52,7 +49,7 @@ class IppTool() {
                             else -> this
                         }
                     }
-                    currentGroup?.put(name, tag, value)
+                    currentGroup?.put(IppAttribute(name, tag, value))
                     if (name == "attributes-charset" && value is String) ippRequest.attributesCharset = Charset.forName(value)
                 }
                 "FILE" -> {

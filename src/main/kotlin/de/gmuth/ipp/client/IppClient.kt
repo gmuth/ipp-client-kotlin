@@ -36,6 +36,10 @@ class IppClient(
                 println(this)
             }
             if (statusMessage != null) println("status-message: $statusMessage")
+            if (!status.isSuccessful()) {
+                println("WARN: request failed: $ippRequest")
+                logDetails("WARN: ")
+            }
             return this
         }
     }
@@ -54,7 +58,7 @@ class IppClient(
 
             } else {
                 val text = if (content.type.startsWith("text")) ", content = " + String(content.stream.readAllBytes()) else ""
-                throw IOException("response from $printerUri is invalid: http-status = $status, content-type = ${content.type}$text")
+                throw IppException("response from $printerUri is invalid: http-status = $status, content-type = ${content.type}$text")
             }
         }
     }
@@ -71,18 +75,19 @@ class IppClient(
     ): IppJob {
 
         val ippRequest = IppRequest(IppOperation.PrintJob).apply {
-            //addOperationAttribute("printer-uri", IppTag.Uri, printerUri)
-            //addOperationAttribute("document-format", IppTag.MimeMediaType, documentFormat)
-            //addOperationAttribute("requesting-user-name", IppTag.NameWithoutLanguage, userName)
-            addOperationAttribute("printer-uri", printerUri)
-            addOperationAttribute("document-format", documentFormat)
-            addOperationAttribute("requesting-user-name", userName)
+            operationGroup.attribute("printer-uri", printerUri)
+            operationGroup.attribute("document-format", documentFormat)
+            operationGroup.attribute("requesting-user-name", userName)
+
+            // PWG 5100.13: "print-color-mode"
+            // CUPS extension: "output-mode" = color,monochrome,auto
+            job.attribute("output-mode", IppTag.Keyword, "monochrome")
         }
 
         val ippResponse = exchangeIpp(ippRequest, inputStream)
         if (ippResponse.status.isSuccessful()) {
-            val ippJobGroup = ippResponse.getSingleJobGroup()
-            val ippJob = IppJob.fromIppAttributesGroup(ippJobGroup)
+            val ippJobGroup = ippResponse.job
+            val ippJob = ippJobGroup.toIppJob()
             println(ippJob)
             return ippJob
 
@@ -97,30 +102,28 @@ class IppClient(
 
     fun getJobAttributes(id: Int): IppResponse {
         val ippRequest = IppRequest(IppOperation.GetJobAttributes).apply {
-            //addOperationAttribute("printer-uri", IppTag.Uri, printerUri)
-            //addOperationAttribute("job-id", IppTag.Integer, id)
-            addOperationAttribute("printer-uri", printerUri)
-            addOperationAttribute("job-id", id)
+            operationGroup.attribute("printer-uri", printerUri)
+            operationGroup.attribute("job-id", id)
         }
         return exchangeIpp(ippRequest)
     }
 
     fun updateJobAttributes(ippJob: IppJob) {
-        val ippResponse = getJobAttributes(ippJob.id!!)
+        val ippResponse = getJobAttributes(ippJob.id)
         if (ippResponse.status.isSuccessful()) {
-            ippJob.readFrom(ippResponse.getSingleJobGroup())
+            ippJob.readFrom(ippResponse.job)
         } else {
             println(ippResponse)
-            throw RuntimeException("updating job attributes failed")
+            throw IppException("updating job attributes failed")
         }
     }
 
-    fun waitForTermination(ippJob: IppJob, pollingInterval: Duration = Duration.ofMillis(1000)) {
+    fun waitForTermination(ippJob: IppJob, pollInterval: Duration = Duration.ofSeconds(1)) {
         do {
-            Thread.sleep(pollingInterval.toMillis())
+            Thread.sleep(pollInterval.toMillis())
             updateJobAttributes(ippJob)
             println("job-state = ${ippJob.state}")
-        } while (!ippJob.state?.isTerminated()!!)
+        } while (!ippJob.state.isTerminated())
     }
 
 }

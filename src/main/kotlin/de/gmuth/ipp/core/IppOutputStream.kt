@@ -40,7 +40,7 @@ class IppOutputStream(outputStream: OutputStream, private val attributesCharset:
         writeString(attribute.name, Charsets.US_ASCII)
 
         val value = attribute.value
-        //println("*** write value $tag $value --- ${value?.javaClass}")
+        //println("*** write value $tag $value --- class ${value?.javaClass}")
 
         // check tag
         IppRegistrations.checkTagOfAttribute(attribute.name, attribute.tag)
@@ -59,38 +59,33 @@ class IppOutputStream(outputStream: OutputStream, private val attributesCharset:
             }
 
             // value class String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
-            IppTag.Uri -> writeString((value as URI).toString(), charsetForIppTag(tag))
+            IppTag.Uri -> writeString((value as URI).toString(), charsetForTag(tag))
             IppTag.Keyword,
             IppTag.UriScheme,
             IppTag.Charset,
             IppTag.NaturalLanguage,
             IppTag.MimeMediaType,
             IppTag.TextWithoutLanguage,
-            IppTag.NameWithoutLanguage -> writeString(value as String, charsetForIppTag(tag))
+            IppTag.NameWithoutLanguage -> writeString(value as String, charsetForTag(tag))
 
-            else -> throw NotImplementedError(String.format("tag %s (%02X) encoding not implemented", tag, tag.code))
+            else -> throw IppException(String.format("tag %s (%02X) encoding not implemented", tag, tag.code))
         }
     }
 
-    private fun charsetForIppTag(ippTag: IppTag) =
-            if (ippTag.useAttributesCharsetEncoding()) attributesCharset
+    private fun charsetForTag(tag: IppTag) =
+            if (tag.useAttributesCharset()) attributesCharset
             else Charsets.US_ASCII
 
-    private fun writeString(value: String, charset: Charset) {
-        writeLengthAndValue(value.toByteArray(charset))
-    }
+    private fun writeString(value: String, charset: Charset) =
+            writeLengthAndValue(value.toByteArray(charset))
 
     private fun writeLengthAndValue(value: ByteArray) {
         dataOutputStream.writeShort(value.size)
         dataOutputStream.write(value)
     }
 
-    override fun close() {
-        dataOutputStream.close()
-    }
+    override fun close() = dataOutputStream.close()
 
-    override fun flush() {
-        dataOutputStream.flush()
-    }
+    override fun flush()= dataOutputStream.flush()
 
 }

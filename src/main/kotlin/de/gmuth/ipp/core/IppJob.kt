@@ -7,16 +7,17 @@ import java.time.LocalDateTime
  * Copyright (c) 2020 Gerhard Muth
  */
 
-class IppJob {
+class IppJob(jobGroup: IppAttributesGroup) {
 
-    var uri: URI? = null
-    var id: Int? = null
-    var state: IppJobState? = null
-    var stateReasons: List<String>? = null
+    lateinit var uri: URI
+    var id: Int = 0
+    lateinit var state: IppJobState
+    lateinit var stateReasons: List<String>
 
     var printerUri: URI? = null
     var name: String? = null
     var originatingUserName: String? = null
+
     var timeAtCreation: LocalDateTime? = null
     var timeAtProcessing: LocalDateTime? = null
     var timeAtCompleted: LocalDateTime? = null
@@ -27,18 +28,22 @@ class IppJob {
     var mediaSheets: Int? = null
     var mediaSheetsCompleted: Int? = null
 
+    init {
+        readFrom(jobGroup)
+    }
+
     @Suppress("UNCHECKED_CAST")
     fun readFrom(jobGroup: IppAttributesGroup) = with(jobGroup) {
         uri = get("job-uri")?.value as URI
         id = get("job-id")?.value as Int
         state = get("job-state")?.value as IppJobState
-        stateReasons = get("job-state-reasons")?.values as List<String>?
+        stateReasons = get("job-state-reasons")?.values as List<String>
 
         printerUri = get("job-printer-uri")?.value as URI?
         name = get("job-name")?.value as String?
         originatingUserName = get("job-originating-user-name")?.value as String?
 
-        fun getTimeAt(name: String) = IppDateTime.toLocalDateTime(get(name)?.value as Int?)
+        fun getTimeAt(name: String) = IppTime.toLocalDateTime(get(name)?.value as Int?)
         timeAtCreation = getTimeAt("time-at-creation")
         timeAtProcessing = getTimeAt("time-at-processing")
         timeAtCompleted = getTimeAt("time-at-completed")
@@ -50,7 +55,9 @@ class IppJob {
         mediaSheetsCompleted = get("job-media-sheets-completed")?.value as Int?
     }
 
-    override fun toString(): String = String.format("IppJob: uri = %s, id = %d, state = %s, stateReasons = %s", uri, id, state, stateReasons)
+    override fun toString(): String {
+        return String.format("IppJob: uri = %s, id = %d, state = %s, stateReasons = %s", uri, id, state, stateReasons)
+    }
 
     fun logDetails() {
         println("JOB")
@@ -71,12 +78,12 @@ class IppJob {
         logAttributeIfValueNotNull("mediaSheetsCompleted", mediaSheetsCompleted)
     }
 
-    private fun logAttributeIfValueNotNull(name : String, value: Any?) {
-        if(value != null) println("  $name = $value")
-    }
-
-    companion object {
-        fun fromIppAttributesGroup(attributesGroup: IppAttributesGroup) = IppJob().apply { readFrom(attributesGroup) }
+    private fun logAttributeIfValueNotNull(name: String, value: Any?) {
+        if (value != null) println("  $name = $value")
     }
 
 }
+
+fun IppAttributesGroup.toIppJob() =
+        if (tag == IppTag.Job) IppJob(this)
+        else throw IppException("not a job group: $tag")

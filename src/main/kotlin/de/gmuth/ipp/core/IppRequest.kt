@@ -22,15 +22,16 @@ open class IppRequest() : IppMessage() {
     ) : this() {
         code = operation.code
         attributesCharset = Charsets.UTF_8
-        addOperationAttribute("attributes-charset", IppTag.Charset, attributesCharset?.name()?.toLowerCase())
-        addOperationAttribute("attributes-natural-language", IppTag.NaturalLanguage, naturalLanguage)
+        operationGroup.attribute("attributes-charset", IppTag.Charset, attributesCharset?.name()?.toLowerCase())
+        operationGroup.attribute("attributes-natural-language", IppTag.NaturalLanguage, naturalLanguage)
+        newJobGroup() // job template
     }
 
     override val codeDescription: String
         get() = "operation = $operation"
 
     var operation: IppOperation
-        get() = IppOperation.fromCode(code ?: throw IllegalArgumentException("operation-code must not be null"))
+        get() = IppOperation.fromCode(code ?: throw IppException("operation-code must not be null"))
         set(operation) {
             code = operation.code
         }

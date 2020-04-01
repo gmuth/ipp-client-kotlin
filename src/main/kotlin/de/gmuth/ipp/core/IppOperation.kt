@@ -5,6 +5,7 @@ package de.gmuth.ipp.core
  */
 
 enum class IppOperation(val code: Short) {
+
     PrintJob(0x0002),
     PrintUri(0x0003),
     ValidateJob(0x0004),
@@ -76,12 +77,11 @@ enum class IppOperation(val code: Short) {
     companion object {
         private val codeMap = values().associateBy(IppOperation::code)
         fun fromCode(code: Short): IppOperation = codeMap[code]
-                ?: throw IllegalArgumentException(String.format("operation code '%04X' not found", code))
+                ?: throw IppException(String.format("operation code '%04X' unknown", code))
 
         private val registeredNameMap = values().associateBy(IppOperation::registeredName)
         fun fromRegisteredName(name: String): IppOperation = registeredNameMap[name]
-                ?: throw IllegalArgumentException(String.format("operation name '%s' not found", name))
-
+                ?: throw IppException(String.format("operation name '%s' unknown", name))
     }
 
 }

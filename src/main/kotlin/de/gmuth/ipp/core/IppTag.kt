@@ -62,7 +62,8 @@ enum class IppTag(val code: Byte, private val ianaName: String? = null) {
     fun isIntegerTag() = code in 0x20..0x2F
     fun isStringTag() = code in 0x40..0x4F
     fun isCollection() = this in listOf(BegCollection, EndCollection, MemberAttrName)
-    fun useAttributesCharsetEncoding() = this in listOf(TextWithoutLanguage, TextWithLanguage, NameWithoutLanguage, NameWithLanguage)
+
+    fun useAttributesCharset() = this in listOf(TextWithoutLanguage, TextWithLanguage, NameWithoutLanguage, NameWithLanguage)
 
     private fun registeredName() = ianaName
             ?: name.replace("^[A-Z]".toRegex()) { it.value.toLowerCase() }
@@ -72,12 +73,11 @@ enum class IppTag(val code: Byte, private val ianaName: String? = null) {
     companion object {
         private val codeMap = values().associateBy(IppTag::code)
         fun fromCode(code: Byte): IppTag = codeMap[code]
-                ?: throw IllegalArgumentException(String.format("ipp tag code '%02X' unknown", code))
+                ?: throw IppException(String.format("ipp tag code '%02X' unknown", code))
 
         private val registeredNameMap = values().associateBy(IppTag::registeredName)
         fun fromRegisteredName(name: String): IppTag = registeredNameMap[name]
-                ?: throw IllegalArgumentException(String.format("ipp tag name '%s' unknown", name))
-
+                ?: throw IppException(String.format("ipp tag name '%s' unknown", name))
     }
 
 }

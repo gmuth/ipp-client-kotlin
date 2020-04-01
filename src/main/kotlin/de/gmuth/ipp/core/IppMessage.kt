@@ -25,23 +25,16 @@ abstract class IppMessage {
     var printerGroup = IppAttributesGroup(IppTag.Printer)
     var unsupportedGroup = IppAttributesGroup(IppTag.Unsupported)
 
-    fun addOperationAttribute(name: String, tag: IppTag, value: Any?) {
-        if (value != null) operationGroup.put(name, tag, value)
-    }
+    val job: IppAttributesGroup
+        get() =
+            if (jobGroups.size == 1) jobGroups.first()
+            else throw IllegalStateException("found ${jobGroups.size.toPluralString("job group")}")
 
-    fun addOperationAttribute(name: String, value: Any?) {
-        addOperationAttribute(name, IppRegistrations.tagForAttribute(name), value)
-    }
-
-    private fun newJobGroup(): IppAttributesGroup {
+    fun newJobGroup(): IppAttributesGroup {
         val jobGroup = IppAttributesGroup(IppTag.Job)
         jobGroups.add(jobGroup)
         return jobGroup
     }
-
-    fun getSingleJobGroup(): IppAttributesGroup =
-            if (jobGroups.size == 1) jobGroups.first()
-            else throw IllegalStateException("found ${jobGroups.size.toPluralString("job group")}")
 
     // --------------------------------------------------------------------- ENCODING
 

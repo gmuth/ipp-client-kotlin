@@ -15,8 +15,8 @@ enum class IppJobState(val code: Int) {
     Aborted(8),
     Completed(9);
 
-    fun isPending() = this in listOf(Pending, PendingHeld)
-    fun isProcessing() = this in listOf(Processing, ProcessingStopped)
+    fun isPendingOrHeld() = this in listOf(Pending, PendingHeld)
+    fun isProcessingOrStopped() = this in listOf(Processing, ProcessingStopped)
     fun isTerminated() = this in listOf(Canceled, Aborted, Completed)
 
     // https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-6
@@ -29,11 +29,11 @@ enum class IppJobState(val code: Int) {
     companion object {
         private val codeMap = values().associateBy(IppJobState::code)
         fun fromCode(code: Int): IppJobState = codeMap[code]
-                ?: throw IllegalArgumentException(String.format("job state %02X undefined", code))
+                ?: throw IppException(String.format("job state code '%02X' undefined", code))
 
         private val registeredValueMap = values().associateBy(IppJobState::registeredValue)
         fun fromRegisteredValue(value: String): IppJobState = registeredValueMap[value]
-                ?: throw IllegalArgumentException(String.format("job state value '%s' not found", value))
+                ?: throw IppException(String.format("job state value '%s' undefined", value))
 
     }
 }
