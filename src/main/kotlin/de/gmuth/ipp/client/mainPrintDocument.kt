@@ -17,7 +17,6 @@ fun main(args: Array<String>) {
     val file = File(args[1])
 
     with(IppClient()) {
-        verbose = false
         val job = printFile(uri, file, waitForTermination = true)
         job.logDetails()
     }

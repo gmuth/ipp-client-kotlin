@@ -18,7 +18,7 @@ class IppClient(
         private val httpClient: Http.Client = HttpClientByHttpURLConnection()
         //private val httpClient: Http.Client = HttpClientByJava11HttpClient()
 ) {
-    var verbose: Boolean = true
+    var verbose: Boolean = false
 
     fun exchangeIpp(uri: URI, ippRequest: IppRequest, documentInputStream: InputStream? = null): IppResponse {
         val ippResponseStream = with(ippRequest) {
