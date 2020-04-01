@@ -24,8 +24,14 @@ class IppOutputStream(outputStream: OutputStream, private val attributesCharset:
     fun writeTag(tag: IppTag) = dataOutputStream.writeByte(tag.code.toInt())
 
     fun writeAttributesGroup(attributesGroup: IppAttributesGroup) {
-        writeTag(attributesGroup.tag)
-        attributesGroup.values.forEach { attribute -> writeAttribute(attribute) }
+        with(attributesGroup) {
+            if (size > 0) {
+                writeTag(tag)
+                for (attribute in values) {
+                    writeAttribute(attribute)
+                }
+            }
+        }
     }
 
     private fun writeAttribute(attribute: IppAttribute<*>) {
