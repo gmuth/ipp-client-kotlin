@@ -7,6 +7,8 @@ package de.gmuth.ipp.client
 import de.gmuth.http.Http
 import de.gmuth.http.HttpClientByHttpURLConnection
 import de.gmuth.ipp.core.*
+import java.io.File
+import java.io.FileInputStream
 import java.io.InputStream
 import java.io.SequenceInputStream
 import java.net.URI
@@ -67,10 +69,10 @@ class IppClient(
     // DOCUMENT related operations
     // ---------------------------
 
-    fun printDocument(
-            inputStream: InputStream,
+    fun printFile(
+            file: File,
             documentFormat: String? = "application/octet-stream",
-            userName: String? = "ipp-client-kotlin",
+            userName: String? = System.getenv("USER"),
             waitForTermination: Boolean = false
 
     ): IppJob {
@@ -80,12 +82,12 @@ class IppClient(
             operationGroup.attribute("document-format", documentFormat)
             operationGroup.attribute("requesting-user-name", userName)
 
-            // PWG 5100.13: "print-color-mode"
+            jobGroup.attribute("job-name", file.name)
             // CUPS extension: "output-mode" = color,monochrome,auto
             //jobGroup.attribute("output-mode", IppTag.Keyword, "monochrome")
         }
 
-        val ippResponse = exchangeIpp(ippRequest, inputStream)
+        val ippResponse = exchangeIpp(ippRequest, FileInputStream(file))
         if (!ippResponse.status.isSuccessful())
             throw IppException("PrintJob failed: $ippResponse")
 
