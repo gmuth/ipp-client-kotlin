@@ -11,6 +11,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     }
 
     fun put(attribute: IppAttribute<*>): IppAttribute<*>? {
+        if(attribute.value == null) return null
         val replaced = put(attribute.name, attribute)
         if (replaced != null) {
             println(String.format("replaced '%s' with '%s'", replaced, attribute))
