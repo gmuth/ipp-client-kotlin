@@ -12,29 +12,21 @@ import java.nio.charset.Charset
 
 abstract class IppMessage {
 
-    // e.g. readFrom InputStream will set these members
     var version: IppVersion? = null
     var requestId: Int? = null
     var attributesCharset: Charset? = null
 
     protected var code: Short? = null
     abstract val codeDescription: String
+    private val attributesGroups = mutableListOf<IppAttributesGroup>()
 
-    val operationGroup = IppAttributesGroup(IppTag.Operation)
-    val jobGroups = mutableListOf<IppAttributesGroup>()
-    var printerGroup = IppAttributesGroup(IppTag.Printer)
-    var unsupportedGroup = IppAttributesGroup(IppTag.Unsupported)
-
-    val job: IppAttributesGroup
-        get() =
-            if (jobGroups.size == 1) jobGroups.first()
-            else throw IllegalStateException("found ${jobGroups.size.toPluralString("job group")}")
-
-    fun newJobGroup(): IppAttributesGroup {
-        val jobGroup = IppAttributesGroup(IppTag.Job)
-        jobGroups.add(jobGroup)
-        return jobGroup
+    fun newAttributesGroup(tag: IppTag): IppAttributesGroup {
+        val group = IppAttributesGroup(tag)
+        attributesGroups.add(group)
+        return group
     }
+
+    fun getSingleAttributesGroup(tag: IppTag) = attributesGroups.filter { it.tag == tag }.single()
 
     // --------------------------------------------------------------------- ENCODING
 
@@ -48,9 +40,7 @@ abstract class IppMessage {
             writeVersion(version as IppVersion)
             writeCode(code as Short)
             writeRequestId(requestId as Int)
-            writeAttributesGroup(operationGroup)
-            writeAttributesGroup(printerGroup)
-            jobGroups.forEach { jobGroup -> writeAttributesGroup(jobGroup) }
+            attributesGroups.forEach { writeAttributesGroup(it) }
             writeTag(IppTag.End)
             close()
         }
@@ -69,25 +59,18 @@ abstract class IppMessage {
 
     // --------------------------------------------------------------------- DECODING
 
-    @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
     fun readFrom(inputStream: InputStream): String? {
         with(IppInputStream(inputStream)) {
             version = readVersion()
             code = readCode()
             requestId = readRequestId()
-            var currentGroup: IppAttributesGroup? = null
+            lateinit var currentGroup: IppAttributesGroup
             loop@ while (true) {
-                when (val tag = readTag()) {
-                    IppTag.Operation -> currentGroup = operationGroup
-                    IppTag.Job -> currentGroup = newJobGroup()
-                    IppTag.Printer -> currentGroup = printerGroup
-                    IppTag.Unsupported -> currentGroup = unsupportedGroup
-                    IppTag.End -> break@loop
-                    else -> {
-                        if (tag.isGroupTag()) throw NotImplementedError("delimiter '$tag' not yet implemented")
-                        val attribute = readAttribute(tag)
-                        currentGroup?.put(attribute)
-                    }
+                val tag = readTag()
+                when {
+                    tag == IppTag.End -> break@loop
+                    tag.isGroupTag() -> currentGroup = newAttributesGroup(tag)
+                    else -> currentGroup.put(readAttribute(tag))
                 }
             }
             close()
@@ -98,21 +81,18 @@ abstract class IppMessage {
     // --------------------------------------------------------------------- LOGGING
 
     override fun toString(): String = String.format(
-            "%s: %s, %s, %s",
+            "%s: %s, %s: %s",
             javaClass.simpleName,
             codeDescription,
-            operationGroup.size.toPluralString("operation attribute"),
-            jobGroups.size.toPluralString("job group")
+            attributesGroups.size.toPluralString("attributes group"),
+            attributesGroups.map { it.tag }
     )
 
     fun logDetails(prefix: String = "") {
         println("${prefix}version = $version")
         println("${prefix}$codeDescription")
         println("${prefix}request-id = $requestId")
-        operationGroup.logDetails(prefix)
-        for (job in jobGroups) job.logDetails(prefix)
-        printerGroup.logDetails(prefix)
-        unsupportedGroup.logDetails(prefix)
+        for (group in attributesGroups)
+            group.logDetails(prefix)
     }
-
 }

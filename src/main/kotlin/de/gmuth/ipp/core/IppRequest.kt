@@ -9,6 +9,8 @@ import java.util.concurrent.atomic.AtomicInteger
 open class IppRequest() : IppMessage() {
 
     private val requestCounter = AtomicInteger(1)
+    val operationGroup = newAttributesGroup(IppTag.Operation)
+    val jobGroup = newAttributesGroup(IppTag.Job)
 
     init {
         version = IppVersion()
@@ -22,9 +24,9 @@ open class IppRequest() : IppMessage() {
     ) : this() {
         code = operation.code
         attributesCharset = Charsets.UTF_8
+
         operationGroup.attribute("attributes-charset", IppTag.Charset, attributesCharset?.name()?.toLowerCase())
         operationGroup.attribute("attributes-natural-language", IppTag.NaturalLanguage, naturalLanguage)
-        newJobGroup() // job template
     }
 
     override val codeDescription: String
