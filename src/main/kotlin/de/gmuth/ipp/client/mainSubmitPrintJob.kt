@@ -17,7 +17,8 @@ fun main(args: Array<String>) {
     val file = File(args[1])
 
     with(IppClient()) {
-        val job = printFile(uri, file, waitForTermination = true)
+        val printJob = IppPrintJob(uri, file)
+        val job = submitPrintJob(uri, printJob, waitForTermination = true)
         job.logDetails()
     }
 

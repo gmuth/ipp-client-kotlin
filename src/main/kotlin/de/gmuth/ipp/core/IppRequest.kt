@@ -1,5 +1,6 @@
 package de.gmuth.ipp.core
 
+import java.net.URI
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -9,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger
 open class IppRequest() : IppMessage() {
 
     private val requestCounter = AtomicInteger(1)
-    val requestingUserName = System.getenv("USER") ?: "kotlin-ipp-client"
+    val requestingUserName: String? = System.getenv("USER")
     val operationGroup = newAttributesGroup(IppTag.Operation)
     val jobGroup = newAttributesGroup(IppTag.Job)
 
@@ -20,6 +21,7 @@ open class IppRequest() : IppMessage() {
 
     constructor(
             operation: IppOperation,
+            printerUri: URI? = null,
             naturalLanguage: String = "en"
 
     ) : this() {
@@ -28,7 +30,8 @@ open class IppRequest() : IppMessage() {
 
         operationGroup.attribute("attributes-charset", IppTag.Charset, attributesCharset?.name()?.toLowerCase())
         operationGroup.attribute("attributes-natural-language", IppTag.NaturalLanguage, naturalLanguage)
-        operationGroup.attribute("requesting-user-name", requestingUserName)
+        if (printerUri != null) operationGroup.attribute("printer-uri", printerUri)
+        if (requestingUserName != null) operationGroup.attribute("requesting-user-name", requestingUserName)
     }
 
     override val codeDescription: String

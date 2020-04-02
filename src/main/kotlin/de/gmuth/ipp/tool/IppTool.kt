@@ -24,7 +24,7 @@ class IppTool() {
     fun run(lines: List<String>) {
         var fileInputStream: FileInputStream? = null
         var currentGroup: IppAttributesGroup? = null
-        val ippRequest = IppRequest()
+        val request = IppRequest()
 
         // parse commands and build ipp request
         for (line in lines) {
@@ -34,9 +34,9 @@ class IppTool() {
             if (verbose) println("| ${line.trim()}")
             val firstArgument = lineItems[1]
             when (command) {
-                "OPERATION" -> ippRequest.operation = IppOperation.fromRegisteredName(firstArgument)
+                "OPERATION" -> request.operation = IppOperation.fromRegisteredName(firstArgument)
                 "GROUP" -> when (firstArgument) {
-                    "operation-attributes-tag" -> currentGroup = ippRequest.operationGroup
+                    "operation-attributes-tag" -> currentGroup = request.operationGroup
                     else -> throw IllegalArgumentException("unsupported group '$firstArgument'")
                 }
                 "ATTR" -> {
@@ -50,7 +50,7 @@ class IppTool() {
                         }
                     }
                     currentGroup?.put(IppAttribute(name, tag, value))
-                    if (name == "attributes-charset" && value is String) ippRequest.attributesCharset = Charset.forName(value)
+                    if (name == "attributes-charset" && value is String) request.attributesCharset = Charset.forName(value)
                 }
                 "FILE" -> {
                     if (firstArgument == "\$file" || firstArgument == "\$filename") {
@@ -64,8 +64,10 @@ class IppTool() {
             }
         }
 
-        // exchange ipp request with ipp client
-        val ippClient = IppClient()
-        ippClient.exchangeIpp(uri ?: throw IllegalArgumentException("uri must not be null"), ippRequest, fileInputStream)
+        with(IppClient()) {
+            verbose = true
+            if (uri == null) throw IppException("uri missing")
+            exchangeSuccessful(uri as URI, request, "FAILED", fileInputStream)
+        }
     }
 }
