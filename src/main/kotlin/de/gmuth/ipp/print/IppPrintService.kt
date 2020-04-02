@@ -7,7 +7,6 @@ package de.gmuth.ipp.print
 import de.gmuth.ipp.client.IppClient
 import de.gmuth.ipp.client.IppPrintJob
 import de.gmuth.ipp.core.IppTag
-import de.gmuth.ipp.core.toIppJob
 import de.gmuth.print.ColorMode
 import de.gmuth.print.PrintService
 import java.io.File
@@ -19,18 +18,11 @@ class IppPrintService(private val printerUri: URI) : PrintService {
 
     override fun printFile(file: File, colorMode: ColorMode, waitForTermination: Boolean) {
 
-        val request = IppPrintJob(printerUri, file = file)
-        request.jobGroup.attribute("output-mode", IppTag.Keyword, ippColorMode(colorMode)) // CUPS extension
-        request.logDetails("IPP: ")
+        val printJob = IppPrintJob(printerUri, file = file)
+        printJob.jobGroup.attribute("output-mode", IppTag.Keyword, ippColorMode(colorMode)) // CUPS extension
+        printJob.logDetails("IPP: ")
 
-        val response = ippClient.exchangeSuccessful(
-                printerUri, request, "PrintJob '$file' failed", request.documentInputStream
-        )
-
-        val job = response.jobGroup.toIppJob()
-        if (waitForTermination) {
-            ippClient.waitForTermination(job)
-        }
+        val job = ippClient.submitPrintJob(printerUri, printJob, waitForTermination)
         job.logDetails()
     }
 

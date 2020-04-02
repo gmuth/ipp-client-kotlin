@@ -85,7 +85,7 @@ class IppClient(
         return job
     }
 
-    fun waitForTermination(job: IppJob, refreshRate: Duration = Duration.ofSeconds(1)) {
+    private fun waitForTermination(job: IppJob, refreshRate: Duration = Duration.ofSeconds(1)) {
         do {
             Thread.sleep(refreshRate.toMillis())
             refreshJobAttributes(job)
