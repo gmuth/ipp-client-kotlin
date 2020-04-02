@@ -86,6 +86,11 @@ This project is work in progress.
 * [IppJob](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppJob.kt),
   [IppJobState](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppJobState.kt)
 
+## Support
+
+[Open a github issue](https://github.com/gmuth/ipp-client-kotlin/issues/new/choose) or contact me.
+Commercial support is [available](http://ipp-software.com).
+
 ## ToDo
 
 * implement get-printer-attributes
