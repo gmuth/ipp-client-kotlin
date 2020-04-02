@@ -52,7 +52,13 @@ class IppClient(
                 if (documentInputStream == null) requestStream
                 else SequenceInputStream(requestStream, documentInputStream)
         )
-        val httpUri = with(uri) { URI.create("${scheme.replace("ipp", "http")}:${schemeSpecificPart}") }
+
+        val httpUri = with(uri) {
+            val scheme = scheme.replace("ipp", "http")
+            val port = if (port == -1) 631 else port
+            URI.create("$scheme://$host:$port$path")
+        }
+
         with(httpClient.post(httpUri, requestContent)) {
             if (status == 200 && content.type == contentType) {
                 return content.stream
@@ -111,7 +117,7 @@ class IppClient(
         val response = exchangeSuccessful(printerUri, request, "Print-Uri $documentUri")
 
         val job = response.jobGroup.toIppJob()
-        if(waitForTermination) {
+        if (waitForTermination) {
             waitForTermination(job)
         }
         return job

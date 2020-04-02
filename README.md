@@ -10,7 +10,7 @@ Road map:
 
 ### [print service API](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/print)
 
-    val uri = URI.create("ipp://colorjet:631/ipp/printer")
+    val uri = URI.create("ipp://colorjet/ipp/printer")
     val file = File("A4-blank.pdf")
 
     val printService = IppPrintService(uri)
@@ -18,7 +18,7 @@ Road map:
     
 ### ipp operation level API
 
-    val uri = URI.create("ipp://colorjet:631/ipp/printer")
+    val uri = URI.create("ipp://colorjet/ipp/printer")
     val file = File("A4-blank.pdf")
 
     val ippClient = IppClient()
@@ -33,7 +33,7 @@ Road map:
     
 ### ipp message level API
 
-    val uri = URI.create("ipp://colorjet:631/ipp/printer")
+    val uri = URI.create("ipp://colorjet/ipp/printer")
     val file = File("A4-blank.pdf")
     
     val ippClient = IppClient()
@@ -47,7 +47,7 @@ Road map:
 ### ipp tool API
  
     with(IppTool()) {
-        uri = URI.create("ipp://colorjet:631/ipp/printer")
+        uri = URI.create("ipp://colorjet/ipp/printer")
         val filename = "A4-blank.pdf"
         
         run(
