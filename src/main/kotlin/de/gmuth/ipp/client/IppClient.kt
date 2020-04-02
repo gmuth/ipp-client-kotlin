@@ -74,10 +74,11 @@ class IppClient(
     // JOB related operations
     // ----------------------
 
-    fun submitPrintJob(printerUri: URI, printJob: IppPrintJob, waitForTermination: Boolean = true): IppJob {
+    fun submitPrintJob(printerUri: URI, printJob: IppPrintJob, waitForTermination: Boolean = false): IppJob {
         val response = exchangeSuccessful(
                 printerUri, printJob, "PrintJob failed", printJob.documentInputStream
         )
+
         val job = response.jobGroup.toIppJob()
         if (waitForTermination) {
             waitForTermination(job)
@@ -97,6 +98,23 @@ class IppClient(
         val ippRequest = IppGetJobAttributes(job.uri)
         val ippResponse = exchangeSuccessful(job.uri, ippRequest, "GetJobAttributes failed $job.uri")
         job.readFrom(ippResponse.jobGroup)
+    }
+
+    // -----------------------------------------------
+    // RFC 8011 4.2.2: optional operation to print uri
+    // -----------------------------------------------
+
+    fun printUri(printerUri: URI, documentUri: URI, waitForTermination: Boolean = false): IppJob {
+        val request = IppPrintUri(printerUri, documentUri)
+        request.logDetails("IPP: ")
+
+        val response = exchangeSuccessful(printerUri, request, "Print-Uri $documentUri")
+
+        val job = response.jobGroup.toIppJob()
+        if(waitForTermination) {
+            waitForTermination(job)
+        }
+        return job
     }
 
     // ---------------------------

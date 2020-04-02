@@ -4,7 +4,6 @@ package de.gmuth.ipp.print
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.ipp.print.IppPrintService
 import java.io.File
 import java.net.URI
 
@@ -18,5 +17,4 @@ fun main(args: Array<String>) {
 
     val printService = IppPrintService(uri)
     printService.printFile(file)
-
 }
