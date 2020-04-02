@@ -1,10 +1,10 @@
-package de.gmuth.print
+package de.gmuth.ipp.print
 
 /**
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.print.IppPrintService
+import de.gmuth.ipp.print.IppPrintService
 import java.io.File
 import java.net.URI
 

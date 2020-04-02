@@ -8,8 +8,6 @@ import java.io.File
 
 interface PrintService {
 
-    enum class ColorMode { Auto, Color, Monochrome }
-
     fun printFile(
             file: File,
             colorMode: ColorMode = ColorMode.Auto,
