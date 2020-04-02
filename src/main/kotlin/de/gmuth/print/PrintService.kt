@@ -11,7 +11,7 @@ interface PrintService {
     fun printFile(
             file: File,
             colorMode: ColorMode = ColorMode.Auto,
-            waitForTermination: Boolean = true
+            waitForTermination: Boolean = false
     )
 
 }
