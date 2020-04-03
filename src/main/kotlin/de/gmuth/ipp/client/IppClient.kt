@@ -73,18 +73,17 @@ class IppClient(
     fun exchangeSuccessful(uri: URI, request: IppRequest, exceptionMessage: String, documentInputStream: InputStream? = null): IppResponse {
         val response = exchange(uri, request, documentInputStream)
         if (response.status.isSuccessful()) return response
-        else throw IppExchangeException(request, response, "$exceptionMessage: '${response.status}' ${response.statusMessage}")
+        else throw IppExchangeException(request, response, "$exceptionMessage: '${response.status}' ${response.statusMessage ?: ""}")
     }
 
-    // ----------------------
-    // JOB related operations
-    // ----------------------
+    // -------------------------
+    // send PrintJob operation
+    // -------------------------
 
-    fun submitPrintJob(printerUri: URI, printJob: IppPrintJob, waitForTermination: Boolean = false): IppJob {
+    fun sendPrintJob(printJob: IppPrintJob, waitForTermination: Boolean = false): IppJob {
         val response = exchangeSuccessful(
-                printerUri, printJob, "PrintJob failed", printJob.documentInputStream
+                printJob.printerUri, printJob, "PrintJob failed", printJob.documentInputStream
         )
-
         val job = response.jobGroup.toIppJob()
         if (waitForTermination) {
             waitForTermination(job)
@@ -92,18 +91,34 @@ class IppClient(
         return job
     }
 
-    fun waitForTermination(job: IppJob, refreshRate: Duration = Duration.ofSeconds(1)) {
-        do {
-            Thread.sleep(refreshRate.toMillis())
-            refreshJobAttributes(job)
-            println("job-state = ${job.state}")
-        } while (!job.state.isTerminated())
+    // -------------------------------
+    // IppJob model related operations
+    // -------------------------------
+
+    fun getJob(printerUri: URI, jobId: Int): IppJob {
+        val request = IppGetJobAttributes(printerUri, jobId)
+        val response = exchangeSuccessful(printerUri, request, "GetJobAttributes #$jobId failed")
+        return response.jobGroup.toIppJob()
     }
 
-    private fun refreshJobAttributes(job: IppJob) {
-        val ippRequest = IppGetJobAttributes(job.uri)
-        val ippResponse = exchangeSuccessful(job.uri, ippRequest, "GetJobAttributes failed $job.uri")
-        job.readFrom(ippResponse.jobGroup)
+    fun getJob(jobUri: URI): IppJob {
+        val request = IppGetJobAttributes(jobUri)
+        val response = exchangeSuccessful(jobUri, request, "GetJobAttributes $jobUri failed")
+        return response.jobGroup.toIppJob()
+    }
+
+    fun refreshJob(job: IppJob) {
+        val request = IppGetJobAttributes(job.uri)
+        val response = exchangeSuccessful(job.uri, request, "GetJobAttributes $job.uri failed")
+        job.readFrom(response.jobGroup)
+    }
+
+    fun waitForTermination(job: IppJob, refreshRate: Duration = Duration.ofSeconds(1)) {
+        while (!job.state.isTerminated()) {
+            Thread.sleep(refreshRate.toMillis())
+            refreshJob(job)
+            println("job-state = ${job.state}")
+        }
     }
 
     // -----------------------------------------------

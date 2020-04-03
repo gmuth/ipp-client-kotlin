@@ -5,7 +5,6 @@ package de.gmuth.ipp.client
  */
 
 import java.io.File
-import java.io.FileInputStream
 import java.net.URI
 
 fun main(args: Array<String>) {
@@ -18,7 +17,7 @@ fun main(args: Array<String>) {
 
     with(IppClient()) {
         val printJob = IppPrintJob(uri, file)
-        val job = submitPrintJob(uri, printJob, waitForTermination = true)
+        val job = sendPrintJob(printJob, waitForTermination = true)
         job.logDetails()
     }
 

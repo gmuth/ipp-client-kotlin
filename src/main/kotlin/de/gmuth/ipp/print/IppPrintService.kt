@@ -19,10 +19,11 @@ class IppPrintService(private val printerUri: URI) : PrintService {
     override fun printFile(file: File, colorMode: ColorMode, waitForTermination: Boolean) {
 
         val printJob = IppPrintJob(printerUri, file = file)
-        printJob.jobGroup.attribute("output-mode", IppTag.Keyword, ippColorMode(colorMode)) // CUPS extension
+        // should check support for CUPS extension 'output-mode' or 'printer-color-mode'
+        printJob.jobGroup.attribute("output-mode", IppTag.Keyword, ippColorMode(colorMode))
         printJob.logDetails("IPP: ")
 
-        val job = ippClient.submitPrintJob(printerUri, printJob, waitForTermination)
+        val job = ippClient.sendPrintJob(printJob, waitForTermination)
         job.logDetails()
     }
 

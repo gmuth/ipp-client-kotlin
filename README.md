@@ -66,7 +66,11 @@ To build `ippclient.jar` into `build/libs` run
 
     ./gradlew
 
-No dependencies to CUPS or ipptool exist. Currently only the target `jvm` is supported. 
+This software has **no dependencies** to
+[javax.print](https://docs.oracle.com/javase/7/docs/technotes/guides/jps/),
+[CUPS](https://www.cups.org) or
+[ipptool](https://www.cups.org/doc/man-ipptool.html).
+Currently only the target `jvm` is supported. 
 
 ## Status
 

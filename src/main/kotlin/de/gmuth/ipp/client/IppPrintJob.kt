@@ -12,9 +12,9 @@ import java.io.InputStream
 import java.net.URI
 
 class IppPrintJob(
-        printerUri: URI,
+        val printerUri: URI,
         val documentInputStream: InputStream,
-        documentFormat: String? = null
+        val documentFormat: String? = null
 
 ) : IppRequest(IppOperation.PrintJob, printerUri) {
 
