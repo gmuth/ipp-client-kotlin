@@ -11,13 +11,12 @@ import java.util.*
 import javax.net.ssl.HttpsURLConnection
 
 class HttpClientByHttpURLConnection(
-        private val config: Http.Client.Config = Http.Client.Config(),
-        var disableSSLCertificateValidation: Boolean = false
+        override val config: Http.Client.Config= Http.Client.Config()
 
 ) : Http.Client {
 
     override fun post(uri: URI, content: Http.Content, auth: Http.Auth?): Http.Response {
-        if (uri.scheme in listOf("https", "ipps") && disableSSLCertificateValidation) {
+        if (uri.scheme in listOf("https", "ipps") && config.disableSSLCertificateValidation) {
             HttpsURLConnection.setDefaultSSLSocketFactory(SSLUtil.trustAllSSLContext.socketFactory)
             HttpsURLConnection.setDefaultHostnameVerifier { hostname, session -> true }
             println("WARN: SSL certificate validation disabled")

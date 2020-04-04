@@ -15,8 +15,12 @@ interface Http {
     class Auth(val user: String, val password: String)
 
     interface Client {
-        data class Config(val timeout: Duration = Duration.ofSeconds(5))
+        data class Config(
+                var timeout: Duration = Duration.ofSeconds(3),
+                var disableSSLCertificateValidation: Boolean = false
+        )
 
+        val config: Config
         fun post(uri: URI, content: Content, auth: Auth? = null): Response
     }
 

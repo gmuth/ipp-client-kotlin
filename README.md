@@ -59,6 +59,17 @@ Road map:
             "FILE $filename"
         )
     }
+
+### use basic auth and invalid certs
+
+    val uri = URI.create("ipps://pi.local/printers/Lexmark_E210")
+    
+    with(IppTool()) {
+        // trust cups self-signed certs
+        httpClient.config.disableSSLCertificateValidation = true 
+        auth = Http.Auth("admin", "secret")
+        pausePrinter(uri).logDetails()    
+    }
           
 ## Build
 

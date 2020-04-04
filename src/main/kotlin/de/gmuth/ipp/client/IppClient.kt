@@ -15,8 +15,8 @@ import java.time.Duration
 import javax.net.ssl.SSLHandshakeException
 
 class IppClient(
-        private var httpClient: Http.Client = HttpClientByHttpURLConnection()
-        //private val httpClient: Http.Client = HttpClientByJava11HttpClient()
+        var httpClient: Http.Client = HttpClientByHttpURLConnection()
+        //val httpClient: Http.Client = HttpClientByJava11HttpClient()
 ) {
     var verbose: Boolean = false
     var auth: Http.Auth? = null
