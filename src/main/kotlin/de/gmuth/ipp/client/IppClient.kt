@@ -73,7 +73,7 @@ class IppClient(
                 }
             }
         } catch (sslException: SSLHandshakeException) {
-            println("WARN: set HttpClientByHttpURLConnection.disableSSLCertificateValidation true to accept self-signed certificates (e.g. with cups)")
+            println("WARN: set disableSSLCertificateValidation to true to accept self-signed certificates (e.g. with cups)")
             throw IppException("SSL connection error $httpUri", sslException)
         }
     }
