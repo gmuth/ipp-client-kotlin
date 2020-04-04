@@ -16,8 +16,9 @@ interface Http {
     interface Client {
 
         data class Config(val timeout: Duration = Duration.ofSeconds(5))
+        data class BasicAuth(val user: String, val password: String)
 
-        fun post(uri: URI, content: Content): Response
+        fun post(uri: URI, content: Content, basicAuth: BasicAuth? = null): Response
     }
 
 }
