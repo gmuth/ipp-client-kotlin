@@ -6,17 +6,20 @@ package de.gmuth.ipp.client
 
 import de.gmuth.http.Http
 import de.gmuth.http.HttpClientByHttpURLConnection
+import de.gmuth.http.HttpClientByJava11HttpClient
 import de.gmuth.ipp.core.*
 import java.io.InputStream
 import java.io.SequenceInputStream
 import java.net.URI
 import java.time.Duration
+import javax.net.ssl.SSLHandshakeException
 
 class IppClient(
-        private val httpClient: Http.Client = HttpClientByHttpURLConnection()
+        private var httpClient: Http.Client = HttpClientByHttpURLConnection()
         //private val httpClient: Http.Client = HttpClientByJava11HttpClient()
 ) {
     var verbose: Boolean = false
+    var auth: Http.Client.Auth? = null
 
     fun exchange(uri: URI, request: IppRequest, documentInputStream: InputStream? = null): IppResponse {
         val responseStream = with(request) {
@@ -59,14 +62,19 @@ class IppClient(
             URI.create("$scheme://$host:$port$path")
         }
 
-        with(httpClient.post(httpUri, requestContent)) {
-            if (status == 200 && content.type == contentType) {
-                return content.stream
+        try {
+            with(httpClient.post(httpUri, requestContent, auth)) {
+                if (status == 200 && content.type == contentType) {
+                    return content.stream
 
-            } else {
-                val text = if (content.type.startsWith("text")) ", content = " + String(content.stream.readAllBytes()) else ""
-                throw IppException("response from $uri is invalid: http-status = $status, content-type = ${content.type}$text")
+                } else {
+                    val text = if (content.type.startsWith("text")) ", content = " + String(content.stream.readAllBytes()) else ""
+                    throw IppException("response from $uri is invalid: http-status = $status, content-type = ${content.type}$text")
+                }
             }
+        } catch (sslException: SSLHandshakeException) {
+            println("WARN: set HttpClientByHttpURLConnection.disableSSLCertificateValidation true to accept self-signed certificates (e.g. with cups)")
+            throw IppException("SSL connection error $httpUri", sslException)
         }
     }
 
@@ -141,5 +149,14 @@ class IppClient(
     // ---------------------------
     // Printer related operations
     // ---------------------------
+
+    fun pausePrinter(printerUri: URI) = sendPrinterOperation(printerUri, IppOperation.PausePrinter)
+    fun resumePrinter(printerUri: URI) = sendPrinterOperation(printerUri, IppOperation.ResumePrinter)
+
+    private fun sendPrinterOperation(printerUri: URI, printerOperation: IppOperation): IppResponse {
+        if (auth == null) throw IllegalStateException("auth required")
+        val request = IppRequest(printerOperation, printerUri)
+        return exchangeSuccessful(printerUri, request, printerOperation.name)
+    }
 
 }
