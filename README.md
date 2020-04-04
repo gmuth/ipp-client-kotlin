@@ -64,7 +64,7 @@ Road map:
 
     val uri = URI.create("ipps://pi.local/printers/Lexmark_E210")
     
-    with(IppTool()) {
+    with(IppClient()) {
         // trust cups self-signed certs
         httpClient.config.disableSSLCertificateValidation = true 
         auth = Http.Auth("admin", "secret")
