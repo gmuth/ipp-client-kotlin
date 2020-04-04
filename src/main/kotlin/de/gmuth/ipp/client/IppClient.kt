@@ -156,7 +156,7 @@ class IppClient(
     private fun sendPrinterOperation(printerUri: URI, printerOperation: IppOperation): IppResponse {
         if (auth == null) throw IllegalStateException("auth required")
         val request = IppRequest(printerOperation, printerUri)
-        return exchangeSuccessful(printerUri, request, printerOperation.name)
+        return exchangeSuccessful(printerUri, request, "$printerOperation failed")
     }
 
 }
