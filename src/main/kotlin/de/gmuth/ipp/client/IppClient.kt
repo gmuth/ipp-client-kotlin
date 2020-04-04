@@ -19,7 +19,7 @@ class IppClient(
         //private val httpClient: Http.Client = HttpClientByJava11HttpClient()
 ) {
     var verbose: Boolean = false
-    var auth: Http.Client.Auth? = null
+    var auth: Http.Auth? = null
 
     fun exchange(uri: URI, request: IppRequest, documentInputStream: InputStream? = null): IppResponse {
         val responseStream = with(request) {

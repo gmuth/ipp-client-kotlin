@@ -12,11 +12,10 @@ interface Http {
 
     class Content(val type: String, val stream: InputStream)
     class Response(val status: Int, val content: Content)
+    class Auth(val user: String, val password: String)
 
     interface Client {
-
         data class Config(val timeout: Duration = Duration.ofSeconds(5))
-        data class Auth(val user: String, val password: String)
 
         fun post(uri: URI, content: Content, auth: Auth? = null): Response
     }
