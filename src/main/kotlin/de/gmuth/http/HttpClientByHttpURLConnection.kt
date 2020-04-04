@@ -18,7 +18,7 @@ class HttpClientByHttpURLConnection(
     override fun post(uri: URI, content: Http.Content, auth: Http.Auth?): Http.Response {
         if (uri.scheme in listOf("https", "ipps") && config.disableSSLCertificateValidation) {
             HttpsURLConnection.setDefaultSSLSocketFactory(SSLUtil.trustAllSSLContext.socketFactory)
-            HttpsURLConnection.setDefaultHostnameVerifier { hostname, session -> true }
+            HttpsURLConnection.setDefaultHostnameVerifier { _, _ -> true }
             println("WARN: SSL certificate validation disabled")
         }
         with(uri.toURL().openConnection() as HttpURLConnection) {
