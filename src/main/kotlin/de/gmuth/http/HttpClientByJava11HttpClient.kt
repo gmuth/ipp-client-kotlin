@@ -22,6 +22,7 @@ class HttpClientByJava11HttpClient(
             // -Djdk.internal.httpclient.disableHostnameVerification
             System.getProperties().setProperty("jdk.internal.httpclient.disableHostnameVerification", true.toString())
             httpClientBuilder.sslContext(SSLUtil.trustAllSSLContext)
+            println("WARN: SSL certificate validation disabled")
         }
 
         val httpRequestBuilder = HttpRequest.newBuilder()
