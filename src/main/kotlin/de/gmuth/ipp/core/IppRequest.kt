@@ -30,8 +30,8 @@ open class IppRequest() : IppMessage() {
 
         operationGroup.attribute("attributes-charset", IppTag.Charset, attributesCharset?.name()?.toLowerCase())
         operationGroup.attribute("attributes-natural-language", IppTag.NaturalLanguage, naturalLanguage)
-        if (printerUri != null) operationGroup.attribute("printer-uri", printerUri)
-        if (requestingUserName != null) operationGroup.attribute("requesting-user-name", requestingUserName)
+        if (printerUri != null) operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
+        if (requestingUserName != null) operationGroup.attribute("requesting-user-name", IppTag.NameWithoutLanguage, requestingUserName)
     }
 
     override val codeDescription: String

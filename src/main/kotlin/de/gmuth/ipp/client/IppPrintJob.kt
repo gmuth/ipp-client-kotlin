@@ -6,6 +6,7 @@ package de.gmuth.ipp.client
 
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppRequest
+import de.gmuth.ipp.core.IppTag
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
@@ -20,7 +21,7 @@ class IppPrintJob(
 
     init {
         if (documentFormat != null)
-            operationGroup.attribute("document-format", documentFormat)
+            operationGroup.attribute("document-format", IppTag.MimeMediaType, documentFormat)
     }
 
     constructor(
@@ -30,7 +31,7 @@ class IppPrintJob(
 
     ) : this(printerUri, FileInputStream(file), documentFormat) {
 
-        jobGroup.attribute("job-name", file.name)
+        jobGroup.attribute("job-name", IppTag.NameWithoutLanguage, file.name)
     }
 
 }
