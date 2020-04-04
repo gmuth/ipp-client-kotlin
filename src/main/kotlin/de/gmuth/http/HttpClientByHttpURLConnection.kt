@@ -7,15 +7,8 @@ package de.gmuth.http
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URI
-import java.security.SecureRandom
-import java.security.cert.CertificateException
-import java.security.cert.X509Certificate
 import java.util.*
 import javax.net.ssl.HttpsURLConnection
-import javax.net.ssl.SSLContext
-import javax.net.ssl.TrustManager
-import javax.net.ssl.X509TrustManager
-
 
 class HttpClientByHttpURLConnection(
         private val config: Http.Client.Config = Http.Client.Config(),
@@ -23,16 +16,18 @@ class HttpClientByHttpURLConnection(
 
 ) : Http.Client {
 
-    override fun post(uri: URI, content: Http.Content, basicAuth: Http.Client.BasicAuth?): Http.Response {
-        if (uri.scheme in listOf("https", "ipps") && disableSSLCertificateValidation)
-            disableSSLCertificateValidation()
-
+    override fun post(uri: URI, content: Http.Content, auth: Http.Client.Auth?): Http.Response {
+        if (uri.scheme in listOf("https", "ipps") && disableSSLCertificateValidation) {
+            HttpsURLConnection.setDefaultSSLSocketFactory(SSLUtil.trustAllSSLContext.socketFactory)
+            HttpsURLConnection.setDefaultHostnameVerifier { hostname, session -> true }
+            println("WARN: SSL certificate validation disabled")
+        }
         with(uri.toURL().openConnection() as HttpURLConnection) {
             setConnectTimeout(config.timeout.toMillis().toInt())
             setDoOutput(true) // trigger POST method
-            if (basicAuth != null) {
-                val basicAuthBase64 = with(basicAuth) { Base64.getEncoder().encodeToString("$user:$password".toByteArray()) }
-                setRequestProperty("Authorization", "Basic $basicAuthBase64")
+            if (auth != null) {
+                val basicAuth = with(auth) { Base64.getEncoder().encodeToString("$user:$password".toByteArray()) }
+                setRequestProperty("Authorization", "Basic $basicAuth")
             }
             setRequestProperty("Content-Type", content.type)
             //setChunkedStreamingMode(0) // enable chunked transfer
@@ -51,23 +46,4 @@ class HttpClientByHttpURLConnection(
             return Http.Response(responseCode, responseContent)
         }
     }
-
-    private fun disableSSLCertificateValidation() {
-        val trustAllCerts: Array<TrustManager> = arrayOf(object : X509TrustManager {
-            override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
-
-            @Throws(CertificateException::class)
-            override fun checkClientTrusted(certificates: Array<X509Certificate?>?, string: String?) {
-            }
-
-            @Throws(CertificateException::class)
-            override fun checkServerTrusted(certificates: Array<X509Certificate?>?, string: String?) {
-            }
-        })
-        val sslContext = SSLContext.getInstance("TLS").apply { init(null, trustAllCerts, SecureRandom()) }
-        HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory())
-        HttpsURLConnection.setDefaultHostnameVerifier { hostname, session -> true }
-        println("WARN: certificate validation disabled for SSL")
-    }
-
 }

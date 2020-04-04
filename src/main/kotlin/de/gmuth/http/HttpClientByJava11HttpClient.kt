@@ -6,24 +6,37 @@ package de.gmuth.http
 
 import java.net.URI
 import java.net.http.HttpClient
+import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import java.util.*
 
 class HttpClientByJava11HttpClient(
-        private val config: Http.Client.Config = Http.Client.Config()
+        private val config: Http.Client.Config = Http.Client.Config(),
+        var disableSSLCertificateValidation: Boolean = false
 
 ) : Http.Client {
 
-    override fun post(uri: URI, content: Http.Content, basicAuth: Http.Client.BasicAuth?): Http.Response {
-        val httpRequest = java.net.http.HttpRequest.newBuilder()
+    override fun post(uri: URI, content: Http.Content, auth: Http.Client.Auth?): Http.Response {
+        val httpClientBuilder = HttpClient.newBuilder()
+        if (disableSSLCertificateValidation) {
+            // -Djdk.internal.httpclient.disableHostnameVerification
+            System.getProperties().setProperty("jdk.internal.httpclient.disableHostnameVerification", true.toString())
+            httpClientBuilder.sslContext(SSLUtil.trustAllSSLContext)
+        }
+
+        val httpRequestBuilder = HttpRequest.newBuilder()
                 .timeout(config.timeout)
                 .header("Content-Type", content.type)
                 .POST(java.net.http.HttpRequest.BodyPublishers.ofInputStream { content.stream })
-                .uri(uri).build()
+                .uri(uri)
 
-        if(basicAuth != null) throw NotImplementedError("BasicAuth")
+        if (auth != null) {
+            val basicAuth = with(auth) { Base64.getEncoder().encodeToString("$user:$password".toByteArray()) }
+            httpRequestBuilder.header("Authorization", "Basic $basicAuth")
+        }
 
-        val httpResponse = HttpClient.newBuilder().build()
-                .send(httpRequest, HttpResponse.BodyHandlers.ofInputStream())
+        val httpResponse = httpClientBuilder.build()
+                .send(httpRequestBuilder.build(), HttpResponse.BodyHandlers.ofInputStream())
 
         with(httpResponse) {
             val responseContent = Http.Content(headers().firstValue("content-type").get(), body())
