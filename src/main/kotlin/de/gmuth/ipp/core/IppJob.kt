@@ -1,6 +1,5 @@
 package de.gmuth.ipp.core
 
-import de.gmuth.ipp.client.IppClient
 import java.net.URI
 import java.time.LocalDateTime
 
@@ -12,8 +11,8 @@ class IppJob(jobGroup: IppAttributesGroup) {
 
     lateinit var uri: URI
     var id: Int = 0
-    lateinit var state: IppJobState
-    lateinit var stateReasons: List<String>
+    var state: IppJobState? = null
+    var stateReasons: List<String>? = null
 
     var printerUri: URI? = null
     var name: String? = null
@@ -37,8 +36,8 @@ class IppJob(jobGroup: IppAttributesGroup) {
     fun readFrom(jobGroup: IppAttributesGroup) = with(jobGroup) {
         uri = get("job-uri")?.value as URI
         id = get("job-id")?.value as Int
-        state = get("job-state")?.value as IppJobState
-        stateReasons = get("job-state-reasons")?.values as List<String>
+        state = get("job-state")?.value as IppJobState?
+        stateReasons = get("job-state-reasons")?.values as List<String>?
 
         printerUri = get("job-printer-uri")?.value as URI?
         name = get("job-name")?.value as String?
@@ -57,15 +56,19 @@ class IppJob(jobGroup: IppAttributesGroup) {
     }
 
     override fun toString(): String {
-        return String.format("IppJob: uri = %s, id = %d, state = %s, stateReasons = %s", uri, id, state, stateReasons)
+        val stateString =
+                if (state == null) ""
+                else ", state = $state, stateReasons = $stateReasons"
+
+        return "IppJob: uri = $uri, id = $id$stateString"
     }
 
     fun logDetails() {
         println("JOB")
         println("  uri = $uri")
         println("  id = $id")
-        println("  state = $state")
-        println("  stateReasons = $stateReasons")
+        logAttributeIfValueNotNull("state", state)
+        logAttributeIfValueNotNull("stateReasons", stateReasons)
         logAttributeIfValueNotNull("printerUri", printerUri)
         logAttributeIfValueNotNull("name", name)
         logAttributeIfValueNotNull("originatingUserName", originatingUserName)
