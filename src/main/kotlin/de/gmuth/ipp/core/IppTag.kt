@@ -80,4 +80,11 @@ enum class IppTag(val code: Byte, private val ianaName: String? = null) {
                 ?: throw IppException(String.format("ipp tag name '%s' unknown", name))
     }
 
+    fun registeredSyntax() = when (this) {
+        // iana registration doesn't care about language
+        NameWithoutLanguage, NameWithLanguage -> "name"
+        TextWithoutLanguage, TextWithLanguage -> "text"
+        else -> registeredName()
+    }
+
 }
