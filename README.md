@@ -8,15 +8,31 @@ Road map:
 
 ## Usage
 
-### [IppPrintService](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/client/IppPrintService.kt)
+### [IppPrintService](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppPrintService.kt)
 
     val uri = URI.create("ipp://colorjet/ipp/printer")
     val file = File("A4-blank.pdf")
 
     val printService = IppPrintService(uri)
-    printService.printFile(file, IppColorMode.Monochrome, waitForTermination = true)
+    printService.printFile(file)
+    printService.printFile(file, waitForTermination = true)
+    printService.printFile(file, IppColorMode.Monochrome)
     
-### exchange IppRequest for IppResponse using IppClient
+### methods of [IppClient](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppClient.kt) 
+
+    fun getJobAttributes(printerUri: URI, jobId: Int): IppResponse
+    fun getJobAttributes(jobUri: URI): IppResponse
+    
+    fun getJob(printerUri: URI, jobId: Int): IppJob
+    fun getJobs(printerUri: URI): List<IppJob>
+    
+    fun cancelJob(printerUri: URI, jobId: Int): IppResponse
+    fun cancelJob(job: IppJob): IppResponse
+    
+    fun pausePrinter(printerUri: URI): IppResponse
+    fun resumePrinter(printerUri: URI): IppResponse
+
+### exchange [IppRequest](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppRequest.kt) for [IppResponse](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppResponse.kt)
 
     val uri = URI.create("ipp://colorjet/ipp/printer")
     val file = File("A4-blank.pdf")
