@@ -6,13 +6,13 @@ package de.gmuth.ipp.client
 
 import de.gmuth.http.Http
 import de.gmuth.http.HttpClientByHttpURLConnection
-import de.gmuth.http.HttpClientByJava11HttpClient
 import de.gmuth.ipp.core.*
 import java.io.InputStream
 import java.io.SequenceInputStream
 import java.net.URI
 import java.time.Duration
 import javax.net.ssl.SSLHandshakeException
+import kotlin.streams.toList
 
 class IppClient(
         var httpClient: Http.Client = HttpClientByHttpURLConnection()
@@ -78,7 +78,13 @@ class IppClient(
         }
     }
 
-    fun exchangeSuccessful(uri: URI, request: IppRequest, exceptionMessage: String, documentInputStream: InputStream? = null): IppResponse {
+    fun exchangeSuccessful(
+            uri: URI,
+            request: IppRequest,
+            exceptionMessage: String = "${request.operation} failed",
+            documentInputStream: InputStream? = null
+
+    ): IppResponse {
         val response = exchange(uri, request, documentInputStream)
         if (response.status.isSuccessful()) return response
         else throw IppExchangeException(request, response, "$exceptionMessage: '${response.status}' ${response.statusMessage ?: ""}")
@@ -100,41 +106,80 @@ class IppClient(
     }
 
     // -------------------------------
-    // IppJob model related operations
+    // Job related operations
     // -------------------------------
 
-    fun getJob(printerUri: URI, jobId: Int): IppJob {
-        val request = IppGetJobAttributes(printerUri, jobId)
-        val response = exchangeSuccessful(printerUri, request, "GetJobAttributes #$jobId failed")
-        return response.jobGroup.toIppJob()
+    fun getJobAttributes(printerUri: URI, jobId: Int): IppResponse {
+        val request = IppRequest(IppOperation.GetJobAttributes).apply {
+            operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
+            operationGroup.attribute("job-id", IppTag.Integer, jobId)
+        }
+        return exchangeSuccessful(printerUri, request, "GetJobAttributes #$jobId failed")
     }
 
-    fun getJob(jobUri: URI): IppJob {
-        val request = IppGetJobAttributes(jobUri)
-        val response = exchangeSuccessful(jobUri, request, "GetJobAttributes $jobUri failed")
-        return response.jobGroup.toIppJob()
+    fun getJobAttributes(jobUri: URI): IppResponse {
+        val request = IppRequest(IppOperation.GetJobAttributes).apply {
+            operationGroup.attribute("job-uri", IppTag.Uri, jobUri)
+        }
+        return exchangeSuccessful(jobUri, request, "GetJobAttributes $jobUri failed")
     }
 
     fun refreshJob(job: IppJob) {
-        val request = IppGetJobAttributes(job.uri)
-        val response = exchangeSuccessful(job.uri, request, "GetJobAttributes $job.uri failed")
+        val response = getJobAttributes(job.uri)
         job.readFrom(response.jobGroup)
     }
 
     fun waitForTermination(job: IppJob, refreshRate: Duration = Duration.ofSeconds(1)) {
-        while (!job.state.isTerminated()) {
+        do {
             Thread.sleep(refreshRate.toMillis())
             refreshJob(job)
             println("job-state = ${job.state}")
-        }
+        } while (!job.state?.isTerminated()!!)
     }
+
+    fun cancelJob(printerUri: URI, jobId: Int): IppResponse {
+        val request = IppRequest(IppOperation.CancelJob, printerUri).apply {
+            operationGroup.attribute("job-id", IppTag.Integer, jobId)
+        }
+        return exchangeSuccessful(printerUri, request)
+    }
+
+    fun cancelJob(job: IppJob): IppResponse {
+        val request = IppRequest(IppOperation.CancelJob).apply {
+            operationGroup.attribute("job-uri", IppTag.Uri, job.uri)
+        }
+        return exchangeSuccessful(job.uri, request)
+    }
+
+    fun getJob(printerUri: URI, jobId: Int) = getJobAttributes(printerUri, jobId).jobGroup.toIppJob()
+
+    fun getJobs(printerUri: URI): List<IppJob> {
+        val request = IppRequest(IppOperation.GetJobs, printerUri)
+        val response = exchangeSuccessful(printerUri, request)
+        return response.getAttributesGroups(IppTag.Job).stream()
+                .map { jobGroup -> jobGroup.toIppJob() }.toList()
+    }
+
+    fun refreshJobs(jobs: List<IppJob>) = jobs.stream().forEach { job -> refreshJob(job) }
 
     // -----------------------------------------------
     // RFC 8011 4.2.2: optional operation to print uri
     // -----------------------------------------------
 
-    fun printUri(printerUri: URI, documentUri: URI, waitForTermination: Boolean = false): IppJob {
-        val request = IppPrintUri(printerUri, documentUri)
+    fun printUri(
+            printerUri: URI,
+            documentUri: URI,
+            documentFormat: String = "application/octet-stream",
+            jobName: String = documentUri.path,
+            waitForTermination: Boolean = false
+
+    ): IppJob {
+
+        val request = IppRequest(IppOperation.PrintUri, printerUri).apply {
+            operationGroup.attribute("document-uri", IppTag.Uri, documentUri)
+            operationGroup.attribute("document-format", IppTag.MimeMediaType, documentFormat)
+            jobGroup.attribute("job-name", IppTag.NameWithoutLanguage, jobName)
+        }
         request.logDetails("IPP: ")
 
         val response = exchangeSuccessful(printerUri, request, "Print-Uri $documentUri")
@@ -156,7 +201,7 @@ class IppClient(
     private fun sendPrinterOperation(printerUri: URI, printerOperation: IppOperation): IppResponse {
         if (auth == null) throw IllegalStateException("auth required")
         val request = IppRequest(printerOperation, printerUri)
-        return exchangeSuccessful(printerUri, request, "$printerOperation failed")
+        return exchangeSuccessful(printerUri, request)
     }
 
 }
