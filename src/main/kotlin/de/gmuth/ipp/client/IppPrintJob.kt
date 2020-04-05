@@ -24,15 +24,10 @@ class IppPrintJob(
     init {
         if (documentFormat != null) operationGroup.attribute("document-format", IppTag.MimeMediaType, documentFormat)
         if (jobName != null) jobGroup.attribute("job-name", IppTag.NameWithoutLanguage, jobName)
-        if (jobParameters != null) {
-            for (jobParameter in jobParameters) {
-                jobGroup.put(jobParameter.toIppAttribute())
-            }
-        }
+        jobParameters?.forEach { jobParameter -> jobGroup.put(jobParameter.toIppAttribute()) }
     }
 
     constructor(printerUri: URI, file: File, documentFormat: String? = null, jobParameters: List<IppJobParameter>? = null) :
-            this(printerUri, FileInputStream(file), documentFormat, file.name)
-
+            this(printerUri, FileInputStream(file), documentFormat, file.name, jobParameters)
 
 }
