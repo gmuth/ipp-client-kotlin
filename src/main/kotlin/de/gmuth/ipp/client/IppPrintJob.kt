@@ -15,23 +15,24 @@ import java.net.URI
 class IppPrintJob(
         val printerUri: URI,
         val documentInputStream: InputStream,
-        val documentFormat: String? = null
+        documentFormat: String? = null,
+        jobName: String? = null,
+        jobParameters: List<IppJobParameter>? = null
 
 ) : IppRequest(IppOperation.PrintJob, printerUri) {
 
     init {
-        if (documentFormat != null)
-            operationGroup.attribute("document-format", IppTag.MimeMediaType, documentFormat)
+        if (documentFormat != null) operationGroup.attribute("document-format", IppTag.MimeMediaType, documentFormat)
+        if (jobName != null) jobGroup.attribute("job-name", IppTag.NameWithoutLanguage, jobName)
+        if (jobParameters != null) {
+            for (jobParameter in jobParameters) {
+                jobGroup.put(jobParameter.toIppAttribute())
+            }
+        }
     }
 
-    constructor(
-            printerUri: URI,
-            file: File,
-            documentFormat: String = "application/octet-stream"
+    constructor(printerUri: URI, file: File, documentFormat: String? = null, jobParameters: List<IppJobParameter>? = null) :
+            this(printerUri, FileInputStream(file), documentFormat, file.name)
 
-    ) : this(printerUri, FileInputStream(file), documentFormat) {
-
-        jobGroup.attribute("job-name", IppTag.NameWithoutLanguage, file.name)
-    }
 
 }

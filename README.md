@@ -8,30 +8,15 @@ Road map:
 
 ## Usage
 
-### [print service API](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/print)
+### [IppPrintService](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/client/IppPrintService.kt)
 
     val uri = URI.create("ipp://colorjet/ipp/printer")
     val file = File("A4-blank.pdf")
 
     val printService = IppPrintService(uri)
-    printService.printFile(file, waitForTermination = true)
+    printService.printFile(file, IppColorMode.Monochrome, waitForTermination = true)
     
-### ipp operation level API
-
-    val uri = URI.create("ipp://colorjet/ipp/printer")
-    val file = File("A4-blank.pdf")
-
-    val ippClient = IppClient()
-    val printJob = IppPrintJob(uri, file)
-    val job = ippClient.submitPrintJob(uri, printJob)
-    ippClient.waitForTermination(job)
-    job.logDetails()
-    
-* [IppPrintJob](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppPrintJob.kt)
-* [IppPrintUri](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppPrintUri.kt) - ask printer to pull a document - nice feature if supported by printer
-* [IppGetJobAttributes](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppGetJobAttributes.kt)
-    
-### ipp message level API
+### exchange IppRequest for IppResponse using IppClient
 
     val uri = URI.create("ipp://colorjet/ipp/printer")
     val file = File("A4-blank.pdf")
@@ -44,7 +29,7 @@ Road map:
     }
     val response = ippClient.exchange(uri, request, FileInputStream(file))
 
-### ipp tool API
+### IppTool
  
     with(IppTool()) {
         uri = URI.create("ipp://colorjet/ipp/printer")

@@ -90,21 +90,6 @@ class IppClient(
         else throw IppExchangeException(request, response, "$exceptionMessage: '${response.status}' ${response.statusMessage ?: ""}")
     }
 
-    // -------------------------
-    // send PrintJob operation
-    // -------------------------
-
-    fun sendPrintJob(printJob: IppPrintJob, waitForTermination: Boolean = false): IppJob {
-        val response = exchangeSuccessful(
-                printJob.printerUri, printJob, "PrintJob failed", printJob.documentInputStream
-        )
-        val job = response.jobGroup.toIppJob()
-        if (waitForTermination) {
-            waitForTermination(job)
-        }
-        return job
-    }
-
     // -------------------------------
     // Job related operations
     // -------------------------------
@@ -196,6 +181,7 @@ class IppClient(
     // ---------------------------
 
     fun pausePrinter(printerUri: URI) = sendPrinterOperation(printerUri, IppOperation.PausePrinter)
+
     fun resumePrinter(printerUri: URI) = sendPrinterOperation(printerUri, IppOperation.ResumePrinter)
 
     private fun sendPrinterOperation(printerUri: URI, printerOperation: IppOperation): IppResponse {

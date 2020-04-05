@@ -1,4 +1,6 @@
-#!/usr/bin/env ipptool -tv ipp://localhost:8632/printers/laser
+#!/usr/bin/env ipptool -tv ipp://SpaceBook-2.local/printers/ColorJet_HP
+#ipp://SpaceBook-2.local:631/printers/ColorJet_HP
+#ipp://localhost:8632/printers/laser
 {
 	OPERATION Get-Printer-Attributes
 	GROUP operation-attributes-tag
