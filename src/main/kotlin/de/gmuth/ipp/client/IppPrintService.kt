@@ -4,7 +4,6 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.ipp.core.IppJob
 import de.gmuth.ipp.core.toIppJob
 import java.io.File
 import java.net.URI
@@ -21,19 +20,12 @@ class IppPrintService(private val printerUri: URI) {
         val printJob = IppPrintJob(printerUri, file = file, jobParameters = jobParameters)
         printJob.logDetails("IPP: ")
 
-        val job = sendPrintJob(printJob, waitForTermination)
-        job.logDetails()
-    }
-
-    fun sendPrintJob(printJob: IppPrintJob, waitForTermination: Boolean = false): IppJob {
-        val response = with(printJob) {
-            ippClient.exchangeSuccessful(printerUri, this, documentInputStream = documentInputStream)
-        }
+        val response = ippClient.exchangeSuccessful(printJob.printerUri, printJob, documentInputStream = printJob.documentInputStream)
         val job = response.jobGroup.toIppJob()
         if (waitForTermination) {
             ippClient.waitForTermination(job)
         }
-        return job
+        job.logDetails()
     }
 
 }
