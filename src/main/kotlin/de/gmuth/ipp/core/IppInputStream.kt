@@ -12,6 +12,10 @@ import java.nio.charset.Charset
 
 class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
 
+    companion object {
+        var compareTagsToIppRegistrations: Boolean = true
+    }
+
     private val dataInputStream: DataInputStream = DataInputStream(inputStream)
     private var attributesCharset: Charset? = null // encoding for text and name attributes, rfc 8011 4.1.4.1
     var statusMessage: String? = null
@@ -26,6 +30,8 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
 
     fun readAttribute(tag: IppTag): IppAttribute<*> {
         val name = readString(Charsets.US_ASCII)
+        if (name.isEmpty()) println("WARN: found empty name")
+
         var value: Any? = when (tag) {
 
             // out-of-band
@@ -59,7 +65,7 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
         }
 
         // check tag
-        IppRegistrations.checkTagOfAttribute(name, tag)
+        if (compareTagsToIppRegistrations) IppRegistrations.checkSyntaxOfAttribute(name, tag)
 
         // collect special attribute values or convert types
         if (!tag.isOutOfBandTag()) when (name) {
@@ -75,11 +81,15 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
             if (tag.useAttributesCharset()) attributesCharset ?: throw IllegalStateException("missing attributes-charset")
             else Charsets.US_ASCII
 
-    private fun readString(charset: Charset): String = String(readLengthAndValue(), charset)
+    private fun readString(charset: Charset): String {
+        val bytes = readLengthAndValue()
+        //if(bytes.isEmpty()) println("WARN: empty string found")
+        return String(bytes, charset)
+    }
 
     private fun readLengthAndValue(): ByteArray {
         val length = dataInputStream.readShort().toInt()
-        if (length == 0) println("WARN: found ipp value with 0 bytes")
+        //if (length == 0) println("WARN: value has 0 bytes")
         return dataInputStream.readNBytes(length)
     }
 
@@ -90,6 +100,6 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
         }
     }
 
-    override fun close()= dataInputStream.close()
+    override fun close() = dataInputStream.close()
 
 }

@@ -67,10 +67,10 @@ class IppRegistrations {
 
         fun attributeIs1setOf(name: String) = attributeByName(name).is1SetOf()
 
-        fun checkTagOfAttribute(name: String, tag: IppTag) {
+        fun checkSyntaxOfAttribute(name: String, tag: IppTag) {
             try {
-                val ianaTag = tagForAttribute(name)
-                if (tag != IppTag.NoValue && ianaTag != tag) println("WARN: '$name' uses syntax '$tag' instead of '$ianaTag'")
+                val syntax = attributeByName(name).syntax
+                if (!syntax.contains(tag.registeredSyntax())) println("WARN: '$name' uses '$tag' instead of '$syntax'")
             } catch (exception: Exception) {
             }
         }

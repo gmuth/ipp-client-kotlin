@@ -35,40 +35,35 @@ class IppOutputStream(outputStream: OutputStream, private val attributesCharset:
     }
 
     private fun writeAttribute(attribute: IppAttribute<*>) {
-        val tag = attribute.tag
-        writeTag(tag)
-        writeString(attribute.name, Charsets.US_ASCII)
+        with(attribute) {
+            IppRegistrations.checkSyntaxOfAttribute(name, tag)
+            writeTag(tag)
+            writeString(attribute.name, Charsets.US_ASCII)
+            when (tag) {
+                // out-of-band
+                IppTag.NoValue -> {
+                    dataOutputStream.writeShort(0)
+                }
 
-        val value = attribute.value
-        //println("*** write value $tag $value --- class ${value?.javaClass}")
+                // value class Int
+                IppTag.Integer,
+                IppTag.Enum -> {
+                    dataOutputStream.writeShort(4)
+                    dataOutputStream.writeInt(value as Int)
+                }
 
-        // check tag
-        IppRegistrations.checkTagOfAttribute(attribute.name, attribute.tag)
+                // value class String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
+                IppTag.Uri -> writeString((value as URI).toString(), charsetForTag(tag))
+                IppTag.Keyword,
+                IppTag.UriScheme,
+                IppTag.Charset,
+                IppTag.NaturalLanguage,
+                IppTag.MimeMediaType,
+                IppTag.TextWithoutLanguage,
+                IppTag.NameWithoutLanguage -> writeString(value as String, charsetForTag(tag))
 
-        when (tag) {
-            // out-of-band
-            IppTag.NoValue -> {
-                dataOutputStream.writeShort(0)
+                else -> throw IppException(String.format("tag %s (%02X) encoding not implemented", tag, tag.code))
             }
-
-            // value class Int
-            IppTag.Integer,
-            IppTag.Enum -> {
-                dataOutputStream.writeShort(4)
-                dataOutputStream.writeInt(value as Int)
-            }
-
-            // value class String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
-            IppTag.Uri -> writeString((value as URI).toString(), charsetForTag(tag))
-            IppTag.Keyword,
-            IppTag.UriScheme,
-            IppTag.Charset,
-            IppTag.NaturalLanguage,
-            IppTag.MimeMediaType,
-            IppTag.TextWithoutLanguage,
-            IppTag.NameWithoutLanguage -> writeString(value as String, charsetForTag(tag))
-
-            else -> throw IppException(String.format("tag %s (%02X) encoding not implemented", tag, tag.code))
         }
     }
 
