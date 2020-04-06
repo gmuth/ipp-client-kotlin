@@ -37,7 +37,7 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
                         if (attribute.name.isEmpty()) {
                             // found 1setOf value
                             with(currentAttribute) {
-                                if (tag == attribute.tag) addValue(attribute.value!!)
+                                if (tag == attribute.tag) addValue(attribute.value)
                                 else throw IppSpecViolation("'$name' 1setOf error: expected tag '$tag' but found '${attribute.tag}'")
                             }
                         } else {
@@ -75,7 +75,7 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
         return IppAttribute(name, tag, value)
     }
 
-    private fun readAttributeValue(tag: IppTag) = when (tag) {
+    private fun readAttributeValue(tag: IppTag): Any? = when (tag) {
 
         // out-of-band
         IppTag.NoValue -> {
