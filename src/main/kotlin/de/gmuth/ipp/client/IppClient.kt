@@ -113,7 +113,6 @@ class IppClient(
             if (requestedAttributes.isNotEmpty())
                 operationGroup.attribute("requested-attributes", IppTag.Keyword, requestedAttributes)
         }
-        request.logDetails()
         return exchangeSuccessful(printerUri, request, "Get-Printer-Attributes $printerUri")
     }
 

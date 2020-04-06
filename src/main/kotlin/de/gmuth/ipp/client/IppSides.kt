@@ -11,6 +11,6 @@ enum class IppSides : IppJobParameter {
 
     OneSided, TwoSidedLongEdge, TwoSidedShortEdge;
 
-    override fun toIppAttribute() = IppAttribute("sides", IppTag.Keyword, registeredValue(name))
+    override fun toIppAttribute(printer: IppPrinter?) = IppAttribute("sides", IppTag.Keyword, registeredValue(name))
 
 }

@@ -8,7 +8,7 @@ import de.gmuth.ipp.core.IppAttribute
 
 interface IppJobParameter {
 
-    fun toIppAttribute(): IppAttribute<*>
+    fun toIppAttribute(printer: IppPrinter? = null): IppAttribute<*>
 
     fun registeredValue(name: String) = name
             .replace("[A-Z]".toRegex()) { "-" + it.value.toLowerCase() }

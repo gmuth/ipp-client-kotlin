@@ -19,6 +19,9 @@ class IppResponse : IppMessage() {
     val jobGroup: IppAttributesGroup
         get() = getSingleAttributesGroup(IppTag.Job)
 
+    val printerGroup: IppAttributesGroup
+        get() = getSingleAttributesGroup(IppTag.Printer)
+
     companion object {
         fun fromInputStream(inputStream: InputStream) = IppResponse().apply { statusMessage = readFrom(inputStream) }
     }

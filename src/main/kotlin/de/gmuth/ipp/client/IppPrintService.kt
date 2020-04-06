@@ -19,6 +19,12 @@ class IppPrintService(private val printerUri: URI) {
     val ippClient = IppClient()
     var verbose: Boolean = true
     var httpAuth: Http.Auth? = null
+    val ippPrinter: IppPrinter
+
+    init {
+        ippPrinter = IppPrinter(ippClient.getPrinterAttributes(printerUri).printerGroup)
+        ippPrinter.logDetails()
+    }
 
     // ============================================================================================================================ PRINT
 
@@ -34,14 +40,18 @@ class IppPrintService(private val printerUri: URI) {
         val request = IppRequest(IppOperation.PrintJob, printerUri).apply {
             operationGroup.attribute("document-format", IppTag.MimeMediaType, documentFormat)
             jobGroup.attribute("job-name", IppTag.NameWithoutLanguage, jobName)
-            jobParameters.forEach { jobParameter -> jobGroup.put(jobParameter.toIppAttribute()) }
+            jobParameters.forEach { jobParameter -> jobGroup.put(jobParameter.toIppAttribute(ippPrinter)) }
         }
         if (verbose) request.logDetails("IPP: ")
         val response = ippClient.exchangeSuccessful(printerUri, request, documentInputStream = FileInputStream(file))
         val job = IppJob(response.jobGroup)
 
-        if (waitForTermination) waitForTermination(job)
-        if (verbose) job.logDetails()
+        if (waitForTermination) {
+            waitForTermination(job)
+            if (verbose) job.logDetails()
+        } else {
+            if (verbose) println(job)
+        }
         return job
     }
 
@@ -100,6 +110,7 @@ class IppPrintService(private val printerUri: URI) {
             refreshJob(job)
             if (verbose) println("job-state = ${job.state}")
         } while (!job.state?.isTerminated()!!)
+        if (verbose) job.logDetails()
     }
 
     fun cancelJob(jobId: Int) {
@@ -115,7 +126,7 @@ class IppPrintService(private val printerUri: URI) {
             operationGroup.attribute("job-uri", IppTag.Uri, job.uri)
         }
         ippClient.exchangeSuccessful(job.uri, request)
-        println("canceled: $job")
+        println("canceled: ${job.uri}")
     }
 
     // ============================================================================================================================ PRINTER HANDLING
