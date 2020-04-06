@@ -70,7 +70,7 @@ class IppRegistrations {
         fun checkSyntaxOfAttribute(name: String, tag: IppTag) {
             try {
                 val syntax = attributeByName(name).syntax
-                if (!syntax.contains(tag.registeredSyntax())) println("WARN: '$name' uses '$tag' instead of '$syntax'")
+                if (syntax.isNotEmpty() && !syntax.contains(tag.registeredSyntax())) println("WARN: '$name' uses '$tag' instead of '$syntax'")
             } catch (exception: Exception) {
             }
         }
