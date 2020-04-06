@@ -100,6 +100,23 @@ class IppClient(
         }
     }
 
+    //-----------------------
+    // Get-Printer-Attributes
+    // ----------------------
+
+    fun getPrinterAttributes(printerUri: URI, vararg requestedAttributes: String): IppResponse {
+        return getPrinterAttributes(printerUri, requestedAttributes.toList())
+    }
+
+    fun getPrinterAttributes(printerUri: URI, requestedAttributes: List<String>): IppResponse {
+        val request = IppRequest(IppOperation.GetPrinterAttributes, printerUri).apply {
+            if (requestedAttributes.isNotEmpty())
+                operationGroup.attribute("requested-attributes", IppTag.Keyword, requestedAttributes)
+        }
+        request.logDetails()
+        return exchangeSuccessful(printerUri, request, "Get-Printer-Attributes $printerUri")
+    }
+
     //-------------------
     // Get-Job-Attributes
     // ------------------
@@ -109,14 +126,14 @@ class IppClient(
             operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
             operationGroup.attribute("job-id", IppTag.Integer, jobId)
         }
-        return exchangeSuccessful(printerUri, request, "GetJobAttributes #$jobId failed")
+        return exchangeSuccessful(printerUri, request, "Get-Job-Attributes #$jobId failed")
     }
 
     fun getJobAttributes(jobUri: URI): IppResponse {
         val request = IppRequest(IppOperation.GetJobAttributes).apply {
             operationGroup.attribute("job-uri", IppTag.Uri, jobUri)
         }
-        return exchangeSuccessful(jobUri, request, "GetJobAttributes $jobUri failed")
+        return exchangeSuccessful(jobUri, request, "Get-Job-Attributes $jobUri failed")
     }
 
 }
