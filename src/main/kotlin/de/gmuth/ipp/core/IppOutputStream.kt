@@ -10,6 +10,7 @@ import java.io.Flushable
 import java.io.OutputStream
 import java.net.URI
 import java.nio.charset.Charset
+import kotlin.reflect.KClass
 
 class IppOutputStream(outputStream: OutputStream, private val attributesCharset: Charset) : Closeable, Flushable {
 
@@ -45,6 +46,7 @@ class IppOutputStream(outputStream: OutputStream, private val attributesCharset:
     private fun writeAttribute(attribute: IppAttribute<*>) {
         with(attribute) {
             IppRegistrations.checkSyntaxOfAttribute(name, tag)
+            if(tag != IppTag.NoValue && values.isEmpty()) throw IppException("no values found to write for '$name'")
             // 1setOf iteration
             for ((index, value) in values.withIndex()) {
                 //println("*** $name[$index] = ($tag) $value")
@@ -68,22 +70,33 @@ class IppOutputStream(outputStream: OutputStream, private val attributesCharset:
             // value class Int
             IppTag.Integer,
             IppTag.Enum -> {
+                assertValueClass(value, Int::class)
                 dataOutputStream.writeShort(4)
                 dataOutputStream.writeInt(value as Int)
             }
 
             // value class String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
-            IppTag.Uri -> writeString((value as URI).toString(), charsetForTag(tag))
+            IppTag.Uri -> {
+                assertValueClass(value, URI::class)
+                writeString((value as URI).toString(), charsetForTag(tag))
+            }
             IppTag.Keyword,
             IppTag.UriScheme,
             IppTag.Charset,
             IppTag.NaturalLanguage,
             IppTag.MimeMediaType,
             IppTag.TextWithoutLanguage,
-            IppTag.NameWithoutLanguage -> writeString(value as String, charsetForTag(tag))
+            IppTag.NameWithoutLanguage -> {
+                assertValueClass(value, String::class)
+                writeString(value as String, charsetForTag(tag))
+            }
 
             else -> throw IppException(String.format("tag %s (%02X) encoding not implemented", tag, tag.code))
         }
+    }
+
+    private fun assertValueClass(value: Any?, kclass: KClass<*>) {
+        if (value!!::class != kclass) throw IppException("expected value of $kclass but found: ${value::class}")
     }
 
     private fun charsetForTag(tag: IppTag) =
