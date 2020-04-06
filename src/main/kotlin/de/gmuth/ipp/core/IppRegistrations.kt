@@ -1,12 +1,12 @@
 package de.gmuth.ipp.core
 
-import de.gmuth.csv.CSVReader
-import de.gmuth.csv.ListOfStringCSVReader
-import java.io.OutputStream
-
 /**
  * Copyright (c) 2020 Gerhard Muth
  */
+
+import de.gmuth.csv.CSVReader
+import de.gmuth.csv.ListOfStringCSVReader
+import java.io.OutputStream
 
 class IppRegistrations {
 

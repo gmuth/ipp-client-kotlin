@@ -1,12 +1,14 @@
 package de.gmuth.ipp.client
 
-import de.gmuth.ipp.core.*
-import java.net.URI
-import java.time.LocalDateTime
-
 /**
  * Copyright (c) 2020 Gerhard Muth
  */
+
+import de.gmuth.ipp.core.IppAttributesGroup
+import de.gmuth.ipp.core.IppJobState
+import de.gmuth.ipp.core.IppTime
+import java.net.URI
+import java.time.LocalDateTime
 
 class IppJob(jobGroup: IppAttributesGroup) {
 
