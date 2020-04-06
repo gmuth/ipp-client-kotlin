@@ -10,36 +10,32 @@ Road map:
 
 ### [IppPrintService](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppPrintService.kt)
 
-    val uri = URI.create("ipp://colorjet/ipp/printer")
+    val printer = URI.create("ipp://colorjet/ipp/printer")
     val file = File("A4-blank.pdf")
-
-    val printService = IppPrintService(uri)
+    val remoteFile = URI.create("http://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf")
+ 
+    val printService = IppPrintService(printer)
+    
     printService.printFile(file)
-    printService.printFile(file, waitForTermination = true)
     printService.printFile(file, IppColorMode.Monochrome)
-    
-### methods of [IppClient](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppClient.kt) 
+    printService.printFile(file, waitForTermination = true)
+    printService.printUri(remoteFile) // -- make printer pull document from remote server
 
-    fun getJobAttributes(printerUri: URI, jobId: Int): IppResponse
-    fun getJobAttributes(jobUri: URI): IppResponse
+    printService.getJobs()
+    printService.getJob(345)
+    printService.cancelJob(345)
     
-    fun getJob(printerUri: URI, jobId: Int): IppJob
-    fun getJobs(printerUri: URI): List<IppJob>
-    
-    fun cancelJob(printerUri: URI, jobId: Int): IppResponse
-    fun cancelJob(job: IppJob): IppResponse
-    
-    fun pausePrinter(printerUri: URI): IppResponse
-    fun resumePrinter(printerUri: URI): IppResponse
+    printService.pausePrinter()
+    printService.resumePrinter()
 
 ### exchange [IppRequest](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppRequest.kt) for [IppResponse](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppResponse.kt)
 
-    val uri = URI.create("ipp://colorjet/ipp/printer")
+    val printer = URI.create("ipp://colorjet/ipp/printer")
     val file = File("A4-blank.pdf")
     
     val ippClient = IppClient()
     val request = IppRequest(IppOperation.PrintJob).apply {
-      operationGroup.attribute("printer-uri", uri)
+      operationGroup.attribute("printer-uri", printer)
       operationGroup.attribute("document-format", "application/octet-stream")
       operationGroup.attribute("requesting-user-name", "kotlin-ipp")
     }
@@ -61,15 +57,15 @@ Road map:
         )
     }
 
-### use basic auth and invalid certs
+### Use basic auth with invalid SSL certificates
 
-    val uri = URI.create("ipps://pi.local/printers/Lexmark_E210")
+    val printer = URI.create("ipps://pi.local/printers/Lexmark_E210")
     
-    with(IppClient()) {
+    with(IppPrintService(printer)) {
         // trust cups self-signed certs
-        httpClient.config.disableSSLCertificateValidation = true 
-        auth = Http.Auth("admin", "secret")
-        pausePrinter(uri).logDetails()    
+        ippClient.httpClient.config.disableSSLCertificateValidation = true
+        httpAuth = Http.Auth("admin", "secret")
+        pausePrinter()    
     }
           
 ## Build
