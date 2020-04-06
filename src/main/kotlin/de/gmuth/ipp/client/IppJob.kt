@@ -1,5 +1,6 @@
-package de.gmuth.ipp.core
+package de.gmuth.ipp.client
 
+import de.gmuth.ipp.core.*
 import java.net.URI
 import java.time.LocalDateTime
 
@@ -87,7 +88,3 @@ class IppJob(jobGroup: IppAttributesGroup) {
     }
 
 }
-
-fun IppAttributesGroup.toIppJob() =
-        if (tag == IppTag.Job) IppJob(this)
-        else throw IppException("not a job group: $tag")

@@ -5,7 +5,9 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.http.Http
-import de.gmuth.ipp.core.*
+import de.gmuth.ipp.core.IppOperation
+import de.gmuth.ipp.core.IppRequest
+import de.gmuth.ipp.core.IppTag
 import java.io.File
 import java.io.FileInputStream
 import java.net.URI
@@ -36,7 +38,7 @@ class IppPrintService(private val printerUri: URI) {
         }
         if (verbose) request.logDetails("IPP: ")
         val response = ippClient.exchangeSuccessful(printerUri, request, documentInputStream = FileInputStream(file))
-        val job = response.jobGroup.toIppJob()
+        val job = IppJob(response.jobGroup)
 
         if (waitForTermination) waitForTermination(job)
         if (verbose) job.logDetails()
@@ -65,7 +67,7 @@ class IppPrintService(private val printerUri: URI) {
         if (verbose) request.logDetails("IPP: ")
 
         val response = ippClient.exchangeSuccessful(printerUri, request, "Print-Uri $documentUri")
-        val job = response.jobGroup.toIppJob()
+        val job = IppJob(response.jobGroup)
 
         if (waitForTermination) waitForTermination(job)
         if (verbose) job.logDetails()
@@ -74,13 +76,15 @@ class IppPrintService(private val printerUri: URI) {
 
     // ============================================================================================================================ JOB HANDLING
 
-    fun getJob(jobId: Int) = ippClient.getJobAttributes(printerUri, jobId).jobGroup.toIppJob()
+    fun getJob(jobId: Int): IppJob {
+        return IppJob(ippClient.getJobAttributes(printerUri, jobId).jobGroup)
+    }
 
     fun getJobs(): List<IppJob> {
         val request = IppRequest(IppOperation.GetJobs, printerUri)
         val response = ippClient.exchangeSuccessful(printerUri, request)
         return response.getAttributesGroups(IppTag.Job).stream()
-                .map { jobGroup -> jobGroup.toIppJob() }.toList()
+                .map { jobGroup -> IppJob(jobGroup) }.toList()
     }
 
     fun refreshJob(job: IppJob) {
