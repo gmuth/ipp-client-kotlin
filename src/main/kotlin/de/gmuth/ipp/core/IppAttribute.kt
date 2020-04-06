@@ -4,13 +4,15 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
-class IppAttribute<T>(val name: String, val tag: IppTag, val values: List<T>) {
+class IppAttribute<T> constructor(val name: String, val tag: IppTag, val values: MutableList<T>) {
 
-    constructor(name: String, tag: IppTag, vararg values: T) : this(name, tag, values.toList())
+    constructor(name: String, tag: IppTag, vararg values: T) : this(name, tag, values.toMutableList())
 
-    constructor(name: String, vararg values: T) : this(name, IppRegistrations.tagForAttribute(name), values.toList()) {
-        if (!supportTagForAttribute) throw RuntimeException("for '$name' use IppTag.${tag.name}")
+    constructor(name: String, vararg values: T) : this(name, IppRegistrations.tagForAttribute(name), values.toMutableList()) {
+        if (!supportTagForAttribute) throw IppException("for '$name' use IppTag.${tag.name}")
     }
+
+    fun addValue(value: Any) = values.add(value as T)
 
     fun is1setOf() = values.size > 1
             || IppRegistrations.attributeNameIsRegistered(name) && IppRegistrations.attributeIs1setOf(name)

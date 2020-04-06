@@ -11,21 +11,16 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     }
 
     fun put(attribute: IppAttribute<*>): IppAttribute<*>? {
-        if(attribute.value == null) return null
         val replaced = put(attribute.name, attribute)
-        if (replaced != null) {
-            println(String.format("replaced '%s' with '%s'", replaced, attribute))
-        }
+        if (replaced != null) println("replaced '$replaced' with '$attribute'")
         return replaced
     }
 
-    fun attribute(name: String, tag: IppTag, value: Any?) = put(IppAttribute(name, tag, value))
+    fun attribute(name: String, tag: IppTag, vararg value: Any?) = put(IppAttribute(name, tag, value.toMutableList()))
 
-    fun attribute(name: String, value: Any?) = put(IppAttribute(name, value))
+    fun attribute(name: String, vararg value: Any?) = put(IppAttribute(name, value.toMutableList()))
 
-    override fun toString(): String {
-        return "IppAttributesGroup '$tag' containing ${size.toPluralString("attribute")}"
-    }
+    override fun toString() = "IppAttributesGroup '$tag' containing ${size.toPluralString("attribute")}"
 
     fun logDetails(prefix: String) {
         if (size > 0) {
