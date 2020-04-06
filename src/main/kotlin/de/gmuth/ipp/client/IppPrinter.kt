@@ -18,6 +18,7 @@ class IppPrinter(printerGroup: IppAttributesGroup) {
         readFrom(printerGroup)
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun readFrom(printerGroup: IppAttributesGroup) = with(printerGroup) {
         printerName = get("printer-name")?.value as String?
         printerMakeAndModel = get("printer-make-and-model")?.value as String?
