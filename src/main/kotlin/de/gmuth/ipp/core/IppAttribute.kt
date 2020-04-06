@@ -12,7 +12,8 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag, val values:
         if (!supportTagForAttribute) throw IppException("for '$name' use IppTag.${tag.name}")
     }
 
-    fun addValue(value: Any) = values.add(value as T)
+    @Suppress("UNCHECKED_CAST")
+    fun addValue(value: Any?) = values.add(value as T)
 
     fun is1setOf() = values.size > 1
             || IppRegistrations.attributeNameIsRegistered(name) && IppRegistrations.attributeIs1setOf(name)
