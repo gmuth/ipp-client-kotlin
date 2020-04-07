@@ -18,7 +18,6 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
 
     private val dataInputStream: DataInputStream = DataInputStream(inputStream)
     private var attributesCharset: Charset? = null // encoding for text and name attributes, rfc 8011 4.1.4.1
-    var statusMessage: String? = null
 
     fun readMessage(message: IppMessage) {
         with(message) {
@@ -64,12 +63,12 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
 
         // check tag
         if (compareTagsToIppRegistrations) IppRegistrations.checkSyntaxOfAttribute(name, tag)
+        //tag.validateValueClass(value)
 
         // collect special attribute values or convert types
         if (!tag.isOutOfBandTag()) when (name) {
             "attributes-charset" -> attributesCharset = Charset.forName(value as String)
-            "status-message" -> statusMessage = value as String
-            "job-state" -> value = IppJobState.fromCode(value as Int)
+            "job-state" -> value = IppJobState.fromCode(value as Int) // move this somewhere else
         }
 
         return IppAttribute(name, tag, value)

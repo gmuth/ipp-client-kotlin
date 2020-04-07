@@ -55,11 +55,11 @@ abstract class IppMessage {
 
     // --------------------------------------------------------------------- DECODING
 
-    fun readFrom(inputStream: InputStream): String? {
+    fun readFrom(inputStream: InputStream) {//: String? {
         val ippInputStream = IppInputStream(inputStream)
         ippInputStream.readMessage(this)
         ippInputStream.close()
-        return ippInputStream.statusMessage
+        //return ippInputStream.statusMessage
     }
 
     // --------------------------------------------------------------------- LOGGING
