@@ -9,7 +9,7 @@ import java.io.OutputStream
 import java.io.PrintWriter
 import kotlin.math.log10
 
-class ListOfStringCVSReader : CSVReader<List<String>>() {
+class ListOfStringCSVReader : CSVReader<List<String>>() {
 
     private var rows: List<List<String>>? = null
 

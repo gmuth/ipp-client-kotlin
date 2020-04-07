@@ -5,7 +5,7 @@ package de.gmuth.ipp.core
  */
 
 import de.gmuth.csv.CSVReader
-import de.gmuth.csv.ListOfStringCVSReader
+import de.gmuth.csv.ListOfStringCSVReader
 import java.io.OutputStream
 
 class IppRegistrations {
@@ -76,7 +76,7 @@ class IppRegistrations {
         }
 
         fun prettyPrintCSV(outputStream: OutputStream) {
-            val csvReader = ListOfStringCVSReader()
+            val csvReader = ListOfStringCSVReader()
             csvReader.parse(ippRegistrationsCsvInputStream(), false)
             csvReader.prettyPrint(outputStream)
         }
