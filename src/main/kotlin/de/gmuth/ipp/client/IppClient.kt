@@ -38,15 +38,20 @@ class IppClient(
             httpAuth: Http.Auth? = null
 
     ): IppResponse {
-        val responseStream = with(request) {
+        // request logging
+        with(request) {
             if (verbose) {
                 println("send ${operation} request to $uri")
                 println(this)
                 logDetails(">> ")
             }
-            exchange(uri, toInputStream(), documentInputStream, httpAuth)
         }
-        with(IppResponse.fromInputStream(responseStream)) {
+
+        val responseStream = exchange(uri, request.toInputStream(), documentInputStream, httpAuth)
+        val response = IppResponse(responseStream)
+
+        // response logging
+        with(response) {
             if (verbose) {
                 println("read ipp response")
                 logDetails("<< ")
@@ -60,8 +65,9 @@ class IppClient(
             if (statusMessage != null) {
                 println("status-message: $statusMessage")
             }
-            return this
         }
+
+        return response
     }
 
     private fun exchange(
