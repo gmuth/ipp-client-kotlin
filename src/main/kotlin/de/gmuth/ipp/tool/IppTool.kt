@@ -7,7 +7,6 @@ import java.io.FileInputStream
 import java.io.InputStream
 import java.io.Reader
 import java.net.URI
-import java.nio.charset.Charset
 
 class IppTool() {
     var uri: URI? = null
@@ -23,7 +22,7 @@ class IppTool() {
 
     fun run(lines: List<String>) {
         var fileInputStream: FileInputStream? = null
-        var currentGroup: IppAttributesGroup? = null
+        lateinit var currentGroup: IppAttributesGroup
         val request = IppRequest()
 
         // parse commands and build ipp request
@@ -34,27 +33,29 @@ class IppTool() {
             if (verbose) println("| ${line.trim()}")
             val firstArgument = lineItems[1]
             when (command) {
-                "OPERATION" -> request.operation = IppOperation.fromRegisteredName(firstArgument)
+                "OPERATION" -> {
+                    val operation = IppOperation.fromRegisteredName(firstArgument)
+                    request.code = operation.code
+                }
                 "GROUP" -> when (firstArgument) {
                     "operation-attributes-tag" -> currentGroup = request.operationGroup
-                    else -> throw IllegalArgumentException("unsupported group '$firstArgument'")
+                    else -> throw IppException("unsupported group '$firstArgument'")
                 }
                 "ATTR" -> {
                     val tag = IppTag.fromRegisteredName(firstArgument)
                     val name = lineItems[2]
                     val value: Any = with(lineItems[3]) {
                         when {
-                            this == "\$uri" -> uri ?: throw java.lang.IllegalArgumentException("\$uri undefined")
+                            this == "\$uri" -> uri ?: throw IppException("\$uri undefined")
                             name.contains("-uri") -> URI.create(this)
                             else -> this
                         }
                     }
-                    currentGroup?.put(IppAttribute(name, tag, value))
-                    if (name == "attributes-charset" && value is String) request.attributesCharset = Charset.forName(value)
+                    currentGroup.put(IppAttribute(name, tag, value))
                 }
                 "FILE" -> {
                     if (firstArgument == "\$file" || firstArgument == "\$filename") {
-                        if (filename == null) throw IllegalArgumentException("$firstArgument undefined")
+                        if (filename == null) throw IppException("$firstArgument undefined")
                     } else {
                         filename = firstArgument
                     }

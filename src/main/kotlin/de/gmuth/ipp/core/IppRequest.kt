@@ -7,40 +7,44 @@ import java.util.concurrent.atomic.AtomicInteger
  * Copyright (c) 2020 Gerhard Muth
  */
 
-open class IppRequest() : IppMessage() {
-
-    private val requestCounter = AtomicInteger(1)
-    val requestingUserName: String? = System.getenv("USER")
-    val operationGroup = newAttributesGroup(IppTag.Operation)
-    val jobGroup = newAttributesGroup(IppTag.Job)
+class IppRequest() : IppMessage() {
 
     init {
         version = IppVersion()
         requestId = requestCounter.getAndIncrement()
     }
 
-    constructor(
-            operation: IppOperation,
-            printerUri: URI? = null,
-            naturalLanguage: String = "en"
-
-    ) : this() {
-        code = operation.code
-        attributesCharset = Charsets.UTF_8
-
-        operationGroup.attribute("attributes-charset", IppTag.Charset, attributesCharset?.name()?.toLowerCase())
-        operationGroup.attribute("attributes-natural-language", IppTag.NaturalLanguage, naturalLanguage)
-        if (printerUri != null) operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
-        if (requestingUserName != null) operationGroup.attribute("requesting-user-name", IppTag.NameWithoutLanguage, requestingUserName)
-    }
-
     override val codeDescription: String
         get() = "operation = $operation"
 
-    var operation: IppOperation
+    val operation: IppOperation
         get() = IppOperation.fromCode(code ?: throw IppException("operation-code must not be null"))
-        set(operation) {
-            code = operation.code
+
+    val operationGroup = newAttributesGroup(IppTag.Operation)
+
+    constructor(
+            operation: IppOperation,
+            printerUri: URI? = null,
+            naturalLanguage: String = "en",
+            requestingUserName: String? = System.getenv("USER")
+
+    ) : this() {
+        code = operation.code
+        operationGroup.attribute("attributes-charset", IppTag.Charset, Charsets.UTF_8.name().toLowerCase())
+        operationGroup.attribute("attributes-natural-language", IppTag.NaturalLanguage, naturalLanguage)
+
+        if (printerUri != null) {
+            operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
         }
+        if (requestingUserName != null) {
+            operationGroup.attribute("requesting-user-name", IppTag.NameWithoutLanguage, requestingUserName)
+        }
+    }
+
+    fun newJobGroup() = newAttributesGroup(IppTag.Job)
+
+    companion object {
+        private val requestCounter = AtomicInteger(1)
+    }
 
 }

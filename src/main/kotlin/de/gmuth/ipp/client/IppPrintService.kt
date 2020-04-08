@@ -39,8 +39,10 @@ class IppPrintService(private val printerUri: URI) {
 
         val request = IppRequest(IppOperation.PrintJob, printerUri).apply {
             operationGroup.attribute("document-format", IppTag.MimeMediaType, documentFormat)
-            jobGroup.attribute("job-name", IppTag.NameWithoutLanguage, jobName)
-            jobParameters.forEach { jobParameter -> jobGroup.put(jobParameter.toIppAttribute(ippPrinter)) }
+            with(newJobGroup()) {
+                attribute("job-name", IppTag.NameWithoutLanguage, jobName)
+                jobParameters.forEach { jobParameter -> put(jobParameter.toIppAttribute(ippPrinter)) }
+            }
         }
         if (verbose) request.logDetails("IPP: ")
 
@@ -72,8 +74,10 @@ class IppPrintService(private val printerUri: URI) {
         val request = IppRequest(IppOperation.PrintUri, printerUri).apply {
             operationGroup.attribute("document-uri", IppTag.Uri, documentUri)
             operationGroup.attribute("document-format", IppTag.MimeMediaType, documentFormat)
-            jobGroup.attribute("job-name", IppTag.NameWithoutLanguage, jobName)
-            jobParameters.forEach { jobParameter -> jobGroup.put(jobParameter.toIppAttribute(ippPrinter)) }
+            with(newJobGroup()) {
+                attribute("job-name", IppTag.NameWithoutLanguage, jobName)
+                jobParameters.forEach { jobParameter -> put(jobParameter.toIppAttribute(ippPrinter)) }
+            }
         }
         if (verbose) request.logDetails("IPP: ")
 
