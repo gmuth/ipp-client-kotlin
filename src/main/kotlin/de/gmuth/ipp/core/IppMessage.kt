@@ -8,7 +8,6 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
-import java.nio.charset.Charset
 
 abstract class IppMessage {
 
@@ -16,8 +15,11 @@ abstract class IppMessage {
     var code: Short? = null
     abstract val codeDescription: String // request operation or response status
     var requestId: Int? = null
-    var attributesCharset: Charset? = null
     val attributesGroups = mutableListOf<IppAttributesGroup>()
+
+    fun getAttributesGroups(tag: IppTag) = attributesGroups.filter { it.tag == tag }
+
+    fun getSingleAttributesGroup(tag: IppTag) = getAttributesGroups(tag).single()
 
     fun newAttributesGroup(tag: IppTag): IppAttributesGroup {
         val group = IppAttributesGroup(tag)
@@ -25,19 +27,21 @@ abstract class IppMessage {
         return group
     }
 
-    fun getAttributesGroups(tag: IppTag) = attributesGroups.filter { it.tag == tag }
+    // --------------------------------------------------------------------- DECODING
 
-    fun getSingleAttributesGroup(tag: IppTag) = getAttributesGroups(tag).single()
+    fun readFrom(inputStream: InputStream) {
+        val ippInputStream = IppInputStream(inputStream)
+        ippInputStream.readMessage(this)
+        ippInputStream.close()
+    }
 
     // --------------------------------------------------------------------- ENCODING
 
     private fun writeTo(outputStream: OutputStream) {
-        if (version == null) throw IllegalArgumentException("version must not be null")
-        if (code == null) throw IllegalArgumentException("code must not be null")
-        if (requestId == null) throw IllegalArgumentException("requestId must not be null")
-        if (attributesCharset == null) throw IllegalArgumentException("attributesCharset must not be null")
+        //if (code == null) throw IppException("code must not be null")
+        //if (requestId == null) throw IppException("requestId must not be null")
 
-        val ippOutputStream = IppOutputStream(outputStream, attributesCharset as Charset)
+        val ippOutputStream = IppOutputStream(outputStream)
         ippOutputStream.writeMessage(this)
         ippOutputStream.close()
     }
@@ -51,15 +55,6 @@ abstract class IppMessage {
 
     fun toInputStream(): InputStream {
         return ByteArrayInputStream(toByteArray())
-    }
-
-    // --------------------------------------------------------------------- DECODING
-
-    fun readFrom(inputStream: InputStream) {//: String? {
-        val ippInputStream = IppInputStream(inputStream)
-        ippInputStream.readMessage(this)
-        ippInputStream.close()
-        //return ippInputStream.statusMessage
     }
 
     // --------------------------------------------------------------------- LOGGING
@@ -76,7 +71,6 @@ abstract class IppMessage {
         println("${prefix}version = $version")
         println("${prefix}$codeDescription")
         println("${prefix}request-id = $requestId")
-        for (group in attributesGroups)
-            group.logDetails(prefix)
+        attributesGroups.forEach { group -> group.logDetails(prefix) }
     }
 }

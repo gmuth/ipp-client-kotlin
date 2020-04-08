@@ -11,16 +11,24 @@ import java.io.OutputStream
 import java.net.URI
 import java.nio.charset.Charset
 
-class IppOutputStream(outputStream: OutputStream, private val attributesCharset: Charset) : Closeable, Flushable {
+class IppOutputStream(outputStream: OutputStream) : Closeable, Flushable {
 
     private val dataOutputStream: DataOutputStream = DataOutputStream(outputStream)
 
+    private var attributesCharset: Charset? = null // encoding for text and name attributes, rfc 8011 4.1.4.1
+
+    private fun charsetForTag(tag: IppTag) =
+            if (tag.useAttributesCharset()) attributesCharset ?: throw IppException("missing attributes-charset")
+            else Charsets.US_ASCII
+
     fun writeMessage(message: IppMessage) {
         with(message) {
-            writeVersion(version as IppVersion)
-            writeCode(code as Short)
-            writeRequestId(requestId as Int)
-            attributesGroups.forEach { group -> writeAttributesGroup(group) }
+            writeVersion(version ?: throw IppException("missing version"))
+            writeCode(code ?: throw IppException("missing operation or status code"))
+            writeRequestId(requestId ?: throw IppException("missing requestIds"))
+            attributesGroups.forEach { group ->
+                writeAttributesGroup(group)
+            }
             writeTag(IppTag.End)
         }
     }
@@ -45,13 +53,18 @@ class IppOutputStream(outputStream: OutputStream, private val attributesCharset:
     private fun writeAttribute(attribute: IppAttribute<*>) {
         with(attribute) {
             IppRegistrations.checkSyntaxOfAttribute(name, tag)
-            if (tag != IppTag.NoValue && values.isEmpty()) throw IppException("no values found to write for '$name'")
+            if (tag != IppTag.NoValue && values.isEmpty()) {
+                throw IppException("no values found to write for '$name'")
+            }
             // 1setOf iteration
             for ((index, value) in values.withIndex()) {
                 //println("*** $name[$index] = ($tag) $value")
                 writeTag(tag)
                 writeString(if (index == 0) name else "", Charsets.US_ASCII)
                 writeAttributeValue(tag, value)
+            }
+            if (name == "attributes-charset" && tag == IppTag.Charset) {
+                attributesCharset = Charset.forName(value as String)
             }
         }
     }
@@ -89,10 +102,6 @@ class IppOutputStream(outputStream: OutputStream, private val attributesCharset:
             else -> throw IppException(String.format("tag %s (%02X) encoding not implemented", tag, tag.code))
         }
     }
-
-    private fun charsetForTag(tag: IppTag) =
-            if (tag.useAttributesCharset()) attributesCharset
-            else Charsets.US_ASCII
 
     private fun writeString(value: String, charset: Charset) {
         writeLengthAndValue(value.toByteArray(charset))

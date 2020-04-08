@@ -19,6 +19,10 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
     private val dataInputStream: DataInputStream = DataInputStream(inputStream)
     private var attributesCharset: Charset? = null // encoding for text and name attributes, rfc 8011 4.1.4.1
 
+    private fun charsetForTag(tag: IppTag) =
+            if (tag.useAttributesCharset()) attributesCharset ?: throw IppException("missing attributes-charset")
+            else Charsets.US_ASCII
+
     fun readMessage(message: IppMessage) {
         with(message) {
             version = readVersion()
@@ -65,10 +69,14 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
         if (compareTagsToIppRegistrations) IppRegistrations.checkSyntaxOfAttribute(name, tag)
         //tag.validateValueClass(value)
 
-        // collect special attribute values or convert types
+        // keep attributes-charset for name and text value encoding
+        if (name == "attributes-charset" && tag == IppTag.Charset) {
+            attributesCharset = Charset.forName(value as String)
+        }
+
+        // move this somewhere else?
         if (!tag.isOutOfBandTag()) when (name) {
-            "attributes-charset" -> attributesCharset = Charset.forName(value as String)
-            "job-state" -> value = IppJobState.fromCode(value as Int) // move this somewhere else
+            "job-state" -> value = IppJobState.fromCode(value as Int)
         }
 
         return IppAttribute(name, tag, value)
@@ -105,10 +113,6 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
             String.format("<$tag-decoding-not-implemented>")
         }
     }
-
-    private fun charsetForTag(tag: IppTag) =
-            if (tag.useAttributesCharset()) attributesCharset ?: throw IllegalStateException("missing attributes-charset")
-            else Charsets.US_ASCII
 
     private fun readString(charset: Charset): String {
         val bytes = readLengthAndValue()
