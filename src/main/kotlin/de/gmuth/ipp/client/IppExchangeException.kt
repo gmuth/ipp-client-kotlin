@@ -1,4 +1,8 @@
-package de.gmuth.ipp.core
+package de.gmuth.ipp.client
+
+import de.gmuth.ipp.core.IppException
+import de.gmuth.ipp.core.IppRequest
+import de.gmuth.ipp.core.IppResponse
 
 /**
  * Copyright (c) 2020 Gerhard Muth
