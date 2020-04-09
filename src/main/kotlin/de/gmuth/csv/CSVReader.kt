@@ -30,14 +30,14 @@ open class CSVReader<T> {
         val fields = mutableListOf<String>()
         var currentField = StringBuffer()
         var inQuote = false
-        var lastCharIsQuote = false
+        var lastCharacterWasQuote = false
         columnLoop@ while (true) {
             val i = inputStream.read()
             if (i == -1) break@columnLoop
             val c = i.toChar()
-            var append = false
+            var appendCharacter = false
             if (inQuote) {
-                append = c != '"'
+                appendCharacter = c != '"'
             } else {
                 when (c) {
                     ',', '\n' -> {
@@ -45,13 +45,13 @@ open class CSVReader<T> {
                         if (c == '\n') return fields
                         else currentField = StringBuffer()
                     }
-                    '"' -> append = lastCharIsQuote
-                    else -> append = c != '\r'
+                    '"' -> appendCharacter = lastCharacterWasQuote
+                    else -> appendCharacter = c != '\r'
                 }
             }
-            lastCharIsQuote = c == '"'
-            if (lastCharIsQuote) inQuote = !inQuote
-            if (append) currentField.append(c)
+            lastCharacterWasQuote = c == '"'
+            if (lastCharacterWasQuote) inQuote = !inQuote
+            if (appendCharacter) currentField.append(c)
         }
         if (currentField.isEmpty()) return null
         fields.add(currentField.toString())
