@@ -14,6 +14,7 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
 
     companion object {
         var compareTagsToIppRegistrations: Boolean = true
+        var strict: Boolean = false
     }
 
     private val dataInputStream: DataInputStream = DataInputStream(inputStream)
@@ -90,6 +91,12 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
             null
         }
 
+        // value class Boolean
+        IppTag.Boolean -> {
+            assertValueLength(1)
+            dataInputStream.readByte() == 0x01.toByte()
+        }
+
         // value class Int
         IppTag.Integer,
         IppTag.Enum -> {
@@ -97,8 +104,21 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
             dataInputStream.readInt()
         }
 
+        // value class IppIntegerRange
+        IppTag.RangeOfInteger -> {
+            assertValueLength(8)
+            with(dataInputStream) { IppIntegerRange(readInt(), readInt()) }
+        }
+
+        // value class IppResolution
+        IppTag.Resolution -> {
+            assertValueLength(9)
+            with(dataInputStream) { IppResolution(readInt(), readInt(), readByte().toInt()) }
+        }
+
         // value class String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
         IppTag.Uri -> URI.create(readString(charsetForTag(tag)))
+        IppTag.OctetString,
         IppTag.Keyword,
         IppTag.UriScheme,
         IppTag.Charset,
@@ -110,6 +130,7 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
         else -> {
             // if support for a specific tag is required kindly ask the author to implement it
             readLengthAndValue()
+            if (strict) throw IppException("decoding $tag not implemented")
             String.format("<$tag-decoding-not-implemented>")
         }
     }

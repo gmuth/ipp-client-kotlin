@@ -82,6 +82,12 @@ class IppOutputStream(outputStream: OutputStream) : Closeable, Flushable {
                 dataOutputStream.writeShort(0)
             }
 
+            // value class Boolean
+            IppTag.Boolean -> {
+                dataOutputStream.writeShort(1)
+                dataOutputStream.writeByte(if (value as Boolean) 0x01 else 0x00)
+            }
+
             // value class Int
             IppTag.Integer,
             IppTag.Enum -> {
@@ -89,8 +95,28 @@ class IppOutputStream(outputStream: OutputStream) : Closeable, Flushable {
                 dataOutputStream.writeInt(value as Int)
             }
 
+            // value class IppIntegerRange
+            IppTag.RangeOfInteger -> {
+                dataOutputStream.writeShort(8)
+                with (value as IppIntegerRange) {
+                    dataOutputStream.writeInt(start)
+                    dataOutputStream.writeInt(end)
+                }
+            }
+
+            // value class IppResolution
+            IppTag.Resolution -> {
+                with(value as IppResolution) {
+                    dataOutputStream.writeShort(9)
+                    dataOutputStream.writeInt(x)
+                    dataOutputStream.writeInt(y)
+                    dataOutputStream.writeByte(unit)
+                }
+            }
+
             // value class String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
             IppTag.Uri -> writeString((value as URI).toString(), charsetForTag(tag))
+            IppTag.OctetString,
             IppTag.Keyword,
             IppTag.UriScheme,
             IppTag.Charset,
