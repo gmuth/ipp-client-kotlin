@@ -82,6 +82,13 @@ class IppOutputStream(outputStream: OutputStream) : Closeable, Flushable {
                 dataOutputStream.writeShort(0)
             }
 
+            // value class ByteArray
+            IppTag.Unsupported_,
+            IppTag.Unknown,
+            IppTag.NotSettable,
+            IppTag.DeleteAttribute,
+            IppTag.AdminDefine -> writeLengthAndValue(value as ByteArray)
+
             // value class Boolean
             IppTag.Boolean -> {
                 dataOutputStream.writeShort(1)
@@ -98,7 +105,7 @@ class IppOutputStream(outputStream: OutputStream) : Closeable, Flushable {
             // value class IppIntegerRange
             IppTag.RangeOfInteger -> {
                 dataOutputStream.writeShort(8)
-                with (value as IppIntegerRange) {
+                with(value as IppIntegerRange) {
                     dataOutputStream.writeInt(start)
                     dataOutputStream.writeInt(end)
                 }

@@ -91,6 +91,13 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
             null
         }
 
+        // value class ByteArray
+        IppTag.Unsupported_,
+        IppTag.Unknown,
+        IppTag.NotSettable,
+        IppTag.DeleteAttribute,
+        IppTag.AdminDefine -> readLengthAndValue()
+
         // value class Boolean
         IppTag.Boolean -> {
             assertValueLength(1)
