@@ -94,7 +94,7 @@ enum class IppTag(
         else -> registeredName()
     }
 
-    // reflection issue: Kotlin reflection is not available
+    // reflection issue: Kotlin reflection is not available -> use reified
     // class java.nio.charset.Charset != class sun.nio.cs.UTF_8
     fun no_validateValueClass(value: Any?) {
         if (value != null && valueClass != null && (value::class) == valueClass) {
