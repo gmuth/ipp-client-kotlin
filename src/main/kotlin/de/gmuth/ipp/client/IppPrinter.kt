@@ -5,11 +5,12 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.ipp.core.IppAttributesGroup
+import de.gmuth.ipp.core.IppString
 
 class IppPrinter(printerGroup: IppAttributesGroup) {
 
-    var printerName: String? = null
-    var printerMakeAndModel: String? = null
+    var printerName: IppString? = null
+    var printerMakeAndModel: IppString? = null
     var ippVersionsSupported: List<String>? = null
     var printColorModeSupported: List<String>? = null
     var outputModeSupported: List<String>? = null
@@ -20,8 +21,8 @@ class IppPrinter(printerGroup: IppAttributesGroup) {
 
     @Suppress("UNCHECKED_CAST")
     private fun readFrom(printerGroup: IppAttributesGroup) = with(printerGroup) {
-        printerName = get("printer-name")?.value as String?
-        printerMakeAndModel = get("printer-make-and-model")?.value as String?
+        printerName = get("printer-name")?.value as IppString?
+        printerMakeAndModel = get("printer-make-and-model")?.value as IppString?
         ippVersionsSupported = get("ipp-versions-supported")?.values as List<String>?
         printColorModeSupported = get("print-color-mode-supported")?.values as List<String>?
         outputModeSupported = get("output-mode-supported")?.values as List<String>?

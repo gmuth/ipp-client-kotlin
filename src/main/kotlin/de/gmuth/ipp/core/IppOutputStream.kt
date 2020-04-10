@@ -44,7 +44,11 @@ class IppOutputStream(outputStream: OutputStream) : Closeable, Flushable {
             if (size > 0) {
                 writeTag(tag)
                 for (attribute in values) {
-                    writeAttribute(attribute)
+                    try {
+                        writeAttribute(attribute)
+                    } catch (exception: Exception) {
+                        throw IppException("failed to write attribute: $attribute", exception)
+                    }
                 }
             }
         }
@@ -78,9 +82,7 @@ class IppOutputStream(outputStream: OutputStream) : Closeable, Flushable {
         //tag.validateValueClass(value)
         when (tag) {
             // out-of-band
-            IppTag.NoValue -> {
-                dataOutputStream.writeShort(0)
-            }
+            IppTag.NoValue -> dataOutputStream.writeShort(0)
 
             // value class ByteArray
             IppTag.Unsupported_,
@@ -90,47 +92,56 @@ class IppOutputStream(outputStream: OutputStream) : Closeable, Flushable {
             IppTag.AdminDefine -> writeLengthAndValue(value as ByteArray)
 
             // value class Boolean
-            IppTag.Boolean -> {
+            IppTag.Boolean -> with(value as Boolean) {
                 dataOutputStream.writeShort(1)
-                dataOutputStream.writeByte(if (value as Boolean) 0x01 else 0x00)
+                dataOutputStream.writeByte(if (value) 0x01 else 0x00)
             }
 
             // value class Int
             IppTag.Integer,
-            IppTag.Enum -> {
+            IppTag.Enum -> with(value as Int) {
                 dataOutputStream.writeShort(4)
-                dataOutputStream.writeInt(value as Int)
+                dataOutputStream.writeInt(value)
             }
 
             // value class IppIntegerRange
-            IppTag.RangeOfInteger -> {
+            IppTag.RangeOfInteger -> with(value as IppIntegerRange) {
                 dataOutputStream.writeShort(8)
-                with(value as IppIntegerRange) {
-                    dataOutputStream.writeInt(start)
-                    dataOutputStream.writeInt(end)
-                }
+                dataOutputStream.writeInt(start)
+                dataOutputStream.writeInt(end)
             }
 
             // value class IppResolution
-            IppTag.Resolution -> {
-                with(value as IppResolution) {
-                    dataOutputStream.writeShort(9)
-                    dataOutputStream.writeInt(x)
-                    dataOutputStream.writeInt(y)
-                    dataOutputStream.writeByte(unit)
-                }
+            IppTag.Resolution -> with(value as IppResolution) {
+                dataOutputStream.writeShort(9)
+                dataOutputStream.writeInt(x)
+                dataOutputStream.writeInt(y)
+                dataOutputStream.writeByte(unit)
             }
 
             // value class String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
-            IppTag.Uri -> writeString((value as URI).toString(), charsetForTag(tag))
+            IppTag.Uri -> with(value as URI) { writeString(value.toString(), charsetForTag(tag)) }
             IppTag.OctetString,
             IppTag.Keyword,
             IppTag.UriScheme,
             IppTag.Charset,
             IppTag.NaturalLanguage,
-            IppTag.MimeMediaType,
+            IppTag.MimeMediaType -> writeString(value as String, charsetForTag(tag))
+
+            // value class IppString
             IppTag.TextWithoutLanguage,
-            IppTag.NameWithoutLanguage -> writeString(value as String, charsetForTag(tag))
+            IppTag.NameWithoutLanguage -> when {
+                (value is IppString) -> writeString(value.string, charsetForTag(tag))
+                (value is String) -> writeString(value, charsetForTag(tag)) // accept String for convenience
+                else -> throw IppException("expected value class String or IppString without language")
+            }
+
+            IppTag.TextWithLanguage,
+            IppTag.NameWithLanguage -> with(value as IppString) {
+                dataOutputStream.writeShort(value.length())
+                writeString(value.language ?: throw IppException("missing language"), charsetForTag(tag))
+                writeString(value.string, charsetForTag(tag))
+            }
 
             else -> throw IppException(String.format("tag %s (%02X) encoding not implemented", tag, tag.code))
         }

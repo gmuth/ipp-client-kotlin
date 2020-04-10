@@ -130,9 +130,17 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
         IppTag.UriScheme,
         IppTag.Charset,
         IppTag.NaturalLanguage,
-        IppTag.MimeMediaType,
+        IppTag.MimeMediaType -> readString(charsetForTag(tag))
+
+        // value class IppString
         IppTag.TextWithoutLanguage,
-        IppTag.NameWithoutLanguage -> readString(charsetForTag(tag))
+        IppTag.NameWithoutLanguage -> IppString(string = readString(charsetForTag(tag)))
+
+        IppTag.TextWithLanguage,
+        IppTag.NameWithLanguage -> {
+            dataInputStream.readShort() // ignore redundant value length
+            IppString(language = readString(charsetForTag(tag)), string = readString(charsetForTag(tag)))
+        }
 
         else -> {
             // if support for a specific tag is required kindly ask the author to implement it
