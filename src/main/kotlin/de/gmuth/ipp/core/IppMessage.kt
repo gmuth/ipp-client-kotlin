@@ -38,9 +38,6 @@ abstract class IppMessage {
     // --------------------------------------------------------------------- ENCODING
 
     private fun writeTo(outputStream: OutputStream) {
-        //if (code == null) throw IppException("code must not be null")
-        //if (requestId == null) throw IppException("requestId must not be null")
-
         val ippOutputStream = IppOutputStream(outputStream)
         ippOutputStream.writeMessage(this)
         ippOutputStream.close()
