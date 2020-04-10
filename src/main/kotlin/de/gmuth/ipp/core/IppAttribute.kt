@@ -6,6 +6,9 @@ package de.gmuth.ipp.core
 
 class IppAttribute<T> constructor(val name: String, val tag: IppTag, val values: MutableList<T>) {
 
+    init {
+        if(tag.isGroupTag()) throw IppException("group tag '$tag' must not be used for attributes")
+    }
     constructor(name: String, tag: IppTag, vararg values: T) : this(name, tag, values.toMutableList())
 
     constructor(name: String, vararg values: T) : this(name, IppRegistrations.tagForAttribute(name), values.toMutableList()) {
