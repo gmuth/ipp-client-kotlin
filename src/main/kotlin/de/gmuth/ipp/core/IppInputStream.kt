@@ -96,7 +96,7 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
         IppTag.Unknown,
         IppTag.NotSettable,
         IppTag.DeleteAttribute,
-        IppTag.AdminDefine -> readLengthAndValue()
+        IppTag.AdminDefine -> "<${readLengthAndValue().size.toPluralString("byte")}>"
 
         // value class Boolean
         IppTag.Boolean -> {
