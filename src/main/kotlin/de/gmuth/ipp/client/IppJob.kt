@@ -7,7 +7,7 @@ package de.gmuth.ipp.client
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppJobState
 import de.gmuth.ipp.core.IppString
-import de.gmuth.ipp.core.IppTime
+import de.gmuth.ipp.core.IppIntegerTime
 import java.net.URI
 import java.time.LocalDateTime
 
@@ -22,10 +22,10 @@ class IppJob(jobGroup: IppAttributesGroup) {
     var name: IppString? = null
     var originatingUserName: IppString? = null
 
-    var timeAtCreation: LocalDateTime? = null
-    var timeAtProcessing: LocalDateTime? = null
-    var timeAtCompleted: LocalDateTime? = null
-    var printerUpTime: LocalDateTime? = null
+    var timeAtCreation: IppIntegerTime? = null
+    var timeAtProcessing: IppIntegerTime? = null
+    var timeAtCompleted: IppIntegerTime? = null
+    var printerUpTime: IppIntegerTime? = null
 
     var impressions: Int? = null
     var impressionsCompleted: Int? = null
@@ -47,7 +47,7 @@ class IppJob(jobGroup: IppAttributesGroup) {
         name = get("job-name")?.value as IppString?
         originatingUserName = get("job-originating-user-name")?.value as IppString?
 
-        fun getTimeAt(name: String) = IppTime.toLocalDateTime(get(name)?.value as Int?)
+        fun getTimeAt(name: String) = IppIntegerTime(get(name)?.value as Int?)
         timeAtCreation = getTimeAt("time-at-creation")
         timeAtProcessing = getTimeAt("time-at-processing")
         timeAtCompleted = getTimeAt("time-at-completed")
