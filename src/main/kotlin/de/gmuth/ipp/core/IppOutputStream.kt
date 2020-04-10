@@ -76,20 +76,18 @@ class IppOutputStream(outputStream: OutputStream) : Closeable, Flushable {
     private fun writeTag(tag: IppTag) = dataOutputStream.writeByte(tag.code.toInt())
 
     private fun writeAttributeValue(tag: IppTag, value: Any?) {
-        if (value == null && tag != IppTag.NoValue) {
-            println("WARN: value is null")
+        if (value == null && !tag.isOutOfBandTag()) {
+            throw IppException("missing value for tag $tag")
         }
         //tag.validateValueClass(value)
         when (tag) {
-            // out-of-band
-            IppTag.NoValue -> dataOutputStream.writeShort(0)
-
-            // value class ByteArray
+            // out-of-band RFC 8010 3.8. & RFC 3380 8.
             IppTag.Unsupported_,
             IppTag.Unknown,
+            IppTag.NoValue,
             IppTag.NotSettable,
             IppTag.DeleteAttribute,
-            IppTag.AdminDefine -> writeLengthAndValue(value as ByteArray)
+            IppTag.AdminDefine -> dataOutputStream.writeShort(0)
 
             // value class Boolean
             IppTag.Boolean -> with(value as Boolean) {

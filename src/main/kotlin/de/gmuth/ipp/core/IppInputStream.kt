@@ -85,18 +85,16 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
 
     private fun readAttributeValue(tag: IppTag): Any? = when (tag) {
 
-        // out-of-band
-        IppTag.NoValue -> {
+        // out-of-band RFC 8010 3.8. & RFC 3380 8.
+        IppTag.Unsupported_,
+        IppTag.Unknown,
+        IppTag.NoValue,
+        IppTag.NotSettable,
+        IppTag.DeleteAttribute,
+        IppTag.AdminDefine -> {
             assertValueLength(0)
             null
         }
-
-        // value class ByteArray
-        IppTag.Unsupported_,
-        IppTag.Unknown,
-        IppTag.NotSettable,
-        IppTag.DeleteAttribute,
-        IppTag.AdminDefine -> "<${readLengthAndValue().size.toPluralString("byte")}>"
 
         // value class Boolean
         IppTag.Boolean -> {
