@@ -54,7 +54,7 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
         }
     }
 
-    private fun readVersion() = with(dataInputStream) { IppVersion(readByte().toInt(), readByte().toInt()) }
+    private fun readVersion() = with(dataInputStream) { IppVersion(read(), read()) }
 
     private fun readCode() = dataInputStream.readShort()
 
