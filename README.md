@@ -84,13 +84,6 @@ Currently only the target `jvm` is supported.
 
 This project is work in progress.
 
-**Encodings**
-
- * `no-value` 
- * `integer`, `enum`
- * `textWithoutLanguage`, `nameWithoutLanguage`, `uri`, `uriScheme`, `charset`, `naturalLanguage`,
-   `mimeMediaType`, `keyword`
-
 **Model and semantics**
 
 * [IppOperation](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppOperation.kt),
@@ -106,6 +99,6 @@ Commercial support is [available](http://ipp-software.com).
 
 ## ToDo
 
-* make IppTool accept language alias for naturalLanguage
-* support more encodings
+* make IppTool accept language as alias for naturalLanguage
+* support collection encoding
 * multi platform support
