@@ -47,27 +47,41 @@ class IppClient(
             }
         }
 
-        val responseStream = exchange(uri, request.toInputStream(), documentInputStream, httpAuth)
-        val response = IppResponse(responseStream)
+        val requestInputStream = try {
+            request.toInputStream()
+        } catch (exception: Exception) {
+            throw IppExchangeException(request, null, "failed to encode ipp request", exception)
+        }
+        val responseStream = exchange(uri, requestInputStream, documentInputStream, httpAuth)
+        val response = IppResponse()
+        try {
+            response.readFrom(responseStream)
 
-        // response logging
-        with(response) {
-            if (verbose) {
-                println("read ipp response")
-                logDetails("<< ")
-                println(this)
+            // response logging
+            with(response) {
+                if (verbose) {
+                    println("read ipp response")
+                    logDetails("<< ")
+                    println(this)
+                }
+                if (!status.isSuccessful()) {
+                    request.logDetails("IPP-REQUEST: ")
+                    println("response from $uri")
+                    logDetails("IPP-RESPONSE: ")
+                }
+                if (statusMessage != null) {
+                    println("status-message: $statusMessage")
+                }
             }
-            if (!status.isSuccessful()) {
-                request.logDetails("IPP-REQUEST: ")
-                println("response from $uri")
-                logDetails("IPP-RESPONSE: ")
-            }
-            if (statusMessage != null) {
-                println("status-message: $statusMessage")
-            }
+            return response
+
+        } catch (exception: Exception) {
+            request.logDetails("IPP-REQUEST: ")
+            println("response from $uri")
+            response.logDetails("IPP-RESPONSE: ")
+            throw IppExchangeException(request, response, "failed to decode ipp response", exception)
         }
 
-        return response
     }
 
     private fun exchange(

@@ -6,7 +6,7 @@ package de.gmuth.ipp.core
 
 import java.io.InputStream
 
-class IppResponse(inputStream: InputStream) : IppMessage() {
+class IppResponse() : IppMessage() {
 
     override val codeDescription: String
         get() = "status-code = $status"
@@ -26,8 +26,8 @@ class IppResponse(inputStream: InputStream) : IppMessage() {
     val printerGroup: IppAttributesGroup
         get() = getSingleAttributesGroup(IppTag.Printer)
 
-    init {
-        readFrom(inputStream)
+    companion object {
+        fun fromInputStream(inputStream: InputStream) = IppResponse().apply { readFrom(inputStream) }
     }
 
 }
