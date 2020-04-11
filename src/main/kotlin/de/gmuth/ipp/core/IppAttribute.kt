@@ -28,12 +28,12 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag, val values:
             else throw IppException("found ${values.size.toPluralString("value")} but expected only 1 for '$name'")
 
     override fun toString(): String {
-        val valuesString = try {
+        val valuesString = if(values == null || values.isEmpty()) "" else "= " + try {
             values.joinToString(",")
         } catch (exception: Exception) {
             "<${exception.message}>"
         }
-        return String.format("%s (%s) = %s", name, if (is1setOf()) "1setOf $tag" else "$tag", valuesString)
+        return String.format("%s (%s) %s", name, if (is1setOf()) "1setOf $tag" else "$tag", valuesString)
     }
 
     companion object {
