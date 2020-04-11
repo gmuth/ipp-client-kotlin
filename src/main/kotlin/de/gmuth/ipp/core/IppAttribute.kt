@@ -31,7 +31,7 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag, val values:
         val valuesString = if(values == null || values.isEmpty()) "" else "= " + try {
             values.joinToString(",")
         } catch (exception: Exception) {
-            "<${exception.message}>"
+            "= <${exception.message}>"
         }
         return String.format("%s (%s) %s", name, if (is1setOf()) "1setOf $tag" else "$tag", valuesString)
     }
