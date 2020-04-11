@@ -7,8 +7,9 @@ package de.gmuth.ipp.core
 class IppAttribute<T> constructor(val name: String, val tag: IppTag, val values: MutableList<T>) {
 
     init {
-        if(tag.isGroupTag()) throw IppException("group tag '$tag' must not be used for attributes")
+        if (tag.isGroupTag()) throw IppException("group tag '$tag' must not be used for attributes")
     }
+
     constructor(name: String, tag: IppTag, vararg values: T) : this(name, tag, values.toMutableList())
 
     constructor(name: String, vararg values: T) : this(name, IppRegistrations.tagForAttribute(name), values.toMutableList()) {
@@ -27,7 +28,12 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag, val values:
             else throw IppException("found ${values.size.toPluralString("value")} but expected only 1 for '$name'")
 
     override fun toString(): String {
-        return String.format("%s (%s) = %s", name, if (is1setOf()) "1setOf $tag" else "$tag", values.joinToString(","))
+        val valuesString = try {
+            values.joinToString(",")
+        } catch (exception: Exception) {
+            "<${exception.message}>"
+        }
+        return String.format("%s (%s) = %s", name, if (is1setOf()) "1setOf $tag" else "$tag", valuesString)
     }
 
     companion object {
