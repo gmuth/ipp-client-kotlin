@@ -141,6 +141,23 @@ class IppOutputStream(outputStream: OutputStream) : Closeable, Flushable {
                 writeString(value.string, charsetForTag(tag))
             }
 
+            // value class IppDateTime
+            IppTag.DateTime -> {
+                dataOutputStream.writeShort(11)
+                with(value as IppDateTime) {
+                    dataOutputStream.writeShort(year)
+                    dataOutputStream.writeByte(month)
+                    dataOutputStream.writeByte(day)
+                    dataOutputStream.writeByte(hour)
+                    dataOutputStream.writeByte(minutes)
+                    dataOutputStream.writeByte(seconds)
+                    dataOutputStream.writeByte(deciSeconds)
+                    dataOutputStream.writeByte(directionFromUTC.toInt())
+                    dataOutputStream.writeByte(hoursFromUTC)
+                    dataOutputStream.writeByte(minutesFromUTC)
+                }
+            }
+
             else -> throw IppException(String.format("tag %s (%02X) encoding not implemented", tag, tag.code))
         }
     }
