@@ -67,6 +67,7 @@ class IppOutputStream(outputStream: OutputStream) : Closeable, Flushable {
                 writeString(if (index == 0) name else "", Charsets.US_ASCII)
                 writeAttributeValue(tag, value)
             }
+            // keep attributes-charset for name and text value encoding
             if (name == "attributes-charset" && tag == IppTag.Charset) {
                 attributesCharset = Charset.forName(value as String)
             }

@@ -74,7 +74,7 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
         if (compareTagsToIppRegistrations) IppRegistrations.checkSyntaxOfAttribute(name, tag)
         //tag.validateValueClass(value)
 
-        // keep attributes-charset for name and text value encoding
+        // keep attributes-charset for name and text value decoding
         if (name == "attributes-charset" && tag == IppTag.Charset) {
             attributesCharset = Charset.forName(value as String)
         }
