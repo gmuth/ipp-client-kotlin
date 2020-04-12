@@ -4,19 +4,15 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import java.io.Closeable
 import java.io.DataOutputStream
-import java.io.Flushable
 import java.io.OutputStream
 import java.net.URI
 import java.nio.charset.Charset
 
-class IppOutputStream(outputStream: OutputStream) : Closeable, Flushable {
-
-    private val dataOutputStream: DataOutputStream = DataOutputStream(outputStream)
+class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStream) {
 
     // charset for text and name attributes, rfc 8011 4.1.4.1
-    private var attributesCharset: Charset? = null 
+    private var attributesCharset: Charset? = null
 
     private fun charsetForTag(tag: IppTag) =
             if (tag.useAttributesCharset()) attributesCharset ?: throw IppException("missing attributes-charset")
@@ -34,25 +30,25 @@ class IppOutputStream(outputStream: OutputStream) : Closeable, Flushable {
         }
     }
 
-    private fun writeVersion(version: IppVersion) = with(dataOutputStream) {
+    private fun writeVersion(version: IppVersion) {
         writeByte(version.major)
-        writeByte(version.minor) 
+        writeByte(version.minor)
     }
 
-    private fun writeCode(code: Short) = dataOutputStream.writeShort(code.toInt())
+    private fun writeCode(code: Short) = writeShort(code.toInt())
 
-    private fun writeRequestId(requestId: Int = 0) = dataOutputStream.writeInt(requestId)
+    private fun writeRequestId(requestId: Int) = writeInt(requestId)
 
     private fun writeAttributesGroup(attributesGroup: IppAttributesGroup) {
         with(attributesGroup) {
-                writeTag(tag)
-                for (attribute in values) {
-                    try {
-                        writeAttribute(attribute)
-                    } catch (exception: Exception) {
-                        throw IppException("failed to write attribute: $attribute", exception)
-                    }
+            writeTag(tag)
+            for (attribute in values) {
+                try {
+                    writeAttribute(attribute)
+                } catch (exception: Exception) {
+                    throw IppException("failed to write attribute: $attribute", exception)
                 }
+            }
         }
     }
 
@@ -64,19 +60,18 @@ class IppOutputStream(outputStream: OutputStream) : Closeable, Flushable {
             }
             // 1setOf iteration
             for ((index, value) in values.withIndex()) {
-                //println("*** $name[$index] = ($tag) $value")
                 writeTag(tag)
                 writeString(if (index == 0) name else "", Charsets.US_ASCII)
                 writeAttributeValue(tag, value)
             }
             // keep attributes-charset for name and text value encoding
-            if (name == "attributes-charset" && tag == IppTag.Charset) {
+            if (tag == IppTag.Charset && name == "attributes-charset") {
                 attributesCharset = Charset.forName(value as String)
             }
         }
     }
 
-    private fun writeTag(tag: IppTag) = dataOutputStream.writeByte(tag.code.toInt())
+    private fun writeTag(tag: IppTag) = writeByte(tag.code.toInt())
 
     private fun writeAttributeValue(tag: IppTag, value: Any?) {
         if (value == null && !tag.isOutOfBandTag()) {
@@ -90,44 +85,50 @@ class IppOutputStream(outputStream: OutputStream) : Closeable, Flushable {
             IppTag.NoValue,
             IppTag.NotSettable,
             IppTag.DeleteAttribute,
-            IppTag.AdminDefine -> dataOutputStream.writeShort(0)
+            IppTag.AdminDefine -> writeShort(0)
 
             // value class Boolean
             IppTag.Boolean -> with(value as Boolean) {
-                dataOutputStream.writeShort(1)
-                dataOutputStream.writeByte(if (value) 0x01 else 0x00)
+                writeShort(1)
+                writeByte(if (value) 0x01 else 0x00)
             }
 
             // value class Int
             IppTag.Integer,
             IppTag.Enum -> with(value as Int) {
-                dataOutputStream.writeShort(4)
-                dataOutputStream.writeInt(value)
+                writeShort(4)
+                writeInt(value)
             }
 
             // value class IppIntegerRange
             IppTag.RangeOfInteger -> with(value as IppIntegerRange) {
-                dataOutputStream.writeShort(8)
-                dataOutputStream.writeInt(start)
-                dataOutputStream.writeInt(end)
+                writeShort(8)
+                writeInt(start)
+                writeInt(end)
             }
 
             // value class IppResolution
             IppTag.Resolution -> with(value as IppResolution) {
-                dataOutputStream.writeShort(9)
-                dataOutputStream.writeInt(x)
-                dataOutputStream.writeInt(y)
-                dataOutputStream.writeByte(unit)
+                writeShort(9)
+                writeInt(x)
+                writeInt(y)
+                writeByte(unit)
+            }
+
+            // value class URI
+            IppTag.Uri -> with(value as URI) {
+                writeString(value.toString(), charsetForTag(tag))
             }
 
             // value class String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
-            IppTag.Uri -> with(value as URI) { writeString(value.toString(), charsetForTag(tag)) }
             IppTag.OctetString,
             IppTag.Keyword,
             IppTag.UriScheme,
             IppTag.Charset,
             IppTag.NaturalLanguage,
-            IppTag.MimeMediaType -> writeString(value as String, charsetForTag(tag))
+            IppTag.MimeMediaType -> with(value as String) {
+                writeString(value, charsetForTag(tag))
+            }
 
             // value class IppString
             IppTag.TextWithoutLanguage,
@@ -139,26 +140,24 @@ class IppOutputStream(outputStream: OutputStream) : Closeable, Flushable {
 
             IppTag.TextWithLanguage,
             IppTag.NameWithLanguage -> with(value as IppString) {
-                dataOutputStream.writeShort(value.length())
+                writeShort(value.length())
                 writeString(value.language ?: throw IppException("missing language"), charsetForTag(tag))
                 writeString(value.string, charsetForTag(tag))
             }
 
             // value class IppDateTime
-            IppTag.DateTime -> {
-                dataOutputStream.writeShort(11)
-                with(value as IppDateTime) {
-                    dataOutputStream.writeShort(year)
-                    dataOutputStream.writeByte(month)
-                    dataOutputStream.writeByte(day)
-                    dataOutputStream.writeByte(hour)
-                    dataOutputStream.writeByte(minutes)
-                    dataOutputStream.writeByte(seconds)
-                    dataOutputStream.writeByte(deciSeconds)
-                    dataOutputStream.writeByte(directionFromUTC.toInt())
-                    dataOutputStream.writeByte(hoursFromUTC)
-                    dataOutputStream.writeByte(minutesFromUTC)
-                }
+            IppTag.DateTime -> with(value as IppDateTime) {
+                writeShort(11)
+                writeShort(year)
+                writeByte(month)
+                writeByte(day)
+                writeByte(hour)
+                writeByte(minutes)
+                writeByte(seconds)
+                writeByte(deciSeconds)
+                writeByte(directionFromUTC.toInt())
+                writeByte(hoursFromUTC)
+                writeByte(minutesFromUTC)
             }
 
             else -> throw IppException(String.format("tag %s (%02X) encoding not implemented", tag, tag.code))
@@ -170,12 +169,8 @@ class IppOutputStream(outputStream: OutputStream) : Closeable, Flushable {
     }
 
     private fun writeLengthAndValue(value: ByteArray) {
-        dataOutputStream.writeShort(value.size)
-        dataOutputStream.write(value)
+        writeShort(value.size)
+        write(value)
     }
-
-    override fun close() = dataOutputStream.close()
-
-    override fun flush() = dataOutputStream.flush()
 
 }

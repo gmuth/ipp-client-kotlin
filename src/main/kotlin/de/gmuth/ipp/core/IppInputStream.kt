@@ -4,21 +4,22 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import java.io.Closeable
+import de.gmuth.ipp.client.IppJobState
+import de.gmuth.ipp.client.IppPrinterState
 import java.io.DataInputStream
 import java.io.InputStream
 import java.net.URI
 import java.nio.charset.Charset
 
-class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
+class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
     companion object {
         var compareTagsToIppRegistrations: Boolean = true
         var strict: Boolean = true
     }
 
-    private val dataInputStream: DataInputStream = DataInputStream(inputStream)
-    private var attributesCharset: Charset? = null // encoding for text and name attributes, rfc 8011 4.1.4.1
+    // encoding for text and name attributes, rfc 8011 4.1.4.1
+    private var attributesCharset: Charset? = null
 
     private fun charsetForTag(tag: IppTag) =
             if (tag.useAttributesCharset()) attributesCharset ?: throw IppException("missing attributes-charset")
@@ -31,22 +32,18 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
             requestId = readRequestId()
             lateinit var currentGroup: IppAttributesGroup
             lateinit var currentAttribute: IppAttribute<*>
-            loop@ while (true) {
+            tagLoop@ while (true) {
                 val tag = readTag()
                 when {
-                    tag == IppTag.End -> break@loop
+                    tag == IppTag.End -> break@tagLoop
                     tag.isGroupTag() -> currentGroup = newAttributesGroup(tag)
                     else -> {
                         val attribute = readAttribute(tag)
-                        if (attribute.name.isEmpty()) {
-                            // found 1setOf value
-                            with(currentAttribute) {
-                                if (tag == attribute.tag) addValue(attribute.value)
-                                else throw IppSpecViolation("'$name' 1setOf error: expected tag '$tag' but found '${attribute.tag}'")
-                            }
-                        } else {
-                            currentAttribute = attribute
+                        if (attribute.name.isNotEmpty()) {
                             currentGroup.put(attribute)
+                            currentAttribute = attribute
+                        } else { // name.isEmpty() -> 1setOf
+                            currentAttribute.additionalValue(attribute)
                         }
                     }
                 }
@@ -54,13 +51,13 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
         }
     }
 
-    private fun readVersion() = with(dataInputStream) { IppVersion(read(), read()) }
+    private fun readVersion() = IppVersion(read(), read())
 
-    private fun readCode() = dataInputStream.readShort()
+    private fun readCode() = readShort()
 
-    private fun readRequestId() = dataInputStream.readInt()
+    private fun readRequestId() = readInt()
 
-    private fun readTag(): IppTag = IppTag.fromCode(dataInputStream.readByte())
+    private fun readTag(): IppTag = IppTag.fromCode(readByte())
 
     private fun readAttribute(tag: IppTag): IppAttribute<*> {
         val name = readString(Charsets.US_ASCII)
@@ -80,118 +77,133 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
         }
 
         // move this somewhere else?
-        if (!tag.isOutOfBandTag()) when (name) {
-            "job-state" -> value = IppJobState.fromCode(value as Int)
-        }
+//        if (!tag.isOutOfBandTag()) when (name) {
+//            "job-state" -> value = IppJobState.fromCode(value as Int)
+//            "printer-state" -> value = IppPrinterState.fromCode(value as Int)
+//        }
 
         return IppAttribute(name, tag, value)
     }
 
-    private fun readAttributeValue(tag: IppTag): Any? = with(dataInputStream) {
-        when (tag) {
+    private fun readAttributeValue(tag: IppTag): Any? = when (tag) {
 
-            // out-of-band RFC 8010 3.8. & RFC 3380 8 -- endCollection has no value either
-            IppTag.Unsupported_,
-            IppTag.Unknown,
-            IppTag.NoValue,
-            IppTag.NotSettable,
-            IppTag.DeleteAttribute,
-            IppTag.AdminDefine,
-            IppTag.EndCollection -> {
-                assertValueLength(0)
-                null
-            }
+        // out-of-band RFC 8010 3.8. & RFC 3380 8 -- endCollection has no value either
+        IppTag.Unsupported_,
+        IppTag.Unknown,
+        IppTag.NoValue,
+        IppTag.NotSettable,
+        IppTag.DeleteAttribute,
+        IppTag.AdminDefine,
+        IppTag.EndCollection -> {
+            assertValueLength(0)
+            null
+        }
 
-            // value class Boolean
-            IppTag.Boolean -> {
-                assertValueLength(1)
-                readByte() == 0x01.toByte()
-            }
+        // value class Boolean
+        IppTag.Boolean -> {
+            assertValueLength(1)
+            readByte() == 0x01.toByte()
+        }
 
-            // value class Int
-            IppTag.Integer,
-            IppTag.Enum -> {
-                assertValueLength(4)
-                readInt()
-            }
+        // value class Int
+        IppTag.Integer,
+        IppTag.Enum -> {
+            assertValueLength(4)
+            readInt()
+        }
 
-            // value class IppIntegerRange
-            IppTag.RangeOfInteger -> {
-                assertValueLength(8)
-                IppIntegerRange(readInt(), readInt())
-            }
+        // value class IppIntegerRange
+        IppTag.RangeOfInteger -> {
+            assertValueLength(8)
+            IppIntegerRange(
+                    start = readInt(),
+                    end = readInt()
+            )
+        }
 
-            // value class IppResolution
-            IppTag.Resolution -> {
-                assertValueLength(9)
-                IppResolution(readInt(), readInt(), readByte().toInt())
-            }
+        // value class IppResolution
+        IppTag.Resolution -> {
+            assertValueLength(9)
+            IppResolution(
+                    x = readInt(),
+                    y = readInt(),
+                    unit = readByte().toInt()
+            )
+        }
 
-            // value class String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
-            IppTag.Uri -> URI.create(readString(charsetForTag(tag)))
-            IppTag.OctetString,
-            IppTag.Keyword,
-            IppTag.UriScheme,
-            IppTag.Charset,
-            IppTag.NaturalLanguage,
-            IppTag.MimeMediaType,
-            IppTag.MemberAttrName -> readString(charsetForTag(tag))
+        // value class URI
+        IppTag.Uri -> URI.create(readStringForTag(tag))
 
-            // value class IppString
-            IppTag.TextWithoutLanguage,
-            IppTag.NameWithoutLanguage -> IppString(string = readString(charsetForTag(tag)))
+        // value class String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
+        IppTag.OctetString,
+        IppTag.Keyword,
+        IppTag.UriScheme,
+        IppTag.Charset,
+        IppTag.NaturalLanguage,
+        IppTag.MimeMediaType,
+        IppTag.MemberAttrName -> readStringForTag(tag)
 
-            IppTag.TextWithLanguage,
-            IppTag.NameWithLanguage -> {
-                dataInputStream.readShort() // ignore redundant value length
-                IppString(language = readString(charsetForTag(tag)), string = readString(charsetForTag(tag)))
-            }
+        // value class IppString
+        IppTag.TextWithoutLanguage,
+        IppTag.NameWithoutLanguage -> IppString(string = readStringForTag(tag))
 
-            // value class IppDateTime
-            IppTag.DateTime -> {
-                assertValueLength(11)
-                IppDateTime(
-                        year = readShort().toInt(),
-                        month = read(),
-                        day = read(),
-                        hour = read(),
-                        minutes = read(),
-                        seconds = read(),
-                        deciSeconds = read(),
-                        directionFromUTC = readByte().toChar(),
-                        hoursFromUTC = read(),
-                        minutesFromUTC = read()
-                )
-            }
+        IppTag.TextWithLanguage,
+        IppTag.NameWithLanguage -> {
+            readShort() // ignore redundant value length
+            IppString(
+                    language = readStringForTag(tag),
+                    string = readStringForTag(tag)
+            )
+        }
 
-            //  value class IppCollection
-            IppTag.BegCollection -> {
-                assertValueLength(0)
-                readCollection()
-            }
+        // value class IppDateTime
+        IppTag.DateTime -> {
+            assertValueLength(11)
+            IppDateTime(
+                    year = readShort().toInt(),
+                    month = read(),
+                    day = read(),
+                    hour = read(),
+                    minutes = read(),
+                    seconds = read(),
+                    deciSeconds = read(),
+                    directionFromUTC = readByte().toChar(),
+                    hoursFromUTC = read(),
+                    minutesFromUTC = read()
+            )
+        }
 
-            else -> {
-                readLengthAndValue()
-                String.format("<$tag-decoding-not-implemented>")
-            }
+        //  value class IppCollection
+        IppTag.BegCollection -> {
+            assertValueLength(0)
+            readCollection()
+        }
+
+        else -> {
+            readLengthAndValue()
+            String.format("<$tag-decoding-not-implemented>")
         }
     }
 
     private fun readCollection(): IppCollection {
         val collection = IppCollection()
-        collectionLoop@ while (true) {
+        memberLoop@ while (true) {
             val memberAttributeName = readAttribute(readTag())
-            if (memberAttributeName.tag == IppTag.EndCollection) break@collectionLoop
+            if (memberAttributeName.tag == IppTag.EndCollection) break@memberLoop
             val memberAttributeValue = readAttribute(readTag())
-            if (strict) when {
-                memberAttributeName.tag != IppTag.MemberAttrName -> throw IppSpecViolation("expected memberAttrName but found ${memberAttributeName.tag}")
-                memberAttributeName.name.isNotEmpty() -> throw IppSpecViolation("name of memberAttrName MUST be empty")
-                memberAttributeValue.name.isNotEmpty() -> throw IppSpecViolation("name of memberAttrValue MUST be empty")
-            }
-            val member = IppAttribute(memberAttributeName.value as String, memberAttributeValue.tag, memberAttributeValue.value)
+            val member = IppAttribute(
+                    memberAttributeName.value as String,
+                    memberAttributeValue.tag,
+                    memberAttributeValue.value
+            )
             collection.members.add(member)
         }
         return collection
+    }
+
+    private fun readStringForTag(tag: IppTag): String {
+        val charset = charsetForTag(tag)
+        return readString(charset)
     }
 
     private fun readString(charset: Charset): String {
@@ -200,17 +212,15 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
     }
 
     private fun readLengthAndValue(): ByteArray {
-        val length = dataInputStream.readShort().toInt()
-        return dataInputStream.readNBytes(length)
+        val length = readShort().toInt()
+        return readNBytes(length)
     }
 
     private fun assertValueLength(expected: Int) {
-        val length = dataInputStream.readShort().toInt()
+        val length = readShort().toInt()
         if (length != expected) {
             throw IppSpecViolation("expected value length of $expected bytes but found $length")
         }
     }
-
-    override fun close() = dataInputStream.close()
 
 }
