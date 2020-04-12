@@ -14,7 +14,7 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
 
     companion object {
         var compareTagsToIppRegistrations: Boolean = true
-        var strict: Boolean = false
+        var strict: Boolean = true
     }
 
     private val dataInputStream: DataInputStream = DataInputStream(inputStream)
@@ -90,13 +90,14 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
     private fun readAttributeValue(tag: IppTag): Any? = with(dataInputStream) {
         when (tag) {
 
-            // out-of-band RFC 8010 3.8. & RFC 3380 8.
+            // out-of-band RFC 8010 3.8. & RFC 3380 8 -- endCollection has no value either
             IppTag.Unsupported_,
             IppTag.Unknown,
             IppTag.NoValue,
             IppTag.NotSettable,
             IppTag.DeleteAttribute,
-            IppTag.AdminDefine -> {
+            IppTag.AdminDefine,
+            IppTag.EndCollection -> {
                 assertValueLength(0)
                 null
             }
@@ -133,7 +134,8 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
             IppTag.UriScheme,
             IppTag.Charset,
             IppTag.NaturalLanguage,
-            IppTag.MimeMediaType -> readString(charsetForTag(tag))
+            IppTag.MimeMediaType,
+            IppTag.MemberAttrName -> readString(charsetForTag(tag))
 
             // value class IppString
             IppTag.TextWithoutLanguage,
@@ -162,11 +164,34 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
                 )
             }
 
+            //  value class IppCollection
+            IppTag.BegCollection -> {
+                assertValueLength(0)
+                readCollection()
+            }
+
             else -> {
                 readLengthAndValue()
                 String.format("<$tag-decoding-not-implemented>")
             }
         }
+    }
+
+    private fun readCollection(): IppCollection {
+        val collection = IppCollection()
+        collectionLoop@ while (true) {
+            val memberAttributeName = readAttribute(readTag())
+            if (memberAttributeName.tag == IppTag.EndCollection) break@collectionLoop
+            val memberAttributeValue = readAttribute(readTag())
+
+            if (strict) when {
+                memberAttributeName.tag != IppTag.MemberAttrName -> throw IppSpecViolation("expected memberAttrName but found ${memberAttributeName.tag}")
+                memberAttributeName.name.isNotEmpty() -> throw IppSpecViolation("name of memberAttrName MUST be empty")
+                memberAttributeValue.name.isNotEmpty() -> throw IppSpecViolation("name of memberAttrValue MUST be empty")
+            }
+            collection.add(memberAttributeName as IppAttribute<String>, memberAttributeValue)
+        }
+        return collection
     }
 
     private fun readString(charset: Charset): String {
