@@ -183,13 +183,13 @@ class IppInputStream(inputStream: InputStream) : Closeable by inputStream {
             val memberAttributeName = readAttribute(readTag())
             if (memberAttributeName.tag == IppTag.EndCollection) break@collectionLoop
             val memberAttributeValue = readAttribute(readTag())
-
             if (strict) when {
                 memberAttributeName.tag != IppTag.MemberAttrName -> throw IppSpecViolation("expected memberAttrName but found ${memberAttributeName.tag}")
                 memberAttributeName.name.isNotEmpty() -> throw IppSpecViolation("name of memberAttrName MUST be empty")
                 memberAttributeValue.name.isNotEmpty() -> throw IppSpecViolation("name of memberAttrValue MUST be empty")
             }
-            collection.add(memberAttributeName as IppAttribute<String>, memberAttributeValue)
+            val member = IppAttribute(memberAttributeName.value as String, memberAttributeValue.tag, memberAttributeValue.value)
+            collection.members.add(member)
         }
         return collection
     }
