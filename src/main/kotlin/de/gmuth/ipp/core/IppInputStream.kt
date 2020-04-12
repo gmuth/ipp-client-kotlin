@@ -196,7 +196,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                     memberAttributeValue.tag,
                     memberAttributeValue.value
             )
-            collection.members.add(member)
+            collection.add(member)
         }
         return collection
     }
