@@ -17,7 +17,13 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag, val values:
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun addValue(value: Any?) = values.add(value as T)
+    fun additionalValue(attribute : IppAttribute<*>) {
+        if (tag == attribute.tag) {
+            values.add(attribute.value as T)
+        } else {
+            throw IppSpecViolation("'$name' 1setOf error: expected tag '$tag' for additional value but found '${attribute.tag}'")
+        }
+    }
 
     fun is1setOf() = values.size > 1
             || IppRegistrations.attributeNameIsRegistered(name) && IppRegistrations.attributeIs1setOf(name)
@@ -28,7 +34,7 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag, val values:
             else throw IppException("found ${values.size.toPluralString("value")} but expected only 1 for '$name'")
 
     override fun toString(): String {
-        val valuesString = if(values == null || values.isEmpty()) "" else "= " + try {
+        val valuesString = if (values == null || values.isEmpty()) "" else "= " + try {
             values.joinToString(",")
         } catch (exception: Exception) {
             "= <${exception.message}>"
