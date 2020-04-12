@@ -68,6 +68,8 @@ abstract class IppMessage {
         println("${prefix}version = $version")
         println("${prefix}$codeDescription")
         println("${prefix}request-id = $requestId")
-        attributesGroups.forEach { group -> group.logDetails(prefix) }
+        for (group in attributesGroups) {
+            group.logDetails(prefix)
+        }
     }
 }

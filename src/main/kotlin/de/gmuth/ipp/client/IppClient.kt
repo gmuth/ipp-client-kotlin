@@ -27,7 +27,7 @@ class IppClient(
 
     ): IppResponse {
         val response = exchange(uri, request, documentInputStream, httpAuth)
-        if (response.status.isSuccessful()) return response
+        if (response.isSuccessful()) return response
         else throw IppExchangeException(request, response, "$exceptionMessage: '${response.status}' ${response.statusMessage ?: ""}")
     }
 
@@ -64,7 +64,7 @@ class IppClient(
                     logDetails("<< ")
                     println(this)
                 }
-                if (!status.isSuccessful()) {
+                if (!isSuccessful()) {
                     request.logDetails("IPP-REQUEST: ")
                     println("response from $uri")
                     logDetails("IPP-RESPONSE: ")
