@@ -8,11 +8,7 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 
-class IppIntegerTime(val seconds: Int? = null) {
-
-    constructor(localDateTime: LocalDateTime) : this(
-            localDateTime.toEpochSecond(ZoneId.systemDefault().rules.getOffset(localDateTime)).toInt()
-    )
+data class IppIntegerTime(val seconds: Int? = null) {
 
     fun toLocalDateTime() =
             if (seconds == null) null
@@ -21,6 +17,11 @@ class IppIntegerTime(val seconds: Int? = null) {
     override fun toString() = "$seconds ${if (seconds == null) "" else toLocalDateTime()}"
 
     companion object {
-        fun now() = IppIntegerTime(LocalDateTime.now())
+        fun fromLocalDateTime(localDateTime: LocalDateTime) = IppIntegerTime(
+                localDateTime.toEpochSecond(ZoneId.systemDefault().rules.getOffset(localDateTime)).toInt()
+        )
+
+        fun now() = fromLocalDateTime(LocalDateTime.now())
     }
+
 }
