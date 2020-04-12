@@ -140,7 +140,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
 
             IppTag.TextWithLanguage,
             IppTag.NameWithLanguage -> with(value as IppString) {
-                writeShort(value.length())
+                writeShort(4 + string.length + language?.length!!)
                 writeString(value.language ?: throw IppException("missing language"), charsetForTag(tag))
                 writeString(value.string, charsetForTag(tag))
             }
