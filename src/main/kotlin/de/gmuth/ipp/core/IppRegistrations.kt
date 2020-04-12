@@ -46,6 +46,14 @@ class IppRegistrations {
         }
 
         fun is1SetOf() = syntax.contains("1setOf")
+
+        // key for map, because name is not unique
+        fun key(): String {
+            val key = StringBuffer(name)
+            if (memberAttribute?.isNotBlank()!!) key.append("/$memberAttribute")
+            if (subMemberAttribute?.isNotBlank()!!) key.append("/$subMemberAttribute")
+            return key.toString()
+        }
     }
 
     companion object {
@@ -55,7 +63,7 @@ class IppRegistrations {
 
         private val allAttributes = CSVReader<Attribute>().parse(ippRegistrationsCsvInputStream(), true, Attribute.RowMapper)
 
-        private val attributesMap = allAttributes.associateBy(Attribute::name)
+        private val attributesMap = allAttributes.associateBy(Attribute::key)
 
         fun attributeNameIsRegistered(name: String) = attributesMap[name] != null
 
