@@ -48,7 +48,7 @@ enum class IppTag(
     DateTime(0x31),
     Resolution(0x32),
     RangeOfInteger(0x33),
-    BegCollection(0x34),
+    BegCollection(0x34, "collection"),
     TextWithLanguage(0x35),
     NameWithLanguage(0x36),
     EndCollection(0x37),
