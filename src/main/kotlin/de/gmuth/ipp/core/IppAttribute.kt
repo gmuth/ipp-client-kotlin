@@ -42,6 +42,17 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag, val values:
         return String.format("%s (%s) %s", name, if (is1setOf()) "1setOf $tag" else "$tag", valuesString)
     }
 
+    fun logDetails() {
+        if (values.size == 1) {
+            println(toString())
+        } else {
+            println("$name ($tag) =")
+            for (value in values) {
+                println(" $value")
+            }
+        }
+    }
+
     companion object {
         var supportTagForAttribute: Boolean = true
     }
