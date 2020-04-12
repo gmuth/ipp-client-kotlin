@@ -24,6 +24,10 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
 
     fun attribute(name: String, vararg value: Any?) = put(IppAttribute(name, value.toMutableList()))
 
+    fun <T> getValue(name: String) = get(name)?.value as T
+
+    fun <T> getValues(name: String) = get(name)?.values as T
+
     override fun toString() = "IppAttributesGroup '$tag' containing ${size.toPluralString("attribute")}"
 
     fun logDetails(prefix: String) {

@@ -5,7 +5,6 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.ipp.core.IppAttributesGroup
-import de.gmuth.ipp.core.IppPrinterState
 import de.gmuth.ipp.core.IppString
 
 class IppPrinter(printerGroup: IppAttributesGroup) {
@@ -21,14 +20,13 @@ class IppPrinter(printerGroup: IppAttributesGroup) {
         readFrom(printerGroup)
     }
 
-    @Suppress("UNCHECKED_CAST")
     fun readFrom(printerGroup: IppAttributesGroup) = with(printerGroup) {
-        ippVersionsSupported = get("ipp-versions-supported")?.values as List<String>?
-        printerState = get("printer-state")?.value as IppPrinterState?
-        printerName = get("printer-name")?.value as IppString?
-        printerMakeAndModel = get("printer-make-and-model")?.value as IppString?
-        printColorModeSupported = get("print-color-mode-supported")?.values as List<String>?
-        outputModeSupported = get("output-mode-supported")?.values as List<String>?
+        ippVersionsSupported = getValues("ipp-versions-supported")
+        printerState = IppPrinterState.fromCode(getValue("printer-state") as Int)
+        printerName = getValue("printer-name")
+        printerMakeAndModel = getValue("printer-make-and-model")
+        printColorModeSupported = getValues("print-color-mode-supported")
+        outputModeSupported = getValues("output-mode-supported")
     }
 
     fun logDetails() {

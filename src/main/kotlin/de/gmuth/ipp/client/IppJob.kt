@@ -5,11 +5,9 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.ipp.core.IppAttributesGroup
-import de.gmuth.ipp.core.IppJobState
 import de.gmuth.ipp.core.IppString
 import de.gmuth.ipp.core.IppIntegerTime
 import java.net.URI
-import java.time.LocalDateTime
 
 class IppJob(jobGroup: IppAttributesGroup) {
 
@@ -36,27 +34,26 @@ class IppJob(jobGroup: IppAttributesGroup) {
         readFrom(jobGroup)
     }
 
-    @Suppress("UNCHECKED_CAST")
     fun readFrom(jobGroup: IppAttributesGroup) = with(jobGroup) {
-        uri = get("job-uri")?.value as URI
-        id = get("job-id")?.value as Int
-        state = get("job-state")?.value as IppJobState?
-        stateReasons = get("job-state-reasons")?.values as List<String>?
+        uri = getValue("job-uri")
+        id = getValue("job-id")
+        state = IppJobState.fromCode(getValue("job-state") as Int)
+        stateReasons = getValues("job-state-reasons")
 
-        printerUri = get("job-printer-uri")?.value as URI?
-        name = get("job-name")?.value as IppString?
-        originatingUserName = get("job-originating-user-name")?.value as IppString?
+        printerUri = getValue("job-printer-uri")
+        name = getValue("job-name")
+        originatingUserName = getValue("job-originating-user-name")
 
-        fun getTimeAt(name: String) = IppIntegerTime(get(name)?.value as Int?)
+        fun getTimeAt(name: String) = IppIntegerTime(getValue(name) as Int?)
         timeAtCreation = getTimeAt("time-at-creation")
         timeAtProcessing = getTimeAt("time-at-processing")
         timeAtCompleted = getTimeAt("time-at-completed")
         printerUpTime = getTimeAt("job-printer-up-time")
 
-        impressions = get("job-impressions")?.value as Int?
-        impressionsCompleted = get("job-impressions-completed")?.value as Int?
-        mediaSheets = get("job-media-sheets")?.value as Int?
-        mediaSheetsCompleted = get("job-media-sheets-completed")?.value as Int?
+        impressions = getValue("job-impressions")
+        impressionsCompleted = getValue("job-impressions-completed")
+        mediaSheets = getValue("job-media-sheets")
+        mediaSheetsCompleted = getValue("job-media-sheets-completed")
     }
 
     override fun toString(): String {
