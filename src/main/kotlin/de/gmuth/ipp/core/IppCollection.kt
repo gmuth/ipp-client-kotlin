@@ -5,12 +5,8 @@ package de.gmuth.ipp.core
  */
 
 // RFC8010 3.1.6.
-class IppCollection {
+class IppCollection : ArrayList<IppAttribute<*>>() {
 
-    val members: MutableList<IppAttribute<*>> = mutableListOf()
-
-    override fun toString() = members.joinToString(" ", "{", "}") { "${it.name}=${it.value}" }
-
-    fun logDetails(prefix: String = "") = members.forEach { member -> println("$prefix$member") }
+    override fun toString() = joinToString(" ", "{", "}") { "${it.name}=${it.value}" }
 
 }
