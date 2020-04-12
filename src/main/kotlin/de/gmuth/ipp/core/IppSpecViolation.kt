@@ -6,4 +6,4 @@ import java.io.IOException
  * Copyright (c) 2020 Gerhard Muth
  */
 
-class IppSpecViolation(message: String) : IOException(message)
+class IppSpecViolation(message: String) : IppException(message)
