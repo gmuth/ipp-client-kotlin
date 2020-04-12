@@ -17,7 +17,7 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag, val values:
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun additionalValue(attribute : IppAttribute<*>) {
+    fun additionalValue(attribute: IppAttribute<*>) {
         if (tag == attribute.tag) {
             values.add(attribute.value as T)
         } else {
