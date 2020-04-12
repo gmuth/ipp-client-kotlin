@@ -5,9 +5,7 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.http.Http
-import de.gmuth.ipp.core.IppOperation
-import de.gmuth.ipp.core.IppRequest
-import de.gmuth.ipp.core.IppTag
+import de.gmuth.ipp.core.*
 import java.io.File
 import java.io.FileInputStream
 import java.net.URI
@@ -22,7 +20,9 @@ class IppPrintService(private val printerUri: URI) {
     val ippPrinter: IppPrinter
 
     init {
-        ippPrinter = IppPrinter(ippClient.getPrinterAttributes(printerUri).printerGroup)
+        //ippClient.verbose = true
+        val response = ippClient.getPrinterAttributes(printerUri)
+        ippPrinter = IppPrinter(response.printerGroup)
         ippPrinter.logDetails()
     }
 
@@ -44,7 +44,7 @@ class IppPrintService(private val printerUri: URI) {
                 jobParameters.forEach { jobParameter -> put(jobParameter.toIppAttribute(ippPrinter)) }
             }
         }
-        if (verbose) request.logDetails("IPP: ")
+        if (verbose && !ippClient.verbose) request.logDetails("IPP: ")
 
         val response = ippClient.exchangeSuccessful(printerUri, request, documentInputStream = FileInputStream(file))
         val job = IppJob(response.jobGroup)
@@ -135,6 +135,11 @@ class IppPrintService(private val printerUri: URI) {
     }
 
     // ============================================================================================================================ PRINTER HANDLING
+
+    fun refreshPrinter(printer: IppPrinter) {
+        val response = ippClient.getPrinterAttributes(printerUri)
+        printer.readFrom(response.printerGroup)
+    }
 
     fun pausePrinter() = sendPrinterOperation(printerUri, IppOperation.PausePrinter)
 
