@@ -15,7 +15,8 @@ class IppOutputStream(outputStream: OutputStream) : Closeable, Flushable {
 
     private val dataOutputStream: DataOutputStream = DataOutputStream(outputStream)
 
-    private var attributesCharset: Charset? = null // encoding for text and name attributes, rfc 8011 4.1.4.1
+    // charset for text and name attributes, rfc 8011 4.1.4.1
+    private var attributesCharset: Charset? = null 
 
     private fun charsetForTag(tag: IppTag) =
             if (tag.useAttributesCharset()) attributesCharset ?: throw IppException("missing attributes-charset")
@@ -26,14 +27,17 @@ class IppOutputStream(outputStream: OutputStream) : Closeable, Flushable {
             writeVersion(version ?: throw IppException("missing version"))
             writeCode(code ?: throw IppException("missing operation or status code"))
             writeRequestId(requestId ?: throw IppException("missing requestIds"))
-            attributesGroups.forEach { group ->
+            for (group in attributesGroups) {
                 writeAttributesGroup(group)
             }
             writeTag(IppTag.End)
         }
     }
 
-    private fun writeVersion(version: IppVersion) = with(dataOutputStream) { writeByte(version.major); writeByte(version.minor) }
+    private fun writeVersion(version: IppVersion) = with(dataOutputStream) {
+        writeByte(version.major)
+        writeByte(version.minor) 
+    }
 
     private fun writeCode(code: Short) = dataOutputStream.writeShort(code.toInt())
 
@@ -41,7 +45,6 @@ class IppOutputStream(outputStream: OutputStream) : Closeable, Flushable {
 
     private fun writeAttributesGroup(attributesGroup: IppAttributesGroup) {
         with(attributesGroup) {
-            if (size > 0) {
                 writeTag(tag)
                 for (attribute in values) {
                     try {
@@ -50,7 +53,6 @@ class IppOutputStream(outputStream: OutputStream) : Closeable, Flushable {
                         throw IppException("failed to write attribute: $attribute", exception)
                     }
                 }
-            }
         }
     }
 

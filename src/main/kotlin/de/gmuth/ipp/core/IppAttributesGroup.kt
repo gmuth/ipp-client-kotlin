@@ -27,10 +27,8 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     override fun toString() = "IppAttributesGroup '$tag' containing ${size.toPluralString("attribute")}"
 
     fun logDetails(prefix: String) {
-        if (size > 0) {
-            println("${prefix}$tag")
-            for (key in keys) println("${prefix}  ${get(key)}")
-        }
+        println("${prefix}$tag")
+        for (key in keys) println("${prefix}  ${get(key)}")
     }
 
 }
