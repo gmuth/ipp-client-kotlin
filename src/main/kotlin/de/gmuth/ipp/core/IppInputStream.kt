@@ -4,17 +4,17 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.ipp.client.IppJobState
-import de.gmuth.ipp.client.IppPrinterState
+import de.gmuth.ipp.iana.IppRegistrations
 import java.io.DataInputStream
 import java.io.InputStream
 import java.net.URI
 import java.nio.charset.Charset
+import java.util.*
 
 class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
     companion object {
-        var compareTagsToIppRegistrations: Boolean = true
+        var checkSyntax: Boolean = true
         var strict: Boolean = true
     }
 
@@ -67,20 +67,14 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
             throw IppException("failed to read attribute value for '$name' ($tag)", exception)
         }
 
-        // check tag
-        if (compareTagsToIppRegistrations) IppRegistrations.checkSyntaxOfAttribute(name, tag)
-        //tag.validateValueClass(value)
+        if (checkSyntax) {
+            IppRegistrations.checkSyntaxOfAttribute(name, tag)
+        }
 
         // keep attributes-charset for name and text value decoding
         if (name == "attributes-charset" && tag == IppTag.Charset) {
             attributesCharset = Charset.forName(value as String)
         }
-
-        // move this somewhere else?
-//        if (!tag.isOutOfBandTag()) when (name) {
-//            "job-state" -> value = IppJobState.fromCode(value as Int)
-//            "printer-state" -> value = IppPrinterState.fromCode(value as Int)
-//        }
 
         return IppAttribute(name, tag, value)
     }
