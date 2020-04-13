@@ -25,6 +25,21 @@ data class IppDateTime(
         val minutesFromUTC: Int
 ) {
 
+    fun toZonedDateTime(): ZonedDateTime = ZonedDateTime.of(
+            LocalDateTime.of(
+                    year,
+                    month,
+                    day,
+                    hour,
+                    minutes,
+                    seconds,
+                    deciSeconds * 100 * 1000 * 1000
+            ),
+            ZoneOffset.ofTotalSeconds(
+                    (if (directionFromUTC == '-') -1 else 1) * (hoursFromUTC * 60 + minutesFromUTC) * 60
+            )
+    )
+
     override fun toString() = toZonedDateTime().toString()
 
     fun toRFC2579() = format("%d-%d-%d,%d:%d:%d.%d,%c%d:%d")
@@ -33,11 +48,6 @@ data class IppDateTime(
 
     private fun format(format: String) = String.format(
             format, year, month, day, hour, minutes, seconds, deciSeconds, directionFromUTC, hoursFromUTC, minutesFromUTC
-    )
-
-    fun toZonedDateTime(): ZonedDateTime = ZonedDateTime.of(
-            LocalDateTime.of(year, month, day, hour, minutes, seconds, deciSeconds * 100 * 1000 * 1000),
-            ZoneOffset.ofTotalSeconds((if (directionFromUTC == '-') -1 else 1) * (hoursFromUTC * 60 + minutesFromUTC) * 60)
     )
 
     companion object {
@@ -59,6 +69,8 @@ data class IppDateTime(
             }
         }
 
-        fun now() = fromZonedDateTime(ZonedDateTime.now().truncatedTo(ChronoUnit.SECONDS))
+        fun now() = fromZonedDateTime(
+                ZonedDateTime.now().truncatedTo(ChronoUnit.SECONDS)
+        )
     }
 }
