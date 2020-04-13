@@ -4,12 +4,17 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
+import de.gmuth.ipp.iana.IppRegistrations
 import java.io.DataOutputStream
 import java.io.OutputStream
 import java.net.URI
 import java.nio.charset.Charset
 
 class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStream) {
+
+    companion object {
+        var checkSyntax: Boolean = true
+    }
 
     // charset for text and name attributes, rfc 8011 4.1.4.1
     private var attributesCharset: Charset? = null
@@ -54,12 +59,15 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
 
     private fun writeAttribute(attribute: IppAttribute<*>) {
         with(attribute) {
-            IppRegistrations.checkSyntaxOfAttribute(name, tag)
+            if(checkSyntax) {
+                IppRegistrations.checkSyntaxOfAttribute(name, tag)
+            }
             if (tag != IppTag.NoValue && values.isEmpty()) {
                 throw IppException("no values found to write for '$name'")
             }
             // 1setOf iteration
             for ((index, value) in values.withIndex()) {
+                //println("write ${values.size.toPluralString("value")}: $name ($tag) = $values ")
                 writeTag(tag)
                 writeString(if (index == 0) name else "", Charsets.US_ASCII)
                 writeAttributeValue(tag, value)
