@@ -82,7 +82,7 @@ open class CSVReader<T>(
         }
 
         fun readRowsFromResource(resource: String): List<List<String>> {
-            return readRowsFromInputStream(javaClass.getResourceAsStream(resource))
+            return readRowsFromInputStream(CSVReader::class.java.getResourceAsStream(resource))
         }
 
         fun readRowsFromInputStream(inputStream: InputStream): List<List<String>> {
@@ -102,7 +102,7 @@ open class CSVReader<T>(
         ) {
             // iterate over all fields and find the max column widths
             val maxLengthMap = mutableMapOf<Int, Int>()
-            for (row in rows as List<List<String>>) {
+            for (row in rows) {
                 for ((columnNum, column) in row.withIndex()) {
                     with(maxLengthMap[columnNum]) {
                         if (this == null || this < column.length) maxLengthMap[columnNum] = column.length
