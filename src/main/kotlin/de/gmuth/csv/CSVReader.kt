@@ -12,7 +12,7 @@ import kotlin.math.log10
 
 // https://tools.ietf.org/html/rfc4180
 
-open class CSVReader<T>(
+class CSVReader<T>(
         private val rowMapper: RowMapper<T>,
         var verbose: Boolean = false
 ) {
@@ -21,11 +21,11 @@ open class CSVReader<T>(
         fun mapRow(columns: List<String>, rowNum: Int): T
     }
 
-    open fun readResource(resource: String, skipHeader: Boolean): List<T> {
+    fun readResource(resource: String, skipHeader: Boolean): List<T> {
         return read(javaClass.getResourceAsStream(resource), skipHeader)
     }
 
-    open fun read(inputStream: InputStream, skipHeader: Boolean): List<T> {
+    fun read(inputStream: InputStream, skipHeader: Boolean): List<T> {
         val mappedRows = mutableListOf<T>()
         if (skipHeader) parseLine(inputStream)
         var rowNum = 0
