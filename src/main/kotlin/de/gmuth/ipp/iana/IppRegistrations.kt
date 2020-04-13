@@ -1,12 +1,11 @@
-package de.gmuth.ipp.core
+package de.gmuth.ipp.iana
 
 /**
  * Copyright (c) 2020 Gerhard Muth
  */
 
 import de.gmuth.csv.CSVReader
-import de.gmuth.csv.ListOfStringCSVReader
-import java.io.OutputStream
+import de.gmuth.ipp.core.IppTag
 
 class IppRegistrations {
 
@@ -61,7 +60,7 @@ class IppRegistrations {
         // https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-2
         private fun ippRegistrationsCsvInputStream() = IppRegistrations::class.java.getResourceAsStream("/ipp-registrations-2.csv")
 
-        private val allAttributes = CSVReader<Attribute>().parse(ippRegistrationsCsvInputStream(), true, Attribute.RowMapper)
+        private val allAttributes = CSVReader<Attribute>(Attribute.RowMapper).read(ippRegistrationsCsvInputStream(), true)
 
         private val attributesMap = allAttributes.associateBy(Attribute::key)
 
@@ -83,11 +82,11 @@ class IppRegistrations {
             }
         }
 
-        fun prettyPrintCSV(outputStream: OutputStream) {
-            val csvReader = ListOfStringCSVReader()
-            csvReader.parse(ippRegistrationsCsvInputStream(), false)
-            csvReader.prettyPrint(outputStream)
-        }
+//        fun prettyPrintCSV(outputStream: OutputStream) {
+//            val csvReader = ListOfStringCSVReader()
+//            csvReader.read(ippRegistrationsCsvInputStream(), false)
+//            csvReader.prettyPrint(outputStream)
+//        }
 
         // issues with: cover-back, cover-front, insert-sheet, job-accounting-sheets
         fun printTagMappingsForRFC8011Attributes() {
@@ -108,5 +107,5 @@ class IppRegistrations {
 
 fun main() {
     //IppRegistrations.prettyPrintCSV(System.out)
-    IppRegistrations.printTagMappingsForRFC8011Attributes()
+    //IppRegistrations.printTagMappingsForRFC8011Attributes()
 }

@@ -4,17 +4,28 @@ package de.gmuth.csv
  * Copyright (c) 2020 Gerhard Muth
  */
 
+import de.gmuth.ipp.core.toPluralString
 import java.io.InputStream
+import java.io.OutputStream
+import java.io.PrintWriter
+import kotlin.math.log10
 
 // https://tools.ietf.org/html/rfc4180
 
-open class CSVReader<T> {
+open class CSVReader<T>(
+        private val rowMapper: RowMapper<T>,
+        var verbose: Boolean = false
+) {
 
     interface RowMapper<T> {
         fun mapRow(columns: List<String>, rowNum: Int): T
     }
 
-    fun parse(inputStream: InputStream, skipHeader: Boolean, rowMapper: RowMapper<T>): List<T> {
+    open fun readResource(resource: String, skipHeader: Boolean): List<T> {
+        return read(javaClass.getResourceAsStream(resource), skipHeader)
+    }
+
+    open fun read(inputStream: InputStream, skipHeader: Boolean): List<T> {
         val mappedRows = mutableListOf<T>()
         if (skipHeader) parseLine(inputStream)
         var rowNum = 0
@@ -22,6 +33,9 @@ open class CSVReader<T> {
             val columns = parseLine(inputStream) ?: break@lineLoop
             val row = rowMapper.mapRow(columns, ++rowNum)
             mappedRows.add(row)
+        }
+        if (verbose) {
+            println("mapped ${mappedRows.size.toPluralString("row")}")
         }
         return mappedRows
     }
@@ -58,4 +72,58 @@ open class CSVReader<T> {
         return fields
     }
 
+    // --- Utility for pretty printing ---
+
+    companion object {
+
+        fun prettyPrintResource(resource: String) {
+            val rows = readRowsFromResource(resource)
+            prettyPrint(rows)
+        }
+
+        fun readRowsFromResource(resource: String): List<List<String>> {
+            return readRowsFromInputStream(javaClass.getResourceAsStream(resource))
+        }
+
+        fun readRowsFromInputStream(inputStream: InputStream): List<List<String>> {
+            val csvReader = CSVReader(
+                    object : RowMapper<List<String>> {
+                        override fun mapRow(columns: List<String>, rowNum: Int): List<String> = columns
+                    }
+            )
+            return csvReader.read(inputStream, false)
+        }
+
+        fun prettyPrint(
+                rows: List<List<String>>,
+                withRowNumber: Boolean = true,
+                delimiter: Char = '|',
+                outputStream: OutputStream = System.out
+        ) {
+            // iterate over all fields and find the max column widths
+            val maxLengthMap = mutableMapOf<Int, Int>()
+            for (row in rows as List<List<String>>) {
+                for ((columnNum, column) in row.withIndex()) {
+                    with(maxLengthMap[columnNum]) {
+                        if (this == null || this < column.length) maxLengthMap[columnNum] = column.length
+                    }
+                }
+            }
+            fun maxLength(column: Int) = maxLengthMap[column] ?: throw IllegalArgumentException("column $column not found")
+
+            // iterate over all fields and layout with max column widths
+            val printWriter = PrintWriter(outputStream, true, Charsets.UTF_8)
+            val linesColumnLength: Int = (log10((rows).size.toDouble()) + 1).toInt()
+            for ((rowNo, columns) in (rows).withIndex()) {
+                val line = StringBuffer()
+                if (withRowNumber) line.append(String.format("#%0${linesColumnLength}d%c", rowNo + 1, delimiter))
+                else line.append(delimiter)
+                for ((columnNum, column) in columns.withIndex()) {
+                    line.append(String.format("%-${maxLength(columnNum)}s%c", column, delimiter))
+                }
+                printWriter.println(line.toString())
+            }
+        }
+
+    }
 }
