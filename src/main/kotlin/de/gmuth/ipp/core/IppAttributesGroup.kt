@@ -7,14 +7,19 @@ package de.gmuth.ipp.core
 class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*>>() {
 
     init {
-        if (!tag.isGroupTag()) throw IppException("'$tag' is not a group tag")
+        if (!tag.isGroupTag()) {
+            throw IppException("'$tag' is not a group tag")
+        }
     }
 
     fun put(attribute: IppAttribute<*>): IppAttribute<*>? {
-        if (attribute.tag != IppTag.NoValue && attribute.values.isEmpty())
+        if (!attribute.tag.isOutOfBandTag() && attribute.values.isEmpty()) {
             throw IppException("missing attribute values to put")
+        }
         val replaced = put(attribute.name, attribute)
-        if (replaced != null) println("replaced '$replaced' with '$attribute'")
+        if (replaced != null) {
+            println("replaced '$replaced' with '$attribute'")
+        }
         return replaced
     }
 
@@ -24,15 +29,19 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
 
     fun attribute(name: String, vararg value: Any?) = put(IppAttribute(name, value.toMutableList()))
 
+    @Suppress("UNCHECKED_CAST")
     fun <T> getValue(name: String) = get(name)?.value as T
 
+    @Suppress("UNCHECKED_CAST")
     fun <T> getValues(name: String) = get(name)?.values as T
 
     override fun toString() = "IppAttributesGroup '$tag' containing ${size.toPluralString("attribute")}"
 
     fun logDetails(prefix: String) {
         println("${prefix}$tag")
-        for (key in keys) println("${prefix}  ${get(key)}")
+        for (key in keys) {
+            println("${prefix}  ${get(key)}")
+        }
     }
 
 }
