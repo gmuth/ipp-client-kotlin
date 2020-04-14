@@ -4,7 +4,7 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.ipp.iana.IppRegistrations
+import de.gmuth.ipp.iana.IppRegistrationsSection2
 import java.io.DataOutputStream
 import java.io.OutputStream
 import java.net.URI
@@ -60,7 +60,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
     private fun writeAttribute(attribute: IppAttribute<*>) {
         with(attribute) {
             if(checkSyntax) {
-                IppRegistrations.checkSyntaxOfAttribute(name, tag)
+                IppRegistrationsSection2.checkSyntaxOfAttribute(name, tag)
             }
             if (tag != IppTag.NoValue && values.isEmpty()) {
                 throw IppException("no values found to write for '$name'")

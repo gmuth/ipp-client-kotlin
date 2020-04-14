@@ -4,12 +4,11 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.ipp.iana.IppRegistrations
+import de.gmuth.ipp.iana.IppRegistrationsSection2
 import java.io.DataInputStream
 import java.io.InputStream
 import java.net.URI
 import java.nio.charset.Charset
-import java.util.*
 
 class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
@@ -68,7 +67,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
         }
 
         if (checkSyntax) {
-            IppRegistrations.checkSyntaxOfAttribute(name, tag)
+            IppRegistrationsSection2.checkSyntaxOfAttribute(name, tag)
         }
 
         // keep attributes-charset for name and text value decoding
