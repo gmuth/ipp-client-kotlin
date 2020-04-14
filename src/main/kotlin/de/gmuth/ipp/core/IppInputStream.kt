@@ -26,9 +26,9 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
     fun readMessage(message: IppMessage) {
         with(message) {
-            version = readVersion()
-            code = readCode()
-            requestId = readRequestId()
+            version = IppVersion(read(), read())
+            code = readShort()
+            requestId = readInt()
             lateinit var currentGroup: IppAttributesGroup
             lateinit var currentAttribute: IppAttribute<*>
             tagLoop@ while (true) {
@@ -49,12 +49,6 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
             }
         }
     }
-
-    private fun readVersion() = IppVersion(read(), read())
-
-    private fun readCode() = readShort()
-
-    private fun readRequestId() = readInt()
 
     private fun readTag(): IppTag = IppTag.fromCode(readByte())
 

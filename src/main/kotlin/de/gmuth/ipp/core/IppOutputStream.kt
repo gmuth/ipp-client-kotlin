@@ -26,8 +26,8 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
     fun writeMessage(message: IppMessage) {
         with(message) {
             writeVersion(version ?: throw IppException("missing version"))
-            writeCode(code ?: throw IppException("missing operation or status code"))
-            writeRequestId(requestId ?: throw IppException("missing requestIds"))
+            writeShort(code?.toInt() ?: throw IppException("missing operation or status code"))
+            writeInt(requestId ?: throw IppException("missing requestIds"))
             for (group in attributesGroups) {
                 writeAttributesGroup(group)
             }
@@ -39,10 +39,6 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
         writeByte(version.major)
         writeByte(version.minor)
     }
-
-    private fun writeCode(code: Short) = writeShort(code.toInt())
-
-    private fun writeRequestId(requestId: Int) = writeInt(requestId)
 
     private fun writeAttributesGroup(attributesGroup: IppAttributesGroup) {
         with(attributesGroup) {
