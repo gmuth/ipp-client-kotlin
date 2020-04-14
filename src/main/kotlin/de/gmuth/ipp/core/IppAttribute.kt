@@ -1,6 +1,6 @@
 package de.gmuth.ipp.core
 
-import de.gmuth.ipp.iana.IppRegistrations
+import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.ipp.iana.IppRegistrationsSection6
 
 /**
@@ -33,7 +33,11 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag) {
 
     constructor(name: String, vararg values: T) : this(name, values.toList())
 
-    constructor(name: String, values: Collection<T>) : this(name, IppRegistrations.tagForAttribute(name), values) {
+    constructor(name: String, values: Collection<T>) : this(
+            name,
+            IppRegistrationsSection2.tagForAttribute(name) ?: throw IppException("no tag found for '$name'"),
+            values
+    ) {
         if (!allowAutomaticTag) {
             throw IppException("for '$name' use IppTag.${tag.name}")
         }
@@ -48,13 +52,12 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag) {
         }
     }
 
-    fun is1setOf() = values.size > 1
-            || IppRegistrations.attributeNameIsRegistered(name) && IppRegistrations.attributeIs1setOf(name)
+    fun is1setOf() = values.size > 1 || IppRegistrationsSection2.attributeIs1setOf(name)
 
-    val value: T
+    val value: T?
         get() =
-            if (values.size == 1) values.first()
-            else throw IppException("found ${values.size.toPluralString("value")} but expected only 1 for '$name'")
+            if (values.size < 2) values.firstOrNull()
+            else throw IppException("found ${values.size.toPluralString("value")} but expected 0 or 1 for '$name'")
 
     private fun valueOrEnumValueName(value: Any?): Any? =
             if (tag == IppTag.Enum) {
@@ -64,6 +67,7 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag) {
             }
 
     override fun toString(): String {
+        val tagString = "${if (is1setOf()) "1setOf " else ""}$tag"
         val valuesString = if (values.isEmpty()) "no-value" else try {
             values.joinToString(",") {
                 valueOrEnumValueName(it as Any?).toString()
@@ -71,7 +75,7 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag) {
         } catch (exception: Exception) {
             "<${exception.message}>"
         }
-        return String.format("%s (%s) = %s", name, if (is1setOf()) "1setOf $tag" else "$tag", valuesString)
+        return "$name ($tagString) = $valuesString"
     }
 
     fun logDetails() {
