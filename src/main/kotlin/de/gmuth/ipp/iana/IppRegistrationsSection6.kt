@@ -15,20 +15,20 @@ class IppRegistrationsSection6 {
             val syntax: String,
             val reference: String
     ) {
-
-        override fun toString() = "$attribute/$value ($syntax) = $name $reference "
-
         companion object {
             val rowMapper = object : RowMapper<EnumAttributeValue> {
-                override fun mapRow(columns: List<String>, rowNum: Int) = EnumAttributeValue(
-                        attribute = columns[0],
-                        value = columns[1],
-                        name = columns[2],
-                        syntax = columns[3],
-                        reference = columns[4]
-                )
+                override fun mapRow(columns: List<String>, rowNum: Int) =
+                        EnumAttributeValue(
+                                attribute = columns[0],
+                                value = columns[1],
+                                name = columns[2],
+                                syntax = columns[3],
+                                reference = columns[4]
+                        )
             }
         }
+
+        override fun toString() = "$attribute/$value ($syntax) = $name $reference "
     }
 
     companion object {
