@@ -42,7 +42,9 @@ class IppTool() {
                     else -> throw IppException("unsupported group '$firstArgument'")
                 }
                 "ATTR" -> {
-                    val tag = IppTag.fromRegisteredName(firstArgument)
+                    val tag = IppTag.fromRegisteredName(
+                            if (firstArgument == "language") "naturalLanguage" else firstArgument
+                    )
                     val name = lineItems[2]
                     val value: Any = with(lineItems[3]) {
                         when {
