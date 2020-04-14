@@ -5,7 +5,9 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.http.Http
-import de.gmuth.ipp.core.*
+import de.gmuth.ipp.core.IppOperation
+import de.gmuth.ipp.core.IppRequest
+import de.gmuth.ipp.core.IppTag
 import java.io.File
 import java.io.FileInputStream
 import java.net.URI
@@ -137,7 +139,7 @@ class IppPrintService(private val printerUri: URI) {
     // ============================================================================================================================ PRINTER HANDLING
 
     fun refreshPrinter(printer: IppPrinter) {
-        val response = ippClient.getPrinterAttributes(printerUri)
+        val response = ippClient.getPrinterAttributes(printerUri, IppPrinter.requestAttributes)
         printer.readFrom(response.printerGroup)
     }
 
