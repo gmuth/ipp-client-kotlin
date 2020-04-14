@@ -3,6 +3,9 @@ package de.gmuth.ipp.iana
 import de.gmuth.csv.CSVReader
 import de.gmuth.csv.CSVReader.RowMapper
 
+/**
+ * https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xhtml#ipp-registrations-6
+ */
 class IppRegistrationsSection6 {
 
     data class EnumAttributeValue(
@@ -30,6 +33,7 @@ class IppRegistrationsSection6 {
 
     companion object {
 
+        // source: https://www.iana.org/assignments/ipp-registrations/ipp-registrations-6.csv
         val allEnumAttributeValues = CSVReader(EnumAttributeValue.rowMapper)
                 .readResource("/ipp-registrations-6.csv", true)
 
@@ -56,15 +60,12 @@ class IppRegistrationsSection6 {
 }
 
 fun main() {
-    //CSVReader.prettyPrintResource("/ipp-registrations-6.csv")
-
+    CSVReader.prettyPrintResource("/ipp-registrations-6.csv")
     for (enumAttributeValue in IppRegistrationsSection6.allEnumAttributeValues) {
         println(enumAttributeValue)
     }
-
-    println(IppRegistrationsSection6.aliasMap["finishings-default"])
-
-    println(IppRegistrationsSection6.getEnumValueName("job-state", 3))
+    println(IppRegistrationsSection6.getEnumValueName("job-state", 9)) // 'completed'
+    println(IppRegistrationsSection6.getEnumValueName("finishings", 4)) // 'staple'
+    println(IppRegistrationsSection6.getEnumValueName("finishings-supported", 4)) // 'staple'
+    println(IppRegistrationsSection6.aliasMap["finishings-supported"]) // 'finishings'
 }
-
-
