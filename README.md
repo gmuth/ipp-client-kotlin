@@ -1,8 +1,7 @@
 # ipp-client-kotlin
 
-A basic client implementation of the ipp protocol written in kotlin
+A client implementation of the ipp protocol written in kotlin.
 
-Road map:
 [RFC 8010](https://tools.ietf.org/html/rfc8010),
 [RFC 8011](https://tools.ietf.org/html/rfc8011)
 
@@ -17,8 +16,8 @@ Road map:
     val printService = IppPrintService(printer)
     
     printService.printFile(file)
-    printService.printFile(file, IppColorMode.Monochrome)
     printService.printFile(file, waitForTermination = true)
+    printService.printFile(file, IppColorMode.Monochrome)
     printService.printUri(remoteFile) // -- make printer pull document from remote server
 
     printService.getJobs()
@@ -39,7 +38,7 @@ Road map:
       operationGroup.attribute("document-format", "application/octet-stream")
       operationGroup.attribute("requesting-user-name", "kotlin-ipp")
     }
-    val response = ippClient.exchange(uri, request, FileInputStream(file))
+    val response = ippClient.exchange(printer, request, FileInputStream(file))
 
 ### IppTool
  
@@ -99,6 +98,5 @@ Commercial support is [available](http://ipp-software.com).
 
 ## ToDo
 
-* make IppTool accept language as alias for naturalLanguage
 * support collection encoding
 * multi platform support
