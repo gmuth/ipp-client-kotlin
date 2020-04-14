@@ -59,7 +59,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
 
     private fun writeAttribute(attribute: IppAttribute<*>) {
         with(attribute) {
-            if(checkSyntax) {
+            if (checkSyntax) {
                 IppRegistrationsSection2.checkSyntaxOfAttribute(name, tag)
             }
             if (tag != IppTag.NoValue && values.isEmpty()) {
@@ -134,7 +134,8 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
             IppTag.UriScheme,
             IppTag.Charset,
             IppTag.NaturalLanguage,
-            IppTag.MimeMediaType -> with(value as String) {
+            IppTag.MimeMediaType,
+            IppTag.MemberAttrName -> with(value as String) {
                 writeString(value, charsetForTag(tag))
             }
 
