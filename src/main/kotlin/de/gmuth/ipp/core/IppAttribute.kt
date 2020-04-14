@@ -35,11 +35,11 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag) {
 
     constructor(name: String, values: Collection<T>) : this(
             name,
-            IppRegistrationsSection2.tagForAttribute(name) ?: throw IppException("no tag found for '$name'"),
+            IppRegistrationsSection2.tagForAttribute(name) ?: throw IppException("no tag found for attribute '$name'"),
             values
     ) {
         if (!allowAutomaticTag) {
-            throw IppException("for '$name' use IppTag.${tag.name}")
+            throw IppException("automatic tag disabled: for attribute '$name' use IppTag.${tag.name}")
         }
     }
 
