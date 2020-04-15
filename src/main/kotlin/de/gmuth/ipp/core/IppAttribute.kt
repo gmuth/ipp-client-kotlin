@@ -12,8 +12,8 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag) {
     val values = mutableListOf<T>()
 
     init {
-        if (tag.isGroupTag()) {
-            throw IppException("group tag '$tag' must not be used for attributes")
+        if (tag.isDelimiterTag()) {
+            throw IppException("delimiter tag '$tag' must not be used for attributes")
         }
     }
 

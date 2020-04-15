@@ -21,7 +21,7 @@ abstract class IppMessage {
 
     fun getSingleAttributesGroup(tag: IppTag) = getAttributesGroups(tag).single()
 
-    fun newAttributesGroup(tag: IppTag): IppAttributesGroup {
+    fun attributesGroup(tag: IppTag): IppAttributesGroup {
         val group = IppAttributesGroup(tag)
         attributesGroups.add(group)
         return group

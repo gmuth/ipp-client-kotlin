@@ -35,7 +35,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                 val tag = readTag()
                 when {
                     tag == IppTag.End -> break@tagLoop
-                    tag.isGroupTag() -> currentGroup = newAttributesGroup(tag)
+                    tag.isDelimiterTag() -> currentGroup = attributesGroup(tag)
                     else -> {
                         val attribute = readAttribute(tag)
                         if (attribute.name.isNotEmpty()) {

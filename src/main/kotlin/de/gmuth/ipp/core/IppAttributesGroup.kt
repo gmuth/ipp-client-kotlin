@@ -7,8 +7,8 @@ package de.gmuth.ipp.core
 class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*>>() {
 
     init {
-        if (!tag.isGroupTag()) {
-            throw IppException("'$tag' is not a group tag")
+        if (!tag.isDelimiterTag()) {
+            throw IppException("'$tag' is not a delimiter tag")
         }
     }
 
