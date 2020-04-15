@@ -63,7 +63,6 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
             }
             // 1setOf iteration
             for ((index, value) in values.withIndex()) {
-                //println("write ${values.size.toPluralString("value")}: $name ($tag) = $values ")
                 writeTag(tag)
                 writeString(if (index == 0) name else "", Charsets.US_ASCII)
                 writeAttributeValue(tag, value)
@@ -81,7 +80,6 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
         if (value == null && !tag.isOutOfBandTag()) {
             throw IppException("missing value for tag $tag")
         }
-        //tag.validateValueClass(value)
         when (tag) {
             // out-of-band RFC 8010 3.8. & RFC 3380 8.
             IppTag.Unsupported_,
@@ -91,27 +89,23 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
             IppTag.DeleteAttribute,
             IppTag.AdminDefine -> writeShort(0)
 
-            // value class Boolean
             IppTag.Boolean -> with(value as Boolean) {
                 writeShort(1)
                 writeByte(if (value) 0x01 else 0x00)
             }
 
-            // value class Int
             IppTag.Integer,
             IppTag.Enum -> with(value as Int) {
                 writeShort(4)
                 writeInt(value)
             }
 
-            // value class IppIntegerRange
             IppTag.RangeOfInteger -> with(value as IppIntegerRange) {
                 writeShort(8)
                 writeInt(start)
                 writeInt(end)
             }
 
-            // value class IppResolution
             IppTag.Resolution -> with(value as IppResolution) {
                 writeShort(9)
                 writeInt(x)
@@ -119,12 +113,10 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
                 writeByte(unit)
             }
 
-            // value class URI
             IppTag.Uri -> with(value as URI) {
                 writeString(value.toString(), charsetForTag(tag))
             }
 
-            // value class String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
             IppTag.OctetString,
             IppTag.Keyword,
             IppTag.UriScheme,
@@ -135,22 +127,20 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
                 writeString(value, charsetForTag(tag))
             }
 
-            // value class IppString
             IppTag.TextWithoutLanguage,
             IppTag.NameWithoutLanguage -> when {
                 (value is IppString) -> writeString(value.string, charsetForTag(tag))
                 (value is String) -> writeString(value, charsetForTag(tag)) // accept String for convenience
-                else -> throw IppException("expected value class String or IppString without language")
+                else -> throw IppException("expected value class IppString without language or String")
             }
 
             IppTag.TextWithLanguage,
             IppTag.NameWithLanguage -> with(value as IppString) {
                 writeShort(4 + string.length + language?.length!!)
-                writeString(value.language ?: throw IppException("missing language"), charsetForTag(tag))
+                writeString(value.language!!, charsetForTag(tag))
                 writeString(value.string, charsetForTag(tag))
             }
 
-            // value class IppDateTime
             IppTag.DateTime -> with(value as IppDateTime) {
                 writeShort(11)
                 writeShort(year)
@@ -170,12 +160,10 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
     }
 
     private fun writeString(value: String, charset: Charset) {
-        writeLengthAndValue(value.toByteArray(charset))
-    }
-
-    private fun writeLengthAndValue(value: ByteArray) {
-        writeShort(value.size)
-        write(value)
+        with(value.toByteArray(charset)) {
+            writeShort(size)
+            write(this)
+        }
     }
 
 }
