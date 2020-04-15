@@ -14,7 +14,6 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
     companion object {
         var checkSyntax: Boolean = true
-        var strict: Boolean = true
     }
 
     // encoding for text and name attributes, rfc 8011 4.1.4.1
@@ -54,7 +53,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
     private fun readAttribute(tag: IppTag): IppAttribute<*> {
         val name = readString(Charsets.US_ASCII)
-        var value = try {
+        val value = try {
             readAttributeValue(tag)
         } catch (exception: Exception) {
             throw IppException("failed to read attribute value for '$name' ($tag)", exception)
