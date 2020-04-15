@@ -1,18 +1,10 @@
 package de.gmuth.ipp.core
 
-import java.net.URI
-import java.util.concurrent.atomic.AtomicInteger
-
 /**
  * Copyright (c) 2020 Gerhard Muth
  */
 
 class IppRequest() : IppMessage() {
-
-    init {
-        version = IppVersion()
-        requestId = requestCounter.getAndIncrement()
-    }
 
     override val codeDescription: String
         get() = "operation = $operation"
@@ -23,26 +15,20 @@ class IppRequest() : IppMessage() {
     val operationGroup = newAttributesGroup(IppTag.Operation)
 
     constructor(
+            version: IppVersion,
             operation: IppOperation,
-            printerUri: URI? = null,
+            requestId: Int,
             naturalLanguage: String = "en",
             requestingUserName: String? = System.getenv("USER")
-
     ) : this() {
-        code = operation.code
+        this.version = version
+        this.code = operation.code
+        this.requestId = requestId
         operationGroup.attribute("attributes-charset", IppTag.Charset, Charsets.UTF_8.name().toLowerCase())
         operationGroup.attribute("attributes-natural-language", IppTag.NaturalLanguage, naturalLanguage)
-
-        if (printerUri != null) {
-            operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
-        }
         if (requestingUserName != null) {
             operationGroup.attribute("requesting-user-name", IppTag.NameWithoutLanguage, requestingUserName)
         }
-    }
-
-    companion object {
-        private val requestCounter = AtomicInteger(1)
     }
 
 }

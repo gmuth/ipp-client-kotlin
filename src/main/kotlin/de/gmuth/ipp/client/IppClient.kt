@@ -10,12 +10,18 @@ import de.gmuth.ipp.core.*
 import java.io.InputStream
 import java.io.SequenceInputStream
 import java.net.URI
+import java.util.concurrent.atomic.AtomicInteger
 import javax.net.ssl.SSLHandshakeException
 
 class IppClient(
-        var httpClient: Http.Client = HttpClientByHttpURLConnection()
+        var ippVersion: IppVersion = IppVersion(1, 1),
+        val httpClient: Http.Client = HttpClientByHttpURLConnection()
         //val httpClient: Http.Client = HttpClientByJava11HttpClient()
 ) {
+    companion object {
+        private val requestCounter = AtomicInteger(1)
+    }
+
     var verbose: Boolean = false
 
     fun exchangeSuccessful(
@@ -81,7 +87,6 @@ class IppClient(
             response.logDetails("IPP-RESPONSE: ")
             throw IppExchangeException(request, response, "failed to decode ipp response", exception)
         }
-
     }
 
     private fun exchange(
@@ -120,6 +125,13 @@ class IppClient(
         }
     }
 
+    fun ippRequest(operation: IppOperation) =
+            IppRequest(
+                    ippVersion,
+                    operation,
+                    requestCounter.getAndIncrement()
+            )
+
     //-----------------------
     // Get-Printer-Attributes
     // ----------------------
@@ -128,10 +140,12 @@ class IppClient(
         return getPrinterAttributes(printerUri, requestedAttributes.toList())
     }
 
-    fun getPrinterAttributes(printerUri: URI, requestedAttributes: List<String>): IppResponse {
-        val request = IppRequest(IppOperation.GetPrinterAttributes, printerUri).apply {
-            if (requestedAttributes.isNotEmpty())
+    fun getPrinterAttributes(printerUri: URI, requestedAttributes: List<String> = listOf()): IppResponse {
+        val request = ippRequest(IppOperation.GetPrinterAttributes).apply {
+            operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
+            if (requestedAttributes.isNotEmpty()) {
                 operationGroup.attribute("requested-attributes", IppTag.Keyword, requestedAttributes)
+            }
         }
         return exchangeSuccessful(printerUri, request, "Get-Printer-Attributes $printerUri")
     }
@@ -141,7 +155,7 @@ class IppClient(
     // ------------------
 
     fun getJobAttributes(printerUri: URI, jobId: Int): IppResponse {
-        val request = IppRequest(IppOperation.GetJobAttributes).apply {
+        val request = ippRequest(IppOperation.GetJobAttributes).apply {
             operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
             operationGroup.attribute("job-id", IppTag.Integer, jobId)
         }
@@ -149,7 +163,7 @@ class IppClient(
     }
 
     fun getJobAttributes(jobUri: URI): IppResponse {
-        val request = IppRequest(IppOperation.GetJobAttributes).apply {
+        val request = ippRequest(IppOperation.GetJobAttributes).apply {
             operationGroup.attribute("job-uri", IppTag.Uri, jobUri)
         }
         return exchangeSuccessful(jobUri, request, "Get-Job-Attributes $jobUri failed")

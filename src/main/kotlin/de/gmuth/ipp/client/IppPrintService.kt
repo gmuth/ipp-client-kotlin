@@ -39,7 +39,8 @@ class IppPrintService(private val printerUri: URI) {
 
     ): IppJob {
 
-        val request = IppRequest(IppOperation.PrintJob, printerUri).apply {
+        val request = ippClient.ippRequest(IppOperation.PrintJob).apply {
+            operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
             operationGroup.attribute("document-format", IppTag.MimeMediaType, documentFormat)
             with(newAttributesGroup(IppTag.Job)) {
                 attribute("job-name", IppTag.NameWithoutLanguage, jobName)
@@ -73,7 +74,8 @@ class IppPrintService(private val printerUri: URI) {
 
     ): IppJob {
 
-        val request = IppRequest(IppOperation.PrintUri, printerUri).apply {
+        val request = ippClient.ippRequest(IppOperation.PrintUri).apply {
+            operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
             operationGroup.attribute("document-uri", IppTag.Uri, documentUri)
             operationGroup.attribute("document-format", IppTag.MimeMediaType, documentFormat)
             with(newAttributesGroup(IppTag.Job)) {
@@ -98,7 +100,9 @@ class IppPrintService(private val printerUri: URI) {
     }
 
     fun getJobs(): List<IppJob> {
-        val request = IppRequest(IppOperation.GetJobs, printerUri)
+        val request = ippClient.ippRequest(IppOperation.GetJobs).apply {
+            operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
+        }
         val response = ippClient.exchangeSuccessful(printerUri, request)
         return response.getAttributesGroups(IppTag.Job).stream()
                 .map { jobGroup -> IppJob(jobGroup) }.toList()
@@ -121,7 +125,8 @@ class IppPrintService(private val printerUri: URI) {
     }
 
     fun cancelJob(jobId: Int) {
-        val request = IppRequest(IppOperation.CancelJob, printerUri).apply {
+        val request = ippClient.ippRequest(IppOperation.CancelJob).apply {
+            operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
             operationGroup.attribute("job-id", IppTag.Integer, jobId)
         }
         ippClient.exchangeSuccessful(printerUri, request)
@@ -129,7 +134,7 @@ class IppPrintService(private val printerUri: URI) {
     }
 
     fun cancelJob(job: IppJob) {
-        val request = IppRequest(IppOperation.CancelJob).apply {
+        val request = ippClient.ippRequest(IppOperation.CancelJob).apply {
             operationGroup.attribute("job-uri", IppTag.Uri, job.uri)
         }
         ippClient.exchangeSuccessful(job.uri, request)
@@ -148,7 +153,9 @@ class IppPrintService(private val printerUri: URI) {
     fun resumePrinter() = sendPrinterOperation(printerUri, IppOperation.ResumePrinter)
 
     private fun sendPrinterOperation(printerUri: URI, printerOperation: IppOperation) {
-        val request = IppRequest(printerOperation, printerUri)
+        val request = ippClient.ippRequest(printerOperation).apply {
+            operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
+        }
         ippClient.exchangeSuccessful(printerUri, request, httpAuth = httpAuth)
     }
 

@@ -23,7 +23,10 @@ class IppTool() {
     fun run(lines: List<String>) {
         var fileInputStream: FileInputStream? = null
         lateinit var currentGroup: IppAttributesGroup
-        val request = IppRequest()
+        val request = IppRequest().apply {
+            version = IppVersion(2,0)
+            requestId = 42
+        }
 
         // parse commands and build ipp request
         for (line in lines) {
