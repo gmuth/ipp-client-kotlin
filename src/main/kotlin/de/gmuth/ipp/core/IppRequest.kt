@@ -41,8 +41,6 @@ class IppRequest() : IppMessage() {
         }
     }
 
-    fun newJobGroup() = newAttributesGroup(IppTag.Job)
-
     companion object {
         private val requestCounter = AtomicInteger(1)
     }

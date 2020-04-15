@@ -41,7 +41,7 @@ class IppPrintService(private val printerUri: URI) {
 
         val request = IppRequest(IppOperation.PrintJob, printerUri).apply {
             operationGroup.attribute("document-format", IppTag.MimeMediaType, documentFormat)
-            with(newJobGroup()) {
+            with(newAttributesGroup(IppTag.Job)) {
                 attribute("job-name", IppTag.NameWithoutLanguage, jobName)
                 jobParameters.forEach { jobParameter -> put(jobParameter.toIppAttribute(ippPrinter)) }
             }
@@ -76,7 +76,7 @@ class IppPrintService(private val printerUri: URI) {
         val request = IppRequest(IppOperation.PrintUri, printerUri).apply {
             operationGroup.attribute("document-uri", IppTag.Uri, documentUri)
             operationGroup.attribute("document-format", IppTag.MimeMediaType, documentFormat)
-            with(newJobGroup()) {
+            with(newAttributesGroup(IppTag.Job)) {
                 attribute("job-name", IppTag.NameWithoutLanguage, jobName)
                 jobParameters.forEach { jobParameter -> put(jobParameter.toIppAttribute(ippPrinter)) }
             }
