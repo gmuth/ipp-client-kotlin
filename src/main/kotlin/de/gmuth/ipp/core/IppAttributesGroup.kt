@@ -18,7 +18,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
         }
         val replaced = put(attribute.name, attribute)
         if (replaced != null) {
-            println("replaced '$replaced' with '$attribute'")
+            println("WARN: replaced '$replaced' with '$attribute'")
         }
         return replaced
     }
@@ -37,10 +37,10 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
 
     override fun toString() = "IppAttributesGroup '$tag' containing ${size.toPluralString("attribute")}"
 
-    fun logDetails(prefix: String) {
+    fun logDetails(prefix: String = "") {
         println("${prefix}$tag")
         for (key in keys) {
-            println("${prefix}  ${get(key)}")
+            println("$prefix  ${get(key)}")
         }
     }
 

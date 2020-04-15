@@ -24,12 +24,13 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag) {
     constructor(name: String, tag: IppTag, vararg values: T) : this(name, tag, values.toList())
 
     constructor(name: String, tag: IppTag, values: Collection<T>) : this(name, tag) {
+        // do not add null to values
         if (values.size > 1 || values.first() != null) {
             this.values.addAll(values)
         }
     }
 
-    // ------ use automatic tag
+    // automatic tag
 
     constructor(name: String, vararg values: T) : this(name, values.toList())
 
@@ -56,8 +57,12 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag) {
 
     val value: T?
         get() =
-            if (values.size < 2) values.firstOrNull()
-            else throw IppException("found ${values.size.toPluralString("value")} but expected 0 or 1 for '$name'")
+            if (values.size <= 1) {
+                values.firstOrNull()
+            }
+            else {
+                throw IppException("found ${values.size.toPluralString("value")} but expected 0 or 1 for '$name'")
+            }
 
     private fun valueOrEnumValueName(value: Any?): Any? =
             if (tag == IppTag.Enum) {
@@ -78,13 +83,14 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag) {
         return "$name ($tagString) = $valuesString"
     }
 
-    fun logDetails() {
-        if (values.size == 1) {
-            println(toString())
+    fun logDetails(prefix: String = "") {
+        val string = toString()
+        if (values.size == 1 || string.length < 120) {
+            println("${prefix}$string")
         } else {
-            println("$name ($tag) =")
+            println("${prefix}$name ($tag) =")
             for (value in values) {
-                println(" $value")
+                println("${prefix}  ${valueOrEnumValueName(value)}")
             }
         }
     }
