@@ -1,8 +1,5 @@
 package de.gmuth.ipp.core
 
-import java.net.URI
-import kotlin.reflect.KClass
-
 /**
  * Copyright (c) 2020 Gerhard Muth
  */
@@ -10,9 +7,7 @@ import kotlin.reflect.KClass
 // [RFC 8010] and [RFC 3380]
 enum class IppTag(
         val code: Byte,
-        private val ianaName: String? = null,
-        val valueClass: KClass<*>? = null
-
+        private val ianaName: String? = null
 ) {
     // attribute group tags
     // https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-7
@@ -39,9 +34,9 @@ enum class IppTag(
     //https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-9
 
     // Integer
-    Integer(0x21, valueClass = Int::class),
-    Boolean(0x22),//kotlin.Boolean::class),
-    Enum(0x23, valueClass = Int::class), // Enum?
+    Integer(0x21),
+    Boolean(0x22),
+    Enum(0x23),
 
     // Misc
     OctetString(0x30),
@@ -54,26 +49,32 @@ enum class IppTag(
     EndCollection(0x37),
 
     // Text
-    TextWithoutLanguage(0x41, valueClass = String::class),
-    NameWithoutLanguage(0x42, valueClass = String::class),
-    Keyword(0x44, valueClass = String::class),
-    UriScheme(0x46, valueClass = String::class),
-    Uri(0x45, valueClass = URI::class),
-    Charset(0x47, valueClass = String::class), // java.nio.Charset issue: sun.nio.cs.UTF_8
-    NaturalLanguage(0x48, valueClass = String::class),
-    MimeMediaType(0x49, valueClass = String::class),
-    MemberAttrName(0x4A, valueClass = String::class);
+    TextWithoutLanguage(0x41),
+    NameWithoutLanguage(0x42),
+    Keyword(0x44),
+    UriScheme(0x46),
+    Uri(0x45),
+    Charset(0x47),
+    NaturalLanguage(0x48),
+    MimeMediaType(0x49),
+    MemberAttrName(0x4A);
 
-    fun isGroupTag() = code in 0x00..0x0F
+    fun isDelimiterTag() = code in 0x00..0x0F
     fun isOutOfBandTag() = code in 0x10..0x1F
     fun isIntegerTag() = code in 0x20..0x2F
     fun isStringTag() = code in 0x40..0x4F
     fun isCollection() = this in listOf(BegCollection, EndCollection, MemberAttrName)
-
     fun useAttributesCharset() = this in listOf(TextWithoutLanguage, TextWithLanguage, NameWithoutLanguage, NameWithLanguage)
 
     private fun registeredName() = ianaName
             ?: name.replace("^[A-Z]".toRegex()) { it.value.toLowerCase() }
+
+    fun registeredSyntax() = when (this) {
+        // iana registration doesn't care about language
+        NameWithoutLanguage, NameWithLanguage -> "name"
+        TextWithoutLanguage, TextWithLanguage -> "text"
+        else -> registeredName()
+    }
 
     override fun toString() = registeredName()
 
@@ -85,21 +86,6 @@ enum class IppTag(
         private val registeredNameMap = values().associateBy(IppTag::registeredName)
         fun fromRegisteredName(name: String): IppTag = registeredNameMap[name]
                 ?: throw IppException(String.format("ipp tag name '%s' unknown", name))
-    }
-
-    fun registeredSyntax() = when (this) {
-        // iana registration doesn't care about language
-        NameWithoutLanguage, NameWithLanguage -> "name"
-        TextWithoutLanguage, TextWithLanguage -> "text"
-        else -> registeredName()
-    }
-
-    // reflection issue: Kotlin reflection is not available -> use reified
-    // class java.nio.charset.Charset != class sun.nio.cs.UTF_8
-    fun no_validateValueClass(value: Any?) {
-        if (value != null && valueClass != null && (value::class) == valueClass) {
-            throw IppException("expected value of $valueClass but found: ${value::class}")
-        }
     }
 
 }
