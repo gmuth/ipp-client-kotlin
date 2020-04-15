@@ -206,7 +206,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
     private fun assertValueLength(expected: Int) {
         val length = readShort().toInt()
         if (length != expected) {
-            throw IppSpecViolation("expected value length of $expected bytes but found $length")
+            throw IppException("expected value length of $expected bytes but found $length")
         }
     }
 

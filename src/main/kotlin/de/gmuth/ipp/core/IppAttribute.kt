@@ -48,7 +48,7 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag) {
         if (tag == attribute.tag) {
             values.add(attribute.value as T)
         } else {
-            throw IppSpecViolation("'$name' 1setOf error: expected tag '$tag' for additional value but found '${attribute.tag}'")
+            throw IppException("'$name' 1setOf error: expected tag '$tag' for additional value but found '${attribute.tag}'")
         }
     }
 
