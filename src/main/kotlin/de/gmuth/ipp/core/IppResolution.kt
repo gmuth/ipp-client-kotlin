@@ -4,16 +4,15 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
+// RFC 8011 5.1.16.
 data class IppResolution(
         val x: Int,
         val y: Int,
         val unit: Int
 ) {
-    override fun toString() = "${x}${if (x == y) "" else "x${y}"}${unitValue()}"
+    override fun toString() = "${x}${if (x == y) "" else "x${y}"}${unitString()}"
 
-    // where is the resolution unit specified?
-    // https://github.com/apple/cups/blob/master/cups/ipp.h
-    private fun unitValue() = when (unit) {
+    private fun unitString() = when (unit) {
         3 -> "dpi"
         4 -> "dpcm"
         else -> "unit-$unit"
