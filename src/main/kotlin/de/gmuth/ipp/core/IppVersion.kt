@@ -5,8 +5,8 @@ package de.gmuth.ipp.core
  */
 
 data class IppVersion(
-        val major: Int = 1,
-        val minor: Int = 1
+        val major: Int,
+        val minor: Int
 ) {
     override fun toString() = "$major.$minor"
 }
