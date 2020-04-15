@@ -6,7 +6,6 @@ package de.gmuth.ipp.client
 
 import de.gmuth.http.Http
 import de.gmuth.ipp.core.IppOperation
-import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppTag
 import java.io.File
 import java.io.FileInputStream
@@ -42,7 +41,7 @@ class IppPrintService(private val printerUri: URI) {
         val request = ippClient.ippRequest(IppOperation.PrintJob).apply {
             operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
             operationGroup.attribute("document-format", IppTag.MimeMediaType, documentFormat)
-            with(attributesGroup(IppTag.Job)) {
+            with(ippAttributesGroup(IppTag.Job)) {
                 attribute("job-name", IppTag.NameWithoutLanguage, jobName)
                 jobParameters.forEach { jobParameter -> put(jobParameter.toIppAttribute(ippPrinter)) }
             }
@@ -78,7 +77,7 @@ class IppPrintService(private val printerUri: URI) {
             operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
             operationGroup.attribute("document-uri", IppTag.Uri, documentUri)
             operationGroup.attribute("document-format", IppTag.MimeMediaType, documentFormat)
-            with(attributesGroup(IppTag.Job)) {
+            with(ippAttributesGroup(IppTag.Job)) {
                 attribute("job-name", IppTag.NameWithoutLanguage, jobName)
                 jobParameters.forEach { jobParameter -> put(jobParameter.toIppAttribute(ippPrinter)) }
             }

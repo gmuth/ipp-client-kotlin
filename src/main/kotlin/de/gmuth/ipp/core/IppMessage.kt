@@ -21,13 +21,13 @@ abstract class IppMessage {
 
     fun getSingleAttributesGroup(tag: IppTag) = getAttributesGroups(tag).single()
 
-    fun attributesGroup(tag: IppTag): IppAttributesGroup {
+    fun ippAttributesGroup(tag: IppTag): IppAttributesGroup {
         val group = IppAttributesGroup(tag)
         attributesGroups.add(group)
         return group
     }
 
-    // --------------------------------------------------------------------- DECODING
+    // --- DECODING
 
     fun readFrom(inputStream: InputStream) {
         val ippInputStream = IppInputStream(inputStream)
@@ -35,7 +35,7 @@ abstract class IppMessage {
         ippInputStream.close()
     }
 
-    // --------------------------------------------------------------------- ENCODING
+    // --- ENCODING
 
     private fun writeTo(outputStream: OutputStream) {
         val ippOutputStream = IppOutputStream(outputStream)
@@ -54,7 +54,7 @@ abstract class IppMessage {
         return ByteArrayInputStream(toByteArray())
     }
 
-    // --------------------------------------------------------------------- LOGGING
+    // --- LOGGING
 
     override fun toString(): String = String.format(
             "%s: %s, %s: %s",

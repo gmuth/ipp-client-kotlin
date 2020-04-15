@@ -14,7 +14,7 @@ class IppRequest() : IppMessage() {
     val operation: IppOperation
         get() = IppOperation.fromCode(code ?: throw IppException("operation-code must not be null"))
 
-    val operationGroup = attributesGroup(IppTag.Operation)
+    val operationGroup = ippAttributesGroup(IppTag.Operation)
 
     constructor(
             version: IppVersion,
