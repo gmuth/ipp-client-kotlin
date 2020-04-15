@@ -44,7 +44,7 @@ class IppJob(jobGroup: IppAttributesGroup) {
         name = getValue("job-name")
         originatingUserName = getValue("job-originating-user-name")
 
-        fun getTimeAt(name: String) = IppIntegerTime(getValue(name) as Int?)
+        fun getTimeAt(name: String) = IppIntegerTime.fromInt(getValue(name) as Int?)
         timeAtCreation = getTimeAt("time-at-creation")
         timeAtProcessing = getTimeAt("time-at-processing")
         timeAtCompleted = getTimeAt("time-at-completed")
