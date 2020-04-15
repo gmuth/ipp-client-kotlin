@@ -1,5 +1,7 @@
 package de.gmuth.ipp.core
 
+import java.nio.charset.Charset
+
 /**
  * Copyright (c) 2020 Gerhard Muth
  */
@@ -18,17 +20,15 @@ class IppRequest() : IppMessage() {
             version: IppVersion,
             operation: IppOperation,
             requestId: Int,
-            naturalLanguage: String = "en",
-            requestingUserName: String? = System.getenv("USER")
+            charset: Charset = Charsets.UTF_8,
+            naturalLanguage: String = "en"
+
     ) : this() {
         this.version = version
         this.code = operation.code
         this.requestId = requestId
-        operationGroup.attribute("attributes-charset", IppTag.Charset, Charsets.UTF_8.name().toLowerCase())
+        operationGroup.attribute("attributes-charset", IppTag.Charset, charset.name().toLowerCase())
         operationGroup.attribute("attributes-natural-language", IppTag.NaturalLanguage, naturalLanguage)
-        if (requestingUserName != null) {
-            operationGroup.attribute("requesting-user-name", IppTag.NameWithoutLanguage, requestingUserName)
-        }
     }
 
 }

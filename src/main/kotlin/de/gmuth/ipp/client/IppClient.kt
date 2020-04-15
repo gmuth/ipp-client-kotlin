@@ -130,7 +130,10 @@ class IppClient(
                     ippVersion,
                     operation,
                     requestCounter.getAndIncrement()
-            )
+
+            ).apply {
+                operationGroup.attribute("requesting-user-name", IppTag.NameWithoutLanguage, System.getenv("USER"))
+            }
 
     //-----------------------
     // Get-Printer-Attributes
