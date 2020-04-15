@@ -76,7 +76,7 @@ enum class IppOperation(val code: Short) {
 
     override fun toString(): String = registeredName()
 
-    // https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-10
+    // https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-6
     private fun registeredName() = name
             .replace("[A-Z]".toRegex()) { "-" + it.value }
             .replace("^-".toRegex(), "")
