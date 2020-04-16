@@ -12,7 +12,7 @@ class IppResponse : IppMessage() {
         get() = "status-code = $status"
 
     val status: IppStatus
-        get() = IppStatus.fromCode(code ?: throw IppException("status-code must not be null"))
+        get() = IppStatus.fromShort(code ?: throw IppException("status-code must not be null"))
 
     val statusMessage: IppString?
         get() = operationGroup.getValue("status-message")

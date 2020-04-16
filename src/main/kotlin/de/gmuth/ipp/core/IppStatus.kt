@@ -74,7 +74,7 @@ enum class IppStatus(val code: Short) {
     companion object {
         private val codeMap = values().associateBy(IppStatus::code)
 
-        fun fromCode(code: Short): IppStatus = codeMap[code]
+        fun fromShort(code: Short): IppStatus = codeMap[code]
                 ?: throw IllegalArgumentException(String.format("ipp status code '%04X' unknown", code))
 
     }
