@@ -50,7 +50,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
         }
     }
 
-    private fun readTag(): IppTag = IppTag.fromCode(readByte())
+    private fun readTag(): IppTag = IppTag.fromByte(readByte())
 
     private fun readAttribute(tag: IppTag): IppAttribute<*> {
         val name = readString(Charsets.US_ASCII)

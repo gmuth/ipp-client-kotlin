@@ -80,7 +80,7 @@ enum class IppTag(
 
     companion object {
         private val codeMap = values().associateBy(IppTag::code)
-        fun fromCode(code: Byte): IppTag = codeMap[code]
+        fun fromByte(code: Byte): IppTag = codeMap[code]
                 ?: throw IppException(String.format("ipp tag code '%02X' unknown", code))
 
         private val registeredNameMap = values().associateBy(IppTag::registeredName)
