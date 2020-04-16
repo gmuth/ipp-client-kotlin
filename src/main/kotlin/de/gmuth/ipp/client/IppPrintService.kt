@@ -6,6 +6,7 @@ package de.gmuth.ipp.client
 
 import de.gmuth.http.Http
 import de.gmuth.ipp.core.IppOperation
+import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppTag
 import java.io.File
 import java.io.FileInputStream
@@ -90,6 +91,24 @@ class IppPrintService(private val printerUri: URI) {
         if (waitForTermination) waitForTermination(job)
         if (verbose) job.logDetails()
         return job
+    }
+
+    fun validateJob(
+            vararg jobParameters: IppJobParameter,
+            documentFormat: String = "application/octet-stream"
+
+    ): IppResponse {
+
+        val request = ippClient.ippRequest(IppOperation.ValidateJob).apply {
+            operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
+            operationGroup.attribute("document-format", IppTag.MimeMediaType, documentFormat)
+            with(ippAttributesGroup(IppTag.Job)) {
+                jobParameters.forEach { jobParameter -> put(jobParameter.toIppAttribute(ippPrinter)) }
+            }
+        }
+        if (verbose && !ippClient.verbose) request.logDetails("IPP: ")
+
+        return ippClient.exchangeSuccessful(printerUri, request)
     }
 
     // ============================================================================================================================ JOB HANDLING
