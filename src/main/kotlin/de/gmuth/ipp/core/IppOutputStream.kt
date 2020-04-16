@@ -74,6 +74,9 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
                     writeString(if (index == 0) name else "", Charsets.US_ASCII)
                     writeAttributeValue(tag, value)
                 }
+                if(values.size > 1 && IppRegistrationsSection2.attributeIs1setOf(name) == false) {
+                    println("WARN: '$name' is not registered as '1setOf'")
+                }
             }
 
             // keep attributes-charset for name and text value encoding

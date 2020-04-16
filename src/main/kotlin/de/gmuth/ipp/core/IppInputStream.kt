@@ -24,24 +24,25 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
             else Charsets.US_ASCII
 
     fun readMessage(message: IppMessage) {
-        with(message) {
-            version = IppVersion(read(), read())
-            code = readShort()
-            requestId = readInt()
-            lateinit var currentGroup: IppAttributesGroup
-            lateinit var currentAttribute: IppAttribute<*>
-            tagLoop@ while (true) {
-                val tag = readTag()
-                when {
-                    tag == IppTag.End -> break@tagLoop
-                    tag.isDelimiterTag() -> currentGroup = ippAttributesGroup(tag)
-                    else -> {
-                        val attribute = readAttribute(tag)
-                        if (attribute.name.isNotEmpty()) {
-                            currentGroup.put(attribute)
-                            currentAttribute = attribute
-                        } else { // name.isEmpty() -> 1setOf
-                            currentAttribute.additionalValue(attribute)
+        lateinit var currentGroup: IppAttributesGroup
+        lateinit var currentAttribute: IppAttribute<*>
+        message.version = IppVersion(read(), read())
+        message.code = readShort()
+        message.requestId = readInt()
+        tagLoop@ while (true) {
+            val tag = readTag()
+            when {
+                tag == IppTag.End -> break@tagLoop
+                tag.isDelimiterTag() -> currentGroup = message.ippAttributesGroup(tag)
+                else -> {
+                    val attribute = readAttribute(tag)
+                    if (attribute.name.isNotEmpty()) {
+                        currentGroup.put(attribute)
+                        currentAttribute = attribute
+                    } else { // name.isEmpty() -> 1setOf
+                        currentAttribute.additionalValue(attribute)
+                        if (IppRegistrationsSection2.attributeIs1setOf(currentAttribute.name) == false) {
+                            println("WARN: '${currentAttribute.name}' is not registered as '1setOf'")
                         }
                     }
                 }
