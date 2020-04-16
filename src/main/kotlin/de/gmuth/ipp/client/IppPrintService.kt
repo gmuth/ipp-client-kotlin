@@ -107,19 +107,37 @@ class IppPrintService(private val printerUri: URI) {
                 .map { jobGroup -> IppJob(jobGroup) }.toList()
     }
 
-    fun refreshJob(job: IppJob) {
+    fun refreshJobAttributes(job: IppJob) {
         val response = ippClient.getJobAttributes(job.uri)
         job.readFrom(response.jobGroup)
     }
 
-    fun refreshJobs(jobs: List<IppJob>) = jobs.stream().forEach { job -> refreshJob(job) }
+    fun refreshJobAttributes(jobs: List<IppJob>) {
+        for (job in jobs) {
+            refreshJobAttributes(job)
+        }
+    }
 
-    fun waitForTermination(job: IppJob, refreshRate: Duration = Duration.ofSeconds(1)) {
+    fun waitForTermination(
+            job: IppJob,
+            refreshRate: Duration = Duration.ofSeconds(1),
+            refreshPrinterAttributes: Boolean = true
+    ) {
         do {
             Thread.sleep(refreshRate.toMillis())
-            refreshJob(job)
-            if (verbose) println("job-state = ${job.state}")
-        } while (!job.state?.isTerminated()!!)
+            if (refreshPrinterAttributes) {
+                refreshPrinterAttributes()
+            }
+            refreshJobAttributes(job)
+            if (verbose) {
+                if (refreshPrinterAttributes) {
+                    println("printer-state = ${ippPrinter.printerState}, job-state = ${job.state}")
+                } else {
+                    println("job-state = ${job.state}")
+                }
+            }
+
+        } while (job.state?.isNotTerminated()!!)
         if (verbose) job.logDetails()
     }
 
@@ -142,10 +160,11 @@ class IppPrintService(private val printerUri: URI) {
 
     // ============================================================================================================================ PRINTER HANDLING
 
-    fun refreshPrinter(printer: IppPrinter) {
+    fun refreshPrinterAttributes() {
         val response = ippClient.getPrinterAttributes(printerUri, IppPrinter.requestAttributes)
-        printer.readFrom(response.printerGroup)
+        ippPrinter.readFrom(response.printerGroup)
     }
+
 
     fun pausePrinter() = sendPrinterOperation(printerUri, IppOperation.PausePrinter)
 
