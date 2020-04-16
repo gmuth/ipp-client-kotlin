@@ -20,6 +20,7 @@ enum class IppJobState(val code: Int) {
     fun isPendingOrHeld() = this in listOf(Pending, PendingHeld)
     fun isProcessingOrStopped() = this in listOf(Processing, ProcessingStopped)
     fun isTerminated() = this in listOf(Canceled, Aborted, Completed)
+    fun isNotTerminated() = !isTerminated()
 
     // https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-6
     private fun registeredValue() = name
