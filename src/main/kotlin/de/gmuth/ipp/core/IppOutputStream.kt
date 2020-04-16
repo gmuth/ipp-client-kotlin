@@ -58,15 +58,24 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
             if (checkSyntax) {
                 IppRegistrationsSection2.checkSyntaxOfAttribute(name, tag)
             }
-            if (tag != IppTag.NoValue && values.isEmpty()) {
-                throw IppException("no values found to write for '$name'")
+
+            if (values.isEmpty()) {
+                if (tag.isOutOfBandTag() || tag == IppTag.EndCollection) {
+                    writeTag(tag)
+                    writeString(name, Charsets.US_ASCII)
+                    writeAttributeValue(tag, values)
+                } else {
+                    throw IppException("no values found to write for '$name'")
+                }
+            } else {
+                // 1setOf iteration
+                for ((index, value) in values.withIndex()) {
+                    writeTag(tag)
+                    writeString(if (index == 0) name else "", Charsets.US_ASCII)
+                    writeAttributeValue(tag, value)
+                }
             }
-            // 1setOf iteration
-            for ((index, value) in values.withIndex()) {
-                writeTag(tag)
-                writeString(if (index == 0) name else "", Charsets.US_ASCII)
-                writeAttributeValue(tag, value)
-            }
+
             // keep attributes-charset for name and text value encoding
             if (tag == IppTag.Charset && name == "attributes-charset") {
                 attributesCharset = Charset.forName(value as String)
@@ -87,7 +96,8 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
             IppTag.NoValue,
             IppTag.NotSettable,
             IppTag.DeleteAttribute,
-            IppTag.AdminDefine -> writeShort(0)
+            IppTag.AdminDefine,
+            IppTag.EndCollection -> writeShort(0)
 
             IppTag.Boolean -> with(value as Boolean) {
                 writeShort(1)
@@ -155,6 +165,15 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
                 writeByte(minutesFromUTC)
             }
 
+            IppTag.BegCollection -> with(value as IppCollection) {
+                writeShort(0)
+                for (member in members) {
+                    writeCollectionAttribute(IppTag.MemberAttrName, member.name)
+                    writeCollectionAttribute(member.tag, member.value)
+                }
+                writeCollectionAttribute(IppTag.EndCollection)
+            }
+
             else -> throw IppException(String.format("tag %s (%02X) encoding not implemented", tag, tag.code))
         }
     }
@@ -164,6 +183,10 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
             writeShort(size)
             write(this)
         }
+    }
+
+    private fun writeCollectionAttribute(tag: IppTag, value: Any? = null) {
+        writeAttribute(IppAttribute("", tag, value))
     }
 
 }
