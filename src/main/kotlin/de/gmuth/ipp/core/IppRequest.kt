@@ -12,7 +12,7 @@ class IppRequest() : IppMessage() {
         get() = "operation = $operation"
 
     val operation: IppOperation
-        get() = IppOperation.fromCode(code ?: throw IppException("operation-code must not be null"))
+        get() = IppOperation.fromShort(code ?: throw IppException("operation-code must not be null"))
 
     val operationGroup = ippAttributesGroup(IppTag.Operation)
 

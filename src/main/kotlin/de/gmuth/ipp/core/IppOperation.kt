@@ -83,7 +83,7 @@ enum class IppOperation(val code: Short) {
 
     companion object {
         private val codeMap = values().associateBy(IppOperation::code)
-        fun fromCode(code: Short): IppOperation = codeMap[code]
+        fun fromShort(code: Short): IppOperation = codeMap[code]
                 ?: throw IppException(String.format("operation code '%04X' unknown", code))
 
         private val registeredNameMap = values().associateBy(IppOperation::registeredName)
