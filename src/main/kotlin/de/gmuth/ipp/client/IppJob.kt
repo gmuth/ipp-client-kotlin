@@ -5,9 +5,10 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.ipp.core.IppAttributesGroup
-import de.gmuth.ipp.core.IppString
 import de.gmuth.ipp.core.IppIntegerTime
+import de.gmuth.ipp.core.IppString
 import java.net.URI
+import java.time.Duration
 
 class IppJob(jobGroup: IppAttributesGroup) {
 
@@ -54,6 +55,18 @@ class IppJob(jobGroup: IppAttributesGroup) {
         impressionsCompleted = getValue("job-impressions-completed")
         mediaSheets = getValue("job-media-sheets")
         mediaSheetsCompleted = getValue("job-media-sheets-completed")
+    }
+
+
+    fun waitForTermination(refreshRate: Duration = Duration.ofSeconds(1)) {
+        with(IppClient()) {
+            do {
+                Thread.sleep(refreshRate.toMillis())
+                val response = getJobAttributes(uri)
+                readFrom(response.jobGroup)
+                println("job-state = $state")
+            } while (state?.isNotTerminated()!!)
+        }
     }
 
     override fun toString(): String {
