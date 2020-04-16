@@ -80,7 +80,7 @@ class IppRegistrationsSection2 {
 
         fun tagForAttribute(name: String) = attributesMap[name]?.tag()
 
-        fun attributeIs1setOf(name: String) = attributesMap[name]?.is1setOf() ?: false
+        fun attributeIs1setOf(name: String) = attributesMap[name]?.is1setOf()
 
         fun checkSyntaxOfAttribute(name: String, tag: IppTag) {
             val syntax = attributesMap[name]?.syntax
@@ -102,4 +102,7 @@ fun main() {
         println("$attribute  -->  tag = '${attribute.tag()}'")
     }
     println(IppRegistrationsSection2.tagForAttribute("job-state")) // 'enum'
+    println(IppRegistrationsSection2.attributesMap["printer-resolution-supported"]) // 'printer-resolution-supported: syntax = "resolution"'
+    println(IppRegistrationsSection2.attributeIs1setOf("printer-resolution-supported")) // 'false'
+
 }
