@@ -53,7 +53,7 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag) {
         }
     }
 
-    fun is1setOf() = values.size > 1 || IppRegistrationsSection2.attributeIs1setOf(name)
+    fun is1setOf() = values.size > 1 || IppRegistrationsSection2.attributeIs1setOf(name) == true
 
     val value: T?
         get() =
