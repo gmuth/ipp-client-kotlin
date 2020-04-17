@@ -15,7 +15,7 @@ data class IppIntegerTime(val seconds: Int) {
     override fun toString() = "$seconds (${toLocalDateTime()})"
 
     companion object {
-        fun fromInt(seconds: Int? = null): IppIntegerTime? = if (seconds == null) null else IppIntegerTime(seconds)
+        fun fromInt(seconds: Int?): IppIntegerTime? = if (seconds == null) null else IppIntegerTime(seconds)
 
         fun fromLocalDateTime(localDateTime: LocalDateTime) = IppIntegerTime(
                 localDateTime.toEpochSecond(ZoneId.systemDefault().rules.getOffset(localDateTime)).toInt()
