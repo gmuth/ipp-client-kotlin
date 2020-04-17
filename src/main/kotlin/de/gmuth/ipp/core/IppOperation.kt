@@ -51,28 +51,7 @@ enum class IppOperation(val code: Short) {
     SuspendCurrentJob(0x002E),
     ResumeJob(0x002F),
     PromoteJob(0x0030),
-    ScheduleJobAfter(0x0031),
-
-    // PWG 5100 not listed
-
-    // CUPS operations
-    CupsGetDefault(0x4001),
-    CupsGetPrinters(0x4002),
-    CupsAddModifyPrinter(0x4003),
-    CupsDeletePrinter(0x4004),
-    CupsGetClasses(0x4005),
-    CuspAddModifyClass(0x4006),
-    CupsDeleteClass(0x4007),
-    CupsAcceptJobs(0x4008),
-    CupsRejectJobs(0x4009),
-    CupsSetDefault(0x400A),
-    CupsGetDevices(0x400B),
-    CupsGetPPDs(0x400C),
-    CupsMoveJob(0x400D),
-    CupsAuthenticateJob(0x400E),
-    CupsGetPPD(0x400F),
-    CupsGetDocument(0x4027),
-    CupsCreateLocalPrinter(0x4028);
+    ScheduleJobAfter(0x0031);
 
     override fun toString(): String = registeredName()
 
