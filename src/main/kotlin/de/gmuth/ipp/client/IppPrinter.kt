@@ -8,6 +8,7 @@ import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppIntegerTime
 import de.gmuth.ipp.core.IppString
 import de.gmuth.ipp.cups.CupsPrinterType
+import de.gmuth.ipp.iana.IppRegistrationsSection6
 
 class IppPrinter(printerGroup: IppAttributesGroup) {
 
@@ -21,6 +22,7 @@ class IppPrinter(printerGroup: IppAttributesGroup) {
     var printerUpTime: IppIntegerTime? = null
     var printerType: CupsPrinterType? = null
     var jobCreationAttributesSupported: List<String>? = null
+    var operationsSupported: List<String>? = null // IppOperation not used to allow unknown non-enum values
 
     init {
         readFrom(printerGroup)
@@ -37,7 +39,8 @@ class IppPrinter(printerGroup: IppAttributesGroup) {
                 "output-mode-supported",
                 "printer-up-time",
                 "printer-type",
-                "job-creation-attributes-supported"
+                "job-creation-attributes-supported",
+                "operations-supported"
         )
     }
 
@@ -52,6 +55,8 @@ class IppPrinter(printerGroup: IppAttributesGroup) {
         printerUpTime = IppIntegerTime.fromInt(getValue("printer-up-time") as Int?)
         printerType = CupsPrinterType.fromInt(getValue("printer-type") as Int?)
         jobCreationAttributesSupported = getValues("job-creation-attributes-supported")
+        operationsSupported = (getValues("operations-supported") as List<Int>)
+                .map { IppRegistrationsSection6.getOperationsSupportedValueName(it).toString() }
     }
 
     fun logDetails() {
@@ -66,6 +71,7 @@ class IppPrinter(printerGroup: IppAttributesGroup) {
         logAttributeIfValueNotNull("printerUpTime", printerUpTime)
         logAttributeIfValueNotNull("printerType", printerType)
         logAttributeIfValueNotNull("jobCreationAttributesSupported", jobCreationAttributesSupported)
+        logAttributeIfValueNotNull("operationsSupported", operationsSupported)
     }
 
     private fun logAttributeIfValueNotNull(name: String, value: Any?) {

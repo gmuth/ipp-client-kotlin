@@ -56,7 +56,7 @@ class IppRegistrationsSection6 {
                     getEnumAttributeValue(aliasMap[attribute] ?: attribute, value)?.name
                 } ?: value
 
-        private fun getOperationsSupportedValueName(value: Int): Any? =
+        fun getOperationsSupportedValueName(value: Int): Any? =
                 if (value < 0x4000) {
                     getEnumAttributeValue("operations-supported", String.format("0x%04X", value))?.name
                 } else {
