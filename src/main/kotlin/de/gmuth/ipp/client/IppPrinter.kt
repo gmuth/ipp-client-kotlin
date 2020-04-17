@@ -50,7 +50,7 @@ class IppPrinter(printerGroup: IppAttributesGroup) {
         printColorModeSupported = getValues("print-color-mode-supported")
         outputModeSupported = getValues("output-mode-supported")
         printerUpTime = IppIntegerTime.fromInt(getValue("printer-up-time") as Int?)
-        printerType = CupsPrinterType.fromInt(getValue("printer-up-time") as Int?)
+        printerType = CupsPrinterType.fromInt(getValue("printer-type") as Int?)
         jobCreationAttributesSupported = getValues("job-creation-attributes-supported")
     }
 
