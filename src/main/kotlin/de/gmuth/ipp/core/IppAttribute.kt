@@ -57,7 +57,7 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag) {
 
     val value: T?
         get() {
-            if(IppRegistrationsSection2.attributeIs1setOf(name) == true) {
+            if (IppRegistrationsSection2.attributeIs1setOf(name) == true) {
                 println("WARN: '$name' is registered as '1setOf', use 'values' or 'getValues' instead")
             }
             if (values.size <= 1) {
@@ -76,13 +76,12 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag) {
 
     override fun toString(): String {
         val tagString = "${if (is1setOf()) "1setOf " else ""}$tag"
-        val valuesString = if (values.isEmpty()) "no-value" else try {
-            values.joinToString(",") {
-                valueOrEnumValueName(it as Any?).toString()
+        val valuesString = if (values.isEmpty()) "no-value" else
+            try {
+                values.joinToString(",") { valueOrEnumValueName(it as Any?).toString() }
+            } catch (exception: Exception) {
+                "<${exception.message}>"
             }
-        } catch (exception: Exception) {
-            "<${exception.message}>"
-        }
         return "$name ($tagString) = $valuesString"
     }
 
