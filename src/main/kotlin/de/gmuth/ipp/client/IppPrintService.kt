@@ -120,7 +120,8 @@ class IppPrintService(private val printerUri: URI) {
     // ============================================================================================================================ JOB HANDLING
 
     fun getJob(jobId: Int): IppJob {
-        return IppJob(ippClient.getJobAttributes(printerUri, jobId).jobGroup)
+        val response = ippClient.getJobAttributes(printerUri, jobId)
+        return IppJob(response.jobGroup)
     }
 
     fun getJobs(): List<IppJob> {
