@@ -2,6 +2,7 @@ package de.gmuth.ipp.iana
 
 import de.gmuth.csv.CSVReader
 import de.gmuth.csv.CSVReader.RowMapper
+import de.gmuth.ipp.cups.CupsOperation
 
 /**
  * https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xhtml#ipp-registrations-6
@@ -48,14 +49,19 @@ class IppRegistrationsSection6 {
 
         fun getEnumAttributeValue(attribute: String, value: Any) = enumAttributeValuesMap.get("$attribute/$value")
 
-        fun getEnumValueName(attribute: String, value: Any): Any {
-            val enumAttributeValue = getEnumAttributeValue(
-                    aliasMap[attribute] ?: attribute,
-                    if (attribute == "operations-supported") String.format("0x%04X", value) else value
-            )
-            return enumAttributeValue?.name ?: value
-        }
+        fun getEnumValueName(attribute: String, value: Any) =
+                if (attribute == "operations-supported" && value is Int) {
+                    getOperationsSupportedValueName(value)
+                } else {
+                    getEnumAttributeValue(aliasMap[attribute] ?: attribute, value)?.name
+                } ?: value
 
+        private fun getOperationsSupportedValueName(value: Int): Any? =
+                if (value < 0x4000) {
+                    getEnumAttributeValue("operations-supported", String.format("0x%04X", value))?.name
+                } else {
+                    CupsOperation.fromShort(value.toShort())
+                }
     }
 }
 
