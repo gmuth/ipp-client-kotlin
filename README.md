@@ -18,7 +18,7 @@ A client implementation of the ipp protocol written in kotlin.
       printFile(file, waitForTermination = true)
       printFile(file, IppColorMode.Monochrome, IppSides.TwoSidedLongEdge)
       printFile(file, jobParameterCopies(2))
-      printFile(file, jobParameterPageRange(2..3, 8..10)))
+      printFile(file, jobParameterPageRanges(2..3, 8..10)))
             
       val remoteFile = URI.create("http://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf")
       printUri(remoteFile) // -- make printer pull document from remote server

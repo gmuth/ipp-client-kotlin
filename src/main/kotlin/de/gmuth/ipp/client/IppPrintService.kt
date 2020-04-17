@@ -114,7 +114,7 @@ class IppPrintService(private val printerUri: URI) {
     fun jobParameterCopies(value: Int) =
             IppIntegerJobParameter("copies", value)
 
-    fun jobParameterPageRange(vararg ranges: IntRange) =
+    fun jobParameterPageRanges(vararg ranges: IntRange) =
             IppIntegerRangeJobParameter("page-ranges", ranges.toList())
 
     // ============================================================================================================================ JOB HANDLING
