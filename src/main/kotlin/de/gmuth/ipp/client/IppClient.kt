@@ -78,6 +78,12 @@ class IppClient(
                 if (statusMessage != null) {
                     println("status-message: $statusMessage")
                 }
+                // warn about unsupported attributes
+                for (unsupported in getAttributesGroups(IppTag.Unsupported)) {
+                    for(attribute in unsupported.values) {
+                        println("WARN: unsupported attribute: $attribute")
+                    }
+                }
             }
             return response
 
