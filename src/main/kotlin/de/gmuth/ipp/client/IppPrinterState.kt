@@ -22,12 +22,8 @@ enum class IppPrinterState(val code: Int) {
 
     companion object {
         private val codeMap = values().associateBy(IppPrinterState::code)
-        fun fromCode(code: Int): IppPrinterState = codeMap[code]
+        fun fromInt(code: Int): IppPrinterState = codeMap[code]
                 ?: throw IppException(String.format("job state code '%02X' undefined", code))
-
-        private val registeredValueMap = values().associateBy(IppPrinterState::registeredValue)
-        fun fromRegisteredValue(value: String): IppPrinterState = registeredValueMap[value]
-                ?: throw IppException(String.format("job state value '%s' undefined", value))
 
     }
 }
