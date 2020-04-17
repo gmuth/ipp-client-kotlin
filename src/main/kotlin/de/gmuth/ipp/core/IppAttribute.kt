@@ -56,13 +56,16 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag) {
     fun is1setOf() = values.size > 1 || IppRegistrationsSection2.attributeIs1setOf(name) == true
 
     val value: T?
-        get() =
-            if (values.size <= 1) {
-                values.firstOrNull()
+        get() {
+            if(IppRegistrationsSection2.attributeIs1setOf(name) == true) {
+                println("WARN: '$name' is registered as '1setOf', use 'values' or 'getValues' instead")
             }
-            else {
+            if (values.size <= 1) {
+                return values.firstOrNull()
+            } else {
                 throw IppException("found ${values.size.toPluralString("value")} but expected 0 or 1 for '$name'")
             }
+        }
 
     private fun valueOrEnumValueName(value: Any?): Any? =
             if (tag == IppTag.Enum) {
