@@ -5,7 +5,9 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.ipp.core.IppAttributesGroup
+import de.gmuth.ipp.core.IppIntegerTime
 import de.gmuth.ipp.core.IppString
+import de.gmuth.ipp.cups.CupsPrinterType
 
 class IppPrinter(printerGroup: IppAttributesGroup) {
 
@@ -16,6 +18,9 @@ class IppPrinter(printerGroup: IppAttributesGroup) {
     var ippFeaturesSupported: List<String>? = null
     var printColorModeSupported: List<String>? = null
     var outputModeSupported: List<String>? = null
+    var printerUpTime: IppIntegerTime? = null
+    var printerType: CupsPrinterType? = null
+    var jobCreationAttributesSupported: List<String>? = null
 
     init {
         readFrom(printerGroup)
@@ -29,18 +34,24 @@ class IppPrinter(printerGroup: IppAttributesGroup) {
                 "ipp-versions-supported",
                 "ipp-features-supported",
                 "print-color-mode-supported",
-                "output-mode-supported"
+                "output-mode-supported",
+                "printer-up-time",
+                "printer-type",
+                "job-creation-attributes-supported"
         )
     }
 
     fun readFrom(printerGroup: IppAttributesGroup) = with(printerGroup) {
-        printerState = IppPrinterState.fromCode(getValue("printer-state") as Int)
+        printerState = IppPrinterState.fromInt(getValue("printer-state") as Int)
         printerName = getValue("printer-name")
         printerMakeAndModel = getValue("printer-make-and-model")
         ippVersionsSupported = getValues("ipp-versions-supported")
         ippFeaturesSupported = getValues("ipp-features-supported")
         printColorModeSupported = getValues("print-color-mode-supported")
         outputModeSupported = getValues("output-mode-supported")
+        printerUpTime = IppIntegerTime.fromInt(getValue("printer-up-time") as Int?)
+        printerType = CupsPrinterType.fromInt(getValue("printer-up-time") as Int?)
+        jobCreationAttributesSupported = getValues("job-creation-attributes-supported")
     }
 
     fun logDetails() {
@@ -52,6 +63,9 @@ class IppPrinter(printerGroup: IppAttributesGroup) {
         logAttributeIfValueNotNull("ippFeaturesSupported", ippFeaturesSupported)
         logAttributeIfValueNotNull("printColorModeSupported", printColorModeSupported)
         logAttributeIfValueNotNull("outputModeSupported", outputModeSupported)
+        logAttributeIfValueNotNull("printerUpTime", printerUpTime)
+        logAttributeIfValueNotNull("printerType", printerType)
+        logAttributeIfValueNotNull("jobCreationAttributesSupported", jobCreationAttributesSupported)
     }
 
     private fun logAttributeIfValueNotNull(name: String, value: Any?) {
