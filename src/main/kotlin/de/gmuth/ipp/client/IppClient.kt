@@ -121,7 +121,12 @@ class IppClient(
                     return content.stream
 
                 } else {
-                    val text = if (content.type.startsWith("text")) ", content = " + String(content.stream.readAllBytes()) else ""
+                    val text =
+                            if (content.type.startsWith("text")) {
+                                ", content = " + String(content.stream.readAllBytes())
+                            } else {
+                                ""
+                            }
                     throw IppException("response from $uri is invalid: http-status = $status, content-type = ${content.type}$text")
                 }
             }
