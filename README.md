@@ -9,23 +9,27 @@ A client implementation of the ipp protocol written in kotlin.
 
 ### [IppPrintService](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppPrintService.kt)
 
-    val printer = URI.create("ipp://colorjet/ipp/printer")
-    val file = File("A4-blank.pdf")
-    val remoteFile = URI.create("http://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf")
- 
-    val printService = IppPrintService(printer)
+    val printer = URI.create("ipp://colorjet.local/ipp/printer")
     
-    printService.printFile(file)
-    printService.printFile(file, waitForTermination = true)
-    printService.printFile(file, IppColorMode.Monochrome)
-    printService.printUri(remoteFile) // -- make printer pull document from remote server
+    with(IppPrintService(printer)) {
+    
+      val file = File("A4-blank.pdf")
+      printFile(file)
+      printFile(file, waitForTermination = true)
+      printFile(file, IppColorMode.Monochrome, IppSides.TwoSidedLongEdge)
+      printFile(file, jobParameterCopies(2))
+      printFile(file, jobParameterPageRange(2..3, 8..10)))
+            
+      val remoteFile = URI.create("http://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf")
+      printUri(remoteFile) // -- make printer pull document from remote server
 
-    printService.getJobs()
-    printService.getJob(345)
-    printService.cancelJob(345)
+      getJobs()
+      getJob(345)
+      cancelJob(345)
     
-    printService.pausePrinter()
-    printService.resumePrinter()
+      pausePrinter()
+      resumePrinter()
+    }
 
 ### exchange [IppRequest](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppRequest.kt) for [IppResponse](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppResponse.kt)
 
@@ -45,14 +49,13 @@ A client implementation of the ipp protocol written in kotlin.
     with(IppTool()) {
         uri = URI.create("ipp://colorjet/ipp/printer")
         val filename = "A4-blank.pdf"
-        
         run(
             "OPERATION Print-Job",
             "GROUP operation-attributes-tag",
             "ATTR charset attributes-charset utf-8",
-            "ATTR naturalLanguage attributes-natural-language en",
-            "ATTR uri printer-uri $uri",
-            "FILE $filename"
+            "ATTR language attributes-natural-language en",
+            "ATTR uri printer-uri \$uri",
+            "FILE \$filename"
         )
     }
 
