@@ -64,7 +64,7 @@ class IppJob(jobGroup: IppAttributesGroup) {
                 Thread.sleep(refreshRate.toMillis())
                 val response = getJobAttributes(uri)
                 readFrom(response.jobGroup)
-                println("job-state = $state")
+                println("job-state = $state, job-impressions-completed = $impressionsCompleted")
             } while (state?.isNotTerminated()!!)
         }
     }
