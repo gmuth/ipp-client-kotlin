@@ -1,10 +1,10 @@
 package de.gmuth.ipp.core
 
-import java.nio.charset.Charset
-
 /**
  * Copyright (c) 2020 Gerhard Muth
  */
+
+import java.nio.charset.Charset
 
 class IppRequest() : IppMessage() {
 
@@ -13,8 +13,6 @@ class IppRequest() : IppMessage() {
 
     val operation: IppOperation
         get() = IppOperation.fromShort(code ?: throw IppException("operation-code must not be null"))
-
-    val operationGroup = ippAttributesGroup(IppTag.Operation)
 
     constructor(
             version: IppVersion,
@@ -27,8 +25,11 @@ class IppRequest() : IppMessage() {
         this.version = version
         this.code = operation.code
         this.requestId = requestId
-        operationGroup.attribute("attributes-charset", IppTag.Charset, charset.name().toLowerCase())
-        operationGroup.attribute("attributes-natural-language", IppTag.NaturalLanguage, naturalLanguage)
+
+        with(ippAttributesGroup(IppTag.Operation)) {
+            attribute("attributes-charset", IppTag.Charset, charset.name().toLowerCase())
+            attribute("attributes-natural-language", IppTag.NaturalLanguage, naturalLanguage)
+        }
     }
 
 }

@@ -4,10 +4,7 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.InputStream
-import java.io.OutputStream
+import java.io.*
 
 abstract class IppMessage {
 
@@ -27,6 +24,9 @@ abstract class IppMessage {
         return group
     }
 
+    val operationGroup: IppAttributesGroup
+        get() = getSingleAttributesGroup(IppTag.Operation)
+
     // --- DECODING
 
     fun readFrom(inputStream: InputStream) {
@@ -35,8 +35,12 @@ abstract class IppMessage {
         ippInputStream.close()
     }
 
-    fun readResource(resource: String) {
+    fun readFromResource(resource: String) {
         readFrom(javaClass.getResourceAsStream(resource))
+    }
+
+    fun readFrom(byteArray: ByteArray) {
+        readFrom(ByteArrayInputStream(byteArray))
     }
 
     // --- ENCODING
@@ -56,6 +60,10 @@ abstract class IppMessage {
 
     fun toInputStream(): InputStream {
         return ByteArrayInputStream(toByteArray())
+    }
+
+    fun writeToFile(file: File) {
+        writeTo(FileOutputStream(file))
     }
 
     // --- LOGGING
