@@ -4,9 +4,7 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.ipp.core.IppAttributesGroup
-import de.gmuth.ipp.core.IppIntegerTime
-import de.gmuth.ipp.core.IppString
+import de.gmuth.ipp.core.*
 import java.net.URI
 import java.time.Duration
 
@@ -38,7 +36,7 @@ class IppJob(jobGroup: IppAttributesGroup) {
     fun readFrom(jobGroup: IppAttributesGroup) = with(jobGroup) {
         uri = getValue("job-uri")
         id = getValue("job-id")
-        state = IppJobState.fromCode(getValue("job-state") as Int)
+        state = IppJobState.fromInt(getValue("job-state") as Int?)
         stateReasons = getValues("job-state-reasons")
 
         printerUri = getValue("job-printer-uri")
@@ -66,6 +64,18 @@ class IppJob(jobGroup: IppAttributesGroup) {
                 readFrom(response.jobGroup)
                 println("job-state = $state, job-impressions-completed = $impressionsCompleted")
             } while (state?.isNotTerminated()!!)
+        }
+    }
+
+    fun cancel() {
+        with(IppClient()) {
+            exchangeSuccessful(
+                    uri,
+                    ippRequest(IppOperation.CancelJob).apply {
+                        operationGroup.attribute("job-uri", IppTag.Uri, uri)
+                    }
+            )
+            println("canceled: $uri")
         }
     }
 
