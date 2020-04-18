@@ -4,6 +4,8 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
+import java.io.File
+import java.io.FileInputStream
 import java.io.InputStream
 
 class IppResponse : IppMessage() {
@@ -30,6 +32,8 @@ class IppResponse : IppMessage() {
 
     companion object {
         fun fromInputStream(inputStream: InputStream) = IppResponse().apply { readFrom(inputStream) }
+        fun fromResource(resource: String) = IppResponse().apply { readResource(resource) }
+        fun fromFile(file: File) = IppResponse().apply { readFrom(FileInputStream(file)) }
     }
 
 }
