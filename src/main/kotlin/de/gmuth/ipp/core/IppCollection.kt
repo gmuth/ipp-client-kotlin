@@ -18,6 +18,19 @@ class IppCollection() {
 
     fun add(attribute: IppAttribute<*>) = members.add(attribute)
 
-    override fun toString() = members.joinToString(" ", "{", "}") { "${it.name}=${it.value}" }
+    override fun toString() = members.joinToString(" ", "{", "}") {
+        "${it.name}=${it.values.joinToString(",")}"
+    }
+
+    fun logDetails(prefix: String = "") {
+        val string = toString()
+        if(string.length < 160) {
+            println("$prefix$string")
+        } else {
+            for(member in members) {
+                member.logDetails("$prefix")
+            }
+        }
+    }
 
 }
