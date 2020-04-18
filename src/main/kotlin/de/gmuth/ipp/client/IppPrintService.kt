@@ -191,6 +191,15 @@ class IppPrintService(private val printerUri: URI) {
         ippPrinter.readFrom(response.printerGroup)
     }
 
+    // identify-actions-supported (1setOf keyword) = flash,sound,display,speak
+    fun identifyPrinter(action: String = "sound") {
+        val request = ippClient.ippRequest(IppOperation.IdentifyPrinter).apply {
+            operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
+            operationGroup.attribute("identify-actions", IppTag.Keyword, action)
+            operationGroup.attribute("message", IppTag.TextWithoutLanguage, "hello")
+        }
+        ippClient.exchangeSuccessful(printerUri, request, httpAuth = httpAuth)
+    }
 
     fun pausePrinter() = sendPrinterOperation(printerUri, IppOperation.PausePrinter)
 
