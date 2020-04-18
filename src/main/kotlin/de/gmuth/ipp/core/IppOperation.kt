@@ -51,7 +51,8 @@ enum class IppOperation(val code: Short) {
     SuspendCurrentJob(0x002E),
     ResumeJob(0x002F),
     PromoteJob(0x0030),
-    ScheduleJobAfter(0x0031);
+    ScheduleJobAfter(0x0031),
+    IdentifyPrinter(0x003C);
 
     override fun toString(): String = registeredName()
 
