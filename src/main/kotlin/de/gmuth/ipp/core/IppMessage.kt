@@ -35,6 +35,10 @@ abstract class IppMessage {
         ippInputStream.close()
     }
 
+    fun readResource(resource: String) {
+        readFrom(javaClass.getResourceAsStream(resource))
+    }
+
     // --- ENCODING
 
     private fun writeTo(outputStream: OutputStream) {
@@ -72,4 +76,5 @@ abstract class IppMessage {
             group.logDetails(prefix)
         }
     }
+
 }
