@@ -12,6 +12,7 @@ import de.gmuth.ipp.iana.IppRegistrationsSection6
 
 class IppPrinter(printerGroup: IppAttributesGroup) {
 
+    var printerIsAcceptingJobs: Boolean? = null
     var printerState: IppPrinterState? = null
     var printerName: IppString? = null
     var printerMakeAndModel: IppString? = null
@@ -21,8 +22,9 @@ class IppPrinter(printerGroup: IppAttributesGroup) {
     var outputModeSupported: List<String>? = null
     var printerUpTime: IppIntegerTime? = null
     var printerType: CupsPrinterType? = null
-    var jobCreationAttributesSupported: List<String>? = null
     var operationsSupported: List<String>? = null // IppOperation not used to allow unknown non-enum values
+    var documentFormatSupported: List<String>? = null
+    var jobCreationAttributesSupported: List<String>? = null
 
     init {
         readFrom(printerGroup)
@@ -30,6 +32,7 @@ class IppPrinter(printerGroup: IppAttributesGroup) {
 
     companion object {
         val requestAttributes = listOf(
+                "printer-is-accepting-jobs",
                 "printer-state",
                 "printer-name",
                 "printer-make-and-model",
@@ -39,12 +42,14 @@ class IppPrinter(printerGroup: IppAttributesGroup) {
                 "output-mode-supported",
                 "printer-up-time",
                 "printer-type",
-                "job-creation-attributes-supported",
-                "operations-supported"
+                "operations-supported",
+                "document-format-supported",
+                "job-creation-attributes-supported"
         )
     }
 
     fun readFrom(printerGroup: IppAttributesGroup) = with(printerGroup) {
+        printerIsAcceptingJobs = getValue("printer-is-accepting-jobs")
         printerState = IppPrinterState.fromInt(getValue("printer-state") as Int)
         printerName = getValue("printer-name")
         printerMakeAndModel = getValue("printer-make-and-model")
@@ -54,13 +59,15 @@ class IppPrinter(printerGroup: IppAttributesGroup) {
         outputModeSupported = getValues("output-mode-supported")
         printerUpTime = IppIntegerTime.fromInt(getValue("printer-up-time") as Int?)
         printerType = CupsPrinterType.fromInt(getValue("printer-type") as Int?)
-        jobCreationAttributesSupported = getValues("job-creation-attributes-supported")
         operationsSupported = (getValues("operations-supported") as List<Int>)
                 .map { IppRegistrationsSection6.getOperationsSupportedValueName(it).toString() }
+        documentFormatSupported = getValues("document-format-supported")
+        jobCreationAttributesSupported = getValues("job-creation-attributes-supported")
     }
 
     fun logDetails() {
         println("PRINTER")
+        logAttributeIfValueNotNull("printerIsAcceptingJobs", printerIsAcceptingJobs)
         logAttributeIfValueNotNull("printerState", printerState)
         logAttributeIfValueNotNull("printerName", printerName)
         logAttributeIfValueNotNull("printerMakeAndModel", printerMakeAndModel)
@@ -70,8 +77,9 @@ class IppPrinter(printerGroup: IppAttributesGroup) {
         logAttributeIfValueNotNull("outputModeSupported", outputModeSupported)
         logAttributeIfValueNotNull("printerUpTime", printerUpTime)
         logAttributeIfValueNotNull("printerType", printerType)
-        logAttributeIfValueNotNull("jobCreationAttributesSupported", jobCreationAttributesSupported)
         logAttributeIfValueNotNull("operationsSupported", operationsSupported)
+        logAttributeIfValueNotNull("documentFormatSupported", documentFormatSupported)
+        logAttributeIfValueNotNull("jobCreationAttributesSupported", jobCreationAttributesSupported)
     }
 
     private fun logAttributeIfValueNotNull(name: String, value: Any?) {
