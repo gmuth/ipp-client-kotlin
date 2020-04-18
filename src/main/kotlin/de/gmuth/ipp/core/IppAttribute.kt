@@ -46,6 +46,9 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag) {
 
     @Suppress("UNCHECKED_CAST")
     fun additionalValue(attribute: IppAttribute<*>) {
+        if (attribute.name.isNotEmpty()) {
+            throw IppException("name must be empty for additional values")
+        }
         if (tag == attribute.tag) {
             values.add(attribute.value as T)
         } else {
@@ -87,12 +90,16 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag) {
 
     fun logDetails(prefix: String = "") {
         val string = toString()
-        if (values.size == 1 || string.length < 120) {
-            println("${prefix}$string")
+        if (string.length < 160) {
+            println("$prefix$string")
         } else {
-            println("${prefix}$name ($tag) =")
+            println("$prefix$name ($tag) =")
             for (value in values) {
-                println("${prefix}  ${valueOrEnumValueName(value)}")
+                if (value is IppCollection) {
+                    value.logDetails("$prefix  ")
+                } else {
+                    println("${prefix}  ${valueOrEnumValueName(value)}")
+                }
             }
         }
     }
