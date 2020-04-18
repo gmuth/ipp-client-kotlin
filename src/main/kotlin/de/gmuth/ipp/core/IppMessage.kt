@@ -43,6 +43,10 @@ abstract class IppMessage {
         readFrom(ByteArrayInputStream(byteArray))
     }
 
+    fun readFrom(file: File) {
+        readFrom(FileInputStream(file))
+    }
+
     // --- ENCODING
 
     private fun writeTo(outputStream: OutputStream) {
