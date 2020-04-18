@@ -31,8 +31,8 @@ enum class IppJobState(val code: Int) {
 
     companion object {
         private val codeMap = values().associateBy(IppJobState::code)
-        fun fromCode(code: Int): IppJobState = codeMap[code]
-                ?: throw IppException(String.format("job state code '%02X' undefined", code))
+        fun fromInt(code: Int?): IppJobState? = if (code == null) null else
+            codeMap[code] ?: throw IppException(String.format("job state code '%02X' undefined", code))
 
         private val registeredValueMap = values().associateBy(IppJobState::registeredValue)
         fun fromRegisteredValue(value: String): IppJobState = registeredValueMap[value]
