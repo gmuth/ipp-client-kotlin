@@ -74,11 +74,10 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
                     writeString(if (index == 0) name else "", Charsets.US_ASCII)
                     writeAttributeValue(tag, value)
                 }
-                if(values.size > 1 && IppRegistrationsSection2.attributeIs1setOf(name) == false) {
+                if (values.size > 1 && IppRegistrationsSection2.attributeIs1setOf(name) == false) {
                     println("WARN: '$name' is not registered as '1setOf'")
                 }
             }
-
             // keep attributes-charset for name and text value encoding
             if (tag == IppTag.Charset && name == "attributes-charset") {
                 attributesCharset = Charset.forName(value as String)
@@ -168,17 +167,29 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
                 writeByte(minutesFromUTC)
             }
 
-            IppTag.BegCollection -> with(value as IppCollection) {
-                writeShort(0)
-                for (member in members) {
-                    writeCollectionAttribute(IppTag.MemberAttrName, member.name)
-                    writeCollectionAttribute(member.tag, member.value)
-                }
-                writeCollectionAttribute(IppTag.EndCollection)
+            IppTag.BegCollection -> {
+                writeCollection(value as IppCollection)
             }
 
             else -> throw IppException(String.format("tag %s (%02X) encoding not implemented", tag, tag.code))
         }
+    }
+
+    private fun writeCollection(collection: IppCollection) {
+        with(collection) {
+            writeShort(0)
+            for (member in members) {
+                writeCollectionAttribute(IppTag.MemberAttrName, member.name)
+                for (value in member.values) {
+                    writeCollectionAttribute(member.tag, value)
+                }
+            }
+            writeCollectionAttribute(IppTag.EndCollection)
+        }
+    }
+
+    private fun writeCollectionAttribute(tag: IppTag, value: Any? = null) {
+        writeAttribute(IppAttribute("", tag, value))
     }
 
     private fun writeString(value: String, charset: Charset) {
@@ -186,10 +197,6 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
             writeShort(size)
             write(this)
         }
-    }
-
-    private fun writeCollectionAttribute(tag: IppTag, value: Any? = null) {
-        writeAttribute(IppAttribute("", tag, value))
     }
 
 }
