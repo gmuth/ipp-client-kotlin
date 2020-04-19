@@ -26,6 +26,8 @@ data class IppJob(var attributes: IppAttributesGroup) {
     val impressionsCompleted: Int?
         get() = attributes.getValue("job-impressions-completed")
 
+    fun isTerminated() = state != null && state!!.isTerminated()
+
     override fun toString(): String {
         val stateString =
                 if (state == null) {

@@ -5,12 +5,13 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.ipp.core.IppAttribute
+import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppIntegerRange
 import de.gmuth.ipp.core.IppTag
 
 open class IppIntegerRangeJobParameter(val name: String, private val ranges: List<IntRange>) : IppJobParameter {
 
-    override fun toIppAttribute(printer: IppPrinter?): IppAttribute<IppIntegerRange> {
+    override fun toIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<IppIntegerRange> {
         return IppAttribute(
                 name,
                 IppTag.RangeOfInteger,

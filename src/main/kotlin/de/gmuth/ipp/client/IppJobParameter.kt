@@ -5,10 +5,11 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.ipp.core.IppAttribute
+import de.gmuth.ipp.core.IppAttributesGroup
 
 interface IppJobParameter {
 
-    fun toIppAttribute(printer: IppPrinter? = null): IppAttribute<*>
+    fun toIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<*>
 
     fun registeredValue(name: String) = name
             .replace("[A-Z]".toRegex()) { "-" + it.value.toLowerCase() }

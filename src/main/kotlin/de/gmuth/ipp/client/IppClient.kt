@@ -33,8 +33,11 @@ class IppClient(
 
     ): IppResponse {
         val response = exchange(uri, request, documentInputStream, httpAuth)
-        if (response.isSuccessful()) return response
-        else throw IppExchangeException(request, response, "$exceptionMessage: '${response.status}' ${response.statusMessage ?: ""}")
+        if (response.isSuccessful()) {
+            return response
+        } else {
+            throw IppExchangeException(request, response, "$exceptionMessage: '${response.status}' ${response.statusMessage ?: ""}")
+        }
     }
 
     fun exchange(
@@ -213,9 +216,17 @@ class IppClient(
         return exchangeSuccessful(printerUri, request)
     }
 
-    //------------------------------
-    // Pause-Printer, Resume-Printer
-    // -----------------------------
+    //------------------------------------------------
+    // Identify-Printer, Pause-Printer, Resume-Printer
+    // -----------------------------------------------
+
+    fun identifyPrinter(printerUri: URI, action: String, httpAuth: Http.Auth? = null) {
+        val request = ippRequest(IppOperation.IdentifyPrinter).apply {
+            operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
+            operationGroup.attribute("identify-actions", IppTag.Keyword, action)
+        }
+        exchangeSuccessful(printerUri, request, httpAuth = httpAuth)
+    }
 
     fun pausePrinter(printerUri: URI, httpAuth: Http.Auth? = null) {
         sendPrinterOperation(printerUri, IppOperation.PausePrinter, httpAuth)
