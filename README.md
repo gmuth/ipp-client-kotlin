@@ -17,7 +17,7 @@ A client implementation of the ipp protocol written in kotlin.
       printFile(file)
       printFile(file, waitForTermination = true)
       printFile(file, IppCopies(2))
-      printFile(file, IppPageRanges(2..3, 8..10)))
+      printFile(file, IppPageRanges(2..3, 8..10))
       printFile(file, IppMonochrome(), IppDuplex())
       printFile(file, IppColorMode.Monochrome, IppSides.TwoSidedLongEdge)
                   
