@@ -12,7 +12,6 @@ import java.io.File
 import java.io.FileInputStream
 import java.net.URI
 import java.time.Duration
-import kotlin.streams.toList
 
 class IppPrintService(private val printerUri: URI) {
 
@@ -28,13 +27,12 @@ class IppPrintService(private val printerUri: URI) {
         ippPrinter.logDetails()
     }
 
-    // ============================================================================================================================ PRINT
+    // ===== PRINT =====
 
     fun printFile(
             file: File,
             vararg jobParameters: IppJobParameter,
             documentFormat: String = "application/octet-stream",
-            jobName: String = file.name,
             waitForTermination: Boolean = false
 
     ): IppJob {
@@ -42,8 +40,8 @@ class IppPrintService(private val printerUri: URI) {
         val request = ippClient.ippRequest(IppOperation.PrintJob).apply {
             operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
             operationGroup.attribute("document-format", IppTag.MimeMediaType, documentFormat)
+            operationGroup.attribute("job-name", IppTag.NameWithoutLanguage, file.name)
             with(ippAttributesGroup(IppTag.Job)) {
-                attribute("job-name", IppTag.NameWithoutLanguage, jobName)
                 jobParameters.forEach { jobParameter -> put(jobParameter.toIppAttribute(ippPrinter)) }
             }
         }
@@ -53,7 +51,8 @@ class IppPrintService(private val printerUri: URI) {
         val job = IppJob(response.jobGroup)
 
         if (waitForTermination) {
-            waitForTermination(job)
+            //waitForTermination(job)
+            job.waitForTermination()
             if (verbose) job.logDetails()
         } else {
             if (verbose) println(job)
@@ -69,7 +68,6 @@ class IppPrintService(private val printerUri: URI) {
             documentUri: URI,
             vararg jobParameters: IppJobParameter,
             documentFormat: String = "application/octet-stream",
-            jobName: String = documentUri.path,
             waitForTermination: Boolean = false
 
     ): IppJob {
@@ -78,8 +76,8 @@ class IppPrintService(private val printerUri: URI) {
             operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
             operationGroup.attribute("document-uri", IppTag.Uri, documentUri)
             operationGroup.attribute("document-format", IppTag.MimeMediaType, documentFormat)
+            operationGroup.attribute("job-name", IppTag.NameWithoutLanguage, documentUri.path)
             with(ippAttributesGroup(IppTag.Job)) {
-                attribute("job-name", IppTag.NameWithoutLanguage, jobName)
                 jobParameters.forEach { jobParameter -> put(jobParameter.toIppAttribute(ippPrinter)) }
             }
         }
@@ -88,7 +86,10 @@ class IppPrintService(private val printerUri: URI) {
         val response = ippClient.exchangeSuccessful(printerUri, request, "Print-Uri $documentUri")
         val job = IppJob(response.jobGroup)
 
-        if (waitForTermination) waitForTermination(job)
+        if (waitForTermination) {
+            waitForTermination(job)
+            //job.waitForTermination()
+        }
         if (verbose) job.logDetails()
         return job
     }
@@ -111,26 +112,19 @@ class IppPrintService(private val printerUri: URI) {
         return ippClient.exchangeSuccessful(printerUri, request)
     }
 
-    fun jobParameterCopies(value: Int) =
-            IppIntegerJobParameter("copies", value)
+    // ===== JOB METHODS =====
 
-    fun jobParameterPageRanges(vararg ranges: IntRange) =
-            IppIntegerRangeJobParameter("page-ranges", ranges.toList())
-
-    // ============================================================================================================================ JOB HANDLING
+    // which-jobs-supported (1setOf keyword) = completed,not-completed,aborted,all,canceled,pending,pending-held,processing,processing-stopped
+    fun getJobs(whichJobs: String? = null): List<IppJob> {
+        val response = ippClient.getJobs(printerUri, whichJobs)
+        return response
+                .getAttributesGroups(IppTag.Job)
+                .map { jobGroup -> IppJob(jobGroup) }
+    }
 
     fun getJob(jobId: Int): IppJob {
         val response = ippClient.getJobAttributes(printerUri, jobId)
         return IppJob(response.jobGroup)
-    }
-
-    fun getJobs(): List<IppJob> {
-        val request = ippClient.ippRequest(IppOperation.GetJobs).apply {
-            operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
-        }
-        val response = ippClient.exchangeSuccessful(printerUri, request)
-        return response.getAttributesGroups(IppTag.Job).stream()
-                .map { jobGroup -> IppJob(jobGroup) }.toList()
     }
 
     fun refreshJobAttributes(job: IppJob) {
@@ -155,6 +149,7 @@ class IppPrintService(private val printerUri: URI) {
                 refreshPrinterAttributes()
             }
             refreshJobAttributes(job)
+
             if (verbose) {
                 if (refreshPrinterAttributes) {
                     println("printer-state = ${ippPrinter.printerState}, job-state = ${job.state}")
@@ -167,24 +162,11 @@ class IppPrintService(private val printerUri: URI) {
         if (verbose) job.logDetails()
     }
 
-    fun cancelJob(jobId: Int) {
-        val request = ippClient.ippRequest(IppOperation.CancelJob).apply {
-            operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
-            operationGroup.attribute("job-id", IppTag.Integer, jobId)
-        }
-        ippClient.exchangeSuccessful(printerUri, request)
-        println("canceled: job #$jobId")
-    }
+    fun cancelJob(jobId: Int) = ippClient.cancelJob(printerUri, jobId)
 
-    fun cancelJob(job: IppJob) {
-        val request = ippClient.ippRequest(IppOperation.CancelJob).apply {
-            operationGroup.attribute("job-uri", IppTag.Uri, job.uri)
-        }
-        ippClient.exchangeSuccessful(job.uri, request)
-        println("canceled: ${job.uri}")
-    }
+    fun cancelJob(job: IppJob) = ippClient.cancelJob(job.uri)
 
-    // ============================================================================================================================ PRINTER HANDLING
+    // ===== PRINTER METHODS =====
 
     fun refreshPrinterAttributes() {
         val response = ippClient.getPrinterAttributes(printerUri, IppPrinter.requestAttributes)
