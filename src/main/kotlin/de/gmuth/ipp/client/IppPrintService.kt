@@ -51,8 +51,8 @@ class IppPrintService(private val printerUri: URI) {
         val job = IppJob(response.jobGroup)
 
         if (waitForTermination) {
-            //waitForTermination(job)
-            job.waitForTermination()
+            waitForTermination(job)
+            //job.waitForTermination()
             if (verbose) job.logDetails()
         } else {
             if (verbose) println(job)
@@ -129,7 +129,8 @@ class IppPrintService(private val printerUri: URI) {
 
     fun refreshJobAttributes(job: IppJob) {
         val response = ippClient.getJobAttributes(job.uri)
-        job.readFrom(response.jobGroup)
+        //job.readFrom(response.jobGroup)
+        job.attributes = response.jobGroup
     }
 
     fun refreshJobAttributes(jobs: List<IppJob>) {
@@ -141,7 +142,7 @@ class IppPrintService(private val printerUri: URI) {
     fun waitForTermination(
             job: IppJob,
             refreshRate: Duration = Duration.ofSeconds(1),
-            refreshPrinterAttributes: Boolean = true
+            refreshPrinterAttributes: Boolean = false
     ) {
         do {
             Thread.sleep(refreshRate.toMillis())
@@ -154,7 +155,7 @@ class IppPrintService(private val printerUri: URI) {
                 if (refreshPrinterAttributes) {
                     println("printer-state = ${ippPrinter.printerState}, job-state = ${job.state}")
                 } else {
-                    println("job-state = ${job.state}")
+                    println("job-state = ${job.state}, job-impressions-completed = ${job.impressionsCompleted}")
                 }
             }
 
@@ -178,20 +179,12 @@ class IppPrintService(private val printerUri: URI) {
         val request = ippClient.ippRequest(IppOperation.IdentifyPrinter).apply {
             operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
             operationGroup.attribute("identify-actions", IppTag.Keyword, action)
-            operationGroup.attribute("message", IppTag.TextWithoutLanguage, "hello")
         }
         ippClient.exchangeSuccessful(printerUri, request, httpAuth = httpAuth)
     }
 
-    fun pausePrinter() = sendPrinterOperation(printerUri, IppOperation.PausePrinter)
+    fun pausePrinter() = ippClient.pausePrinter(printerUri, httpAuth)
 
-    fun resumePrinter() = sendPrinterOperation(printerUri, IppOperation.ResumePrinter)
-
-    private fun sendPrinterOperation(printerUri: URI, printerOperation: IppOperation) {
-        val request = ippClient.ippRequest(printerOperation).apply {
-            operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
-        }
-        ippClient.exchangeSuccessful(printerUri, request, httpAuth = httpAuth)
-    }
+    fun resumePrinter() = ippClient.resumePrinter(printerUri, httpAuth)
 
 }
