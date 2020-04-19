@@ -88,7 +88,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
     private fun writeTag(tag: IppTag) = writeByte(tag.code.toInt())
 
     private fun writeAttributeValue(tag: IppTag, value: Any?) {
-        if (value == null && !tag.isOutOfBandTag()) {
+        if (!tag.isOutOfBandTag() && tag != IppTag.EndCollection && value == null) {
             throw IppException("missing value for tag $tag")
         }
         when (tag) {
