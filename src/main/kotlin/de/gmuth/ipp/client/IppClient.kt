@@ -141,7 +141,6 @@ class IppClient(
                     ippVersion,
                     operation,
                     requestCounter.getAndIncrement()
-
             ).apply {
                 operationGroup.attribute("requesting-user-name", IppTag.NameWithoutLanguage, System.getenv("USER"))
             }
@@ -212,6 +211,25 @@ class IppClient(
             }
         }
         return exchangeSuccessful(printerUri, request)
+    }
+
+    //------------------------------
+    // Pause-Printer, Resume-Printer
+    // -----------------------------
+
+    fun pausePrinter(printerUri: URI, httpAuth: Http.Auth? = null) {
+        sendPrinterOperation(printerUri, IppOperation.PausePrinter, httpAuth)
+    }
+
+    fun resumePrinter(printerUri: URI, httpAuth: Http.Auth? = null) {
+        sendPrinterOperation(printerUri, IppOperation.ResumePrinter, httpAuth)
+    }
+
+    private fun sendPrinterOperation(printerUri: URI, printerOperation: IppOperation, httpAuth: Http.Auth?) {
+        val request = ippRequest(printerOperation).apply {
+            operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
+        }
+        exchangeSuccessful(printerUri, request, httpAuth = httpAuth)
     }
 
 }
