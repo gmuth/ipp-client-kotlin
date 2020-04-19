@@ -80,7 +80,7 @@ class IppClient(
                 }
                 // warn about unsupported attributes
                 for (unsupported in getAttributesGroups(IppTag.Unsupported)) {
-                    for(attribute in unsupported.values) {
+                    for (attribute in unsupported.values) {
                         println("WARN: unsupported attribute: $attribute")
                     }
                 }
@@ -150,10 +150,6 @@ class IppClient(
     // Get-Printer-Attributes
     // ----------------------
 
-    fun getPrinterAttributes(printerUri: URI, vararg requestedAttributes: String): IppResponse {
-        return getPrinterAttributes(printerUri, requestedAttributes.toList())
-    }
-
     fun getPrinterAttributes(printerUri: URI, requestedAttributes: List<String> = listOf()): IppResponse {
         val request = ippRequest(IppOperation.GetPrinterAttributes).apply {
             operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
@@ -181,6 +177,41 @@ class IppClient(
             operationGroup.attribute("job-uri", IppTag.Uri, jobUri)
         }
         return exchangeSuccessful(jobUri, request, "Get-Job-Attributes $jobUri failed")
+    }
+
+    //-----------
+    // Cancel-Job
+    // ----------
+
+    fun cancelJob(printerUri: URI, jobId: Int): IppResponse {
+        val request = ippRequest(IppOperation.CancelJob).apply {
+            operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
+            operationGroup.attribute("job-id", IppTag.Integer, jobId)
+        }
+        return exchangeSuccessful(printerUri, request, "Cancel-Job #$jobId failed")
+    }
+
+    fun cancelJob(jobUri: URI): IppResponse {
+        val request = ippRequest(IppOperation.CancelJob).apply {
+            operationGroup.attribute("job-uri", IppTag.Uri, jobUri)
+        }
+        return exchangeSuccessful(jobUri, request, "Cancel-Job $jobUri failed")
+    }
+
+    //---------
+    // Get-Jobs
+    // --------
+
+    // which-jobs-supported (1setOf keyword) = completed,not-completed,aborted,all,canceled,pending,pending-held,processing,processing-stopped
+
+    fun getJobs(printerUri: URI, whichJobs: String? = null): IppResponse {
+        val request = ippRequest(IppOperation.GetJobs).apply {
+            operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
+            if (whichJobs != null) {
+                operationGroup.attribute("which-jobs", IppTag.Keyword, whichJobs)
+            }
+        }
+        return exchangeSuccessful(printerUri, request)
     }
 
 }
