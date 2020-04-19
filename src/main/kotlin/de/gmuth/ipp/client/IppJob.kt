@@ -4,7 +4,9 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.ipp.core.*
+import de.gmuth.ipp.core.IppAttributesGroup
+import de.gmuth.ipp.core.IppIntegerTime
+import de.gmuth.ipp.core.IppString
 import java.net.URI
 import java.time.Duration
 
@@ -56,39 +58,16 @@ class IppJob(jobGroup: IppAttributesGroup) {
     }
 
 
-    fun waitForTermination(refreshRate: Duration = Duration.ofSeconds(1)) {
-        with(IppClient()) {
-            do {
-                Thread.sleep(refreshRate.toMillis())
-                val response = getJobAttributes(uri)
-                readFrom(response.jobGroup)
-                println("job-state = $state, job-impressions-completed = $impressionsCompleted")
-            } while (state?.isNotTerminated()!!)
-        }
-    }
-
-    fun cancel() {
-        with(IppClient()) {
-            exchangeSuccessful(
-                    uri,
-                    ippRequest(IppOperation.CancelJob).apply {
-                        operationGroup.attribute("job-uri", IppTag.Uri, uri)
-                    }
-            )
-            println("canceled: $uri")
-        }
-    }
-
     override fun toString(): String {
         val stateString =
                 if (state == null) ""
                 else ", state = $state, stateReasons = $stateReasons"
 
-        return "IppJob: uri = $uri, id = $id$stateString"
+        return "IppJob: id = $id, uri = $uri$stateString"
     }
 
     fun logDetails() {
-        println("JOB")
+        println("JOB-$id")
         println("  uri = $uri")
         println("  id = $id")
         logAttributeIfValueNotNull("state", state)
@@ -108,6 +87,25 @@ class IppJob(jobGroup: IppAttributesGroup) {
 
     private fun logAttributeIfValueNotNull(name: String, value: Any?) {
         if (value != null) println("  $name = $value")
+    }
+
+    // ------ operations requiring an IppClient ------
+
+    val ippClient = IppClient()
+
+    fun cancel() = ippClient.cancelJob(uri)
+
+    fun refreshAttributes() {
+        val response = ippClient.getJobAttributes(uri)
+        readFrom(response.jobGroup)
+    }
+
+    fun waitForTermination(refreshRate: Duration = Duration.ofSeconds(1)) {
+        do {
+            Thread.sleep(refreshRate.toMillis())
+            refreshAttributes()
+            println("job-state = $state, job-impressions-completed = $impressionsCompleted")
+        } while (state?.isNotTerminated()!!)
     }
 
 }
