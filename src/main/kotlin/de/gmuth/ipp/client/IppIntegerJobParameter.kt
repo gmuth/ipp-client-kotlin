@@ -7,13 +7,12 @@ package de.gmuth.ipp.client
 import de.gmuth.ipp.core.IppAttribute
 import de.gmuth.ipp.core.IppTag
 
-class IppIntegerJobParameter(
-        val name: String,
-        vararg val values: Int
+open class IppIntegerJobParameter(val name: String, vararg val values: Int) : IppJobParameter {
 
-) : IppJobParameter {
-
-    override fun toIppAttribute(printer: IppPrinter?): IppAttribute<Int> =
-            IppAttribute(name, IppTag.Integer, values.toList())
+    override fun toIppAttribute(printer: IppPrinter?): IppAttribute<Int> {
+        return IppAttribute(name, IppTag.Integer, values.toList())
+    }
 
 }
+
+class IppCopies(value: Int) : IppIntegerJobParameter("copies", value)

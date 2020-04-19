@@ -8,18 +8,16 @@ import de.gmuth.ipp.core.IppAttribute
 import de.gmuth.ipp.core.IppIntegerRange
 import de.gmuth.ipp.core.IppTag
 
-class IppIntegerRangeJobParameter(
-        val name: String,
-        val ranges: List<IntRange>
+open class IppIntegerRangeJobParameter(val name: String, private val ranges: List<IntRange>) : IppJobParameter {
 
-) : IppJobParameter {
-
-    constructor(name: String, vararg ranges: IntRange) : this(name, ranges.toList())
-
-    override fun toIppAttribute(printer: IppPrinter?): IppAttribute<IppIntegerRange> = IppAttribute(
-            name,
-            IppTag.RangeOfInteger,
-            ranges.map { IppIntegerRange(it.first, it.last) }
-    )
+    override fun toIppAttribute(printer: IppPrinter?): IppAttribute<IppIntegerRange> {
+        return IppAttribute(
+                name,
+                IppTag.RangeOfInteger,
+                ranges.map { IppIntegerRange(it.first, it.last) }
+        )
+    }
 
 }
+
+class IppPageRanges(vararg ranges: IntRange) : IppIntegerRangeJobParameter("page-ranges", ranges.toList())
