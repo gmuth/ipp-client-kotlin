@@ -14,7 +14,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
 
     fun put(attribute: IppAttribute<*>): IppAttribute<*>? {
         if (!attribute.tag.isOutOfBandTag() && attribute.values.isEmpty()) {
-            throw IppException("missing attribute values to put")
+            throw IppException("put attribute rejected: value list is empty")
         }
         val replaced = put(attribute.name, attribute)
         if (replaced != null) {
