@@ -23,3 +23,9 @@ enum class IppColorMode : IppJobParameter {
     }
 
 }
+
+class IppMonochrome() : IppJobParameter {
+
+    override fun toIppAttribute(printer: IppPrinter?) = IppColorMode.Monochrome.toIppAttribute(printer)
+
+}

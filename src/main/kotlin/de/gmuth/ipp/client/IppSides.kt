@@ -15,3 +15,9 @@ enum class IppSides : IppJobParameter {
             IppAttribute("sides", IppTag.Keyword, registeredValue(name))
 
 }
+
+class IppDuplex : IppJobParameter {
+
+    override fun toIppAttribute(printer: IppPrinter?) = IppSides.TwoSidedLongEdge.toIppAttribute()
+
+}

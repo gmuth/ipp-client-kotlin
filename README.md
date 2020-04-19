@@ -9,22 +9,23 @@ A client implementation of the ipp protocol written in kotlin.
 
 ### [IppPrintService](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppPrintService.kt)
 
-    val printer = URI.create("ipp://colorjet.local/ipp/printer")
-    
-    with(IppPrintService(printer)) {
+    with(
+      IppPrintService(URI.create("ipp://colorjet.local/ipp/printer"))
+    ) {
     
       val file = File("A4-blank.pdf")
       printFile(file)
       printFile(file, waitForTermination = true)
-      printFile(file, IppColorMode.Monochrome, IppSides.TwoSidedLongEdge)
       printFile(file, IppCopies(2))
       printFile(file, IppPageRanges(2..3, 8..10)))
-
-            
+      printFile(file, IppMonochrome(), IppDuplex())
+      printFile(file, IppColorMode.Monochrome, IppSides.TwoSidedLongEdge)
+                  
       val remoteFile = URI.create("http://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf")
       printUri(remoteFile) // -- make printer pull document from remote server
 
       getJobs()
+      getJobs("completed") // which-jobs
       getJob(345)
       cancelJob(345)
     
