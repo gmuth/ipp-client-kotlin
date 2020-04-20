@@ -46,13 +46,10 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag) {
 
     @Suppress("UNCHECKED_CAST")
     fun additionalValue(attribute: IppAttribute<*>) {
-        if (attribute.name.isNotEmpty()) {
-            throw IppException("name must be empty for additional values")
-        }
-        if (tag == attribute.tag) {
-            values.add(attribute.value as T)
-        } else {
-            throw IppException("'$name' 1setOf error: expected tag '$tag' for additional value but found '${attribute.tag}'")
+        when {
+            attribute.name.isNotEmpty() -> throw IppException("name must be empty for additional values")
+            tag == attribute.tag -> values.add(attribute.value as T)
+            else -> throw IppException("'$name' 1setOf error: expected tag '$tag' for additional value but found '${attribute.tag}'")
         }
     }
 
@@ -63,11 +60,10 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag) {
             if (IppRegistrationsSection2.attributeIs1setOf(name) == true) {
                 println("WARN: '$name' is registered as '1setOf', use 'values' or 'getValues' instead")
             }
-            if (values.size <= 1) {
-                return values.firstOrNull()
-            } else {
+            if (values.size > 1) {
                 throw IppException("found ${values.size.toPluralString("value")} but expected 0 or 1 for '$name'")
             }
+            return values.firstOrNull()
         }
 
     private fun valueOrEnumValueName(value: Any?): Any? =
