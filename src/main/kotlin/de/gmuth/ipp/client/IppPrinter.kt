@@ -15,12 +15,20 @@ data class IppPrinter(var attributes: IppAttributesGroup) {
     val makeAndModel: IppString
         get() = attributes.getValue("printer-make-and-model")
 
-    override fun toString(): String {
-        return "IppPrinter: name = $name, makeAndModel = $makeAndModel"
-    }
+    val isAcceptingJobs: Boolean
+        get() = attributes.getValue("printer-is-accepting-jobs")
+
+    val state: IppPrinterState
+        get() = IppPrinterState.fromInt(attributes.getValue("printer-state") as Int)
+
+    val stateReasons: List<String>
+        get() = attributes.getValues("printer-state-reasons")
+
+    override fun toString() =
+            "IppPrinter: name = $name, makeAndModel = $makeAndModel, state = $state, stateReasons = ${stateReasons.joinToString(",")}"
 
     fun logDetails() {
-        println("PRINTER-$name ($makeAndModel)")
+        println("PRINTER-$name ($makeAndModel), $state (${stateReasons.joinToString (",")})")
         for (attribute in attributes.values) {
             println("  $attribute")
         }
