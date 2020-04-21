@@ -14,6 +14,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
     companion object {
         var checkSyntax: Boolean = true
+        var check1setOfRegistration: Boolean = true
     }
 
     // encoding for text and name attributes, rfc 8011 4.1.4.1
@@ -41,7 +42,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                         currentAttribute = attribute
                     } else { // name.isEmpty() -> 1setOf
                         currentAttribute.additionalValue(attribute)
-                        if (IppRegistrationsSection2.attributeIs1setOf(currentAttribute.name) == false) {
+                        if (check1setOfRegistration && IppRegistrationsSection2.attributeIs1setOf(currentAttribute.name) == false) {
                             println("WARN: '${currentAttribute.name}' is not registered as '1setOf'")
                         }
                     }
