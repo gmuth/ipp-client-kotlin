@@ -25,7 +25,7 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag) {
 
     constructor(name: String, tag: IppTag, values: Collection<T>) : this(name, tag) {
         // do not add null to values
-        if (values.isNotEmpty() || values.size == 1 && values.first() != null) {
+        if (values.size > 1 || values.size == 1 && values.first() != null) {
             this.values.addAll(values)
         }
     }
