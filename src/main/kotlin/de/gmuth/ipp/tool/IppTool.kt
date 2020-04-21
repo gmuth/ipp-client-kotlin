@@ -24,7 +24,7 @@ class IppTool() {
         var fileInputStream: FileInputStream? = null
         lateinit var currentGroup: IppAttributesGroup
         val request = IppRequest().apply {
-            version = IppVersion(2,0)
+            version = IppVersion(1,1)
             requestId = 42
         }
 
@@ -39,6 +39,7 @@ class IppTool() {
                 "OPERATION" -> {
                     val operation = IppOperation.fromRegisteredName(firstArgument)
                     request.code = operation.code
+                    request.ippAttributesGroup(IppTag.Operation)
                 }
                 "GROUP" -> when (firstArgument) {
                     "operation-attributes-tag" -> currentGroup = request.operationGroup
