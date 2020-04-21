@@ -4,7 +4,7 @@ import java.net.URI
 
 fun main(args: Array<String>) {
     if (args.size < 2) {
-        println("usage: java -jar ipptool.jar <printer-uri> <file>")
+        println("usage: java -jar ippclient.jar <printer-uri> <file>")
         return
     }
 
