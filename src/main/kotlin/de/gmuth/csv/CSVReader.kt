@@ -27,10 +27,10 @@ class CSVReader<T>(
 
     fun read(inputStream: InputStream, skipHeader: Boolean): List<T> {
         val mappedRows = mutableListOf<T>()
-        if (skipHeader) parseLine(inputStream)
+        if (skipHeader) parseRow(inputStream)
         var rowNum = 0
         lineLoop@ while (true) {
-            val columns = parseLine(inputStream) ?: break@lineLoop
+            val columns = parseRow(inputStream) ?: break@lineLoop
             val row = rowMapper.mapRow(columns, ++rowNum)
             mappedRows.add(row)
         }
@@ -40,7 +40,7 @@ class CSVReader<T>(
         return mappedRows
     }
 
-    private fun parseLine(inputStream: InputStream): List<String>? {
+    private fun parseRow(inputStream: InputStream): List<String>? {
         val fields = mutableListOf<String>()
         var currentField = StringBuffer()
         var inQuote = false
