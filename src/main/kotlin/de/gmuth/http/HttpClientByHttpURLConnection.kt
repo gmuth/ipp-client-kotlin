@@ -11,12 +11,12 @@ import java.util.*
 import javax.net.ssl.HttpsURLConnection
 
 class HttpClientByHttpURLConnection(
-        override val config: Http.Client.Config= Http.Client.Config()
+        override val config: Http.Client.Config = Http.Client.Config()
 
 ) : Http.Client {
 
     override fun post(uri: URI, content: Http.Content, auth: Http.Auth?): Http.Response {
-        if (uri.scheme in listOf("https", "ipps") && config.disableSSLCertificateValidation) {
+        if (uri.scheme in listOf("https", "ipps") && config.trustAnySSLCertificate) {
             HttpsURLConnection.setDefaultSSLSocketFactory(SSLUtil.trustAllSSLContext.socketFactory)
             HttpsURLConnection.setDefaultHostnameVerifier { _, _ -> true }
             println("WARN: SSL certificate validation disabled")
@@ -29,7 +29,7 @@ class HttpClientByHttpURLConnection(
                 setRequestProperty("Authorization", "Basic $basicAuth")
             }
             setRequestProperty("Content-Type", content.type)
-            //setChunkedStreamingMode(0) // enable chunked transfer
+            setChunkedStreamingMode(0) // enable chunked transfer
             content.stream.copyTo(outputStream)
             val contentStream = try {
                 inputStream

@@ -17,7 +17,7 @@ class HttpClientByJava11HttpClient(
 
     override fun post(uri: URI, content: Http.Content, auth: Http.Auth?): Http.Response {
         val httpClientBuilder = HttpClient.newBuilder()
-        if (uri.scheme in listOf("https", "ipps") && config.disableSSLCertificateValidation) {
+        if (uri.scheme in listOf("https", "ipps") && config.trustAnySSLCertificate) {
             // -Djdk.internal.httpclient.disableHostnameVerification
             System.getProperties().setProperty("jdk.internal.httpclient.disableHostnameVerification", true.toString())
             httpClientBuilder.sslContext(SSLUtil.trustAllSSLContext)

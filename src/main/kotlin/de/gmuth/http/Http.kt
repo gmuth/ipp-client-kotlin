@@ -17,7 +17,7 @@ interface Http {
     interface Client {
         data class Config(
                 var timeout: Duration = Duration.ofSeconds(3),
-                var disableSSLCertificateValidation: Boolean = false
+                var trustAnySSLCertificate: Boolean = true
         )
 
         val config: Config

@@ -10,7 +10,7 @@ import javax.net.ssl.X509TrustManager
 class SSLUtil {
     companion object {
         val trustAllSSLContext = SSLContext.getInstance("TLS").apply {
-            val trustAllCerts: Array<TrustManager> = arrayOf(object : X509TrustManager {
+            val trustAnyCertificate: Array<TrustManager> = arrayOf(object : X509TrustManager {
                 @Throws(CertificateException::class)
                 override fun checkClientTrusted(certificates: Array<X509Certificate?>?, string: String?) {
                 }
@@ -21,7 +21,7 @@ class SSLUtil {
 
                 override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
             })
-            init(null, trustAllCerts, SecureRandom())
+            init(null, trustAnyCertificate, SecureRandom())
         }
     }
 }

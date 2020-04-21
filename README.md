@@ -61,13 +61,11 @@ A client implementation of the ipp protocol written in kotlin.
         )
     }
 
-### Use basic auth with invalid SSL certificates
+### Use basic auth
 
     val printer = URI.create("ipps://pi.local/printers/Lexmark_E210")
     
     with(IppPrintService(printer)) {
-        // trust cups self-signed certs
-        ippClient.httpClient.config.disableSSLCertificateValidation = true
         httpAuth = Http.Auth("admin", "secret")
         pausePrinter()    
     }
