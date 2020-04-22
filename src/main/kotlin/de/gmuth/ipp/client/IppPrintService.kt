@@ -39,9 +39,10 @@ class IppPrintService(private val printerUri: URI) {
             waitForTermination: Boolean = false
 
     ): IppJob {
-
         val request = printRequest(IppOperation.PrintJob, documentFormat, file.name, jobParameters.toList())
-        val response = ippClient.exchangeSuccessful(printerUri, request, documentInputStream = FileInputStream(file))
+        val response = ippClient.exchangeSuccessful(
+                printerUri, request, documentInputStream = FileInputStream(file), httpAuth = httpAuth
+        )
         return waitForJobTermination(response, waitForTermination)
     }
 
@@ -59,7 +60,9 @@ class IppPrintService(private val printerUri: URI) {
 
         val request = printRequest(IppOperation.PrintUri, documentFormat, documentUri.path, jobParameters.toList())
         request.operationGroup.attribute("document-uri", IppTag.Uri, documentUri)
-        val response = ippClient.exchangeSuccessful(printerUri, request, "Print-Uri $documentUri")
+        val response = ippClient.exchangeSuccessful(
+                printerUri, request, "Print-Uri $documentUri", httpAuth = httpAuth
+        )
         return waitForJobTermination(response, waitForTermination)
     }
 
@@ -102,7 +105,10 @@ class IppPrintService(private val printerUri: URI) {
             IppJob(ippClient.getJobAttributes(printerUri, jobId).jobGroup)
 
     fun updateJobAttributes(job: IppJob) {
-        job.attributes = ippClient.getJobAttributes(job.uri).jobGroup
+        if (printerUri.scheme != job.uri.scheme) {
+            println("WARN: printerUri.scheme = ${printerUri.scheme}, jobUri.scheme = ${job.uri.scheme}")
+        }
+        job.attributes = ippClient.getJobAttributes(printerUri, job.id).jobGroup
     }
 
     fun updateJobAttributes(jobs: List<IppJob>) =
