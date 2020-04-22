@@ -22,14 +22,17 @@ class HttpClientByHttpURLConnection(
             println("WARN: SSL certificate validation disabled")
         }
         with(uri.toURL().openConnection() as HttpURLConnection) {
-            setConnectTimeout(config.timeout.toMillis().toInt())
-            setDoOutput(true) // trigger POST method
+            connectTimeout = config.timeout.toMillis().toInt()
+            doOutput = true // trigger POST method
             if (auth != null) {
+                if (uri.scheme in listOf("http", "ipp")) {
+                    println("WARN: '${uri.scheme}' is not secure for authentication")
+                }
                 val basicAuth = with(auth) { Base64.getEncoder().encodeToString("$user:$password".toByteArray()) }
                 setRequestProperty("Authorization", "Basic $basicAuth")
             }
             setRequestProperty("Content-Type", content.type)
-            setChunkedStreamingMode(0) // enable chunked transfer
+            // setChunkedStreamingMode(0) // enable chunked transfer -- HttpRetryException: cannot retry due to server authentication, in streaming mode
             content.stream.copyTo(outputStream)
             val contentStream = try {
                 inputStream
