@@ -13,6 +13,7 @@ import java.nio.charset.Charset
 class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
     companion object {
+        var verbose: Boolean = false
         var checkSyntax: Boolean = true
         var check1setOfRegistration: Boolean = true
     }
@@ -34,9 +35,17 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
             val tag = readTag()
             when {
                 tag == IppTag.End -> break@tagLoop
-                tag.isDelimiterTag() -> currentGroup = message.ippAttributesGroup(tag)
+                tag.isDelimiterTag() -> {
+                    currentGroup = message.ippAttributesGroup(tag)
+                    if (verbose) {
+                        println("--- $tag")
+                    }
+                }
                 else -> {
                     val attribute = readAttribute(tag)
+                    if (verbose) {
+                        println("<<< $attribute")
+                    }
                     if (attribute.name.isNotEmpty()) {
                         currentGroup.put(attribute)
                         currentAttribute = attribute
