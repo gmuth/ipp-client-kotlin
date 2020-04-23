@@ -118,7 +118,7 @@ For convenience some common operations are implemented:
  - `cancelJob(jobUri)`
  - `getJob(whichJobs)`
 
-Operation `printFile()` in implemented by
+Operation `printFile()` is implemented by
 [IppPrintService](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppPrintService.kt)
 using model
 [IppPrinter](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppPrinter.kt)
