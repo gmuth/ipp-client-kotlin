@@ -87,7 +87,13 @@ Currently only the target `jvm` is supported.
 ## Status
 
 Version 1.0 has been released April 2020.
-The package `de.gmuth.ipp.core` contains the usual encoding and decoding operations.
+The package
+[`de.gmuth.ipp.core`](https://github.com/gmuth/ipp-client-kotlin/tree/master/src/main/kotlin/de/gmuth/ipp/core)
+contains the usual
+[encoding](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppOutputStream.kt)
+and
+[decoding](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppInputStream.kt)
+operations.
 Example to decode a cups spool file: 
 
 `IppRequest().readFrom(File("/var/spool/cups/c01579")).logDetails()`
@@ -111,6 +117,12 @@ For convenience some common operations are implemented:
  - `cancelJob(jobUri)`
  - `getJob(whichJobs)`
 
+Operation `printFile()` in implemented by
+[IppPrintService](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppPrintService.kt)
+using model
+[IppPrinter](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppPrinter.kt)
+and
+[IppJob](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppJob.kt). 
 ## Support
 
 [Open a github issue](https://github.com/gmuth/ipp-client-kotlin/issues/new/choose) or contact me.
