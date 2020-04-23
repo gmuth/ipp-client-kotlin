@@ -22,6 +22,7 @@ class IppClient(
         private val requestCounter = AtomicInteger(1)
     }
 
+    var requestingUserName: String? = System.getenv("USER")
     var verbose: Boolean = false
 
     fun exchangeSuccessful(
@@ -130,6 +131,10 @@ class IppClient(
                             } else {
                                 ""
                             }
+                    when (status) {
+                        426 -> println("ERROR: HTTP 426 suggests using a secure connection for authentication, try setting 'requesting-user-name'")
+                        401 -> println("ERROR: HTTP 401 unauthorized, try setting 'requesting-user-name'")
+                    }
                     throw IppException("response from $uri is invalid: http-status = $status, content-type = ${content.type}$text")
                 }
             }
@@ -139,14 +144,16 @@ class IppClient(
         }
     }
 
-    // ---- IppRequest factory method
+    // ---- factory method for IppRequest
 
     fun ippRequest(operation: IppOperation, printerUri: URI? = null) =
             IppRequest(ippVersion, operation, requestCounter.getAndIncrement()).apply {
                 if (printerUri != null) {
                     operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
                 }
-                operationGroup.attribute("requesting-user-name", IppTag.NameWithoutLanguage, System.getenv("USER"))
+                if (requestingUserName != null) {
+                    operationGroup.attribute("requesting-user-name", IppTag.NameWithoutLanguage, requestingUserName)
+                }
             }
 
     //-----------------------
