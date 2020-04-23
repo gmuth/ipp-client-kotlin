@@ -93,9 +93,9 @@ contains the usual
 [encoding](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppOutputStream.kt)
 and
 [decoding](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppInputStream.kt)
-operations.
-Example to decode a cups spool file: 
+operations. RFC 8010 is fully supported.
 
+Example to decode a cups spool file: 
 `IppRequest().readFrom(File("/var/spool/cups/c01579")).logDetails()`
 
 ## IppClient
