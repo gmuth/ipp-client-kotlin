@@ -66,6 +66,8 @@ class IppPrintService(private val printerUri: URI) {
         return waitForJobTermination(response, waitForTermination)
     }
 
+    // ---- factory method for IppRequest with Operation Print-Job or Print-Uri
+
     private fun printRequest(
             printOperation: IppOperation,
             documentFormat: String,
@@ -125,7 +127,7 @@ class IppPrintService(private val printerUri: URI) {
 
     fun cancelJob(jobId: Int) = ippClient.cancelJob(printerUri, jobId)
 
-    fun cancelJob(job: IppJob) = ippClient.cancelJob(job.uri)
+    fun cancelJob(job: IppJob) = cancelJob(job.id)
 
     //----------------------
     // PRINTER ADMIN METHODS
