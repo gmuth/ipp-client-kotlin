@@ -15,7 +15,7 @@ A client implementation of the ipp protocol written in kotlin.
     
       val file = File("A4-blank.pdf")
       printFile(file)
-      printFile(file, waitForTermination = true)
+      printFile(file, waitForTermination = true).logDetails()
       printFile(file, IppCopies(2))
       printFile(file, IppPageRanges(2..3, 8..10))
       printFile(file, IppMonochrome(), IppDuplex())
@@ -29,27 +29,29 @@ A client implementation of the ipp protocol written in kotlin.
       getJob(345)
       cancelJob(345)
     
+      identifyPrinter("sound")
       pausePrinter()
       resumePrinter()
     }
 
 ### exchange [IppRequest](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppRequest.kt) for [IppResponse](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppResponse.kt)
 
-    val printer = URI.create("ipp://colorjet/ipp/printer")
+    val uri = URI.create("ipp://colorjet.local/ipp/printer")
     val file = File("A4-blank.pdf")
     
     val ippClient = IppClient()
     val request = IppRequest(IppOperation.PrintJob).apply {
-      operationGroup.attribute("printer-uri", printer)
-      operationGroup.attribute("document-format", "application/octet-stream")
-      operationGroup.attribute("requesting-user-name", "kotlin-ipp")
+      operationGroup.attribute("printer-uri", uri)
+      operationGroup.attribute("document-format", "application/pdf")
+      operationGroup.attribute("requesting-user-name", "gmuth")
     }
-    val response = ippClient.exchange(printer, request, FileInputStream(file))
-
+    val response = ippClient.exchange(uri, request, FileInputStream(file))
+    response.logDetails()
+    
 ### IppTool
  
     with(IppTool()) {
-        uri = URI.create("ipp://colorjet/ipp/printer")
+        uri = URI.create("ipp://colorjet.local/ipp/printer")
         val filename = "A4-blank.pdf"
         run(
             "OPERATION Print-Job",
@@ -84,21 +86,31 @@ Currently only the target `jvm` is supported.
 
 ## Status
 
-This project is work in progress.
+Version 1.0 has been released April 2020.
+The package `de.gmuth.ipp.core` contains the usual encoding and decoding operations.
+Example to decode a cups spool file: 
 
-**Model and semantics**
+`IppRequest().readFrom(File("/var/spool/cups/c01579")).logDetails()`
 
-* [IppOperation](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppOperation.kt),
-  [IppStatus](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppStatus.kt)
-* [IppPrinter](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppPrinter.kt),
-  [IppPrinterState](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppPrinterState.kt),
-  [IppJob](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppJob.kt),
-  [IppJobState](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppJobState.kt)
+## IppClient
+
+[IppClient](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppClient.kt)
+requires a http transport that implements interface
+[Http.Client](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/Http.kt).
+Provided implementations are
+[HttpClientByHttpURLConnection](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/HttpClientByHttpURLConnection.kt)
+and
+[HttpClientByJava11HttpClient](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/HttpClientByJava11HttpClient.kt).
+[SSLUtil](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/SSLUtil.kt)
+helps connecting to endpoints secured by self signed certificates - e.g. CUPS.
+For convenience some common operations are implemented:
+ - `getPrinterAttributes(printerUri)`
+ - `getJobAttributes(printerUri, jobId)`
+ - `getJobAttributes(jobUri)`
+ - `cancelJob(printerUri, jobId)`
+ - `cancelJob(jobUri)`
+ - `getJob(whichJobs)`
 
 ## Support
 
 [Open a github issue](https://github.com/gmuth/ipp-client-kotlin/issues/new/choose) or contact me.
-
-## Todo
-
-* multi platform support
