@@ -15,7 +15,7 @@ import java.time.Duration
 
 class IppPrintService(private val printerUri: URI) {
 
-    val ippClient = IppClient()
+    private val ippClient = IppClient()
     var verbose: Boolean = false
     var httpAuth: Http.Auth? = null
     val printer: IppPrinter
@@ -27,6 +27,12 @@ class IppPrintService(private val printerUri: URI) {
         printer = IppPrinter(response.printerGroup)
         if (verbose) println(printer)
     }
+
+    var requestingUserName: String?
+        get() = ippClient.requestingUserName
+        set(value) {
+            ippClient.requestingUserName = value
+        }
 
     //-----------
     // PRINT FILE
