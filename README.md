@@ -86,7 +86,8 @@ Currently only the target `jvm` is supported.
 
 ## Status
 
-Version 1.0 has been released April 2020.
+[Version 1.0](https://github.com/gmuth/ipp-client-kotlin/releases/tag/v1.0)
+has been released April 2020.
 The package
 [`de.gmuth.ipp.core`](https://github.com/gmuth/ipp-client-kotlin/tree/master/src/main/kotlin/de/gmuth/ipp/core)
 contains the usual
