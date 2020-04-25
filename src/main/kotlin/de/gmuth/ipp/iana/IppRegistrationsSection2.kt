@@ -102,7 +102,6 @@ fun main() {
         println("$attribute  -->  tag = '${attribute.tag()}'")
     }
     println(IppRegistrationsSection2.tagForAttribute("job-state")) // 'enum'
-    println(IppRegistrationsSection2.attributesMap["printer-resolution-supported"]) // 'printer-resolution-supported: syntax = "resolution"'
-    println(IppRegistrationsSection2.attributeIs1setOf("printer-resolution-supported")) // 'false'
-
+    println(IppRegistrationsSection2.attributesMap["printer-resolution-supported"]) // 'printer-resolution-supported: syntax = "1setOf resolution"'
+    println(IppRegistrationsSection2.attributeIs1setOf("printer-resolution-supported")) // 'true'
 }
