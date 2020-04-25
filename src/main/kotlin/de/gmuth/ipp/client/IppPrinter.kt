@@ -28,7 +28,7 @@ data class IppPrinter(var attributes: IppAttributesGroup) {
             "IppPrinter: name = $name, makeAndModel = $makeAndModel, state = $state, stateReasons = ${stateReasons.joinToString(",")}"
 
     fun logDetails() {
-        println("PRINTER-$name ($makeAndModel), $state (${stateReasons.joinToString (",")})")
+        println("PRINTER-$name ($makeAndModel), $state (${stateReasons.joinToString(",")})")
         for (attribute in attributes.values) {
             println("  $attribute")
         }
