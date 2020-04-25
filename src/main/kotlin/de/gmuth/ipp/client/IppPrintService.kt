@@ -4,7 +4,6 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.http.Http
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppTag
@@ -13,26 +12,16 @@ import java.io.FileInputStream
 import java.net.URI
 import java.time.Duration
 
-class IppPrintService(private val printerUri: URI) {
+class IppPrintService(private val printerUri: URI) : IppClient() {
 
-    private val ippClient = IppClient()
-    var verbose: Boolean = false
-    var httpAuth: Http.Auth? = null
     val printer: IppPrinter
 
     init {
-        //ippClient.verbose = true
-        println("IppPrintService for $printerUri")
-        val response = ippClient.getPrinterAttributes(printerUri)
+        println("IppPrintService @ $printerUri")
+        val response = getPrinterAttributes()
         printer = IppPrinter(response.printerGroup)
-        if (verbose) println(printer)
+        println(printer)
     }
-
-    var requestingUserName: String?
-        get() = ippClient.requestingUserName
-        set(value) {
-            ippClient.requestingUserName = value
-        }
 
     //-----------
     // PRINT FILE
@@ -46,8 +35,8 @@ class IppPrintService(private val printerUri: URI) {
 
     ): IppJob {
         val request = printRequest(IppOperation.PrintJob, documentFormat, file.name, jobParameters.toList())
-        val response = ippClient.exchangeSuccessful(
-                printerUri, request, documentInputStream = FileInputStream(file), httpAuth = httpAuth
+        val response = exchangeSuccessful(
+                printerUri, request, documentInputStream = FileInputStream(file)
         )
         return waitForJobTermination(response, waitForTermination)
     }
@@ -66,8 +55,8 @@ class IppPrintService(private val printerUri: URI) {
 
         val request = printRequest(IppOperation.PrintUri, documentFormat, documentUri.path, jobParameters.toList())
         request.operationGroup.attribute("document-uri", IppTag.Uri, documentUri)
-        val response = ippClient.exchangeSuccessful(
-                printerUri, request, "Print-Uri $documentUri", httpAuth = httpAuth
+        val response = exchangeSuccessful(
+                printerUri, request, "Print-Uri $documentUri"
         )
         return waitForJobTermination(response, waitForTermination)
     }
@@ -80,7 +69,7 @@ class IppPrintService(private val printerUri: URI) {
             jobName: String,
             jobParameters: List<IppJobParameter>
 
-    ) = ippClient.ippRequest(printOperation, printerUri).apply {
+    ) = ippRequest(printOperation, printerUri).apply {
         operationGroup.attribute("job-name", IppTag.NameWithoutLanguage, jobName)
         operationGroup.attribute("document-format", IppTag.MimeMediaType, documentFormat)
         with(ippAttributesGroup(IppTag.Job)) {
@@ -99,28 +88,29 @@ class IppPrintService(private val printerUri: URI) {
         return job
     }
 
-    //------------
-    // JOB METHODS
-    //------------
+    //===============
+    // IppJob methods
+    //===============
 
     // which-jobs-supported (1setOf keyword) = completed,not-completed,aborted,all,canceled,pending,pending-held,processing,processing-stopped
-    fun getJobs(whichJobs: String? = null) = ippClient
-            .getJobs(printerUri, whichJobs)
+    fun getJobs(whichJobs: String? = null) = getJobsResponse(whichJobs)
             .getAttributesGroups(IppTag.Job)
             .map { jobGroup -> IppJob(jobGroup) }
 
-    fun getJob(jobId: Int) =
-            IppJob(ippClient.getJobAttributes(printerUri, jobId).jobGroup)
+    fun getJob(jobId: Int) = IppJob(getJobAttributes(jobId).jobGroup)
 
     fun updateJobAttributes(job: IppJob) {
         if (printerUri.scheme != job.uri.scheme) {
             println("WARN: printerUri.scheme = ${printerUri.scheme}, jobUri.scheme = ${job.uri.scheme}")
         }
-        job.attributes = ippClient.getJobAttributes(printerUri, job.id).jobGroup
+        job.attributes = getJobAttributes(job.id).jobGroup
     }
 
-    fun updateJobAttributes(jobs: List<IppJob>) =
-            jobs.stream().forEach { updateJobAttributes(it) }
+    fun updateJobAttributes(jobs: List<IppJob>) {
+        for (job in jobs) {
+            updateJobAttributes(job)
+        }
+    }
 
     fun waitForTermination(job: IppJob, refreshRate: Duration = Duration.ofMillis(888)) {
         println("wait for termination of job #${job.id}")
@@ -131,19 +121,98 @@ class IppPrintService(private val printerUri: URI) {
         } while (!job.isTerminated())
     }
 
-    fun cancelJob(jobId: Int) = ippClient.cancelJob(printerUri, jobId)
-
     fun cancelJob(job: IppJob) = cancelJob(job.id)
 
-    //----------------------
-    // PRINTER ADMIN METHODS
-    //----------------------
+    fun holdJob(job: IppJob) = holdJob(job.id)
+
+    fun releaseJob(job: IppJob) = releaseJob(job.id)
+
+    //===================
+    // IppMessage methods
+    //===================
+
+    //-----------------------
+    // Get-Printer-Attributes
+    //-----------------------
+
+    fun getPrinterAttributes(requestedAttributes: List<String> = listOf()): IppResponse {
+        val request = ippRequest(IppOperation.GetPrinterAttributes, printerUri).apply {
+            if (requestedAttributes.isNotEmpty()) {
+                operationGroup.attribute("requested-attributes", IppTag.Keyword, requestedAttributes)
+            }
+        }
+        return exchangeSuccessful(printerUri, request, "Get-Printer-Attributes $printerUri")
+    }
+
+    //-------------------
+    // Get-Job-Attributes
+    //-------------------
+
+    fun getJobAttributes(jobId: Int): IppResponse {
+        val request = ippJobRequest(IppOperation.GetJobAttributes, printerUri, jobId)
+        return exchangeSuccessful(printerUri, request, "Get-Job-Attributes #$jobId failed")
+    }
+
+    //---------
+    // Get-Jobs
+    //---------
+
+    // which-jobs-supported (1setOf keyword) = completed,not-completed,aborted,all,canceled,pending,pending-held,processing,processing-stopped
+
+    fun getJobsResponse(whichJobs: String? = null): IppResponse {
+        val request = ippRequest(IppOperation.GetJobs, printerUri)
+        if (whichJobs != null) {
+            request.operationGroup.attribute("which-jobs", IppTag.Keyword, whichJobs)
+        }
+        return exchangeSuccessful(printerUri, request)
+    }
+
+    //-----------
+    // Cancel-Job
+    //-----------
+
+    fun cancelJob(jobId: Int) =
+            exchangeSuccessfulIppJobRequest(IppOperation.CancelJob, printerUri, jobId)
+
+    //---------
+    // Hold-Job
+    //---------
+
+    fun holdJob(jobId: Int) =
+            exchangeSuccessfulIppJobRequest(IppOperation.HoldJob, printerUri, jobId)
+
+    //------------
+    // Release-Job
+    //-------------
+
+    fun releaseJob(jobId: Int) =
+            exchangeSuccessfulIppJobRequest(IppOperation.ReleaseJob, printerUri, jobId)
+
+    //-----------------
+    // Identify-Printer
+    //-----------------
 
     // identify-actions-supported (1setOf keyword) = flash,sound,display,speak
-    fun identifyPrinter(action: String) = ippClient.identifyPrinter(printerUri, action, httpAuth)
+    //
+    fun identifyPrinter(action: String) {
+        val request = ippRequest(IppOperation.IdentifyPrinter, printerUri).apply {
+            operationGroup.attribute("identify-actions", IppTag.Keyword, action)
+        }
+        exchangeSuccessful(printerUri, request)
+    }
 
-    fun pausePrinter() = ippClient.pausePrinter(printerUri, httpAuth)
+    //--------------
+    // Pause-Printer
+    //--------------
 
-    fun resumePrinter() = ippClient.resumePrinter(printerUri, httpAuth)
+    fun pausePrinter() =
+            exchangeSuccessfulIppRequest(IppOperation.PausePrinter, printerUri)
+
+    //---------------
+    // Resume-Printer
+    //---------------
+
+    fun resumePrinter() =
+            exchangeSuccessfulIppRequest(IppOperation.ResumePrinter, printerUri)
 
 }

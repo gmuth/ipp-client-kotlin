@@ -13,7 +13,7 @@ import java.net.URI
 import java.util.concurrent.atomic.AtomicInteger
 import javax.net.ssl.SSLHandshakeException
 
-class IppClient(
+open class IppClient(
         var ippVersion: IppVersion = IppVersion(1, 1),
         val httpClient: Http.Client = HttpClientByHttpURLConnection()
         //val httpClient: Http.Client = HttpClientByJava11HttpClient()
@@ -23,17 +23,17 @@ class IppClient(
     }
 
     var requestingUserName: String? = System.getenv("USER")
+    var httpAuth: Http.Auth? = null
     var verbose: Boolean = false
 
     fun exchangeSuccessful(
             uri: URI,
             request: IppRequest,
             exceptionMessage: String = "${request.operation} failed",
-            documentInputStream: InputStream? = null,
-            httpAuth: Http.Auth? = null
+            documentInputStream: InputStream? = null
 
     ): IppResponse {
-        val response = exchange(uri, request, documentInputStream, httpAuth)
+        val response = exchange(uri, request, documentInputStream)
         if (response.isSuccessful()) {
             return response
         } else {
@@ -44,8 +44,7 @@ class IppClient(
     fun exchange(
             uri: URI,
             request: IppRequest,
-            documentInputStream: InputStream? = null,
-            httpAuth: Http.Auth? = null
+            documentInputStream: InputStream? = null
 
     ): IppResponse {
         // request logging
@@ -62,7 +61,7 @@ class IppClient(
         } catch (exception: Exception) {
             throw IppExchangeException(request, null, "failed to encode ipp request", exception)
         }
-        val responseStream = exchange(uri, requestInputStream, documentInputStream, httpAuth)
+        val responseStream = exchange(uri, requestInputStream, documentInputStream)
         val response = IppResponse()
         try {
             response.readFrom(responseStream)
@@ -102,8 +101,7 @@ class IppClient(
     private fun exchange(
             uri: URI,
             requestStream: InputStream,
-            documentInputStream: InputStream? = null,
-            httpAuth: Http.Auth? = null
+            documentInputStream: InputStream? = null
 
     ): InputStream {
         val contentType = "application/ipp"
@@ -120,6 +118,7 @@ class IppClient(
         }
 
         try {
+            // exchange http messages
             with(httpClient.post(httpUri, requestContent, httpAuth)) {
                 if (status == 200 && content.type == contentType) {
                     return content.stream
@@ -143,7 +142,13 @@ class IppClient(
         }
     }
 
-    // ---- factory method for IppRequest
+    fun exchangeSuccessfulIppRequest(operation: IppOperation, printerUri: URI) =
+            exchangeSuccessful(printerUri, ippRequest(operation, printerUri))
+
+    fun exchangeSuccessfulIppJobRequest(operation: IppOperation, printerUri: URI, jobId: Int) =
+            exchangeSuccessful(printerUri, ippJobRequest(operation, printerUri, jobId))
+
+    // ---- factory methods for IppRequest
 
     fun ippRequest(operation: IppOperation, printerUri: URI? = null) =
             IppRequest(ippVersion, operation, requestCounter.getAndIncrement()).apply {
@@ -155,96 +160,9 @@ class IppClient(
                 }
             }
 
-    //-----------------------
-    // Get-Printer-Attributes
-    //-----------------------
-
-    fun getPrinterAttributes(printerUri: URI, requestedAttributes: List<String> = listOf()): IppResponse {
-        val request = ippRequest(IppOperation.GetPrinterAttributes, printerUri).apply {
-            if (requestedAttributes.isNotEmpty()) {
-                operationGroup.attribute("requested-attributes", IppTag.Keyword, requestedAttributes)
+    fun ippJobRequest(jobOperation: IppOperation, printerUri: URI, jobId: Int) =
+            ippRequest(jobOperation, printerUri).apply {
+                operationGroup.attribute("job-id", IppTag.Integer, jobId)
             }
-        }
-        return exchangeSuccessful(printerUri, request, "Get-Printer-Attributes $printerUri")
-    }
-
-    //-------------------
-    // Get-Job-Attributes
-    //-------------------
-
-    fun getJobAttributes(printerUri: URI, jobId: Int): IppResponse {
-        val request = ippRequest(IppOperation.GetJobAttributes, printerUri).apply {
-            operationGroup.attribute("job-id", IppTag.Integer, jobId)
-        }
-        return exchangeSuccessful(printerUri, request, "Get-Job-Attributes #$jobId failed")
-    }
-
-    fun getJobAttributes(jobUri: URI): IppResponse {
-        val request = ippRequest(IppOperation.GetJobAttributes).apply {
-            operationGroup.attribute("job-uri", IppTag.Uri, jobUri)
-        }
-        return exchangeSuccessful(jobUri, request, "Get-Job-Attributes $jobUri failed")
-    }
-
-    //-----------
-    // Cancel-Job
-    //-----------
-
-    fun cancelJob(printerUri: URI, jobId: Int): IppResponse {
-        val request = ippRequest(IppOperation.CancelJob, printerUri).apply {
-            operationGroup.attribute("job-id", IppTag.Integer, jobId)
-        }
-        return exchangeSuccessful(printerUri, request, "Cancel-Job #$jobId failed")
-    }
-
-    fun cancelJob(jobUri: URI): IppResponse {
-        val request = ippRequest(IppOperation.CancelJob).apply {
-            operationGroup.attribute("job-uri", IppTag.Uri, jobUri)
-        }
-        return exchangeSuccessful(jobUri, request, "Cancel-Job $jobUri failed")
-    }
-
-    //---------
-    // Get-Jobs
-    //---------
-
-    // which-jobs-supported (1setOf keyword) = completed,not-completed,aborted,all,canceled,pending,pending-held,processing,processing-stopped
-
-    fun getJobs(printerUri: URI, whichJobs: String? = null): IppResponse {
-        val request = ippRequest(IppOperation.GetJobs, printerUri)
-        if (whichJobs != null) {
-            request.operationGroup.attribute("which-jobs", IppTag.Keyword, whichJobs)
-        }
-        return exchangeSuccessful(printerUri, request)
-    }
-
-    //-----------------
-    // Identify-Printer
-    //-----------------
-
-    fun identifyPrinter(printerUri: URI, action: String, httpAuth: Http.Auth? = null) {
-        val request = ippRequest(IppOperation.IdentifyPrinter, printerUri).apply {
-            operationGroup.attribute("identify-actions", IppTag.Keyword, action)
-        }
-        exchangeSuccessful(printerUri, request, httpAuth = httpAuth)
-    }
-
-    //--------------
-    // Pause-Printer
-    //--------------
-
-    fun pausePrinter(printerUri: URI, httpAuth: Http.Auth? = null) {
-        val request = ippRequest(IppOperation.PausePrinter, printerUri)
-        exchangeSuccessful(printerUri, request, httpAuth = httpAuth)
-    }
-
-    //---------------
-    // Resume-Printer
-    //---------------
-
-    fun resumePrinter(printerUri: URI, httpAuth: Http.Auth? = null) {
-        val request = ippRequest(IppOperation.ResumePrinter, printerUri)
-        exchangeSuccessful(printerUri, request, httpAuth = httpAuth)
-    }
 
 }
