@@ -35,9 +35,7 @@ class IppPrintService(private val printerUri: URI) : IppClient() {
 
     ): IppJob {
         val request = printRequest(IppOperation.PrintJob, documentFormat, file.name, jobParameters.toList())
-        val response = exchangeSuccessful(
-                printerUri, request, documentInputStream = FileInputStream(file)
-        )
+        val response = exchangeSuccessful(printerUri, request, documentInputStream = FileInputStream(file))
         return waitForJobTermination(response, waitForTermination)
     }
 
@@ -55,9 +53,7 @@ class IppPrintService(private val printerUri: URI) : IppClient() {
 
         val request = printRequest(IppOperation.PrintUri, documentFormat, documentUri.path, jobParameters.toList())
         request.operationGroup.attribute("document-uri", IppTag.Uri, documentUri)
-        val response = exchangeSuccessful(
-                printerUri, request, "Print-Uri $documentUri"
-        )
+        val response = exchangeSuccessful(printerUri, request, "Print-Uri $documentUri failed")
         return waitForJobTermination(response, waitForTermination)
     }
 
@@ -93,6 +89,7 @@ class IppPrintService(private val printerUri: URI) : IppClient() {
     //===============
 
     // which-jobs-supported (1setOf keyword) = completed,not-completed,aborted,all,canceled,pending,pending-held,processing,processing-stopped
+    //
     fun getJobs(whichJobs: String? = null) = getJobsResponse(whichJobs)
             .getAttributesGroups(IppTag.Job)
             .map { jobGroup -> IppJob(jobGroup) }
@@ -100,9 +97,6 @@ class IppPrintService(private val printerUri: URI) : IppClient() {
     fun getJob(jobId: Int) = IppJob(getJobAttributes(jobId).jobGroup)
 
     fun updateJobAttributes(job: IppJob) {
-        if (printerUri.scheme != job.uri.scheme) {
-            println("WARN: printerUri.scheme = ${printerUri.scheme}, jobUri.scheme = ${job.uri.scheme}")
-        }
         job.attributes = getJobAttributes(job.id).jobGroup
     }
 
@@ -148,10 +142,8 @@ class IppPrintService(private val printerUri: URI) : IppClient() {
     // Get-Job-Attributes
     //-------------------
 
-    fun getJobAttributes(jobId: Int): IppResponse {
-        val request = ippJobRequest(IppOperation.GetJobAttributes, printerUri, jobId)
-        return exchangeSuccessful(printerUri, request, "Get-Job-Attributes #$jobId failed")
-    }
+    fun getJobAttributes(jobId: Int) =
+            exchangeSuccessfulIppJobRequest(IppOperation.GetJobAttributes, printerUri, jobId)
 
     //---------
     // Get-Jobs
