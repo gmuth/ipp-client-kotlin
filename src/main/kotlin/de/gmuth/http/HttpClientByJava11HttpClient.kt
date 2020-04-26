@@ -15,16 +15,13 @@ class HttpClientByJava11HttpClient(
 
 ) : Http.Client {
 
-    private val java11HttpClient: HttpClient
-
-    init {
-        val httpClientBuilder = HttpClient.newBuilder()
+    private val java11HttpClient: HttpClient = with(HttpClient.newBuilder()) {
         if (config.trustAnySSLCertificate) {
             // -Djdk.internal.httpclient.disableHostnameVerification
             System.setProperty("jdk.internal.httpclient.disableHostnameVerification", true.toString())
-            httpClientBuilder.sslContext(AnyCertificateX509TrustManager.getNewSSLContextInstance())
+            sslContext(AnyCertificateX509TrustManager.getNewSSLContextInstance())
         }
-        java11HttpClient = httpClientBuilder.build()
+        build()
     }
 
     override fun post(uri: URI, requestContent: Http.Content, auth: Http.Auth?): Http.Response {
