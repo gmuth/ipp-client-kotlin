@@ -15,7 +15,7 @@ class IppPrinter(val printerUri: URI) {
 
     val ippClient = IppClient()
 
-    val attributes = getPrinterAttributes().printerGroup
+    val attributes = getAttributes()
 
     var httpAuth: Http.Auth?
         get() = ippClient.httpAuth
@@ -73,13 +73,13 @@ class IppPrinter(val printerUri: URI) {
     // Get-Printer-Attributes
     //-----------------------
 
-    fun getPrinterAttributes(requestedAttributes: List<String> = listOf()): IppResponse {
+    fun getAttributes(requestedAttributes: List<String> = listOf()): IppAttributesGroup {
         val request = ippRequest(IppOperation.GetPrinterAttributes).apply {
             if (requestedAttributes.isNotEmpty()) {
                 operationGroup.attribute("requested-attributes", IppTag.Keyword, requestedAttributes)
             }
         }
-        return exchangeSuccessful(request)
+        return exchangeSuccessful(request).printerGroup
     }
 
     //-----------
