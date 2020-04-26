@@ -12,7 +12,7 @@ import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.HttpsURLConnection
 
 class HttpClientByHttpURLConnection(
-        override val config: Http.Client.Config = Http.Client.Config()
+        override val config: Http.Config = Http.Config()
 
 ) : Http.Client {
     override fun post(uri: URI, content: Http.Content, auth: Http.Auth?): Http.Response {
@@ -27,12 +27,14 @@ class HttpClientByHttpURLConnection(
                 if (uri.scheme in listOf("http", "ipp") && auth != null) {
                     println("WARN: '${uri.scheme}' does not protect credentials")
                 }
-                val basicAuth = with(auth) { Base64.getEncoder().encodeToString("$user:$password".toByteArray()) }
+                val basicAuth = with(auth) {
+                    Base64.getEncoder().encodeToString("$user:$password".toByteArray())
+                }
                 setRequestProperty("Authorization", "Basic $basicAuth")
             }
             setRequestProperty("Content-Type", content.type)
             // chunked streaming mode can cause: "HttpRetryException: cannot retry due to server authentication, in streaming mode"
-            setChunkedStreamingMode(0) // enable chunked transfer
+            //setChunkedStreamingMode(0) // enable chunked transfer
             content.stream.copyTo(outputStream)
             val contentStream = try {
                 inputStream

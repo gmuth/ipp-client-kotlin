@@ -11,7 +11,7 @@ import java.net.http.HttpResponse
 import java.util.*
 
 class HttpClientByJava11HttpClient(
-        override val config: Http.Client.Config = Http.Client.Config()
+        override val config: Http.Config = Http.Config()
 
 ) : Http.Client {
 
