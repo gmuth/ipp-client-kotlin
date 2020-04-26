@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import javax.net.ssl.SSLHandshakeException
 
 open class IppClient(
-        var ippVersion: IppVersion = IppVersion(1, 1),
+        val ippVersion: IppVersion = IppVersion(1, 1),
         val httpClient: Http.Client = HttpClientByHttpURLConnection()
         //val httpClient: Http.Client = HttpClientByJava11HttpClient()
 ) {
@@ -26,10 +26,32 @@ open class IppClient(
     var httpAuth: Http.Auth? = null
     var verbose: Boolean = false
 
+    //-------------------------------------
+    // factory/build methods for IppRequest
+    //-------------------------------------
+
+    fun ippRequest(operation: IppOperation, printerUri: URI? = null) =
+            IppRequest(ippVersion, operation, requestCounter.getAndIncrement()).apply {
+                if (printerUri != null) {
+                    operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
+                }
+                if (requestingUserName != null) {
+                    operationGroup.attribute("requesting-user-name", IppTag.NameWithoutLanguage, requestingUserName)
+                }
+            }
+
+    fun ippJobRequest(jobOperation: IppOperation, printerUri: URI, jobId: Int) =
+            ippRequest(jobOperation, printerUri).apply {
+                operationGroup.attribute("job-id", IppTag.Integer, jobId)
+            }
+
+    //-------------------------------------------
+    // exchange methods for IppRequest/IppRequest
+    //-------------------------------------------
+
     fun exchangeSuccessful(
             uri: URI,
             request: IppRequest,
-            exceptionMessage: String = "${request.operation} failed",
             documentInputStream: InputStream? = null
 
     ): IppResponse {
@@ -37,7 +59,8 @@ open class IppClient(
         if (response.isSuccessful()) {
             return response
         } else {
-            throw IppExchangeException(request, response, "$exceptionMessage: '${response.status}' ${response.statusMessage ?: ""}")
+            val exceptionMessage = "${request.operation} failed: '${response.status}' ${response.statusMessage ?: ""}"
+            throw IppExchangeException(request, response, exceptionMessage)
         }
     }
 
@@ -141,28 +164,4 @@ open class IppClient(
             throw IppException("SSL connection error $httpUri", sslException)
         }
     }
-
-    fun exchangeSuccessfulIppRequest(operation: IppOperation, printerUri: URI) =
-            exchangeSuccessful(printerUri, ippRequest(operation, printerUri))
-
-    fun exchangeSuccessfulIppJobRequest(operation: IppOperation, printerUri: URI, jobId: Int) =
-            exchangeSuccessful(printerUri, ippJobRequest(operation, printerUri, jobId))
-
-    // ---- factory methods for IppRequest
-
-    fun ippRequest(operation: IppOperation, printerUri: URI? = null) =
-            IppRequest(ippVersion, operation, requestCounter.getAndIncrement()).apply {
-                if (printerUri != null) {
-                    operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
-                }
-                if (requestingUserName != null) {
-                    operationGroup.attribute("requesting-user-name", IppTag.NameWithoutLanguage, requestingUserName)
-                }
-            }
-
-    fun ippJobRequest(jobOperation: IppOperation, printerUri: URI, jobId: Int) =
-            ippRequest(jobOperation, printerUri).apply {
-                operationGroup.attribute("job-id", IppTag.Integer, jobId)
-            }
-
 }

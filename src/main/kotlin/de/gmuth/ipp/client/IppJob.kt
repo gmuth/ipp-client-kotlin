@@ -6,10 +6,18 @@ package de.gmuth.ipp.client
 
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppIntegerTime
+import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppTag
 import java.net.URI
+import java.time.Duration
 
-data class IppJob(var attributes: IppAttributesGroup) {
+class IppJob(
+        val printer: IppPrinter,
+        var attributes: IppAttributesGroup
+) {
+    //--------------
+    // IppAttributes
+    //--------------
 
     val id: Int
         get() = attributes.getValue("job-id")
@@ -27,6 +35,63 @@ data class IppJob(var attributes: IppAttributesGroup) {
         get() = attributes.getValue("job-impressions-completed")
 
     fun isTerminated() = state != null && state!!.isTerminated()
+
+    //-------------------
+    // Get-Job-Attributes
+    //-------------------
+
+    fun getAttributes() {
+        val response = exchangeSuccessfulIppJobRequest(IppOperation.GetJobAttributes, id)
+        attributes = response.jobGroup
+    }
+
+    //------------------------------------------
+    // Wait for terminal state (RFC 8011 5.3.7.)
+    //------------------------------------------
+
+    fun waitForTermination(refreshRate: Duration = Duration.ofSeconds(1)) {
+        println("wait for terminal state of job #$id")
+        do {
+            Thread.sleep(refreshRate.toMillis())
+            getAttributes()
+            println("job-state = $state, job-impressions-completed = $impressionsCompleted")
+        } while (!isTerminated())
+    }
+
+    //-----------
+    // Cancel-Job
+    //-----------
+
+    fun cancel() {
+        exchangeSuccessfulIppJobRequest(IppOperation.CancelJob, id)
+    }
+
+    //---------
+    // Hold-Job
+    //---------
+
+    fun hold() {
+        exchangeSuccessfulIppJobRequest(IppOperation.HoldJob, id)
+    }
+
+    //------------
+    // Release-Job
+    //-------------
+
+    fun release() {
+        exchangeSuccessfulIppJobRequest(IppOperation.ReleaseJob, id)
+    }
+
+    //-----------------------
+    // delegate to IppPrinter
+    //-----------------------
+
+    private fun exchangeSuccessfulIppJobRequest(operation: IppOperation, jobId: Int) =
+            printer.exchangeSuccessfulIppJobRequest(operation, jobId)
+
+    // -------
+    // Logging
+    // -------
 
     override fun toString(): String {
         val stateString =

@@ -8,7 +8,7 @@ import java.io.InputStream
 import java.io.Reader
 import java.net.URI
 
-class IppTool() {
+class IppTool {
     var uri: URI? = null
     var filename: String? = null
     var verbose: Boolean = false
@@ -24,7 +24,7 @@ class IppTool() {
         var fileInputStream: FileInputStream? = null
         lateinit var currentGroup: IppAttributesGroup
         val request = IppRequest().apply {
-            version = IppVersion(1,1)
+            version = IppVersion(1, 1)
             requestId = 42
         }
 
@@ -74,7 +74,7 @@ class IppTool() {
         with(IppClient()) {
             verbose = true
             if (uri == null) throw IppException("uri missing")
-            exchangeSuccessful(uri as URI, request, "FAILED", fileInputStream)
+            exchangeSuccessful(uri as URI, request, fileInputStream)
         }
     }
 }

@@ -7,10 +7,10 @@ A client implementation of the ipp protocol written in kotlin.
 
 ## Usage
 
-### [IppPrintService](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppPrintService.kt)
+### [IppPrinter](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppPrinter.kt) and [IppJob](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppJob.kt)
 ```kotlin
 with(
-  IppPrintService(URI.create("ipp://colorjet.local/ipp/printer"))
+  IppPrinter(URI.create("ipp://colorjet.local/ipp/printer"))
 ) {
 
   // print file
@@ -29,20 +29,16 @@ with(
   // manage jobs
   getJobs()
   getJobs("completed") // which-jobs
-  getJob(42).logDetails()
-  holdJob(42)
-  releaseJob(42)
-  cancelJob(42)
-
-  // get attributes
-  getPrinterAttributes()
-  getJobAttributes(42)
+  val job = getJob(42)
+  job.hold()
+  job.release()
+  job.cancel()
 
   // admin operations
   httpAuth = Http.Auth("admin", "secret")
-  identifyPrinter("sound")
-  pausePrinter()
-  resumePrinter()
+  pause()
+  resume()
+  identify("sound")
 }
 ```
 ### exchange [IppRequest](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppRequest.kt) for [IppResponse](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppResponse.kt)
@@ -74,39 +70,31 @@ with(IppTool()) {
     )
 }
 ```
-## Status
+## Packages
 
-[Version 1.1](https://github.com/gmuth/ipp-client-kotlin/releases/tag/v1.1)
-has been released April 2020.
-The package
+Package
 [`de.gmuth.ipp.core`](https://github.com/gmuth/ipp-client-kotlin/tree/master/src/main/kotlin/de/gmuth/ipp/core)
 contains the usual
 [encoding](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppOutputStream.kt)
 and
 [decoding](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppInputStream.kt)
 operations. RFC 8010 is fully supported.
-
-Example to decode a cups spool file: 
+E.g. decode a cups spool file: 
 `IppRequest().readFrom(File("/var/spool/cups/c01579")).logDetails()`
 
-## IppClient
-
+Package
+[`de.gmuth.ipp.client`](https://github.com/gmuth/ipp-client-kotlin/tree/master/src/main/kotlin/de/gmuth/ipp/client)
+contains the
 [IppClient](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppClient.kt)
-requires a http transport that implements interface
+which requires a http transport that implements interface
 [Http.Client](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/Http.kt).
 Provided implementations are
 [HttpClientByHttpURLConnection](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/HttpClientByHttpURLConnection.kt)
 and
 [HttpClientByJava11HttpClient](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/HttpClientByJava11HttpClient.kt).
-[SSLUtil](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/SSLUtil.kt)
-helps connecting to endpoints secured by self signed certificates - e.g. CUPS.
+[AnyCertificateX509TrustManager](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/AnyCertificateX509TrustManager.kt)
+helps connecting to ipps endpoints secured by self signed certificates - e.g. CUPS.
 
-Operation `printFile()` is implemented by
-[IppPrintService](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppPrintService.kt)
-using model
-[IppPrinter](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppPrinter.kt)
-and
-[IppJob](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppJob.kt). 
 ## Build
 
 To build `ippclient.jar` into `build/libs` run
