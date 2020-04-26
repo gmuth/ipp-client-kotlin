@@ -15,33 +15,46 @@ class HttpClientByJava11HttpClient(
 
 ) : Http.Client {
 
-    override fun post(uri: URI, content: Http.Content, auth: Http.Auth?): Http.Response {
+    private val java11HttpClient: HttpClient
+
+    init {
         val httpClientBuilder = HttpClient.newBuilder()
-        if (uri.scheme in listOf("https", "ipps") && config.trustAnySSLCertificate) {
+        if (config.trustAnySSLCertificate) {
             // -Djdk.internal.httpclient.disableHostnameVerification
-            System.getProperties().setProperty("jdk.internal.httpclient.disableHostnameVerification", true.toString())
-            httpClientBuilder.sslContext(SSLUtil.trustAllSSLContext)
-            println("WARN: SSL certificate validation disabled")
+            System.setProperty("jdk.internal.httpclient.disableHostnameVerification", true.toString())
+            httpClientBuilder.sslContext(AnyCertificateX509TrustManager.getNewSSLContextInstance())
         }
-
-        val httpRequestBuilder = HttpRequest.newBuilder()
-                .timeout(config.timeout)
-                .header("Content-Type", content.type)
-                .POST(java.net.http.HttpRequest.BodyPublishers.ofInputStream { content.stream })
-                .uri(uri)
-
-        if (auth != null) {
-            val basicAuth = with(auth) { Base64.getEncoder().encodeToString("$user:$password".toByteArray()) }
-            httpRequestBuilder.header("Authorization", "Basic $basicAuth")
-        }
-
-        val httpResponse = httpClientBuilder.build()
-                .send(httpRequestBuilder.build(), HttpResponse.BodyHandlers.ofInputStream())
-
-        with(httpResponse) {
-            val responseContent = Http.Content(headers().firstValue("content-type").get(), body())
-            return Http.Response(statusCode(), responseContent)
-        }
+        java11HttpClient = httpClientBuilder.build()
     }
 
+    override fun post(uri: URI, requestContent: Http.Content, auth: Http.Auth?): Http.Response {
+        val httpRequest = with(HttpRequest.newBuilder()) {
+            timeout(config.timeout)
+            header("Content-Type", requestContent.type)
+            POST(HttpRequest.BodyPublishers.ofInputStream {
+                requestContent.stream
+            })
+            uri(uri)
+            if (auth != null) {
+                val basicAuth = with(auth) {
+                    Base64.getEncoder().encodeToString("$user:$password".toByteArray())
+                }
+                header("Authorization", "Basic $basicAuth")
+            }
+            build()
+        }
+
+        val httpResponse = java11HttpClient
+                .send(httpRequest, HttpResponse.BodyHandlers.ofInputStream())
+
+        return with(httpResponse) {
+            Http.Response(
+                    statusCode(),
+                    Http.Content(
+                            headers().firstValue("content-type").get(),
+                            body()
+                    )
+            )
+        }
+    }
 }
