@@ -48,24 +48,24 @@ class CSVReader<T>(
         columnLoop@ while (true) {
             val i = inputStream.read()
             if (i == -1) break@columnLoop
-            val c = i.toChar()
+            val char = i.toChar()
             var appendCharacter = false
             if (inQuote) {
-                appendCharacter = c != '"'
+                appendCharacter = char != '"'
             } else {
-                when (c) {
+                when (char) {
                     ',', '\n' -> {
                         fields.add(currentField.toString())
-                        if (c == '\n') return fields
+                        if (char == '\n') return fields
                         else currentField = StringBuffer()
                     }
                     '"' -> appendCharacter = lastCharacterWasQuote
-                    else -> appendCharacter = c != '\r'
+                    else -> appendCharacter = char != '\r'
                 }
             }
-            lastCharacterWasQuote = c == '"'
+            lastCharacterWasQuote = char == '"'
             if (lastCharacterWasQuote) inQuote = !inQuote
-            if (appendCharacter) currentField.append(c)
+            if (appendCharacter) currentField.append(char)
         }
         if (currentField.isEmpty()) return null
         fields.add(currentField.toString())
