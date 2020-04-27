@@ -15,16 +15,25 @@ with(
 
   // print file
   val file = File("A4-blank.pdf")
-  printFile(file).logDetails()
-  printFile(file, waitForTermination = true)
-  printFile(file, IppCopies(2))
-  printFile(file, IppPageRanges(2..3, 8..10))
-  printFile(file, IppMonochrome(), IppDuplex())
-  printFile(file, IppColorMode.Monochrome, IppSides.TwoSidedLongEdge)
-              
+  val job = printJob(file,
+    IppJobName(file.name),
+    IppDocumentFormat("application/pdf"),
+    IppCopies(2),
+    IppPageRanges(2..3, 8..10),
+    IppMonochrome(), IppDuplex(),
+    IppColorMode.Monochrome, IppSides.TwoSidedLongEdge,
+    waitForTermination = true
+  )
+  job.logDetails()
+
   // print remote file,make printer pull document from remote server
   val remoteFile = URI.create("http://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf")
   printUri(remoteFile)
+  
+  // create job and send document
+  val job = createJob(IppJobName(file.name))
+  job.sendDocument(file, lastDocument = true)
+  job.waitForTermination()
 
   // manage jobs
   getJobs()

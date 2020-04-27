@@ -4,10 +4,10 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.ipp.core.IppAttributesGroup
-import de.gmuth.ipp.core.IppIntegerTime
-import de.gmuth.ipp.core.IppOperation
-import de.gmuth.ipp.core.IppTag
+import de.gmuth.ipp.core.*
+import java.io.File
+import java.io.FileInputStream
+import java.io.InputStream
 import java.net.URI
 import java.time.Duration
 
@@ -18,6 +18,7 @@ class IppJob(
     companion object {
         var defaultRefreshRate = Duration.ofSeconds(3)
     }
+
     //--------------
     // IppAttributes
     //--------------
@@ -44,7 +45,7 @@ class IppJob(
     //-------------------
 
     private fun getJobAttributes(): IppAttributesGroup {
-        val response = exchangeSuccessfulIppJobRequest(IppOperation.GetJobAttributes, id)
+        val response = exchangeSuccessfulIppJobRequest(IppOperation.GetJobAttributes)
         return response.jobGroup
     }
 
@@ -70,7 +71,7 @@ class IppJob(
     //-----------
 
     fun cancel() {
-        exchangeSuccessfulIppJobRequest(IppOperation.CancelJob, id)
+        exchangeSuccessfulIppJobRequest(IppOperation.CancelJob)
     }
 
     //---------
@@ -78,7 +79,7 @@ class IppJob(
     //---------
 
     fun hold() {
-        exchangeSuccessfulIppJobRequest(IppOperation.HoldJob, id)
+        exchangeSuccessfulIppJobRequest(IppOperation.HoldJob)
     }
 
     //------------
@@ -86,15 +87,33 @@ class IppJob(
     //-------------
 
     fun release() {
-        exchangeSuccessfulIppJobRequest(IppOperation.ReleaseJob, id)
+        exchangeSuccessfulIppJobRequest(IppOperation.ReleaseJob)
+    }
+
+    //--------------
+    // Send-Document
+    //--------------
+
+    fun sendDocument(file: File, lastDocument: Boolean = true) {
+        val request = ippJobRequest(IppOperation.SendDocument).apply {
+            operationGroup.attribute("last-document", IppTag.Boolean, lastDocument)
+        }
+        val response = exchangeSuccessful(request, FileInputStream(file))
+        attributes = response.jobGroup
     }
 
     //-----------------------
     // delegate to IppPrinter
     //-----------------------
 
-    private fun exchangeSuccessfulIppJobRequest(operation: IppOperation, jobId: Int) =
-            printer.exchangeSuccessfulIppJobRequest(operation, jobId)
+    private fun ippJobRequest(operation: IppOperation) =
+            printer.ippJobRequest(operation, id)
+
+    private fun exchangeSuccessful(request: IppRequest, documentInputStream: InputStream) =
+            printer.exchangeSuccessful(request, documentInputStream)
+
+    private fun exchangeSuccessfulIppJobRequest(operation: IppOperation) =
+            printer.exchangeSuccessfulIppJobRequest(operation, id)
 
     // -------
     // Logging
