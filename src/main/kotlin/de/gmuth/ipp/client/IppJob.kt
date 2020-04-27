@@ -57,7 +57,7 @@ class IppJob(
         println("wait for terminal state of job #$id")
         do {
             Thread.sleep(refreshRate.toMillis())
-            attributes = getJobAttributes()
+            updateAttributes()
             println("job-state = $state, job-impressions-completed = $impressionsCompleted")
         } while (!isTerminated())
     }
