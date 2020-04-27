@@ -82,57 +82,73 @@ class IppPrinter(val printerUri: URI) {
         return exchangeSuccessful(request).printerGroup
     }
 
-    //-----------
-    // PRINT FILE
-    //-----------
+    //----------
+    // Print-Job
+    //----------
 
-    fun printFile(
+    fun printJob(
             file: File,
             vararg jobParameters: IppJobParameter,
-            documentFormat: String = "application/octet-stream",
             waitForTermination: Boolean = false
 
     ): IppJob {
-        val request = printRequest(IppOperation.PrintJob, documentFormat, file.name, jobParameters.toList())
+        val request = jobParametersRequest(IppOperation.PrintJob, jobParameters)
         val response = exchangeSuccessful(request, FileInputStream(file))
         return handlePrintResponse(response, waitForTermination)
     }
 
     //----------
-    // PRINT URI
+    // Print-Uri
     //----------
 
     fun printUri(
             documentUri: URI,
             vararg jobParameters: IppJobParameter,
-            documentFormat: String = "application/octet-stream",
             waitForTermination: Boolean = false
 
     ): IppJob {
-
-        val request = printRequest(IppOperation.PrintUri, documentFormat, documentUri.path, jobParameters.toList())
+        val request = jobParametersRequest(IppOperation.PrintUri, jobParameters)
         request.operationGroup.attribute("document-uri", IppTag.Uri, documentUri)
         val response = exchangeSuccessful(request)
         return handlePrintResponse(response, waitForTermination)
     }
 
-    // ---- factory method for IppRequest with Operation Print-Job or Print-Uri
+    //-------------
+    // Validate-Job
+    //-------------
 
-    private fun printRequest(
-            printOperation: IppOperation,
-            documentFormat: String,
-            jobName: String,
-            jobParameters: List<IppJobParameter>
+    fun validateJob(
+            vararg jobParameters: IppJobParameter
+            //documentFormat: String = "application/octet-stream"
 
-    ) = ippRequest(printOperation).apply {
-        operationGroup.attribute("job-name", IppTag.NameWithoutLanguage, jobName)
-        operationGroup.attribute("document-format", IppTag.MimeMediaType, documentFormat)
-        with(ippAttributesGroup(IppTag.Job)) {
-            for (jobParameter in jobParameters) {
-                put(jobParameter.toIppAttribute(attributes))
-            }
-        }
+    ): IppResponse {
+        val request = jobParametersRequest(IppOperation.ValidateJob, jobParameters)
+        return exchangeSuccessful(request)
     }
+
+    //----------
+    // Create-Job
+    //----------
+
+    fun createJob(
+            vararg jobParameters: IppJobParameter
+
+    ): IppJob {
+        val request = jobParametersRequest(IppOperation.CreateJob, jobParameters)
+        val response = exchangeSuccessful(request)
+        return IppJob(this, response.jobGroup)
+    }
+
+    // ---- factory method for IppRequest with Operation Print-Job, Print-Uri, Validate-Job, Create-Job
+
+    private fun jobParametersRequest(operation: IppOperation, jobParameters: Array<out IppJobParameter>) =
+            ippRequest(operation).apply {
+                with(ippAttributesGroup(IppTag.Job)) {
+                    for (jobParameter in jobParameters) {
+                        put(jobParameter.toIppAttribute(attributes))
+                    }
+                }
+            }
 
     private fun handlePrintResponse(printResponse: IppResponse, wait: Boolean = false): IppJob {
         val job = IppJob(this, printResponse.jobGroup)
@@ -142,6 +158,13 @@ class IppPrinter(val printerUri: URI) {
         job.logDetails()
         return job
     }
+
+    private fun jobParametersContainsName(jobParameters: Array<out IppJobParameter>, value: String) =
+            jobParameters.map {
+                it.toIppAttribute(attributes)
+            }.map {
+                it.name
+            }.toList().contains(value)
 
     //---------------------------
     // Get-Jobs (as List<IppJob>)
@@ -172,21 +195,20 @@ class IppPrinter(val printerUri: URI) {
     // delegate to IppClient
     //----------------------
 
-    fun ippRequest(operation: IppOperation) = with(ippClient) {
-        ippRequest(operation, printerUri)
-    }
+    fun ippRequest(operation: IppOperation) =
+            ippClient.ippRequest(operation, printerUri)
 
-    fun exchangeSuccessful(request: IppRequest, documentInputStream: InputStream? = null) = with(ippClient) {
-        exchangeSuccessful(printerUri, request, documentInputStream)
-    }
+    fun ippJobRequest(operation: IppOperation, jobId: Int) =
+            ippClient.ippJobRequest(operation, printerUri, jobId)
 
-    fun exchangeSuccessfulIppRequest(operation: IppOperation) = with(ippClient) {
-        exchangeSuccessful(printerUri, ippRequest(operation, printerUri))
-    }
+    fun exchangeSuccessful(request: IppRequest, documentInputStream: InputStream? = null) =
+            ippClient.exchangeSuccessful(printerUri, request, documentInputStream)
 
-    fun exchangeSuccessfulIppJobRequest(operation: IppOperation, jobId: Int) = with(ippClient) {
-        exchangeSuccessful(printerUri, ippJobRequest(operation, printerUri, jobId))
-    }
+    fun exchangeSuccessfulIppRequest(operation: IppOperation) =
+            ippClient.exchangeSuccessful(printerUri, ippRequest(operation))
+
+    fun exchangeSuccessfulIppJobRequest(operation: IppOperation, jobId: Int) =
+            ippClient.exchangeSuccessful(printerUri, ippJobRequest(operation, jobId))
 
     // -------
     // Logging
