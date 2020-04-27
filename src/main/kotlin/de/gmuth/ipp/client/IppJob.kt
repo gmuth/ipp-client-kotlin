@@ -40,9 +40,13 @@ class IppJob(
     // Get-Job-Attributes
     //-------------------
 
-    fun getAttributes() {
+    private fun getJobAttributes(): IppAttributesGroup {
         val response = exchangeSuccessfulIppJobRequest(IppOperation.GetJobAttributes, id)
-        attributes = response.jobGroup
+        return response.jobGroup
+    }
+
+    fun updateAttributes() {
+        attributes = getJobAttributes()
     }
 
     //------------------------------------------
@@ -53,7 +57,7 @@ class IppJob(
         println("wait for terminal state of job #$id")
         do {
             Thread.sleep(refreshRate.toMillis())
-            getAttributes()
+            attributes = getJobAttributes()
             println("job-state = $state, job-impressions-completed = $impressionsCompleted")
         } while (!isTerminated())
     }
