@@ -23,8 +23,14 @@ enum class IppColorMode : IppJobParameter {
     }
 }
 
-class IppMonochrome() : IppJobParameter {
+class IppMonochrome : IppJobParameter {
     override fun toIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<*> {
         return IppColorMode.Monochrome.toIppAttribute(printerAttributes)
+    }
+}
+
+class IppColor : IppJobParameter {
+    override fun toIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<*> {
+        return IppColorMode.Color.toIppAttribute(printerAttributes)
     }
 }
