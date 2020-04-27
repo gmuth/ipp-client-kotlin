@@ -117,11 +117,7 @@ class IppPrinter(val printerUri: URI) {
     // Validate-Job
     //-------------
 
-    fun validateJob(
-            vararg jobParameters: IppJobParameter
-            //documentFormat: String = "application/octet-stream"
-
-    ): IppResponse {
+    fun validateJob(vararg jobParameters: IppJobParameter): IppResponse {
         val request = jobParametersRequest(IppOperation.ValidateJob, jobParameters)
         return exchangeSuccessful(request)
     }
@@ -130,10 +126,7 @@ class IppPrinter(val printerUri: URI) {
     // Create-Job
     //----------
 
-    fun createJob(
-            vararg jobParameters: IppJobParameter
-
-    ): IppJob {
+    fun createJob(vararg jobParameters: IppJobParameter): IppJob {
         val request = jobParametersRequest(IppOperation.CreateJob, jobParameters)
         val response = exchangeSuccessful(request)
         return IppJob(this, response.jobGroup)
