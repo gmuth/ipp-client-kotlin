@@ -14,12 +14,10 @@ import javax.net.ssl.X509TrustManager
 class AnyCertificateX509TrustManager : X509TrustManager {
 
     @Throws(CertificateException::class)
-    override fun checkClientTrusted(certificates: Array<X509Certificate?>?, string: String?) {
-    }
+    override fun checkClientTrusted(certificates: Array<X509Certificate?>?, string: String?) = Unit
 
     @Throws(CertificateException::class)
-    override fun checkServerTrusted(certificates: Array<X509Certificate?>?, string: String?) {
-    }
+    override fun checkServerTrusted(certificates: Array<X509Certificate?>?, string: String?) = Unit
 
     override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
 
