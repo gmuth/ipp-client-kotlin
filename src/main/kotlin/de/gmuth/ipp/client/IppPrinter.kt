@@ -176,10 +176,6 @@ class IppPrinter(val printerUri: URI) {
         ippRequest(operation, printerUri)
     }
 
-    fun ippJobRequest(jobOperation: IppOperation, jobId: Int) = with(ippClient) {
-        ippJobRequest(jobOperation, printerUri, jobId)
-    }
-
     fun exchangeSuccessful(request: IppRequest, documentInputStream: InputStream? = null) = with(ippClient) {
         exchangeSuccessful(printerUri, request, documentInputStream)
     }
