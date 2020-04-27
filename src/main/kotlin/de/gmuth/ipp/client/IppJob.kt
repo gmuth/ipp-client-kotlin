@@ -15,6 +15,9 @@ class IppJob(
         val printer: IppPrinter,
         var attributes: IppAttributesGroup
 ) {
+    companion object {
+        var defaultRefreshRate = Duration.ofSeconds(3)
+    }
     //--------------
     // IppAttributes
     //--------------
@@ -53,7 +56,7 @@ class IppJob(
     // Wait for terminal state (RFC 8011 5.3.7.)
     //------------------------------------------
 
-    fun waitForTermination(refreshRate: Duration = Duration.ofSeconds(1)) {
+    fun waitForTermination(refreshRate: Duration = defaultRefreshRate) {
         println("wait for terminal state of job #$id")
         do {
             Thread.sleep(refreshRate.toMillis())
