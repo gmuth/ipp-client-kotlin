@@ -11,9 +11,9 @@ import java.io.FileInputStream
 import java.io.InputStream
 import java.net.URI
 
-class IppPrinter(val printerUri: URI) {
+class IppPrinter(val printerUri: URI) : IppJobAttributes() {
 
-    val ippClient = IppClient()
+    private val ippClient = IppClient()
 
     val attributes = getPrinterAttributes()
 
