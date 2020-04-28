@@ -46,7 +46,7 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
 
     override fun getIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<*> {
         for (value in values) {
-            if (value is String || tag == IppTag.Enum) {
+            if (tag in listOf(IppTag.MimeMediaType, IppTag.Keyword, IppTag.Enum)) {
                 printerAttributes.checkValueSupported("$name-supported", value as Any)
             }
         }
