@@ -8,7 +8,7 @@ import de.gmuth.ipp.core.IppAttribute
 import de.gmuth.ipp.core.IppIntegerRange
 import de.gmuth.ipp.core.IppTag
 
-/* IppPrinter inherits from this class for convenient access to attribute 'builders'  */
+/* IppPrinter inherits from this class for convenient 'with' access to attribute 'builders'  */
 
 open class IppJobAttributes {
 
