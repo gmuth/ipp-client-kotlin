@@ -5,22 +5,23 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.ipp.core.IppAttribute
+import de.gmuth.ipp.core.IppAttributeHolder
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppTag
 
-enum class IppSides(val value: String) : IppJobParameter {
+enum class IppSides(val value: String) : IppAttributeHolder {
     OneSided("one-sided"),
-    TwoSidedLongEdge("two-sided-longe-edge"),
+    TwoSidedLongEdge("two-sided-long-edge"),
     TwoSidedShortEdge("two-sided-short-edge");
 
-    override fun toIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<*> {
-        printerAttributes.assertValueSupported("sides-supported", value)
+    override fun getIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<*> {
+        printerAttributes.checkValueSupported("sides-supported", value)
         return IppAttribute("sides", IppTag.Keyword, value)
     }
 }
 
-class IppDuplex : IppJobParameter {
-    override fun toIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<*> {
-        return IppSides.TwoSidedLongEdge.toIppAttribute(printerAttributes)
+class IppDuplex : IppAttributeHolder {
+    override fun getIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<*> {
+        return IppSides.TwoSidedLongEdge.getIppAttribute(printerAttributes)
     }
 }

@@ -88,11 +88,11 @@ class IppPrinter(val printerUri: URI) {
 
     fun printJob(
             file: File,
-            vararg jobParameters: IppJobParameter,
+            vararg attributeHolders: IppAttributeHolder,
             waitForTermination: Boolean = false
 
     ): IppJob {
-        val request = jobParametersRequest(IppOperation.PrintJob, jobParameters)
+        val request = attributeHoldersRequest(IppOperation.PrintJob, attributeHolders)
         val response = exchangeSuccessful(request, FileInputStream(file))
         return handlePrintResponse(response, waitForTermination)
     }
@@ -103,11 +103,11 @@ class IppPrinter(val printerUri: URI) {
 
     fun printUri(
             documentUri: URI,
-            vararg jobParameters: IppJobParameter,
+            vararg attributeHolders: IppAttributeHolder,
             waitForTermination: Boolean = false
 
     ): IppJob {
-        val request = jobParametersRequest(IppOperation.PrintUri, jobParameters)
+        val request = attributeHoldersRequest(IppOperation.PrintUri, attributeHolders)
         request.operationGroup.attribute("document-uri", IppTag.Uri, documentUri)
         val response = exchangeSuccessful(request)
         return handlePrintResponse(response, waitForTermination)
@@ -117,8 +117,8 @@ class IppPrinter(val printerUri: URI) {
     // Validate-Job
     //-------------
 
-    fun validateJob(vararg jobParameters: IppJobParameter): IppResponse {
-        val request = jobParametersRequest(IppOperation.ValidateJob, jobParameters)
+    fun validateJob(vararg attributeHolders: IppAttributeHolder): IppResponse {
+        val request = attributeHoldersRequest(IppOperation.ValidateJob, attributeHolders)
         return exchangeSuccessful(request)
     }
 
@@ -126,19 +126,19 @@ class IppPrinter(val printerUri: URI) {
     // Create-Job
     //----------
 
-    fun createJob(vararg jobParameters: IppJobParameter): IppJob {
-        val request = jobParametersRequest(IppOperation.CreateJob, jobParameters)
+    fun createJob(vararg attributeHolders: IppAttributeHolder): IppJob {
+        val request = attributeHoldersRequest(IppOperation.CreateJob, attributeHolders)
         val response = exchangeSuccessful(request)
         return IppJob(this, response.jobGroup)
     }
 
     // ---- factory method for IppRequest with Operation Print-Job, Print-Uri, Validate-Job, Create-Job
 
-    private fun jobParametersRequest(operation: IppOperation, jobParameters: Array<out IppJobParameter>) =
+    private fun attributeHoldersRequest(operation: IppOperation, attributeHolders: Array<out IppAttributeHolder>) =
             ippRequest(operation).apply {
                 with(ippAttributesGroup(IppTag.Job)) {
-                    for (jobParameter in jobParameters) {
-                        put(jobParameter.toIppAttribute(attributes))
+                    for (attributeHolder in attributeHolders) {
+                        put(attributeHolder.getIppAttribute(attributes))
                     }
                 }
             }
@@ -151,13 +151,6 @@ class IppPrinter(val printerUri: URI) {
         job.logDetails()
         return job
     }
-
-    private fun jobParametersContainsName(jobParameters: Array<out IppJobParameter>, value: String) =
-            jobParameters.map {
-                it.toIppAttribute(attributes)
-            }.map {
-                it.name
-            }.toList().contains(value)
 
     //---------------------------
     // Get-Jobs (as List<IppJob>)
