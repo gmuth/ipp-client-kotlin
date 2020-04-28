@@ -7,7 +7,7 @@ import de.gmuth.ipp.iana.IppRegistrationsSection6
  * Copyright (c) 2020 Gerhard Muth
  */
 
-class IppAttribute<T> constructor(val name: String, val tag: IppTag) {
+open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppAttributeHolder {
 
     val values = mutableListOf<T>()
 
@@ -42,6 +42,10 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag) {
         if (!allowAutomaticTag) {
             throw IppException("automatic tag disabled: for attribute '$name' use IppTag.${tag.name}")
         }
+    }
+
+    override fun getIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<*> {
+        return this
     }
 
     @Suppress("UNCHECKED_CAST")
