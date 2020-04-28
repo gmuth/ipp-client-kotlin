@@ -45,8 +45,10 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
     }
 
     override fun getIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<*> {
-        if(values.size==1 && value is String) {
-            printerAttributes.checkValueSupported("$name-supported", value as String)
+        for (value in values) {
+            if (value is String || tag == IppTag.Enum) {
+                printerAttributes.checkValueSupported("$name-supported", value as Any)
+            }
         }
         return this
     }
