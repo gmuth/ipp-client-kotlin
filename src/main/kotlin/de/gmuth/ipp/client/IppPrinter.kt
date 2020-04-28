@@ -13,7 +13,7 @@ import java.net.URI
 
 class IppPrinter(val printerUri: URI) : IppJobAttributes() {
 
-    private val ippClient = IppClient()
+    val ippClient = IppClient()
 
     val attributes = getPrinterAttributes()
 
