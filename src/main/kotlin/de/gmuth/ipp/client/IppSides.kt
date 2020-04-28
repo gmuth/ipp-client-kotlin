@@ -19,9 +19,3 @@ enum class IppSides(val value: String) : IppAttributeHolder {
         return IppAttribute("sides", IppTag.Keyword, value)
     }
 }
-
-class IppDuplex : IppAttributeHolder {
-    override fun getIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<*> {
-        return IppSides.TwoSidedLongEdge.getIppAttribute(printerAttributes)
-    }
-}
