@@ -59,7 +59,7 @@ open class IppClient(
         if (response.isSuccessful()) {
             return response
         } else {
-            val exceptionMessage = "${request.operation} failed: '${response.status}' ${response.statusMessage ?: ""}"
+            val exceptionMessage = "${request.codeDescription} failed: '${response.status}' ${response.statusMessage ?: ""}"
             throw IppExchangeException(request, response, exceptionMessage)
         }
     }
@@ -73,7 +73,7 @@ open class IppClient(
         // request logging
         with(request) {
             if (verbose) {
-                println("send ${operation} request to $uri")
+                println("send ${request.codeDescription} request to $uri")
                 println(this)
                 logDetails(">> ")
             }
