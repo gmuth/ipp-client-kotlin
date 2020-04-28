@@ -122,9 +122,9 @@ class IppPrinter(val printerUri: URI) : IppJobAttributes() {
         return exchangeSuccessful(request)
     }
 
-    //----------
+    //-----------
     // Create-Job
-    //----------
+    //-----------
 
     fun createJob(vararg attributeHolders: IppAttributeHolder): IppJob {
         val request = attributeHoldersRequest(IppOperation.CreateJob, attributeHolders)
