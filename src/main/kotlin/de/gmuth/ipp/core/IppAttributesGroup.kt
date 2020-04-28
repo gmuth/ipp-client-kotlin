@@ -35,7 +35,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     @Suppress("UNCHECKED_CAST")
     fun <T> getValues(name: String) = get(name)?.values as T
 
-    fun assertValueSupported(name: String, value: String) = with(get(name)) {
+    fun checkValueSupported(name: String, value: String) = with(get(name)) {
         if (tag != IppTag.Printer) {
             throw IppException("expected printer attributes group")
         }

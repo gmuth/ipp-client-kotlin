@@ -45,6 +45,9 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
     }
 
     override fun getIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<*> {
+        if(values.size==1 && value is String) {
+            printerAttributes.checkValueSupported("$name-supported", value as String)
+        }
         return this
     }
 
