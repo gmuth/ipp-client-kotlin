@@ -14,14 +14,15 @@ with(
 ) {
 
   // print file
-  val file = File("A4-blank.pdf")
+  val file = File("A4-ten-blank.pdf")
   val job = printJob(file,
-    IppJobName(file.name),
-    IppDocumentFormat("application/pdf"),
-    IppCopies(2),
-    IppPageRanges(2..3, 8..10),
-    IppMonochrome(), IppDuplex(),
-    IppColorMode.Monochrome, IppSides.TwoSidedLongEdge,
+    jobName(file.name),
+    documentFormat("application/pdf"),
+    copies(2),
+    pageRanges(2..3, 8..10),
+    IppColorMode.Monochrome,
+    IppSides.TwoSidedLongEdge,
+    attribute("document-name", "IPP Implementatiom Guide" ),
     waitForTermination = true
   )
   job.logDetails()
