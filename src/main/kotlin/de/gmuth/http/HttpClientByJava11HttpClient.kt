@@ -24,12 +24,12 @@ class HttpClientByJava11HttpClient(
         build()
     }
 
-    override fun post(uri: URI, requestContent: Http.Content, auth: Http.Auth?): Http.Response {
+    override fun post(uri: URI, content: Http.Content, auth: Http.Auth?): Http.Response {
         val httpRequest = with(HttpRequest.newBuilder()) {
             timeout(config.timeout)
-            header("Content-Type", requestContent.type)
+            header("Content-Type", content.type)
             POST(HttpRequest.BodyPublishers.ofInputStream {
-                requestContent.stream
+                content.stream
             })
             uri(uri)
             if (auth != null) {

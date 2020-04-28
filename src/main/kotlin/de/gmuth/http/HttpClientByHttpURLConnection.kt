@@ -24,7 +24,7 @@ class HttpClientByHttpURLConnection(
             connectTimeout = config.timeout.toMillis().toInt()
             doOutput = true // trigger POST method
             if (auth != null) {
-                if (uri.scheme in listOf("http", "ipp") && auth != null) {
+                if (uri.scheme in listOf("http", "ipp")) {
                     println("WARN: '${uri.scheme}' does not protect credentials")
                 }
                 val basicAuth = with(auth) {
