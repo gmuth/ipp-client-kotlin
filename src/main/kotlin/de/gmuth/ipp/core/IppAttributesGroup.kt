@@ -23,11 +23,14 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
         return replaced
     }
 
-    fun attribute(name: String, tag: IppTag, values: List<*>) = put(IppAttribute(name, tag, values.toMutableList()))
+    private fun attribute(name: String, tag: IppTag, values: List<*>) =
+            put(IppAttribute(name, tag, values.toMutableList()))
 
-    fun attribute(name: String, tag: IppTag, vararg value: Any?) = put(IppAttribute(name, tag, value.toMutableList()))
+    fun attribute(name: String, tag: IppTag, vararg values: Any?) =
+            put(IppAttribute(name, tag, values.toMutableList()))
 
-    fun attribute(name: String, vararg value: Any?) = put(IppAttribute(name, value.toMutableList()))
+    fun attribute(name: String, vararg values: Any?) =
+            put(IppAttribute(name, values.toMutableList()))
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getValue(name: String) = get(name)?.value as T
