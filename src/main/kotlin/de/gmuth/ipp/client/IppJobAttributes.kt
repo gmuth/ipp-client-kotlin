@@ -12,6 +12,9 @@ import de.gmuth.ipp.core.IppTag
 
 open class IppJobAttributes {
 
+    fun attribute(name: String, vararg values: Any) =
+            IppAttribute(name, values.toList())
+
     fun documentFormat(value: String) =
             IppAttribute("document-format", IppTag.MimeMediaType, value)
 
