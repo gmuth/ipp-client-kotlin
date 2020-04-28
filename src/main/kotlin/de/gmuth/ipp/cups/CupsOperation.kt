@@ -1,5 +1,7 @@
 package de.gmuth.ipp.cups
 
+import de.gmuth.ipp.core.IppException
+
 /**
  * Copyright (c) 2020 Gerhard Muth
  */
@@ -30,7 +32,8 @@ enum class CupsOperation(val code: Short) {
 
     companion object {
         private val codeMap = values().associateBy(CupsOperation::code)
-        fun fromShort(code: Short): CupsOperation? = codeMap[code]
+        fun fromShort(code: Short): CupsOperation = codeMap[code]
+                ?: throw IppException(String.format("operation code '%04X' unknown", code))
     }
 
 }
