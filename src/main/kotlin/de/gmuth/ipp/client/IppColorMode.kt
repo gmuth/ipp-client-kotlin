@@ -22,15 +22,3 @@ enum class IppColorMode(val value: String) : IppAttributeHolder {
         return IppAttribute(modeAttributeName, IppTag.Keyword, value)
     }
 }
-
-class IppMonochrome : IppAttributeHolder {
-    override fun getIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<*> {
-        return IppColorMode.Monochrome.getIppAttribute(printerAttributes)
-    }
-}
-
-class IppColor : IppAttributeHolder {
-    override fun getIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<*> {
-        return IppColorMode.Color.getIppAttribute(printerAttributes)
-    }
-}
