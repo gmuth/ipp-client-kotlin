@@ -107,7 +107,7 @@ helps connecting to ipps endpoints secured by self signed certificates - e.g. CU
 
 ## Build
 
-To build `ippclient.jar` into `build/libs` run
+To build `ipp-client.jar` into `build/libs` run
 
     ./gradlew
 
