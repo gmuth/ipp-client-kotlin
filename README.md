@@ -22,7 +22,7 @@ with(
     pageRanges(2..3, 8..10),
     IppColorMode.Monochrome,
     IppSides.TwoSidedLongEdge,
-    attribute("document-name", "IPP Implementation Guide" ),
+    attribute("document-name", "IPP Implementation Guide"),
     waitForTermination = true
   )
   job.logDetails()
