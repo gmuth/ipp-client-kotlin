@@ -16,10 +16,15 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 }
 
-defaultTasks("clean", "shadowJar")
+defaultTasks("clean", "build")
 
-tasks.withType<ShadowJar>() {
-    archiveBaseName.set("ippclient")
+tasks.withType<Jar> {
+    archiveBaseName.set("ipp-client")
+    archiveClassifier.set("")
+}
+
+tasks.withType<ShadowJar> {
+    archiveBaseName.set("ipp-client-fat")
     archiveClassifier.set("")
     manifest {
         attributes(mapOf("Main-Class" to "de.gmuth.ipp.tool.PrintFileKt"))
