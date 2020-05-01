@@ -167,29 +167,19 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
                 writeByte(minutesFromUTC)
             }
 
-            IppTag.BegCollection -> {
-                writeCollection(value as IppCollection)
+            IppTag.BegCollection -> with(value as IppCollection) {
+                writeShort(0)
+                for (member in members) {
+                    writeCollectionAttribute(IppTag.MemberAttrName, member.name)
+                    for (value in member.values) {
+                        writeCollectionAttribute(member.tag, value)
+                    }
+                }
+                writeCollectionAttribute(IppTag.EndCollection)
             }
 
             else -> throw IppException(String.format("tag %s (%02X) encoding not implemented", tag, tag.code))
         }
-    }
-
-    private fun writeCollection(collection: IppCollection) {
-        with(collection) {
-            writeShort(0)
-            for (member in members) {
-                writeCollectionAttribute(IppTag.MemberAttrName, member.name)
-                for (value in member.values) {
-                    writeCollectionAttribute(member.tag, value)
-                }
-            }
-            writeCollectionAttribute(IppTag.EndCollection)
-        }
-    }
-
-    private fun writeCollectionAttribute(tag: IppTag, value: Any? = null) {
-        writeAttribute(IppAttribute("", tag, value))
     }
 
     private fun writeString(value: String, charset: Charset) {
@@ -197,6 +187,10 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
             writeShort(size)
             write(this)
         }
+    }
+
+    private fun writeCollectionAttribute(tag: IppTag, value: Any? = null) {
+        writeAttribute(IppAttribute("", tag, value))
     }
 
 }
