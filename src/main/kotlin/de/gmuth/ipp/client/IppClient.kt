@@ -31,7 +31,7 @@ open class IppClient(
     //-------------------------------------
 
     fun ippRequest(operation: IppOperation, printerUri: URI? = null) =
-            IppRequest(ippVersion, operation, requestCounter.getAndIncrement()).apply {
+            IppRequest(ippVersion, operation.code, requestCounter.getAndIncrement()).apply {
                 if (printerUri != null) {
                     operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
                 }
@@ -45,7 +45,7 @@ open class IppClient(
                 operationGroup.attribute("job-id", IppTag.Integer, jobId)
             }
 
-    //-------------------------------------------
+    //-------------------------------------------s
     // exchange methods for IppRequest/IppRequest
     //-------------------------------------------
 

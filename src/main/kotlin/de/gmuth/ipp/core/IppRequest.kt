@@ -31,13 +31,4 @@ open class IppRequest() : IppMessage() {
         }
     }
 
-    constructor(
-            version: IppVersion,
-            operation: IppOperation,
-            requestId: Int,
-            charset: Charset = Charsets.UTF_8,
-            naturalLanguage: String = "en"
-
-    ) : this(version, operation.code, requestId, charset, naturalLanguage)
-
 }
