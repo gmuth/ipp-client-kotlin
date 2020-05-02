@@ -182,12 +182,12 @@ class IppPrinter(val printerUri: URI) : IppJobAttributes() {
     //----------------------
 
     fun ippRequest(operation: IppOperation): IppRequest {
-        attributes.checkValueSupported("operations-supported", operation.code.toInt())
+        checkOperationSupported(operation)
         return ippClient.ippRequest(operation, printerUri)
     }
 
     fun ippJobRequest(operation: IppOperation, jobId: Int): IppRequest {
-        attributes.checkValueSupported("operations-supported", operation.code.toInt())
+        checkOperationSupported(operation)
         return ippClient.ippJobRequest(operation, printerUri, jobId)
     }
 
@@ -199,6 +199,12 @@ class IppPrinter(val printerUri: URI) : IppJobAttributes() {
 
     fun exchangeSuccessfulIppJobRequest(operation: IppOperation, jobId: Int) =
             ippClient.exchangeSuccessful(printerUri, ippJobRequest(operation, jobId))
+
+    private fun checkOperationSupported(operation: IppOperation) {
+        if (attributes != null) {
+            attributes.checkValueSupported("operations-supported", operation.code.toInt())
+        }
+    }
 
 // -------
 // Logging
