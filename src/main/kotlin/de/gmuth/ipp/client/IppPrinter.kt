@@ -181,11 +181,15 @@ class IppPrinter(val printerUri: URI) : IppJobAttributes() {
     // delegate to IppClient
     //----------------------
 
-    fun ippRequest(operation: IppOperation) =
-            ippClient.ippRequest(operation, printerUri)
+    fun ippRequest(operation: IppOperation): IppRequest {
+        attributes.checkValueSupported("operations-supported", operation.code.toInt())
+        return ippClient.ippRequest(operation, printerUri)
+    }
 
-    fun ippJobRequest(operation: IppOperation, jobId: Int) =
-            ippClient.ippJobRequest(operation, printerUri, jobId)
+    fun ippJobRequest(operation: IppOperation, jobId: Int): IppRequest {
+        attributes.checkValueSupported("operations-supported", operation.code.toInt())
+        return ippClient.ippJobRequest(operation, printerUri, jobId)
+    }
 
     fun exchangeSuccessful(request: IppRequest, documentInputStream: InputStream? = null) =
             ippClient.exchangeSuccessful(printerUri, request, documentInputStream)
@@ -196,9 +200,9 @@ class IppPrinter(val printerUri: URI) : IppJobAttributes() {
     fun exchangeSuccessfulIppJobRequest(operation: IppOperation, jobId: Int) =
             ippClient.exchangeSuccessful(printerUri, ippJobRequest(operation, jobId))
 
-    // -------
-    // Logging
-    // -------
+// -------
+// Logging
+// -------
 
     override fun toString() =
             "IppPrinter: name = $name, makeAndModel = $makeAndModel, state = $state, stateReasons = ${stateReasons.joinToString(",")}"

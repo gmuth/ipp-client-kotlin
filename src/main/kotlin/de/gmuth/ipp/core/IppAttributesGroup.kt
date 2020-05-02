@@ -44,10 +44,11 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
         }
         with(get(name)) {
             if (this != null) {
-                if (!values.contains(value)) {
-                    throw IppException("'$value' not supported by printer. $this")
+                if (values.contains(value)) {
+                    //println("'${valueOrEnumValueName(value)}' is supported by printer. $this")
                 } else {
-                    //println("'$value' is supported by printer. $this")
+                    //println("supported values: ${values.joinToString(",")}")
+                    throw IppException("'${valueOrEnumValueName(value)}' not supported by printer. $this")
                 }
             }
         }

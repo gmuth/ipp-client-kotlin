@@ -75,7 +75,7 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
             return values.firstOrNull()
         }
 
-    private fun valueOrEnumValueName(value: Any?): Any? =
+    fun valueOrEnumValueName(value: Any?): Any? =
             if (tag == IppTag.Enum) {
                 IppRegistrationsSection6.getEnumValueName(name, value!!)
             } else {
