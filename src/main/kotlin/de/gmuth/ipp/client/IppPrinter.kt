@@ -11,7 +11,7 @@ import java.io.FileInputStream
 import java.io.InputStream
 import java.net.URI
 
-class IppPrinter(val printerUri: URI) : IppJobAttributes() {
+class IppPrinter(val printerUri: URI) {
 
     val ippClient = IppClient()
 
@@ -209,9 +209,9 @@ class IppPrinter(val printerUri: URI) : IppJobAttributes() {
         }
     }
 
-// -------
-// Logging
-// -------
+    // -------
+    // Logging
+    // -------
 
     override fun toString() =
             "IppPrinter: name = $name, makeAndModel = $makeAndModel, state = $state, stateReasons = ${stateReasons.joinToString(",")}"
