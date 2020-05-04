@@ -20,6 +20,8 @@ with(
     documentFormat("application/pdf"),
     copies(2),
     pageRanges(2..3, 8..10),
+    printerResolutionDpi(600),
+    IppPrintQuality.High,
     IppColorMode.Monochrome,
     IppSides.TwoSidedLongEdge,
     attribute("document-name", "IPP Implementation Guide"),
