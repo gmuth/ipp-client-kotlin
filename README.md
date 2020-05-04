@@ -19,6 +19,7 @@ with(
     jobName(file.name),
     documentFormat("application/pdf"),
     copies(2),
+    numberUp(2),
     pageRanges(2..3, 8..10),
     printerResolutionDpi(600),
     IppPrintQuality.High,

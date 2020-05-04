@@ -24,6 +24,9 @@ class IppJobAttributes {
         fun copies(value: Int) =
                 IppAttribute("copies", IppTag.Integer, value)
 
+        fun numberUp(value: Int) =
+                IppAttribute("number-up", IppTag.Integer, value)
+
         fun printerResolutionDpi(value: Int) =
                 IppAttribute("printer-resolution", IppTag.Resolution, IppResolution(value))
 
