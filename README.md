@@ -58,9 +58,9 @@ val file = File("A4-blank.pdf")
 
 val ippClient = IppClient()
 val request = IppRequest(IppOperation.PrintJob).apply {
-  operationGroup.attribute("printer-uri", uri)
-  operationGroup.attribute("document-format", "application/pdf")
-  operationGroup.attribute("requesting-user-name", "gmuth")
+  operationGroup.attribute("printer-uri", IppTag.Uri, uri)
+  operationGroup.attribute("document-format", IppTag.MimeMediaType, "application/pdf")
+  operationGroup.attribute("requesting-user-name", IppTag.NameWithoutLanguage, "gmuth")
 }
 val response = ippClient.exchange(uri, request, FileInputStream(file))
 response.logDetails()
@@ -69,7 +69,7 @@ response.logDetails()
 ```kotlin
 with(IppTool()) {
     uri = URI.create("ipp://colorjet.local/ipp/printer")
-    val filename = "A4-blank.pdf"
+    filename = "A4-blank.pdf"
     run(
         "OPERATION Print-Job",
         "GROUP operation-attributes-tag",
