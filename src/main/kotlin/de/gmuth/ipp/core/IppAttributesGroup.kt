@@ -55,12 +55,23 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
         }
         with(supportedAttribute) {
             val valueIsSupported = when (tag) {
+                IppTag.Boolean -> {
+                    //e.g. 'page-ranges-supported'
+                    true
+                }
                 IppTag.MimeMediaType,
                 IppTag.Keyword,
                 IppTag.Enum,
-                IppTag.Integer,
                 IppTag.Resolution -> {
                     values.contains(value)
+                }
+                IppTag.Integer -> {
+                    if (is1setOf()) {
+                        values.contains(value)
+                    } else {
+                        // e.g. 'job-priority-supported'
+                        value is Int && value <= this.value as Int
+                    }
                 }
                 IppTag.RangeOfInteger -> with(this.value as IppIntegerRange) {
                     value is Int && value in IntRange(start, end)
@@ -71,7 +82,8 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
                 }
             }
             if (!valueIsSupported) {
-                println("ERROR: supported values: ${values.joinToString(",")}")
+                println("ERROR: unsupported: $value")
+                println("ERROR: supported: ${values.joinToString(",")}")
                 throw IppException("'${valueOrEnumValueName(value)}' not supported by printer. $this")
             }
         }
