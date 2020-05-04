@@ -159,6 +159,8 @@ class IppPrinter(val printerUri: URI) : IppJobAttributes() {
     fun getJobs(whichJobs: String? = null): List<IppJob> {
         val request = ippRequest(IppOperation.GetJobs)
         if (whichJobs != null) {
+            // PWG Job and Printer Extensions Set 2
+            attributes.checkValueSupported("which-jobs-supported", whichJobs)
             request.operationGroup.attribute("which-jobs", IppTag.Keyword, whichJobs)
         }
         val response = exchangeSuccessful(request)
@@ -201,7 +203,8 @@ class IppPrinter(val printerUri: URI) : IppJobAttributes() {
             ippClient.exchangeSuccessful(printerUri, ippJobRequest(operation, jobId))
 
     private fun checkOperationSupported(operation: IppOperation) {
-        if (attributes != null) {
+        if (attributes != null) { // expression is NOT always true
+            // during class initialization getPrinterAttributes() is called to init attributes
             attributes.checkValueSupported("operations-supported", operation.code.toInt())
         }
     }
