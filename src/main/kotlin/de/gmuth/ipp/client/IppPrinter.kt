@@ -47,6 +47,7 @@ class IppPrinter(val printerUri: URI) {
     //--------------------------------------------------
 
     fun identify(action: String) {
+        attributes.checkValueSupported("identify-actions-supported", action)
         val request = ippRequest(IppOperation.IdentifyPrinter).apply {
             operationGroup.attribute("identify-actions", IppTag.Keyword, action)
         }
