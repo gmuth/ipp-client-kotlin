@@ -8,8 +8,10 @@ package de.gmuth.ipp.core
 data class IppResolution(
         val x: Int,
         val y: Int,
-        val unit: Int
+        val unit: Int = 3
 ) {
+    constructor(xy: Int) : this(xy, xy)
+
     override fun toString() = "${x}${if (x == y) "" else "x${y}"}${unitString()}"
 
     private fun unitString() = when (unit) {
