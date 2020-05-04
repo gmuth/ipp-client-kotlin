@@ -42,24 +42,37 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     @Suppress("UNCHECKED_CAST")
     fun <T> getValues(name: String) = get(name)?.values as T
 
-    fun checkValueSupported(name: String, value: Any) {
-        if (!checkValueSupported) {
+    fun checkValueSupported(supportedAttributeName: String, value: Any) {
+        if (this.tag != IppTag.Printer) {
+            throw IppException("'...-supported' attribute values can only be found in printer attributes group")
+        }
+        if (!supportedAttributeName.endsWith("-supported")) {
+            throw IppException("expected attribute name ending with '-supported' but got: '$supportedAttributeName'")
+        }
+        val supportedAttribute = get(supportedAttributeName)
+        if (supportedAttribute == null || !checkValueSupported) {
             return
         }
-        if (tag != IppTag.Printer) {
-            throw IppException("'-supported' attribute values can only be found in printer attributes group")
-        }
-        if (!name.endsWith("-supported")) {
-            throw IppException("provide an attribute name which ends with '-supported'")
-        }
-        with(get(name)) {
-            if (this != null) {
-                if (values.contains(value)) {
-                    //println("'${valueOrEnumValueName(value)}' is supported by printer. $this")
-                } else {
-                    //println("supported values: ${values.joinToString(",")}")
-                    throw IppException("'${valueOrEnumValueName(value)}' not supported by printer. $this")
+        with(supportedAttribute) {
+            val valueIsSupported = when (tag) {
+                IppTag.MimeMediaType,
+                IppTag.Keyword,
+                IppTag.Enum,
+                IppTag.Integer,
+                IppTag.Resolution -> {
+                    values.contains(value)
                 }
+                IppTag.RangeOfInteger -> with(this.value as IppIntegerRange) {
+                    value is Int && value in IntRange(start, end)
+                }
+                else -> {
+                    println("WARN: unable to check if value '$value' is supported by $this")
+                    true
+                }
+            }
+            if (!valueIsSupported) {
+                println("ERROR: supported values: ${values.joinToString(",")}")
+                throw IppException("'${valueOrEnumValueName(value)}' not supported by printer. $this")
             }
         }
     }
