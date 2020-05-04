@@ -16,7 +16,7 @@ class IppJob(
         var attributes: IppAttributesGroup
 ) {
     companion object {
-        var defaultRefreshRate = Duration.ofSeconds(3)
+        var defaultRefreshRate: Duration = Duration.ofSeconds(3)
     }
 
     //--------------
