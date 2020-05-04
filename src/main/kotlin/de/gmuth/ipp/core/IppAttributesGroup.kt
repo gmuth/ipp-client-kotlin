@@ -40,7 +40,10 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
 
     fun checkValueSupported(name: String, value: Any) {
         if (tag != IppTag.Printer) {
-            throw IppException("expected printer attributes group")
+            throw IppException("'-supported' attribute values can only be found in printer attributes group")
+        }
+        if (!name.endsWith("-supported")) {
+            throw IppException("provide an attribute name which ends with '-supported'")
         }
         with(get(name)) {
             if (this != null) {
