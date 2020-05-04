@@ -6,6 +6,10 @@ package de.gmuth.ipp.core
 
 class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*>>() {
 
+    companion object {
+        var checkValueSupported: Boolean = true
+    }
+
     init {
         if (!tag.isDelimiterTag()) {
             throw IppException("'$tag' is not a delimiter tag")
@@ -39,6 +43,9 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     fun <T> getValues(name: String) = get(name)?.values as T
 
     fun checkValueSupported(name: String, value: Any) {
+        if (!checkValueSupported) {
+            return
+        }
         if (tag != IppTag.Printer) {
             throw IppException("'-supported' attribute values can only be found in printer attributes group")
         }
