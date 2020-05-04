@@ -18,8 +18,14 @@ class IppJobAttributes {
         fun documentFormat(value: String) =
                 IppAttribute("document-format", IppTag.MimeMediaType, value)
 
+        fun media(value: String) =
+                IppAttribute("media", IppTag.Keyword, value)
+
         fun jobName(value: String) =
                 IppAttribute("job-name", IppTag.NameWithoutLanguage, value)
+
+        fun jobPriority(value: Int) =
+                IppAttribute("job-priority", IppTag.Integer, value)
 
         fun copies(value: Int) =
                 IppAttribute("copies", IppTag.Integer, value)
