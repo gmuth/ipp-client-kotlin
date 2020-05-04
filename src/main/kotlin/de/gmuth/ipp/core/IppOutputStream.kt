@@ -171,8 +171,8 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
                 writeShort(0)
                 for (member in members) {
                     writeCollectionAttribute(IppTag.MemberAttrName, member.name)
-                    for (value in member.values) {
-                        writeCollectionAttribute(member.tag, value)
+                    for (memberValue in member.values) {
+                        writeCollectionAttribute(member.tag, memberValue)
                     }
                 }
                 writeCollectionAttribute(IppTag.EndCollection)
