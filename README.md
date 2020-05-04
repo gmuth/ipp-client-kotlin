@@ -37,7 +37,7 @@ with(
   printUri(remoteFile)
   
   // create job and send document
-  val job = createJob(IppJobName(file.name))
+  val job = createJob(jobName(file.name))
   job.sendDocument(file, lastDocument = true)
   job.waitForTermination()
 
