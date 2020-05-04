@@ -108,8 +108,9 @@ class IppPrinter(val printerUri: URI) {
             waitForTermination: Boolean = false
 
     ): IppJob {
-        val request = attributeHoldersRequest(IppOperation.PrintUri, attributeHolders)
-        request.operationGroup.attribute("document-uri", IppTag.Uri, documentUri)
+        val request = attributeHoldersRequest(IppOperation.PrintUri, attributeHolders).apply {
+            operationGroup.attribute("document-uri", IppTag.Uri, documentUri)
+        }
         val response = exchangeSuccessful(request)
         return handlePrintResponse(response, waitForTermination)
     }
