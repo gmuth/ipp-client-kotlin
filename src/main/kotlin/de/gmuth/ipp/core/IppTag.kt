@@ -7,9 +7,9 @@ package de.gmuth.ipp.core
 // [RFC 8010] and [RFC 3380]
 enum class IppTag(
         val code: Byte,
-        private val ianaName: String? = null
+        private val registeredName: String
 ) {
-    // attribute group tags
+    // delimiter tags
     // https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-7
     Operation(0x01, "operation-attributes-tag"),
     Job(0x02, "job-attributes-tag"),
@@ -34,49 +34,43 @@ enum class IppTag(
     //https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-9
 
     // Integer
-    Integer(0x21),
-    Boolean(0x22),
-    Enum(0x23),
+    Integer(0x21, "integer"),
+    Boolean(0x22, "boolean"),
+    Enum(0x23, "enum"),
 
     // Misc
-    OctetString(0x30),
-    DateTime(0x31),
-    Resolution(0x32),
-    RangeOfInteger(0x33),
+    OctetString(0x30, "octetString"),
+    DateTime(0x31, "dateTime"),
+    Resolution(0x32, "resolution"),
+    RangeOfInteger(0x33, "rangeOfInteger"),
     BegCollection(0x34, "collection"),
-    TextWithLanguage(0x35),
-    NameWithLanguage(0x36),
-    EndCollection(0x37),
+    TextWithLanguage(0x35, "textWithLanguage"),
+    NameWithLanguage(0x36, "nameWithLanguage"),
+    EndCollection(0x37, "endCollection"),
 
     // Text
-    TextWithoutLanguage(0x41),
-    NameWithoutLanguage(0x42),
-    Keyword(0x44),
-    UriScheme(0x46),
-    Uri(0x45),
-    Charset(0x47),
-    NaturalLanguage(0x48),
-    MimeMediaType(0x49),
-    MemberAttrName(0x4A);
+    TextWithoutLanguage(0x41, "textWithoutLanguage"),
+    NameWithoutLanguage(0x42, "nameWithoutLanguage"),
+    Keyword(0x44, "keyword"),
+    UriScheme(0x46, "uriScheme"),
+    Uri(0x45, "uri"),
+    Charset(0x47, "charset"),
+    NaturalLanguage(0x48, "naturalLanguage"),
+    MimeMediaType(0x49, "mimeMediaType"),
+    MemberAttrName(0x4A, "memberAttrName");
 
     fun isDelimiterTag() = code in 0x00..0x0F
     fun isOutOfBandTag() = code in 0x10..0x1F
-    fun isIntegerTag() = code in 0x20..0x2F
-    fun isStringTag() = code in 0x40..0x4F
-    fun isCollection() = this in listOf(BegCollection, EndCollection, MemberAttrName)
     fun useAttributesCharset() = this in listOf(TextWithoutLanguage, TextWithLanguage, NameWithoutLanguage, NameWithLanguage)
 
-    private fun registeredName() = ianaName
-            ?: name.replace("^[A-Z]".toRegex()) { it.value.toLowerCase() }
-
     fun registeredSyntax() = when (this) {
-        // iana registration doesn't care about language
+        // iana registered syntax doesn't care about language
         NameWithoutLanguage, NameWithLanguage -> "name"
         TextWithoutLanguage, TextWithLanguage -> "text"
-        else -> registeredName()
+        else -> registeredName
     }
 
-    override fun toString() = registeredName()
+    override fun toString() = registeredName
 
     companion object {
         private val codeMap = values().associateBy(IppTag::code)
