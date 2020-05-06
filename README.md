@@ -1,9 +1,10 @@
 # ipp-client-kotlin
 
 A client implementation of the ipp protocol written in kotlin.
-
 [RFC 8010](https://tools.ietf.org/html/rfc8010),
 [RFC 8011](https://tools.ietf.org/html/rfc8011)
+
+![Java CI with Gradle](https://github.com/gmuth/ipp-client-kotlin/workflows/Java%20CI%20with%20Gradle/badge.svg)
 
 ## Usage
 
