@@ -18,6 +18,12 @@ dependencies {
 
 defaultTasks("clean", "build")
 
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions {
+        jvmTarget = "8"
+    }
+}
+
 tasks.withType<Jar> {
     archiveBaseName.set("ipp-client")
     archiveClassifier.set("")
