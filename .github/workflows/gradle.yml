@@ -23,4 +23,6 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     - name: Build with Gradle
+      env:
+        GPR_TOKEN: ${{ secrets.gprToken }}
       run: ./gradlew hello -DGPR_USER=yam
