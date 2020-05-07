@@ -206,7 +206,7 @@ class IppPrinter(val printerUri: URI) {
 
     private fun checkOperationSupported(operation: IppOperation) {
         if (attributes != null) { // expression is NOT always true
-            // during class initialization getPrinterAttributes() is called to init attributes
+            // during class initialization getPrinterAttributes() indirectly calls this method!
             attributes.checkValueSupported("operations-supported", operation.code.toInt())
         }
     }
