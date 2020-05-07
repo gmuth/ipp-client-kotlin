@@ -72,7 +72,7 @@ publishing {
 tasks.register("hello") {
     doLast {
         println("Hello, ${System.getProperty("GPR_USER")}")
-        println("Hello, ${System.getProperty("GPR_TOKEN").length}")
+        println("Hello, ${System.getenv("GPR_TOKEN")?.length}")
         println("Hello, ${System.getenv("GITHUB_ACTOR")}")
     }
 }

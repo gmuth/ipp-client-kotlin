@@ -24,5 +24,5 @@ jobs:
       run: chmod +x gradlew
     - name: Build with Gradle
       env:
-        GPR_TOKEN: ${{ secrets.gprToken }}
+        GPR_TOKEN: ${{secrets.gprToken}}
       run: ./gradlew hello -DGPR_USER=yam
