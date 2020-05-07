@@ -25,4 +25,4 @@ jobs:
     - name: Build with Gradle
       env:
         GPR_TOKEN: ${{secrets.gprToken}}
-      run: ./gradlew hello -DGPR_USER=yam
+      run: ./gradlew build publish
