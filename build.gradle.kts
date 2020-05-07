@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "de.gmuth.ipp0"
-version = "1.2.3-SNAPSHOT"
+version = "1.2.4"
 
 repositories {
     jcenter()
