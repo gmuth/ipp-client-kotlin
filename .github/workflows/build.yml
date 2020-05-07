@@ -24,7 +24,7 @@ jobs:
       run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew build
-    - name: Publish to maven repo
-      env:
-        GPR_TOKEN: ${{secrets.gprToken}}
-      run: ./gradlew publish
+#    - name: Publish to maven repo
+#      env:
+#        GPR_TOKEN: ${{secrets.gprToken}}
+#      run: ./gradlew publish

@@ -6,8 +6,8 @@ plugins {
     id("maven-publish")
 }
 
-group = "de.gmuth.ipp0"
-version = "1.2.5-SNAPSHOT"
+group = "de.gmuth.ipp"
+version = "1.4-SNAPSHOT"
 
 repositories {
     jcenter()
@@ -73,7 +73,7 @@ publishing {
     repositories {
         maven {
             name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/gmuth/m2repo")
+            url = uri("https://maven.pkg.github.com/gmuth/ipp-client-kotlin")
             credentials {
                 username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
                 password = project.findProperty("gpr.token") as String? ?: System.getenv("GPR_TOKEN")

@@ -122,3 +122,15 @@ This software has **no dependencies** to
 [CUPS](https://www.cups.org) or
 [ipptool](https://www.cups.org/doc/man-ipptool.html).
 Currently only the target `jvm` is supported. 
+
+## Artifacts
+
+Use [github packages](https://github.com/gmuth/ipp-client-kotlin/packages) as maven repo:
+
+```
+<dependency>
+  <groupId>de.gmuth.ipp</groupId>
+  <artifactId>ipp-client-kotlin</artifactId>
+  <version>1.3</version>
+</dependency>
+```
