@@ -68,3 +68,10 @@ publishing {
     // group must be unique (and not used in other repo packages)
     // in public repos you can not delete artifacts!
 }
+
+tasks.register("hello") {
+    doLast {
+        println("Hello, ${System.getProperty("GPR_USER")}")
+        println("Hello, ${System.getenv("GITHUB_ACTOR")}")
+    }
+}
