@@ -42,6 +42,17 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     @Suppress("UNCHECKED_CAST")
     fun <T> getValues(name: String) = get(name)?.values as T
 
+    override fun toString() = "IppAttributesGroup '$tag' containing ${size.toPluralString("attribute")}"
+
+    fun logDetails(prefix: String = "") {
+        println("${prefix}$tag")
+        for (key in keys) {
+            println("$prefix  ${get(key)}")
+        }
+    }
+
+    // ----- ipp spec checking method, based on printer capabilities -----
+
     fun checkValueSupported(supportedAttributeName: String, value: Any) {
         if (this.tag != IppTag.Printer) {
             throw IppException("'...-supported' attribute values can only be found in printer attributes group")
@@ -57,7 +68,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
             val valueIsSupported = when (tag) {
                 IppTag.Boolean -> {
                     //e.g. 'page-ranges-supported'
-                    true
+                    supportedAttribute.value as Boolean
                 }
                 IppTag.MimeMediaType,
                 IppTag.Keyword,
@@ -70,10 +81,10 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
                         values.contains(value)
                     } else {
                         // e.g. 'job-priority-supported'
-                        value is Int && value <= this.value as Int
+                        value is Int && value <= supportedAttribute.value as Int
                     }
                 }
-                IppTag.RangeOfInteger -> with(this.value as IppIntegerRange) {
+                IppTag.RangeOfInteger -> with(supportedAttribute.value as IppIntegerRange) {
                     value is Int && value in IntRange(start, end)
                 }
                 else -> {
@@ -81,21 +92,13 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
                     true
                 }
             }
-            if (!valueIsSupported) {
+            if (valueIsSupported) {
+                //println("'${enumValueNameOrValue(value)}' supported by printer. $this")
+            } else {
                 println("ERROR: unsupported: $value")
                 println("ERROR: supported: ${values.joinToString(",")}")
-                throw IppException("'${valueOrEnumValueName(value)}' not supported by printer. $this")
+                throw IppException("'${enumValueNameOrValue(value)}' not supported by printer. $this")
             }
         }
     }
-
-    override fun toString() = "IppAttributesGroup '$tag' containing ${size.toPluralString("attribute")}"
-
-    fun logDetails(prefix: String = "") {
-        println("${prefix}$tag")
-        for (key in keys) {
-            println("$prefix  ${get(key)}")
-        }
-    }
-
 }
