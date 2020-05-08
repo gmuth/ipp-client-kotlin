@@ -33,7 +33,7 @@ with(
   )
   job.logDetails()
 
-  // print remote file,make printer pull document from remote server
+  // print remote file, make printer pull document from remote server
   val remoteFile = URI.create("http://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf")
   printUri(remoteFile)
   
@@ -43,8 +43,9 @@ with(
   job.waitForTermination()
 
   // manage jobs
-  getJobs()
+  getJobs().forEach { println(it) }
   getJobs("completed") // which-jobs
+
   val job = getJob(42)
   job.hold()
   job.release()
