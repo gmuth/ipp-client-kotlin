@@ -73,7 +73,7 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
             return values.firstOrNull()
         }
 
-    fun valueOrEnumValueName(value: Any?): Any? =
+    fun enumValueNameOrValue(value: Any?): Any? =
             if (tag == IppTag.Enum) {
                 IppRegistrationsSection6.getEnumValueName(name, value!!)
             } else {
@@ -84,7 +84,7 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
         val tagString = "${if (is1setOf()) "1setOf " else ""}$tag"
         val valuesString = if (values.isEmpty()) "no-value" else
             try {
-                values.joinToString(",") { valueOrEnumValueName(it as Any?).toString() }
+                values.joinToString(",") { enumValueNameOrValue(it as Any?).toString() }
             } catch (exception: Exception) {
                 "<${exception.message}>"
             }
@@ -101,7 +101,7 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
                 if (value is IppCollection) {
                     value.logDetails("$prefix  ")
                 } else {
-                    println("${prefix}  ${valueOrEnumValueName(value)}")
+                    println("${prefix}  ${enumValueNameOrValue(value)}")
                 }
             }
         }
