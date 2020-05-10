@@ -19,7 +19,7 @@ class IppPrinter(val printerUri: URI) {
 
     val ippClient = IppClient()
 
-    val attributes = getPrinterAttributes()
+    val attributes: IppAttributesGroup = getPrinterAttributes()
 
     var httpAuth: Http.Auth?
         get() = ippClient.httpAuth
@@ -192,12 +192,12 @@ class IppPrinter(val printerUri: URI) {
     //----------------------
 
     fun ippRequest(operation: IppOperation): IppRequest {
-        checkOperationSupported(operation)
+        checkVersionAndOperationSupported(operation)
         return ippClient.ippRequest(operation, printerUri)
     }
 
     fun ippJobRequest(operation: IppOperation, jobId: Int): IppRequest {
-        checkOperationSupported(operation)
+        checkVersionAndOperationSupported(operation)
         return ippClient.ippJobRequest(operation, printerUri, jobId)
     }
 
@@ -210,14 +210,15 @@ class IppPrinter(val printerUri: URI) {
     fun exchangeSuccessfulIppJobRequest(operation: IppOperation, jobId: Int) =
             ippClient.exchangeSuccessful(printerUri, ippJobRequest(operation, jobId))
 
-    private fun checkOperationSupported(operation: IppOperation) {
+    // ----- ipp spec checking methods, based on printer capabilities -----
+
+    private fun checkVersionAndOperationSupported(operation: IppOperation) {
+        // during class initialization getPrinterAttributes() indirectly calls this method!
         if (attributes != null) { // expression is NOT always true
-            // during class initialization getPrinterAttributes() indirectly calls this method!
+            checkValueSupported("ipp-versions-supported", ippClient.ippVersion)
             checkValueSupported("operations-supported", operation.code.toInt())
         }
     }
-
-    // ----- ipp spec checking method, based on printer capabilities -----
 
     private fun checkValueSupported(attribute: IppAttribute<*>) {
         for (value in attribute.values) {
@@ -241,10 +242,16 @@ class IppPrinter(val printerUri: URI) {
                 }
                 IppTag.NaturalLanguage,
                 IppTag.MimeMediaType,
-                IppTag.Keyword,
                 IppTag.Enum,
                 IppTag.Resolution -> {
                     values.contains(value)
+                }
+                IppTag.Keyword -> {
+                    if (value is IppVersion) {
+                        values.contains(value.toString())
+                    } else {
+                        values.contains(value)
+                    }
                 }
                 IppTag.Integer -> {
                     if (is1setOf()) {
@@ -279,11 +286,7 @@ class IppPrinter(val printerUri: URI) {
     override fun toString() =
             "IppPrinter: name = $name, makeAndModel = $makeAndModel, state = $state, stateReasons = ${stateReasons.joinToString(",")}"
 
-    fun logDetails() {
-        println("PRINTER-$name ($makeAndModel), $state (${stateReasons.joinToString(",")})")
-        for (attribute in attributes.values) {
-            println("  $attribute")
-        }
-    }
+    fun logDetails() =
+            attributes.logDetails("", "PRINTER-$name ($makeAndModel), $state (${stateReasons.joinToString(",")})")
 
 }
