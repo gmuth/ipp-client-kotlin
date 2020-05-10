@@ -4,7 +4,10 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.ipp.core.*
+import de.gmuth.ipp.core.IppAttributesGroup
+import de.gmuth.ipp.core.IppOperation
+import de.gmuth.ipp.core.IppRequest
+import de.gmuth.ipp.core.IppTag
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
@@ -129,18 +132,6 @@ class IppJob(
         return "IppJob: id = $id, uri = $uri$stateString"
     }
 
-    fun logDetails() {
-        println("JOB-$id")
-        for (attribute in attributes.values) {
-            with(attribute) {
-                if (name.startsWith("time-at") && tag == IppTag.Integer) {
-                    val integerTime = IppIntegerTime.fromInt(attributes.getValue(name) as Int?)
-                    println("  $name ($tag) = $integerTime")
-                } else {
-                    println("  $this")
-                }
-            }
-        }
-    }
+    fun logDetails() = attributes.logDetails("", "JOB-$id")
 
 }

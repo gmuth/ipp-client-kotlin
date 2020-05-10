@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import javax.net.ssl.SSLHandshakeException
 
 open class IppClient(
-        val ippVersion: IppVersion = IppVersion(1, 1),
+        var ippVersion: IppVersion = IppVersion(1, 1),
         val httpClient: Http.Client = HttpClientByHttpURLConnection()
         //val httpClient: Http.Client = HttpClientByJava11HttpClient()
 ) {
