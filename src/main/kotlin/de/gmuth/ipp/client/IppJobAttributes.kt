@@ -11,8 +11,8 @@ import de.gmuth.ipp.core.IppTag
 
 object IppJobAttributes {
 
-    fun attribute(name: String, vararg values: Any) =
-            IppAttribute(name, values.toList())
+    fun attribute(name: String, tag: IppTag, vararg values: Any) =
+            IppAttribute(name, tag, values.toList())
 
     fun documentFormat(value: String) =
             IppAttribute("document-format", IppTag.MimeMediaType, value)
@@ -43,4 +43,5 @@ object IppJobAttributes {
                         IppIntegerRange(it.first, it.last)
                     }.toList()
             )
+
 }

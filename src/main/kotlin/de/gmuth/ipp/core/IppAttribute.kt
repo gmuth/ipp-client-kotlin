@@ -7,7 +7,7 @@ import de.gmuth.ipp.iana.IppRegistrationsSection6
  * Copyright (c) 2020 Gerhard Muth
  */
 
-open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppAttributeHolder {
+open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppAttributeHolder<T> {
 
     val values = mutableListOf<T>()
 
@@ -44,12 +44,7 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
         }
     }
 
-    override fun getIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<*> {
-        for (value in values) {
-            printerAttributes.checkValueSupported("$name-supported", value as Any)
-        }
-        return this
-    }
+    override fun getIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<T> = this
 
     @Suppress("UNCHECKED_CAST")
     fun additionalValue(attribute: IppAttribute<*>) {
@@ -65,7 +60,7 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
     val value: T?
         get() {
             if (IppRegistrationsSection2.attributeIs1setOf(name) == true) {
-                println("WARN: '$name' is registered as '1setOf', use 'values' or 'getValues' instead")
+                println("WARN: '$name' is registered as '1setOf', use 'values' instead")
             }
             if (values.size > 1) {
                 throw IppException("found ${values.size.toPluralString("value")} but expected 0 or 1 for '$name'")

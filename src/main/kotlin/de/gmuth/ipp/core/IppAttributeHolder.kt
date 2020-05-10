@@ -4,8 +4,8 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
-interface IppAttributeHolder {
+interface IppAttributeHolder<T> {
 
-    fun getIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<*>
+    fun getIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<T>
 
 }

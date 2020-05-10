@@ -13,6 +13,10 @@ import java.net.URI
 
 class IppPrinter(val printerUri: URI) {
 
+    companion object {
+        var checkValueSupported: Boolean = true
+    }
+
     val ippClient = IppClient()
 
     val attributes = getPrinterAttributes()
@@ -47,7 +51,7 @@ class IppPrinter(val printerUri: URI) {
     //--------------------------------------------------
 
     fun identify(action: String) {
-        attributes.checkValueSupported("identify-actions-supported", action)
+        checkValueSupported("identify-actions-supported", action)
         val request = ippRequest(IppOperation.IdentifyPrinter).apply {
             operationGroup.attribute("identify-actions", IppTag.Keyword, action)
         }
@@ -89,7 +93,7 @@ class IppPrinter(val printerUri: URI) {
 
     fun printJob(
             file: File,
-            vararg attributeHolders: IppAttributeHolder,
+            vararg attributeHolders: IppAttributeHolder<*>,
             waitForTermination: Boolean = false
 
     ): IppJob {
@@ -104,7 +108,7 @@ class IppPrinter(val printerUri: URI) {
 
     fun printUri(
             documentUri: URI,
-            vararg attributeHolders: IppAttributeHolder,
+            vararg attributeHolders: IppAttributeHolder<Any>,
             waitForTermination: Boolean = false
 
     ): IppJob {
@@ -119,7 +123,7 @@ class IppPrinter(val printerUri: URI) {
     // Validate-Job
     //-------------
 
-    fun validateJob(vararg attributeHolders: IppAttributeHolder): IppResponse {
+    fun validateJob(vararg attributeHolders: IppAttributeHolder<*>): IppResponse {
         val request = attributeHoldersRequest(IppOperation.ValidateJob, attributeHolders)
         return exchangeSuccessful(request)
     }
@@ -128,7 +132,7 @@ class IppPrinter(val printerUri: URI) {
     // Create-Job
     //-----------
 
-    fun createJob(vararg attributeHolders: IppAttributeHolder): IppJob {
+    fun createJob(vararg attributeHolders: IppAttributeHolder<*>): IppJob {
         val request = attributeHoldersRequest(IppOperation.CreateJob, attributeHolders)
         val response = exchangeSuccessful(request)
         return IppJob(this, response.jobGroup)
@@ -136,11 +140,13 @@ class IppPrinter(val printerUri: URI) {
 
     // ---- factory method for IppRequest with Operation Print-Job, Print-Uri, Validate-Job, Create-Job
 
-    private fun attributeHoldersRequest(operation: IppOperation, attributeHolders: Array<out IppAttributeHolder>) =
+    private fun attributeHoldersRequest(operation: IppOperation, attributeHolders: Array<out IppAttributeHolder<*>>) =
             ippRequest(operation).apply {
                 with(ippAttributesGroup(IppTag.Job)) {
                     for (attributeHolder in attributeHolders) {
-                        put(attributeHolder.getIppAttribute(attributes))
+                        val attribute = attributeHolder.getIppAttribute(attributes)
+                        checkValueSupported(attribute)
+                        put(attribute)
                     }
                 }
             }
@@ -162,7 +168,7 @@ class IppPrinter(val printerUri: URI) {
         val request = ippRequest(IppOperation.GetJobs)
         if (whichJobs != null) {
             // PWG Job and Printer Extensions Set 2
-            attributes.checkValueSupported("which-jobs-supported", whichJobs)
+            checkValueSupported("which-jobs-supported", whichJobs)
             request.operationGroup.attribute("which-jobs", IppTag.Keyword, whichJobs)
         }
         val response = exchangeSuccessful(request)
@@ -207,7 +213,62 @@ class IppPrinter(val printerUri: URI) {
     private fun checkOperationSupported(operation: IppOperation) {
         if (attributes != null) { // expression is NOT always true
             // during class initialization getPrinterAttributes() indirectly calls this method!
-            attributes.checkValueSupported("operations-supported", operation.code.toInt())
+            checkValueSupported("operations-supported", operation.code.toInt())
+        }
+    }
+
+    // ----- ipp spec checking method, based on printer capabilities -----
+
+    private fun checkValueSupported(attribute: IppAttribute<*>) {
+        for (value in attribute.values) {
+            checkValueSupported("${attribute.name}-supported", value!!)
+        }
+    }
+
+    private fun checkValueSupported(supportedAttributeName: String, value: Any) {
+        if (!supportedAttributeName.endsWith("-supported")) {
+            throw IppException("expected attribute name ending with '-supported' but found: '$supportedAttributeName'")
+        }
+        val supportedAttribute = attributes.get(supportedAttributeName)
+        if (supportedAttribute == null || !checkValueSupported) {
+            return
+        }
+        with(supportedAttribute) {
+            val valueIsSupported = when (tag) {
+                IppTag.Boolean -> {
+                    //e.g. 'page-ranges-supported'
+                    supportedAttribute.value as Boolean
+                }
+                IppTag.NaturalLanguage,
+                IppTag.MimeMediaType,
+                IppTag.Keyword,
+                IppTag.Enum,
+                IppTag.Resolution -> {
+                    values.contains(value)
+                }
+                IppTag.Integer -> {
+                    if (is1setOf()) {
+                        values.contains(value)
+                    } else {
+                        // e.g. 'job-priority-supported'
+                        value is Int && value <= supportedAttribute.value as Int
+                    }
+                }
+                IppTag.RangeOfInteger -> with(supportedAttribute.value as IppIntegerRange) {
+                    value is Int && value in IntRange(start, end)
+                }
+                else -> {
+                    println("WARN: unable to check if value '$value' is supported by $this")
+                    true
+                }
+            }
+            if (valueIsSupported) {
+                //println("'${enumValueNameOrValue(value)}' supported by printer. $this")
+            } else {
+                println("ERROR: unsupported: $value")
+                println("ERROR: supported: ${values.joinToString(",")}")
+                throw IppException("value '${enumValueNameOrValue(value)}' not supported by printer. $this")
+            }
         }
     }
 

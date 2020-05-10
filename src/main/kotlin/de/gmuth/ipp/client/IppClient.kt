@@ -36,7 +36,7 @@ open class IppClient(
                     operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
                 }
                 if (requestingUserName != null) {
-                    operationGroup.attribute("requesting-user-name", IppTag.NameWithoutLanguage, requestingUserName)
+                    operationGroup.attribute("requesting-user-name", IppTag.NameWithoutLanguage, requestingUserName!!)
                 }
             }
 
