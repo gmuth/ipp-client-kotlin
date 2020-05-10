@@ -46,9 +46,9 @@ class IppPrinter(val printerUri: URI) {
     val stateReasons: List<String>
         get() = attributes.getValues("printer-state-reasons")
 
-    //--------------------------------------------------
-    // Identify-Printer (e.g. flash,sound,display,speak)
-    //--------------------------------------------------
+    //-----------------
+    // Identify-Printer
+    //-----------------
 
     fun identify(action: String) {
         checkValueSupported("identify-actions-supported", action)
