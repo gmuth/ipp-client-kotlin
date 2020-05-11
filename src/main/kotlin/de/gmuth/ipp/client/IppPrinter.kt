@@ -93,7 +93,7 @@ class IppPrinter(val printerUri: URI) {
 
     fun printJob(
             file: File,
-            vararg attributeHolders: IppAttributeHolder<*>,
+            vararg attributeHolders: IppAttributeHolder,
             waitForTermination: Boolean = false
 
     ): IppJob {
@@ -108,7 +108,7 @@ class IppPrinter(val printerUri: URI) {
 
     fun printUri(
             documentUri: URI,
-            vararg attributeHolders: IppAttributeHolder<Any>,
+            vararg attributeHolders: IppAttributeHolder,
             waitForTermination: Boolean = false
 
     ): IppJob {
@@ -123,7 +123,7 @@ class IppPrinter(val printerUri: URI) {
     // Validate-Job
     //-------------
 
-    fun validateJob(vararg attributeHolders: IppAttributeHolder<*>): IppResponse {
+    fun validateJob(vararg attributeHolders: IppAttributeHolder): IppResponse {
         val request = attributeHoldersRequest(IppOperation.ValidateJob, attributeHolders)
         return exchangeSuccessful(request)
     }
@@ -132,7 +132,7 @@ class IppPrinter(val printerUri: URI) {
     // Create-Job
     //-----------
 
-    fun createJob(vararg attributeHolders: IppAttributeHolder<*>): IppJob {
+    fun createJob(vararg attributeHolders: IppAttributeHolder): IppJob {
         val request = attributeHoldersRequest(IppOperation.CreateJob, attributeHolders)
         val response = exchangeSuccessful(request)
         return IppJob(this, response.jobGroup)
@@ -140,7 +140,7 @@ class IppPrinter(val printerUri: URI) {
 
     // ---- factory method for IppRequest with Operation Print-Job, Print-Uri, Validate-Job, Create-Job
 
-    private fun attributeHoldersRequest(operation: IppOperation, attributeHolders: Array<out IppAttributeHolder<*>>) =
+    private fun attributeHoldersRequest(operation: IppOperation, attributeHolders: Array<out IppAttributeHolder>) =
             ippRequest(operation).apply {
                 with(ippAttributesGroup(IppTag.Job)) {
                     for (attributeHolder in attributeHolders) {
@@ -212,10 +212,23 @@ class IppPrinter(val printerUri: URI) {
         return ippClient.exchangeSuccessful(printerUri, request, documentInputStream)
     }
 
-    // ----- ipp spec checking method, based on printer capabilities -----
+
+    // -------
+    // Logging
+    // -------
+
+    override fun toString() =
+            "IppPrinter: name = $name, makeAndModel = $makeAndModel, state = $state, stateReasons = ${stateReasons.joinToString(",")}"
+
+    fun logDetails() =
+            attributes.logDetails("", "PRINTER-$name ($makeAndModel), $state (${stateReasons.joinToString(",")})")
+
+    // -------------------------------------------------------
+    // ipp spec checking method, based on printer capabilities
+    // -------------------------------------------------------
 
     private fun checkValueSupported(supportedAttributeName: String, value: Any) {
-        if (attributes == null) { // expression is NOT always false
+        if (attributes == null) { // condition is NOT always false
             return
         }
         if (!supportedAttributeName.endsWith("-supported")) {
@@ -270,15 +283,4 @@ class IppPrinter(val printerUri: URI) {
             }
         }
     }
-
-    // -------
-    // Logging
-    // -------
-
-    override fun toString() =
-            "IppPrinter: name = $name, makeAndModel = $makeAndModel, state = $state, stateReasons = ${stateReasons.joinToString(",")}"
-
-    fun logDetails() =
-            attributes.logDetails("", "PRINTER-$name ($makeAndModel), $state (${stateReasons.joinToString(",")})")
-
 }
