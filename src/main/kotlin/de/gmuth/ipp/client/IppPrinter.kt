@@ -212,7 +212,6 @@ class IppPrinter(val printerUri: URI) {
         return ippClient.exchangeSuccessful(printerUri, request, documentInputStream)
     }
 
-
     // -------
     // Logging
     // -------
