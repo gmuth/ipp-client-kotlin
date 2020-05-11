@@ -21,6 +21,6 @@ class IppResponse : IppMessage() {
     val printerGroup: IppAttributesGroup
         get() = getSingleAttributesGroup(IppTag.Printer)
 
-    fun isSuccessful() = code!! < 0x0100
+    fun isSuccessful() = status.isSuccessful()
 
 }
