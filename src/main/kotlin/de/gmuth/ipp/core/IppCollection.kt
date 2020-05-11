@@ -24,10 +24,10 @@ class IppCollection() {
 
     fun logDetails(prefix: String = "") {
         val string = toString()
-        if(string.length < 160) {
+        if (string.length < 160) {
             println("$prefix$string")
         } else {
-            for(member in members) {
+            for (member in members) {
                 member.logDetails("$prefix")
             }
         }
