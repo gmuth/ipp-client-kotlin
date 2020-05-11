@@ -76,7 +76,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
         // keep attributes-charset for name and text value decoding
         if (name == "attributes-charset" && tag == IppTag.Charset) {
-            attributesCharset = Charset.forName(value as String)
+            attributesCharset = value as Charset
         }
 
         return IppAttribute(name, tag, value)
@@ -131,14 +131,20 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
         // value class URI
         IppTag.Uri -> URI.create(readStringForTag(tag))
 
+        // value class Charset
+        IppTag.Charset -> Charset.forName(readStringForTag(tag))
+
         // value class String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
         IppTag.OctetString,
         IppTag.Keyword,
         IppTag.UriScheme,
-        IppTag.Charset,
-        IppTag.NaturalLanguage,
         IppTag.MimeMediaType,
         IppTag.MemberAttrName -> readStringForTag(tag)
+        IppTag.NaturalLanguage -> {
+            val language = readStringForTag(tag)
+            // split en-us for Locale?
+            language
+        }
 
         // value class IppString
         IppTag.TextWithoutLanguage,

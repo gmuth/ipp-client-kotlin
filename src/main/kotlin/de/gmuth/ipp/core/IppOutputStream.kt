@@ -80,7 +80,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
             }
             // keep attributes-charset for name and text value encoding
             if (tag == IppTag.Charset && name == "attributes-charset") {
-                attributesCharset = Charset.forName(value as String)
+                attributesCharset = value as Charset
             }
         }
     }
@@ -91,6 +91,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
         if (!tag.isOutOfBandTag() && tag != IppTag.EndCollection && value == null) {
             throw IppException("missing value for tag $tag")
         }
+        //println("value javaClass: ${value?.javaClass}")
         when (tag) {
             // out-of-band RFC 8010 3.8. & RFC 3380 8.
             IppTag.Unsupported_,
@@ -129,10 +130,13 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
                 writeString(value.toString(), charsetForTag(tag))
             }
 
+            IppTag.Charset -> with(value as Charset) {
+                writeString(value.name().toLowerCase(), charsetForTag(tag))
+            }
+
             IppTag.OctetString,
             IppTag.Keyword,
             IppTag.UriScheme,
-            IppTag.Charset,
             IppTag.NaturalLanguage,
             IppTag.MimeMediaType,
             IppTag.MemberAttrName -> with(value as String) {

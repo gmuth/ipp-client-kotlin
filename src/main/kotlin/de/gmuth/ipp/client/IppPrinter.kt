@@ -10,6 +10,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
 import java.net.URI
+import java.nio.charset.Charset
 
 class IppPrinter(val printerUri: URI) {
 
@@ -145,7 +146,9 @@ class IppPrinter(val printerUri: URI) {
                 with(ippAttributesGroup(IppTag.Job)) {
                     for (attributeHolder in attributeHolders) {
                         val attribute = attributeHolder.getIppAttribute(attributes)
-                        checkValueSupported(attribute)
+                        for (value in attribute.values) {
+                            checkValueSupported("${attribute.name}-supported", value!!)
+                        }
                         put(attribute)
                     }
                 }
@@ -191,42 +194,31 @@ class IppPrinter(val printerUri: URI) {
     // delegate to IppClient
     //----------------------
 
-    fun ippRequest(operation: IppOperation): IppRequest {
-        checkVersionAndOperationSupported(operation)
-        return ippClient.ippRequest(operation, printerUri)
-    }
+    fun ippRequest(operation: IppOperation) =
+            ippClient.ippRequest(operation, printerUri)
 
-    fun ippJobRequest(operation: IppOperation, jobId: Int): IppRequest {
-        checkVersionAndOperationSupported(operation)
-        return ippClient.ippJobRequest(operation, printerUri, jobId)
-    }
-
-    fun exchangeSuccessful(request: IppRequest, documentInputStream: InputStream? = null) =
-            ippClient.exchangeSuccessful(printerUri, request, documentInputStream)
+    fun ippJobRequest(operation: IppOperation, jobId: Int) =
+            ippClient.ippJobRequest(operation, printerUri, jobId)
 
     fun exchangeSuccessfulIppRequest(operation: IppOperation) =
-            ippClient.exchangeSuccessful(printerUri, ippRequest(operation))
+            exchangeSuccessful(ippRequest(operation))
 
     fun exchangeSuccessfulIppJobRequest(operation: IppOperation, jobId: Int) =
-            ippClient.exchangeSuccessful(printerUri, ippJobRequest(operation, jobId))
+            exchangeSuccessful(ippJobRequest(operation, jobId))
 
-    // ----- ipp spec checking methods, based on printer capabilities -----
-
-    private fun checkVersionAndOperationSupported(operation: IppOperation) {
-        // during class initialization getPrinterAttributes() indirectly calls this method!
-        if (attributes != null) { // expression is NOT always true
-            checkValueSupported("ipp-versions-supported", ippClient.ippVersion)
-            checkValueSupported("operations-supported", operation.code.toInt())
-        }
+    fun exchangeSuccessful(request: IppRequest, documentInputStream: InputStream? = null): IppResponse {
+        checkValueSupported("ipp-versions-supported", ippClient.ippVersion)
+        checkValueSupported("operations-supported", request.code!!.toInt())
+        checkValueSupported("charset-supported", request.attributesCharset)
+        return ippClient.exchangeSuccessful(printerUri, request, documentInputStream)
     }
 
-    private fun checkValueSupported(attribute: IppAttribute<*>) {
-        for (value in attribute.values) {
-            checkValueSupported("${attribute.name}-supported", value!!)
-        }
-    }
+    // ----- ipp spec checking method, based on printer capabilities -----
 
     private fun checkValueSupported(supportedAttributeName: String, value: Any) {
+        if (attributes == null) { // expression is NOT always false
+            return
+        }
         if (!supportedAttributeName.endsWith("-supported")) {
             throw IppException("expected attribute name ending with '-supported' but found: '$supportedAttributeName'")
         }
@@ -240,6 +232,7 @@ class IppPrinter(val printerUri: URI) {
                     //e.g. 'page-ranges-supported'
                     supportedAttribute.value as Boolean
                 }
+                IppTag.Charset,
                 IppTag.NaturalLanguage,
                 IppTag.MimeMediaType,
                 IppTag.Enum,

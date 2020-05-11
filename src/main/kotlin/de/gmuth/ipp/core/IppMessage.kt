@@ -5,6 +5,7 @@ package de.gmuth.ipp.core
  */
 
 import java.io.*
+import java.nio.charset.Charset
 
 abstract class IppMessage {
 
@@ -26,6 +27,9 @@ abstract class IppMessage {
 
     val operationGroup: IppAttributesGroup
         get() = getSingleAttributesGroup(IppTag.Operation)
+
+    val attributesCharset: Charset
+        get() = operationGroup["attributes-charset"]!!.value as Charset
 
     // --- DECODING
 

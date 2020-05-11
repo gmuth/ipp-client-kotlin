@@ -26,7 +26,7 @@ open class IppRequest() : IppMessage() {
         this.code = operationCode
         this.requestId = requestId
         with(ippAttributesGroup(IppTag.Operation)) {
-            attribute("attributes-charset", IppTag.Charset, charset.name().toLowerCase())
+            attribute("attributes-charset", IppTag.Charset, charset)
             attribute("attributes-natural-language", IppTag.NaturalLanguage, naturalLanguage)
         }
     }
