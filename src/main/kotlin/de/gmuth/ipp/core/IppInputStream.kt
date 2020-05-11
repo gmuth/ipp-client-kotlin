@@ -15,7 +15,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
     companion object {
         var verbose: Boolean = false
         var checkSyntax: Boolean = true
-        var check1setOfRegistration: Boolean = false
+        var check1setOfRegistration: Boolean = true
     }
 
     // encoding for text and name attributes, rfc 8011 4.1.4.1
