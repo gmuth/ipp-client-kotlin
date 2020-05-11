@@ -4,10 +4,7 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.ipp.core.IppAttributesGroup
-import de.gmuth.ipp.core.IppOperation
-import de.gmuth.ipp.core.IppRequest
-import de.gmuth.ipp.core.IppTag
+import de.gmuth.ipp.core.*
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
