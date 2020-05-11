@@ -9,7 +9,7 @@ import de.gmuth.ipp.core.IppAttributeHolder
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppTag
 
-enum class IppSides(val value: String) : IppAttributeHolder<String> {
+enum class IppSides(val value: String) : IppAttributeHolder {
 
     OneSided("one-sided"),
     TwoSidedLongEdge("two-sided-long-edge"),

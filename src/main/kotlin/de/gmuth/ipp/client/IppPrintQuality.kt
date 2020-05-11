@@ -9,7 +9,7 @@ import de.gmuth.ipp.core.IppAttributeHolder
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppTag
 
-enum class IppPrintQuality(val value: Int) : IppAttributeHolder<Int> {
+enum class IppPrintQuality(val value: Int) : IppAttributeHolder {
 
     Draft(3), Normal(4), High(5);
 

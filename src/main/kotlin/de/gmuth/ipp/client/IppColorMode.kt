@@ -6,7 +6,7 @@ package de.gmuth.ipp.client
 
 import de.gmuth.ipp.core.*
 
-enum class IppColorMode(val value: String) : IppAttributeHolder<String> {
+enum class IppColorMode(val value: String) : IppAttributeHolder {
 
     Auto("auto"),
     Color("color"),
