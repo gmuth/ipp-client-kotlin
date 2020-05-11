@@ -28,7 +28,7 @@ with(
     IppPrintQuality.High,
     IppColorMode.Monochrome,
     IppSides.TwoSidedLongEdge,
-    attribute("document-name", "IPP Implementation Guide"),
+    attribute("document-name", IppTag.NameWithoutLanguage, "IPP Implementation Guide"),
     waitForTermination = true
   )
   job.logDetails()

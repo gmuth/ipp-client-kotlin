@@ -17,6 +17,9 @@ object IppJobAttributes {
     fun documentFormat(value: String) =
             IppAttribute("document-format", IppTag.MimeMediaType, value)
 
+    fun documentName(value: String) =
+            IppAttribute("document-Name", IppTag.NameWithoutLanguage, value)
+
     fun media(value: String) =
             IppAttribute("media", IppTag.Keyword, value)
 
