@@ -82,7 +82,7 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
                 "no-value"
             }
             tag == IppTag.Integer && name.contains("time") && !name.contains("time-out") -> {
-                IppIntegerTime.fromInt(value as Int?).toString()
+                IppIntegerTime.fromInt(value as Int).toString()
             }
             else -> {
                 try {
