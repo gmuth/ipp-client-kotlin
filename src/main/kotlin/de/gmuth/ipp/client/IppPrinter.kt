@@ -10,7 +10,6 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
 import java.net.URI
-import java.nio.charset.Charset
 
 class IppPrinter(val printerUri: URI) {
 
