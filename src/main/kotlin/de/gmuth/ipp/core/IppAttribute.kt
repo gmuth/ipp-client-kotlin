@@ -7,7 +7,7 @@ import de.gmuth.ipp.iana.IppRegistrationsSection6
  * Copyright (c) 2020 Gerhard Muth
  */
 
-open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppAttributeHolder<T> {
+open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppAttributeHolder {
 
     val values = mutableListOf<T>()
 
@@ -44,20 +44,22 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
         }
     }
 
-    override fun getIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<T> = this
+    override fun getIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<*> = this
 
     @Suppress("UNCHECKED_CAST")
     fun additionalValue(attribute: IppAttribute<*>) {
         when {
             attribute.name.isNotEmpty() -> throw IppException("name must be empty for additional values")
-            tag == attribute.tag -> values.add(attribute.value as T)
-            else -> throw IppException("'$name' 1setOf error: expected tag '$tag' for additional value but found '${attribute.tag}'")
+            attribute.values.size != 1 -> throw IppException("expected 1 additional value, not ${attribute.values.size}")
+            attribute.values.first() == Unit -> throw IppException("expected a value, not 'Unit'")
+            tag != attribute.tag -> throw IppException("'$name' 1setOf error: expected tag '$tag' for additional value but found '${attribute.tag}'")
+            else -> values.add(attribute.value as T)
         }
     }
 
     fun is1setOf() = values.size > 1 || IppRegistrationsSection2.attributeIs1setOf(name) == true
 
-    val value: T?
+    val value: T
         get() {
             if (IppRegistrationsSection2.attributeIs1setOf(name) == true) {
                 println("WARN: '$name' is registered as '1setOf', use 'values' instead")
@@ -65,7 +67,7 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
             if (values.size > 1) {
                 throw IppException("found ${values.size.toPluralString("value")} but expected 0 or 1 for '$name'")
             }
-            return values.firstOrNull()
+            return values.first()
         }
 
     fun enumValueNameOrValue(value: Any?): Any? =
@@ -101,5 +103,4 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
             }
         }
     }
-
 }

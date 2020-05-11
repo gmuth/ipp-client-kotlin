@@ -62,7 +62,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
     private fun readTag(): IppTag = IppTag.fromByte(readByte())
 
-    private fun readAttribute(tag: IppTag): IppAttribute<*> {
+    private fun readAttribute(tag: IppTag): IppAttribute<Any> {
         val name = readString(Charsets.US_ASCII)
         val value = try {
             readAttributeValue(tag)
@@ -82,7 +82,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
         return IppAttribute(name, tag, value)
     }
 
-    private fun readAttributeValue(tag: IppTag): Any? = when (tag) {
+    private fun readAttributeValue(tag: IppTag): Any = when (tag) {
 
         // out-of-band RFC 8010 3.8. & RFC 3380 8 -- endCollection has no value either
         IppTag.Unsupported_,
@@ -93,7 +93,6 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
         IppTag.AdminDefine,
         IppTag.EndCollection -> {
             assertValueLength(0)
-            null
         }
 
         // value class Boolean
@@ -190,7 +189,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
     private fun readCollection(): IppCollection {
         lateinit var memberName: String
-        var currentMemberAttribute: IppAttribute<*>? = null
+        var currentMemberAttribute: IppAttribute<Any>? = null
         val collection = IppCollection()
         memberLoop@ while (true) {
             val attribute = readAttribute(readTag())
