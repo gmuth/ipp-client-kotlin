@@ -2,6 +2,7 @@ package de.gmuth.ipp.core
 
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.ipp.iana.IppRegistrationsSection6
+import java.nio.charset.Charset
 
 /**
  * Copyright (c) 2020 Gerhard Muth
@@ -87,7 +88,10 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
             else -> {
                 try {
                     values.joinToString(",") {
-                        enumValueNameOrValue(it as Any).toString()
+                        when (tag) {
+                            IppTag.Charset -> (it as Charset).name().toLowerCase()
+                            else -> enumValueNameOrValue(it as Any).toString()
+                        }
                     }
                 } catch (exception: Exception) {
                     "<${exception.message}>"
