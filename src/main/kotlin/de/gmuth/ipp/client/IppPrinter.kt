@@ -221,7 +221,7 @@ class IppPrinter(val printerUri: URI) {
             "IppPrinter: name = $name, makeAndModel = $makeAndModel, state = $state, stateReasons = ${stateReasons.joinToString(",")}"
 
     fun logDetails() =
-            attributes.logDetails("", "PRINTER-$name ($makeAndModel), $state (${stateReasons.joinToString(",")})")
+            attributes.logDetails(title = "PRINTER-$name ($makeAndModel), $state (${stateReasons.joinToString(",")})")
 
     // -------------------------------------------------------
     // ipp spec checking method, based on printer capabilities
