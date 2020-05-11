@@ -70,21 +70,30 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
             return values.first()
         }
 
-    fun enumValueNameOrValue(value: Any?): Any? =
-            if (tag == IppTag.Enum) {
-                IppRegistrationsSection6.getEnumValueName(name, value!!)
-            } else {
-                value
-            }
+    fun enumValueNameOrValue(value: Any) = when (tag) {
+        IppTag.Enum -> IppRegistrationsSection6.getEnumValueName(name, value)
+        else -> value
+    }
 
     override fun toString(): String {
         val tagString = "${if (is1setOf()) "1setOf " else ""}$tag"
-        val valuesString = if (values.isEmpty()) "no-value" else
-            try {
-                values.joinToString(",") { enumValueNameOrValue(it as Any?).toString() }
-            } catch (exception: Exception) {
-                "<${exception.message}>"
+        val valuesString = when {
+            values.isEmpty() -> {
+                "no-value"
             }
+            tag == IppTag.Integer && name.contains("time") && !name.contains("time-out") -> {
+                IppIntegerTime.fromInt(value as Int?).toString()
+            }
+            else -> {
+                try {
+                    values.joinToString(",") {
+                        enumValueNameOrValue(it as Any).toString()
+                    }
+                } catch (exception: Exception) {
+                    "<${exception.message}>"
+                }
+            }
+        }
         return "$name ($tagString) = $valuesString"
     }
 
@@ -98,7 +107,7 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
                 if (value is IppCollection) {
                     value.logDetails("$prefix  ")
                 } else {
-                    println("${prefix}  ${enumValueNameOrValue(value)}")
+                    println("${prefix}  ${enumValueNameOrValue(value as Any)}")
                 }
             }
         }

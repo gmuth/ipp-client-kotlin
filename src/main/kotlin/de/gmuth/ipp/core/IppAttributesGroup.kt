@@ -43,16 +43,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     fun logDetails(prefix: String = "", title: String = "$tag") {
         println("${prefix}$title")
         for (key in keys) {
-            println("$prefix  ${attributeDetails(get(key)!!)}")
-        }
-    }
-
-    private fun attributeDetails(attribute: IppAttribute<*>) = with(attribute) {
-        if (tag == IppTag.Integer && name.contains("time") && !name.contains("time-out")) {
-            val integerTime = IppIntegerTime.fromInt(attribute.value as Int?)
-            "$name ($tag) = $integerTime"
-        } else {
-            "$this"
+            println("$prefix  ${get(key)}")
         }
     }
 
