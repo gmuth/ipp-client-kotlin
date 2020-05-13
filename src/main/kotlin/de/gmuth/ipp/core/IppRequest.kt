@@ -5,6 +5,7 @@ package de.gmuth.ipp.core
  */
 
 import java.nio.charset.Charset
+import java.util.*
 
 open class IppRequest() : IppMessage() {
 
@@ -19,7 +20,7 @@ open class IppRequest() : IppMessage() {
             operationCode: Short,
             requestId: Int,
             charset: Charset = Charsets.UTF_8,
-            naturalLanguage: String = "en"
+            naturalLanguage: Locale = Locale.ENGLISH
 
     ) : this() {
         this.version = version

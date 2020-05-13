@@ -8,6 +8,7 @@ import de.gmuth.ipp.core.IppException
 import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppVersion
 import java.nio.charset.Charset
+import java.util.*
 
 class CupsRequest : IppRequest {
 
@@ -22,7 +23,7 @@ class CupsRequest : IppRequest {
             operation: CupsOperation,
             requestId: Int,
             charset: Charset = Charsets.UTF_8,
-            naturalLanguage: String = "en"
+            naturalLanguage: Locale = Locale.ENGLISH
 
     ) : super(version, operation.code, requestId, charset, naturalLanguage)
 

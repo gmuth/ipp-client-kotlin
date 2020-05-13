@@ -9,6 +9,7 @@ import java.io.DataInputStream
 import java.io.InputStream
 import java.net.URI
 import java.nio.charset.Charset
+import java.util.*
 
 class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
@@ -38,7 +39,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                 tag.isDelimiterTag() -> {
                     currentGroup = message.ippAttributesGroup(tag)
                     if (verbose) {
-                        println("--- $tag")
+                        println("--- $tag ---")
                     }
                 }
                 else -> {
@@ -127,11 +128,14 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
             )
         }
 
-        // value class URI
-        IppTag.Uri -> URI.create(readStringForTag(tag))
-
         // value class Charset
         IppTag.Charset -> Charset.forName(readStringForTag(tag))
+
+        // value class Locale
+        IppTag.NaturalLanguage -> Locale.forLanguageTag(readStringForTag(tag))
+
+        // value class URI
+        IppTag.Uri -> URI.create(readStringForTag(tag))
 
         // value class String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
         IppTag.OctetString,
@@ -139,11 +143,6 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
         IppTag.UriScheme,
         IppTag.MimeMediaType,
         IppTag.MemberAttrName -> readStringForTag(tag)
-        IppTag.NaturalLanguage -> {
-            val language = readStringForTag(tag)
-            // split en-us for Locale?
-            language
-        }
 
         // value class IppString
         IppTag.TextWithoutLanguage,
