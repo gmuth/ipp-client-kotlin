@@ -22,7 +22,7 @@ open class IppClient(
         private val requestCounter = AtomicInteger(1)
     }
 
-    var requestingUserName: String? = System.getenv("USER")
+    var requestingUserName: String = System.getenv("USER")
     var httpAuth: Http.Auth? = null
     var verbose: Boolean = false
 
@@ -35,9 +35,7 @@ open class IppClient(
                 if (printerUri != null) {
                     operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
                 }
-                if (requestingUserName != null) {
-                    operationGroup.attribute("requesting-user-name", IppTag.NameWithoutLanguage, requestingUserName!!)
-                }
+                operationGroup.attribute("requesting-user-name", IppTag.NameWithoutLanguage, requestingUserName)
             }
 
     fun ippJobRequest(jobOperation: IppOperation, printerUri: URI, jobId: Int) =
