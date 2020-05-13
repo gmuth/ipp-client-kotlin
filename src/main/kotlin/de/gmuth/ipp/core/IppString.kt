@@ -1,4 +1,4 @@
-package de.gmuth.ipp.core;
+package de.gmuth.ipp.core
 
 /**
  * Copyright (c) 2020 Gerhard Muth
@@ -10,5 +10,5 @@ data class IppString(
         val string: String,
         val language: String? = null
 ) {
-    override fun toString() = "${if (language == null) "" else "[$language] "}$string"
+    override fun toString() = "$string${if (language == null) "" else "[$language]"}"
 }
