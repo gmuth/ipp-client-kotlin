@@ -8,6 +8,8 @@ import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppTag
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
@@ -63,7 +65,10 @@ class IppJob(
     fun waitForTermination(refreshRate: Duration = defaultRefreshRate) {
         println("wait for terminal state of job #$id")
         do {
-            Thread.sleep(refreshRate.toMillis())
+            //Thread.sleep(refreshRate.toMillis())
+            runBlocking {
+                delay(refreshRate.toMillis())
+            }
             updateAttributes()
             println("job-state = $state, job-impressions-completed = $impressionsCompleted")
         } while (!isTerminated())
