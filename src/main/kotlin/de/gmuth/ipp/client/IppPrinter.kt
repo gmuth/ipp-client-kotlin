@@ -227,7 +227,8 @@ class IppPrinter(val printerUri: URI) {
     // -------------------------------------------------------
 
     private fun checkValueSupported(supportedAttributeName: String, value: Any) {
-        if (attributes == null) { // condition is NOT always false
+        // condition is NOT always false, because this method is used during class initialization
+        if (attributes == null) {
             return
         }
         if (!supportedAttributeName.endsWith("-supported")) {
