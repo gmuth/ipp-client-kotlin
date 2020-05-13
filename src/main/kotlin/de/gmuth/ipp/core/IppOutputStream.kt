@@ -114,10 +114,10 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
                 writeInt(value)
             }
 
-            IppTag.RangeOfInteger -> with(value as IppIntegerRange) {
+            IppTag.RangeOfInteger -> with(value as IntRange) {
                 writeShort(8)
                 writeInt(start)
-                writeInt(end)
+                writeInt(endInclusive)
             }
 
             IppTag.Resolution -> with(value as IppResolution) {

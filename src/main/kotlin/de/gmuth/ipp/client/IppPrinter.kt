@@ -266,8 +266,8 @@ class IppPrinter(val printerUri: URI) {
                         value is Int && value <= supportedAttribute.value as Int
                     }
                 }
-                IppTag.RangeOfInteger -> with(supportedAttribute.value as IppIntegerRange) {
-                    value is Int && value in IntRange(start, end)
+                IppTag.RangeOfInteger -> {
+                    value is Int && value in supportedAttribute.value as IntRange
                 }
                 else -> {
                     println("WARN: unable to check if value '$value' is supported by $this")

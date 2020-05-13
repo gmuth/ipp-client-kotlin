@@ -5,7 +5,6 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.ipp.core.IppAttribute
-import de.gmuth.ipp.core.IppIntegerRange
 import de.gmuth.ipp.core.IppResolution
 import de.gmuth.ipp.core.IppTag
 
@@ -39,12 +38,6 @@ object IppJobAttributes {
             IppAttribute("printer-resolution", IppTag.Resolution, IppResolution(value))
 
     fun pageRanges(vararg ranges: IntRange) =
-            IppAttribute(
-                    "page-ranges",
-                    IppTag.RangeOfInteger,
-                    ranges.map {
-                        IppIntegerRange(it.first, it.last)
-                    }.toList()
-            )
+            IppAttribute("page-ranges", IppTag.RangeOfInteger, ranges.toList())
 
 }

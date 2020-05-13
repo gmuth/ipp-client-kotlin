@@ -109,12 +109,12 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
             readInt()
         }
 
-        // value class IppIntegerRange
+        // value class IntRange
         IppTag.RangeOfInteger -> {
             assertValueLength(8)
-            IppIntegerRange(
+            IntRange(
                     start = readInt(),
-                    end = readInt()
+                    endInclusive = readInt()
             )
         }
 

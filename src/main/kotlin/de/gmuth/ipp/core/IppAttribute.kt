@@ -26,10 +26,7 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppAttrib
     constructor(name: String, tag: IppTag, vararg values: T) : this(name, tag, values.toList())
 
     constructor(name: String, tag: IppTag, values: Collection<T>) : this(name, tag) {
-        // do not add null to values
-        if (values.size > 1 || values.size == 1 && values.first() != null) {
-            this.values.addAll(values)
-        }
+        this.values.addAll(values)
     }
 
     // automatic tag
@@ -79,29 +76,33 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppAttrib
 
     override fun toString(): String {
         val tagString = "${if (is1setOf()) "1setOf " else ""}$tag"
-        val valuesString = when {
-            values.isEmpty() -> {
+        return "$name ($tagString) = ${valuesToString()}"
+    }
+
+    private fun valuesToString(): String =
+            if (values.isEmpty()) {
                 "no-value"
-            }
-            tag == IppTag.Integer && name.contains("time") && !name.contains("time-out") -> {
-                IppIntegerTime.fromInt(value as Int).toString()
-            }
-            else -> {
-                try {
-                    values.joinToString(",") {
-                        when (tag) {
-                            IppTag.Charset -> (it as Charset).name().toLowerCase()
-                            IppTag.NaturalLanguage -> (it as Locale).toLanguageTag().toLowerCase()
-                            else -> enumValueNameOrValue(it as Any).toString()
+            } else {
+                values.joinToString(",") {
+                    when {
+                        tag == IppTag.Charset -> with(it as Charset) {
+                            name().toLowerCase()
+                        }
+                        tag == IppTag.NaturalLanguage -> with(it as Locale) {
+                            toLanguageTag().toLowerCase()
+                        }
+                        tag == IppTag.RangeOfInteger -> with(it as IntRange) {
+                            "$start-$endInclusive"
+                        }
+                        tag == IppTag.Integer && name.contains("time") && !name.contains("time-out") -> with(it as Int) {
+                            IppIntegerTime.fromInt(this).toString()
+                        }
+                        else -> with(it as Any) {
+                            enumValueNameOrValue(this).toString()
                         }
                     }
-                } catch (exception: Exception) {
-                    "<${exception.message}>"
                 }
             }
-        }
-        return "$name ($tagString) = $valuesString"
-    }
 
     fun logDetails(prefix: String = "") {
         val string = toString()
