@@ -60,20 +60,23 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
                 IppRegistrationsSection2.checkSyntaxOfAttribute(name, tag)
             }
 
-            if (values.isEmpty()) {
-                if (tag.isOutOfBandTag() || tag == IppTag.EndCollection) {
-                    writeTag(tag)
-                    writeString(name, Charsets.US_ASCII)
-                    writeAttributeValue(tag, values)
-                } else {
+            if (tag.isOutOfBandTag() || tag == IppTag.EndCollection) {
+                if (values.isNotEmpty()) {
+                    throw IppException("'$name' must not have any value")
+                }
+                writeTag(tag)
+                writeString(name, Charsets.US_ASCII)
+                writeShort(0)
+
+            } else {
+                if (values.isEmpty()) {
                     throw IppException("no values found to write for '$name'")
                 }
-            } else {
                 // 1setOf iteration
                 for ((index, value) in values.withIndex()) {
                     writeTag(tag)
                     writeString(if (index == 0) name else "", Charsets.US_ASCII)
-                    writeAttributeValue(tag, value)
+                    writeAttributeValue(tag, value!!)
                 }
                 if (values.size > 1 && IppRegistrationsSection2.attributeIs1setOf(name) == false) {
                     println("WARN: '$name' is not registered as '1setOf'")
@@ -88,20 +91,12 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
 
     private fun writeTag(tag: IppTag) = writeByte(tag.code.toInt())
 
-    private fun writeAttributeValue(tag: IppTag, value: Any?) {
-        if (!tag.isOutOfBandTag() && tag != IppTag.EndCollection && value == null) {
-            throw IppException("missing value for tag $tag")
+    private fun writeAttributeValue(tag: IppTag, value: Any) {
+        if (tag.isOutOfBandTag() || tag == IppTag.EndCollection) {
+            throw IppException("tag '$tag' does not support any value")
         }
         //println("value javaClass: ${value?.javaClass}")
         when (tag) {
-            // out-of-band RFC 8010 3.8. & RFC 3380 8.
-            IppTag.Unsupported_,
-            IppTag.Unknown,
-            IppTag.NoValue,
-            IppTag.NotSettable,
-            IppTag.DeleteAttribute,
-            IppTag.AdminDefine,
-            IppTag.EndCollection -> writeShort(0)
 
             IppTag.Boolean -> with(value as Boolean) {
                 writeShort(1)
@@ -178,12 +173,12 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
             IppTag.BegCollection -> with(value as IppCollection) {
                 writeShort(0)
                 for (member in members) {
-                    writeCollectionAttribute(IppTag.MemberAttrName, member.name)
+                    writeAttribute(IppAttribute("", IppTag.MemberAttrName, member.name))
                     for (memberValue in member.values) {
-                        writeCollectionAttribute(member.tag, memberValue)
+                        writeAttribute(IppAttribute("", member.tag, memberValue))
                     }
                 }
-                writeCollectionAttribute(IppTag.EndCollection)
+                writeAttribute(IppAttribute<Unit>("", IppTag.EndCollection))
             }
 
             else -> throw IppException(String.format("tag %s (%02X) encoding not implemented", tag, tag.code))
@@ -195,10 +190,6 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
             writeShort(size)
             write(this)
         }
-    }
-
-    private fun writeCollectionAttribute(tag: IppTag, value: Any? = null) {
-        writeAttribute(IppAttribute("", tag, value))
     }
 
 }
