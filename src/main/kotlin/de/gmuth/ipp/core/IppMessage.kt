@@ -17,7 +17,13 @@ abstract class IppMessage {
 
     fun getAttributesGroups(tag: IppTag) = attributesGroups.filter { it.tag == tag }
 
-    fun getSingleAttributesGroup(tag: IppTag) = getAttributesGroups(tag).single()
+    fun getSingleAttributesGroup(tag: IppTag): IppAttributesGroup {
+        val groups = getAttributesGroups(tag)
+        if (groups.isEmpty()) {
+            throw IppException("group '$tag' not found in $attributesGroups")
+        }
+        return groups.single()
+    }
 
     fun ippAttributesGroup(tag: IppTag): IppAttributesGroup {
         val group = IppAttributesGroup(tag)
@@ -29,7 +35,8 @@ abstract class IppMessage {
         get() = getSingleAttributesGroup(IppTag.Operation)
 
     val attributesCharset: Charset
-        get() = operationGroup["attributes-charset"]!!.value as Charset
+        get() = (operationGroup["attributes-charset"] ?: throw IppException("missing 'attributes-charset'"))
+                .value as Charset
 
     // --- DECODING
 
