@@ -48,10 +48,12 @@ class IppPrinter(val printerUri: URI) {
     // Identify-Printer
     //-----------------
 
-    fun identify(action: String) {
-        checkValueSupported("identify-actions-supported", action)
+    fun identify(vararg actions: String) = identify(actions.toList())
+
+    fun identify(actions: List<String>) {
+        checkValueSupported("identify-actions-supported", actions)
         val request = ippRequest(IppOperation.IdentifyPrinter).apply {
-            operationGroup.attribute("identify-actions", IppTag.Keyword, action)
+            operationGroup.attribute("identify-actions", IppTag.Keyword, actions)
         }
         exchangeSuccessful(request)
     }
@@ -144,9 +146,7 @@ class IppPrinter(val printerUri: URI) {
                 with(ippAttributesGroup(IppTag.Job)) {
                     for (attributeHolder in attributeHolders) {
                         val attribute = attributeHolder.getIppAttribute(attributes)
-                        for (value in attribute.values) {
-                            checkValueSupported("${attribute.name}-supported", value!!)
-                        }
+                        checkValueSupported("${attribute.name}-supported", attribute.values)
                         put(attribute)
                     }
                 }
@@ -221,13 +221,20 @@ class IppPrinter(val printerUri: URI) {
     fun logDetails() =
             attributes.logDetails(title = "PRINTER-$name ($makeAndModel), $state (${stateReasons.joinToString(",")})")
 
-    // -------------------------------------------------------
-    // ipp spec checking method, based on printer capabilities
-    // -------------------------------------------------------
+    // --------------------------------------------------------
+    // ipp specs checking method, based on printer capabilities
+    // --------------------------------------------------------
 
     private fun checkValueSupported(supportedAttributeName: String, value: Any) {
         // condition is NOT always false, because this method is used during class initialization
         if (attributes == null) {
+            return
+        }
+        // instead of providing another signature just check collections iterative
+        if (value is Collection<*>) {
+            for (collectionValue in value) {
+                checkValueSupported(supportedAttributeName, collectionValue!!)
+            }
             return
         }
         if (!supportedAttributeName.endsWith("-supported")) {
