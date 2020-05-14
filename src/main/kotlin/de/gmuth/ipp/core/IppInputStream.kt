@@ -22,10 +22,6 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
     // encoding for text and name attributes, rfc 8011 4.1.4.1
     private var attributesCharset: Charset? = null
 
-    private fun charsetForTag(tag: IppTag) =
-            if (tag.useAttributesCharset()) attributesCharset ?: throw IppException("missing attributes-charset")
-            else Charsets.US_ASCII
-
     fun readMessage(message: IppMessage) {
         lateinit var currentGroup: IppAttributesGroup
         lateinit var currentAttribute: IppAttribute<*>
@@ -45,7 +41,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                 else -> {
                     val attribute = readAttribute(tag)
                     if (verbose) {
-                        println("<<< $attribute")
+                        println("$attribute")
                     }
                     if (attribute.name.isNotEmpty()) {
                         currentGroup.put(attribute)
@@ -65,124 +61,129 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
     private fun readAttribute(tag: IppTag): IppAttribute<Any> {
         val name = readString(Charsets.US_ASCII)
-        val value = try {
-            readAttributeValue(tag)
-        } catch (exception: Exception) {
-            throw IppException("failed to read attribute value for '$name' ($tag)", exception)
-        }
+        // RFC 8010 3.8. & RFC 3380 8
+        if (tag.isOutOfBandTag() || tag == IppTag.EndCollection) {
+            readExpectedValueLength(0) // no value
+            return IppAttribute(name, tag)
 
-        if (checkSyntax) {
-            IppRegistrationsSection2.checkSyntaxOfAttribute(name, tag)
+        } else {
+            val value = try {
+                readAttributeValue(tag)
+            } catch (exception: Exception) {
+                throw IppException("failed to read attribute value for '$name' ($tag)", exception)
+            }
+            if (checkSyntax) {
+                IppRegistrationsSection2.checkSyntaxOfAttribute(name, tag)
+            }
+            // keep attributes-charset for name and text value decoding
+            if (name == "attributes-charset" && tag == IppTag.Charset) {
+                attributesCharset = value as Charset
+            }
+            return IppAttribute(name, tag, value)
         }
-
-        // keep attributes-charset for name and text value decoding
-        if (name == "attributes-charset" && tag == IppTag.Charset) {
-            attributesCharset = value as Charset
-        }
-
-        return IppAttribute(name, tag, value)
     }
 
-    private fun readAttributeValue(tag: IppTag): Any = when (tag) {
+    private fun readAttributeValue(tag: IppTag): Any {
 
-        // out-of-band RFC 8010 3.8. & RFC 3380 8 -- endCollection has no value either
-        IppTag.Unsupported_,
-        IppTag.Unknown,
-        IppTag.NoValue,
-        IppTag.NotSettable,
-        IppTag.DeleteAttribute,
-        IppTag.AdminDefine,
-        IppTag.EndCollection -> {
-            assertValueLength(0)
+        fun readStringForTag(): String {
+            val charset = if (tag.useAttributesCharset()) {
+                attributesCharset ?: throw IppException("missing attributes-charset")
+            } else {
+                Charsets.US_ASCII
+            }
+            return readString(charset)
         }
 
-        // value class Boolean
-        IppTag.Boolean -> {
-            assertValueLength(1)
-            readByte() == 0x01.toByte()
-        }
+        return when (tag) {
 
-        // value class Int
-        IppTag.Integer,
-        IppTag.Enum -> {
-            assertValueLength(4)
-            readInt()
-        }
+            // value class Boolean
+            IppTag.Boolean -> {
+                readExpectedValueLength(1)
+                readByte() == 0x01.toByte()
+            }
 
-        // value class IntRange
-        IppTag.RangeOfInteger -> {
-            assertValueLength(8)
-            IntRange(
-                    start = readInt(),
-                    endInclusive = readInt()
-            )
-        }
+            // value class Int
+            IppTag.Integer,
+            IppTag.Enum -> {
+                readExpectedValueLength(4)
+                readInt()
+            }
 
-        // value class IppResolution
-        IppTag.Resolution -> {
-            assertValueLength(9)
-            IppResolution(
-                    x = readInt(),
-                    y = readInt(),
-                    unit = readByte().toInt()
-            )
-        }
+            // value class IntRange
+            IppTag.RangeOfInteger -> {
+                readExpectedValueLength(8)
+                IntRange(
+                        start = readInt(),
+                        endInclusive = readInt()
+                )
+            }
 
-        // value class Charset
-        IppTag.Charset -> Charset.forName(readStringForTag(tag))
+            // value class IppResolution
+            IppTag.Resolution -> {
+                readExpectedValueLength(9)
+                IppResolution(
+                        x = readInt(),
+                        y = readInt(),
+                        unit = readByte().toInt()
+                )
+            }
 
-        // value class Locale
-        IppTag.NaturalLanguage -> Locale.forLanguageTag(readStringForTag(tag))
+            // value class Charset
+            IppTag.Charset -> Charset.forName(readStringForTag())
 
-        // value class URI
-        IppTag.Uri -> URI.create(readStringForTag(tag))
+            // value class Locale
+            IppTag.NaturalLanguage -> Locale.forLanguageTag(readStringForTag())
 
-        // value class String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
-        IppTag.OctetString,
-        IppTag.Keyword,
-        IppTag.UriScheme,
-        IppTag.MimeMediaType,
-        IppTag.MemberAttrName -> readStringForTag(tag)
+            // value class URI
+            IppTag.Uri -> URI.create(readStringForTag())
 
-        // value class IppString
-        IppTag.TextWithoutLanguage,
-        IppTag.NameWithoutLanguage -> IppString(string = readStringForTag(tag))
+            // value class String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
+            IppTag.OctetString,
+            IppTag.Keyword,
+            IppTag.UriScheme,
+            IppTag.MimeMediaType,
+            IppTag.MemberAttrName -> readStringForTag()
 
-        IppTag.TextWithLanguage,
-        IppTag.NameWithLanguage -> {
-            readShort() // ignore redundant value length
-            IppString(
-                    language = readStringForTag(tag),
-                    string = readStringForTag(tag)
-            )
-        }
+            // value class IppString
+            IppTag.TextWithoutLanguage,
+            IppTag.NameWithoutLanguage -> IppString(string = readStringForTag())
 
-        // value class IppDateTime
-        IppTag.DateTime -> {
-            assertValueLength(11)
-            IppDateTime(
-                    year = readShort().toInt(),
-                    month = read(),
-                    day = read(),
-                    hour = read(),
-                    minutes = read(),
-                    seconds = read(),
-                    deciSeconds = read(),
-                    directionFromUTC = readByte().toChar(),
-                    hoursFromUTC = read(),
-                    minutesFromUTC = read()
-            )
-        }
+            IppTag.TextWithLanguage,
+            IppTag.NameWithLanguage -> {
+                readShort() // ignore redundant value length
+                IppString(
+                        language = readStringForTag(),
+                        string = readStringForTag()
+                )
+            }
 
-        //  value class IppCollection
-        IppTag.BegCollection -> {
-            assertValueLength(0)
-            readCollection()
-        }
+            // value class IppDateTime
+            IppTag.DateTime -> {
+                readExpectedValueLength(11)
+                IppDateTime(
+                        year = readShort().toInt(),
+                        month = read(),
+                        day = read(),
+                        hour = read(),
+                        minutes = read(),
+                        seconds = read(),
+                        deciSeconds = read(),
+                        directionFromUTC = readByte().toChar(),
+                        hoursFromUTC = read(),
+                        minutesFromUTC = read()
+                )
+            }
 
-        else -> {
-            readLengthAndValue()
-            String.format("<$tag-decoding-not-implemented>")
+            //  value class IppCollection
+            IppTag.BegCollection -> {
+                readExpectedValueLength(0)
+                readCollection()
+            }
+
+            // unexpected state
+            else -> {
+                throw IppException("decoding value for tag '$tag' not implemented")
+            }
         }
     }
 
@@ -215,11 +216,6 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
         return collection
     }
 
-    private fun readStringForTag(tag: IppTag): String {
-        val charset = charsetForTag(tag)
-        return readString(charset)
-    }
-
     private fun readString(charset: Charset): String {
         val bytes = readLengthAndValue()
         return String(bytes, charset)
@@ -230,11 +226,10 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
         return readNBytes(length)
     }
 
-    private fun assertValueLength(expected: Int) {
+    private fun readExpectedValueLength(expected: Int) {
         val length = readShort().toInt()
         if (length != expected) {
             throw IppException("expected value length of $expected bytes but found $length")
         }
     }
-
 }
