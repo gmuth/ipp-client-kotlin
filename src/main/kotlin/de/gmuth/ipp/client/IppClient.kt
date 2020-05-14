@@ -13,15 +13,13 @@ import java.net.URI
 import java.util.concurrent.atomic.AtomicInteger
 import javax.net.ssl.SSLHandshakeException
 
-open class IppClient(
+class IppClient(
         var ippVersion: IppVersion = IppVersion(1, 1),
         val httpClient: Http.Client = HttpClientByHttpURLConnection()
         //val httpClient: Http.Client = HttpClientByJava11HttpClient()
 ) {
-    companion object {
-        private val requestCounter = AtomicInteger(1)
-    }
 
+    private val requestCounter = AtomicInteger(1)
     var requestingUserName: String = System.getenv("USER")
     var httpAuth: Http.Auth? = null
     var verbose: Boolean = false
