@@ -23,7 +23,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
         return replaced
     }
 
-    private fun attribute(name: String, tag: IppTag, values: List<Any>) =
+    fun attribute(name: String, tag: IppTag, values: List<Any>) =
             put(IppAttribute(name, tag, values.toMutableList()))
 
     fun attribute(name: String, tag: IppTag, vararg values: Any) =
@@ -38,7 +38,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     @Suppress("UNCHECKED_CAST")
     fun <T> getValues(name: String) = get(name)?.values as T
 
-    override fun toString() = "IppAttributesGroup '$tag' containing ${size.toPluralString("attribute")}"
+    override fun toString() = "'$tag' with ${size.toPluralString("attribute")}"
 
     fun logDetails(prefix: String = "", title: String = "$tag") {
         println("${prefix}$title")
