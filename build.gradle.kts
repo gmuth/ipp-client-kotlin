@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "de.gmuth.ipp"
-version = "1.4-SNAPSHOT"
+version = "1.5-SNAPSHOT"
 
 repositories {
     mavenCentral()

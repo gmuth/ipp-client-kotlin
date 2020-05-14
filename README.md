@@ -58,7 +58,21 @@ with(
   identify("sound")
 }
 ```
+### Printer Capabilities
+
+`IppPrinter` checks, if attribute values are supported by looking into `'...-supported'` printer attributes.
+```
+identify("jump", "sound")
+
+ERROR: unsupported: jump
+ERROR: supported: flash,sound
+Exception in thread "main" de.gmuth.ipp.core.IppException:
+   value 'jump' not supported by printer.
+   identify-actions-supported (1setOf keyword) = flash,sound
+```
+
 ### exchange [IppRequest](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppRequest.kt) for [IppResponse](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppResponse.kt)
+
 ```kotlin
 val uri = URI.create("ipp://colorjet.local/ipp/printer")
 val file = File("A4-blank.pdf")
@@ -132,6 +146,6 @@ Use [github packages](https://github.com/gmuth/ipp-client-kotlin/packages) as ma
 <dependency>
   <groupId>de.gmuth.ipp</groupId>
   <artifactId>ipp-client-kotlin</artifactId>
-  <version>1.3</version>
+  <version>1.4</version>
 </dependency>
 ```
