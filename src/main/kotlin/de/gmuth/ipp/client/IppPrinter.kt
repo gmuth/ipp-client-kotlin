@@ -13,10 +13,6 @@ import java.net.URI
 
 class IppPrinter(val printerUri: URI) {
 
-    companion object {
-        var checkValueSupported: Boolean = true
-    }
-
     val ippClient = IppClient()
 
     val attributes: IppAttributesGroup = getPrinterAttributes()
@@ -26,6 +22,8 @@ class IppPrinter(val printerUri: URI) {
         set(value) {
             ippClient.httpAuth = value
         }
+
+    var checkValueSupported: Boolean = true
 
     //--------------
     // IppAttributes
@@ -84,7 +82,8 @@ class IppPrinter(val printerUri: URI) {
                 operationGroup.attribute("requested-attributes", IppTag.Keyword, requestedAttributes)
             }
         }
-        return exchangeSuccessful(request).printerGroup
+        val response = exchangeSuccessful(request)
+        return response.printerGroup
     }
 
     //----------
@@ -217,7 +216,7 @@ class IppPrinter(val printerUri: URI) {
     // -------
 
     override fun toString() =
-            "IppPrinter: name = $name, makeAndModel = $makeAndModel, state = $state, stateReasons = ${stateReasons.joinToString(",")}"
+            "IppPrinter: name='$name', makeAndModel='$makeAndModel', state=$state, stateReasons=$stateReasons"
 
     fun logDetails() =
             attributes.logDetails(title = "PRINTER-$name ($makeAndModel), $state (${stateReasons.joinToString(",")})")
