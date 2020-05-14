@@ -51,7 +51,7 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppAttrib
             attribute.name.isNotEmpty() -> throw IppException("name must be empty for additional values")
             attribute.values.size != 1 -> throw IppException("expected 1 additional value, not ${attribute.values.size}")
             attribute.values.first() == Unit -> throw IppException("expected a value, not 'Unit'")
-            tag != attribute.tag -> throw IppException("'$name' 1setOf error: expected tag '$tag' for additional value but found '${attribute.tag}'")
+            tag != attribute.tag -> throw IppException("expected tag '$tag' for additional value but found '${attribute.tag}'")
             else -> values.add(attribute.value as T)
         }
     }
