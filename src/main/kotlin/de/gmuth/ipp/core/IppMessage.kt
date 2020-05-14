@@ -20,7 +20,7 @@ abstract class IppMessage {
     fun getSingleAttributesGroup(tag: IppTag): IppAttributesGroup {
         val groups = getAttributesGroups(tag)
         if (groups.isEmpty()) {
-            throw IppException("group '$tag' not found in $attributesGroups")
+            throw IppException("no group found with tag '$tag' in $attributesGroups")
         }
         return groups.single()
     }
@@ -38,7 +38,7 @@ abstract class IppMessage {
         get() = (operationGroup["attributes-charset"] ?: throw IppException("missing 'attributes-charset'"))
                 .value as Charset
 
-    // --- DECODING
+    // --- DECODING ---
 
     fun readFrom(inputStream: InputStream) {
         val ippInputStream = IppInputStream(inputStream)
@@ -58,7 +58,7 @@ abstract class IppMessage {
         readFrom(FileInputStream(file))
     }
 
-    // --- ENCODING
+    // --- ENCODING ---
 
     private fun writeTo(outputStream: OutputStream) {
         val ippOutputStream = IppOutputStream(outputStream)
@@ -81,7 +81,7 @@ abstract class IppMessage {
         writeTo(FileOutputStream(file))
     }
 
-    // --- LOGGING
+    // --- LOGGING ---
 
     override fun toString(): String = String.format(
             "%s: %s, %s: %s",
