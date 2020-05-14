@@ -65,12 +65,11 @@ class IppJob(
     fun waitForTermination(refreshRate: Duration = defaultRefreshRate) {
         println("wait for terminal state of job #$id")
         do {
-            //Thread.sleep(refreshRate.toMillis())
             runBlocking {
                 delay(refreshRate.toMillis())
             }
             updateAttributes()
-            println("job-state = $state, job-impressions-completed = $impressionsCompleted")
+            println("job-state=$state, job-impressions-completed=$impressionsCompleted")
         } while (!isTerminated())
     }
 
@@ -132,9 +131,9 @@ class IppJob(
                 if (state == null) {
                     ""
                 } else {
-                    ", state = $state, stateReasons = ${stateReasons?.joinToString(",")}"
+                    ", state=$state, stateReasons=$stateReasons"
                 }
-        return "IppJob: id = $id, uri = $uri$stateString"
+        return "IppJob: id=$id, uri=$uri$stateString"
     }
 
     fun logDetails() = attributes.logDetails("", "JOB-$id")
