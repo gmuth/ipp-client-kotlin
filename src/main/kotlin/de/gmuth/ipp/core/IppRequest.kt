@@ -12,7 +12,7 @@ open class IppRequest() : IppMessage() {
     override val codeDescription: String
         get() = "operation = $operation"
 
-    private val operation: IppOperation
+    val operation: IppOperation
         get() = IppOperation.fromShort(code ?: throw IppException("operation-code must not be null"))
 
     constructor(
