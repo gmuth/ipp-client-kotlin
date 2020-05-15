@@ -8,7 +8,6 @@ import de.gmuth.http.Http
 import de.gmuth.http.HttpClientByHttpURLConnection
 import de.gmuth.ipp.core.*
 import java.io.InputStream
-import java.io.SequenceInputStream
 import java.net.URI
 import java.util.concurrent.atomic.AtomicInteger
 import javax.net.ssl.SSLHandshakeException
@@ -41,31 +40,22 @@ class IppClient(
                 operationGroup.attribute("job-id", IppTag.Integer, jobId)
             }
 
-    //-------------------------------------------s
+    //-------------------------------------------
     // exchange methods for IppRequest/IppRequest
     //-------------------------------------------
 
-    fun exchangeSuccessful(
-            ippUri: URI,
-            ippRequest: IppRequest,
-            documentInputStream: InputStream? = null
-
-    ): IppResponse {
-        val ippResponse = exchange(ippUri, ippRequest, documentInputStream)
+    fun exchangeSuccessful(ippUri: URI, ippRequest: IppRequest): IppResponse {
+        val ippResponse = exchange(ippUri, ippRequest)
         if (ippResponse.isSuccessful()) {
             return ippResponse
         } else {
-            val exceptionMessage = "${ippRequest.codeDescription} failed: '${ippResponse.status}' ${ippResponse.statusMessage ?: ""}"
+            val exceptionMessage = "'${ippRequest.operation}' failed: '${ippResponse.status}' ${ippResponse.statusMessage ?: ""}"
             throw IppExchangeException(ippRequest, ippResponse, exceptionMessage)
         }
     }
 
-    fun exchange(
-            ippUri: URI,
-            ippRequest: IppRequest,
-            documentInputStream: InputStream? = null
+    fun exchange(ippUri: URI, ippRequest: IppRequest): IppResponse {
 
-    ): IppResponse {
         // request logging
         if (verbose) {
             println("send '${ippRequest.operation}' request to $ippUri")
@@ -79,25 +69,20 @@ class IppClient(
             URI.create("$scheme://$host:$port$path")
         }
 
-        // encode ipp request
+        // encode attributes, include optional document
         val ippRequestInputStream = try {
-            ippRequest.toInputStream()
+            ippRequest.inputStream
         } catch (exception: Exception) {
             throw IppExchangeException(ippRequest, null, "failed to encode ipp request", exception)
         }
 
-        // http exchange encoded ipp request and document
-        val httpRequestContentStream = if (documentInputStream == null) {
-            ippRequestInputStream
-        } else {
-            SequenceInputStream(ippRequestInputStream, documentInputStream)
-        }
-        val httpResponseStream = httpExchange(httpUri, httpRequestContentStream)
+        // http exchange binary ipp message
+        val ippResponseStream = httpExchange(httpUri, ippRequestInputStream)
 
         // decode ipp response
         val ippResponse = IppResponse()
         try {
-            ippResponse.readFrom(httpResponseStream)
+            ippResponse.readFrom(ippResponseStream)
         } catch (exception: Exception) {
             ippRequest.logDetails("IPP-REQUEST: ")
             println("exchanged @ $ippUri")
@@ -130,11 +115,7 @@ class IppClient(
         return ippResponse
     }
 
-    private fun httpExchange(
-            httpUri: URI,
-            httpContentStream: InputStream
-
-    ): InputStream {
+    private fun httpExchange(httpUri: URI, httpContentStream: InputStream): InputStream {
         val contentType = "application/ipp"
         val httpRequestContent = Http.Content(contentType, httpContentStream)
         try {

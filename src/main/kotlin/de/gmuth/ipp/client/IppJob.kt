@@ -12,7 +12,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.FileInputStream
-import java.io.InputStream
 import java.net.URI
 import java.time.Duration
 
@@ -104,8 +103,9 @@ class IppJob(
     fun sendDocument(file: File, lastDocument: Boolean = true) {
         val request = ippJobRequest(IppOperation.SendDocument).apply {
             operationGroup.attribute("last-document", IppTag.Boolean, lastDocument)
+            documentInputStream = FileInputStream(file)
         }
-        val response = exchangeSuccessful(request, FileInputStream(file))
+        val response = exchangeSuccessful(request)
         attributes = response.jobGroup
     }
 
@@ -116,8 +116,8 @@ class IppJob(
     private fun ippJobRequest(operation: IppOperation) =
             printer.ippJobRequest(operation, id)
 
-    private fun exchangeSuccessful(request: IppRequest, documentInputStream: InputStream) =
-            printer.exchangeSuccessful(request, documentInputStream)
+    private fun exchangeSuccessful(request: IppRequest) =
+            printer.exchangeSuccessful(request)
 
     private fun exchangeSuccessfulIppJobRequest(operation: IppOperation) =
             printer.exchangeSuccessfulIppJobRequest(operation, id)

@@ -95,8 +95,10 @@ class IppPrinter(val printerUri: URI) {
             waitForTermination: Boolean = false
 
     ): IppJob {
-        val request = attributeHoldersRequest(IppOperation.PrintJob, attributeHolders)
-        val response = exchangeSuccessful(request, FileInputStream(file))
+        val request = attributeHoldersRequest(IppOperation.PrintJob, attributeHolders).apply {
+            documentInputStream = FileInputStream(file)
+        }
+        val response = exchangeSuccessful(request)
         return handlePrintResponse(response, waitForTermination)
     }
 
@@ -201,11 +203,11 @@ class IppPrinter(val printerUri: URI) {
     fun exchangeSuccessfulIppJobRequest(operation: IppOperation, jobId: Int) =
             exchangeSuccessful(ippJobRequest(operation, jobId))
 
-    fun exchangeSuccessful(request: IppRequest, documentInputStream: InputStream? = null): IppResponse {
+    fun exchangeSuccessful(request: IppRequest): IppResponse {
         checkValueSupported("ipp-versions-supported", ippClient.ippVersion)
         checkValueSupported("operations-supported", request.code!!.toInt())
         checkValueSupported("charset-supported", request.attributesCharset)
-        return ippClient.exchangeSuccessful(printerUri, request, documentInputStream)
+        return ippClient.exchangeSuccessful(printerUri, request)
     }
 
     // -------
