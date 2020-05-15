@@ -4,7 +4,10 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import java.io.*
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileInputStream
+import java.io.InputStream
 import java.nio.charset.Charset
 
 abstract class IppMessage {
@@ -40,45 +43,18 @@ abstract class IppMessage {
 
     // --- DECODING ---
 
-    fun readFrom(inputStream: InputStream) {
-        val ippInputStream = IppInputStream(inputStream)
-        ippInputStream.readMessage(this)
-        ippInputStream.close()
-    }
+    fun readFrom(inputStream: InputStream) =
+            IppInputStream(inputStream).readMessage(this)
 
-    fun readFromResource(resource: String) {
-        readFrom(javaClass.getResourceAsStream(resource))
-    }
-
-    fun readFrom(byteArray: ByteArray) {
-        readFrom(ByteArrayInputStream(byteArray))
-    }
-
-    fun readFrom(file: File) {
-        readFrom(FileInputStream(file))
-    }
+    fun readFrom(file: File) =
+            readFrom(FileInputStream(file))
 
     // --- ENCODING ---
 
-    private fun writeTo(outputStream: OutputStream) {
-        val ippOutputStream = IppOutputStream(outputStream)
-        ippOutputStream.writeMessage(this)
-        ippOutputStream.close()
-    }
-
-    fun toByteArray(): ByteArray {
+    fun bytes(): ByteArray {
         val byteArrayOutputStream = ByteArrayOutputStream()
-        writeTo(byteArrayOutputStream)
-        byteArrayOutputStream.close()
+        IppOutputStream(byteArrayOutputStream).writeMessage(this)
         return byteArrayOutputStream.toByteArray()
-    }
-
-    fun toInputStream(): InputStream {
-        return ByteArrayInputStream(toByteArray())
-    }
-
-    fun writeToFile(file: File) {
-        writeTo(FileOutputStream(file))
     }
 
     // --- LOGGING ---
