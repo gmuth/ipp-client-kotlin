@@ -140,7 +140,7 @@ Currently only the target `jvm` is supported.
 
 ## Artifacts
 
-Use [github packages](https://github.com/gmuth/ipp-client-kotlin/packages) as maven repo:
+Use [github packages](https://github.com/gmuth/ipp-client-kotlin/packages/214725/versions) as maven repo:
 
 ```
 <dependency>
