@@ -7,6 +7,8 @@ import java.io.FileInputStream
 import java.io.InputStream
 import java.io.Reader
 import java.net.URI
+import java.nio.charset.Charset
+import java.util.*
 
 class IppTool {
     var uri: URI? = null
@@ -21,7 +23,6 @@ class IppTool {
     fun run(vararg lines: String) = if (lines.size == 1) run(lines[0].reader()) else run(lines.toList())
 
     fun run(lines: List<String>) {
-        var fileInputStream: FileInputStream? = null
         lateinit var currentGroup: IppAttributesGroup
         val request = IppRequest().apply {
             version = IppVersion(1, 1)
@@ -53,7 +54,9 @@ class IppTool {
                     val value: Any = with(lineItems[3]) {
                         when {
                             this == "\$uri" -> uri ?: throw IppException("\$uri undefined")
-                            name.contains("-uri") -> URI.create(this)
+                            tag == IppTag.Uri -> URI.create(this)
+                            tag == IppTag.Charset -> Charset.forName(this)
+                            tag == IppTag.NaturalLanguage -> Locale.forLanguageTag(this)
                             else -> this
                         }
                     }
@@ -65,7 +68,7 @@ class IppTool {
                     } else {
                         filename = firstArgument
                     }
-                    fileInputStream = FileInputStream(File(filename))
+                    request.documentInputStream = FileInputStream(File(filename))
                 }
                 else -> println("ignore unknown command '$command'")
             }
@@ -74,7 +77,7 @@ class IppTool {
         with(IppClient()) {
             verbose = true
             if (uri == null) throw IppException("uri missing")
-            exchangeSuccessful(uri as URI, request, fileInputStream)
+            exchangeSuccessful(uri as URI, request)
         }
     }
 }
