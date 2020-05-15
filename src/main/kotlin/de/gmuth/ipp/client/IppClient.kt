@@ -46,106 +46,106 @@ class IppClient(
     //-------------------------------------------
 
     fun exchangeSuccessful(
-            uri: URI,
-            request: IppRequest,
+            ippUri: URI,
+            ippRequest: IppRequest,
             documentInputStream: InputStream? = null
 
     ): IppResponse {
-        val response = exchange(uri, request, documentInputStream)
-        if (response.isSuccessful()) {
-            return response
+        val ippResponse = exchange(ippUri, ippRequest, documentInputStream)
+        if (ippResponse.isSuccessful()) {
+            return ippResponse
         } else {
-            val exceptionMessage = "${request.codeDescription} failed: '${response.status}' ${response.statusMessage ?: ""}"
-            throw IppExchangeException(request, response, exceptionMessage)
+            val exceptionMessage = "${ippRequest.codeDescription} failed: '${ippResponse.status}' ${ippResponse.statusMessage ?: ""}"
+            throw IppExchangeException(ippRequest, ippResponse, exceptionMessage)
         }
     }
 
     fun exchange(
-            uri: URI,
-            request: IppRequest,
+            ippUri: URI,
+            ippRequest: IppRequest,
             documentInputStream: InputStream? = null
 
     ): IppResponse {
         // request logging
-        with(request) {
-            if (verbose) {
-                println("send ${request.codeDescription} request to $uri")
-                println(this)
-                logDetails(">> ")
-            }
+        if (verbose) {
+            println("send '${ippRequest.operation}' request to $ippUri")
+            ippRequest.logDetails(">> ")
         }
 
-        val requestInputStream = try {
-            request.toInputStream()
-        } catch (exception: Exception) {
-            throw IppExchangeException(request, null, "failed to encode ipp request", exception)
-        }
-        val responseStream = exchange(uri, requestInputStream, documentInputStream)
-        val response = IppResponse()
-        try {
-            response.readFrom(responseStream)
-
-            // response logging
-            with(response) {
-                if (verbose) {
-                    println("read ipp response")
-                    logDetails("<< ")
-                    println(this)
-                }
-                if (!isSuccessful()) {
-                    request.logDetails("IPP-REQUEST: ")
-                    println("response from $uri")
-                    logDetails("IPP-RESPONSE: ")
-                }
-                if (statusMessage != null) {
-                    println("status-message: $statusMessage")
-                }
-                // warn about unsupported attributes
-                for (unsupported in getAttributesGroups(IppTag.Unsupported)) {
-                    for (attribute in unsupported.values) {
-                        println("WARN: unsupported attribute: $attribute")
-                    }
-                }
-            }
-            return response
-
-        } catch (exception: Exception) {
-            request.logDetails("IPP-REQUEST: ")
-            println("response from $uri")
-            response.logDetails("IPP-RESPONSE: ")
-            throw IppExchangeException(request, response, "failed to decode ipp response", exception)
-        }
-    }
-
-    private fun exchange(
-            uri: URI,
-            requestStream: InputStream,
-            documentInputStream: InputStream? = null
-
-    ): InputStream {
-        val contentType = "application/ipp"
-        val requestContent = Http.Content(
-                contentType,
-                if (documentInputStream == null) requestStream
-                else SequenceInputStream(requestStream, documentInputStream)
-        )
-
-        val httpUri = with(uri) {
+        // convert ipp uri to http uri
+        val httpUri = with(ippUri) {
             val scheme = scheme.replace("ipp", "http")
             val port = if (port == -1) 631 else port
             URI.create("$scheme://$host:$port$path")
         }
 
+        // encode ipp request
+        val ippRequestInputStream = try {
+            ippRequest.toInputStream()
+        } catch (exception: Exception) {
+            throw IppExchangeException(ippRequest, null, "failed to encode ipp request", exception)
+        }
+
+        // http exchange encoded ipp request and document
+        val httpRequestContentStream = if (documentInputStream == null) {
+            ippRequestInputStream
+        } else {
+            SequenceInputStream(ippRequestInputStream, documentInputStream)
+        }
+        val httpResponseStream = httpExchange(httpUri, httpRequestContentStream)
+
+        // decode ipp response
+        val ippResponse = IppResponse()
         try {
-            // exchange http messages
-            with(httpClient.post(httpUri, requestContent, httpAuth)) {
+            ippResponse.readFrom(httpResponseStream)
+        } catch (exception: Exception) {
+            ippRequest.logDetails("IPP-REQUEST: ")
+            println("exchanged @ $ippUri")
+            ippResponse.logDetails("IPP-RESPONSE: ")
+            throw IppExchangeException(ippRequest, ippResponse, "failed to decode ipp response", exception)
+        }
+
+        // response logging
+        if (verbose) {
+            println("exchanged @ $ippUri")
+            ippResponse.logDetails("<< ")
+        }
+        if (!ippResponse.isSuccessful()) {
+            ippRequest.logDetails("IPP-REQUEST: ")
+            println("exchanged @ $ippUri")
+            ippResponse.logDetails("IPP-RESPONSE: ")
+        }
+
+        // status message
+        if (ippResponse.statusMessage != null) {
+            println("status-message: $ippResponse.statusMessage")
+        }
+
+        // unsupported attributes
+        for (unsupported in ippResponse.getAttributesGroups(IppTag.Unsupported)) {
+            for (attribute in unsupported.values) {
+                println("WARN: unsupported attribute: $attribute")
+            }
+        }
+        return ippResponse
+    }
+
+    private fun httpExchange(
+            httpUri: URI,
+            httpContentStream: InputStream
+
+    ): InputStream {
+        val contentType = "application/ipp"
+        val httpRequestContent = Http.Content(contentType, httpContentStream)
+        try {
+            with(httpClient.post(httpUri, httpRequestContent, httpAuth)) {
                 if (status == 200 && content.type == contentType) {
                     return content.stream
 
                 } else {
                     val text =
                             if (content.type.startsWith("text")) {
-                                ", content = " + String(content.stream.readAllBytes())
+                                ", content=" + String(content.stream.readAllBytes())
                             } else {
                                 ""
                             }
@@ -153,7 +153,7 @@ class IppClient(
                         426 -> println("ERROR: HTTP 426 suggests using a secure connection for authentication, try setting 'requesting-user-name'")
                         401 -> println("ERROR: HTTP 401 unauthorized, try setting 'requesting-user-name'")
                     }
-                    throw IppException("response from $uri is invalid: http-status = $status, content-type = ${content.type}$text")
+                    throw IppException("http request to $httpUri failed: http-status=$status, content-type=${content.type} $text")
                 }
             }
         } catch (sslException: SSLHandshakeException) {
