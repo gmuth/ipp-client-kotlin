@@ -61,6 +61,8 @@ enum class IppOperation(val code: Short) {
             .replace("[A-Z]".toRegex()) { "-" + it.value }
             .replace("^-".toRegex(), "")
 
+    fun requiresDocument() = this in listOf(PrintJob, SendDocument)
+
     companion object {
         private val codeMap = values().associateBy(IppOperation::code)
         fun fromShort(code: Short): IppOperation = codeMap[code]
