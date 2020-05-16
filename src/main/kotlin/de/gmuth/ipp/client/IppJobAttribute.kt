@@ -8,7 +8,10 @@ import de.gmuth.ipp.core.IppAttribute
 import de.gmuth.ipp.core.IppResolution
 import de.gmuth.ipp.core.IppTag
 
-object IppJobAttributes {
+/**
+ * methods to create common job attributes
+ */
+object IppJobAttribute {
 
     fun attribute(name: String, tag: IppTag, vararg values: Any) =
             IppAttribute(name, tag, values.toList())
@@ -39,5 +42,4 @@ object IppJobAttributes {
 
     fun pageRanges(vararg ranges: IntRange) =
             IppAttribute("page-ranges", IppTag.RangeOfInteger, ranges.toList())
-
 }
