@@ -45,6 +45,13 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppAttrib
 
     override fun getIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<*> = this
 
+    fun validateTag() {
+        val registeredTag = IppRegistrationsSection2.tagForAttribute(name)
+        if (registeredTag != null && tag != registeredTag) {
+            throw IppException("expected tag '$registeredTag' for '$name' but found tag: '$tag'")
+        }
+    }
+
     @Suppress("UNCHECKED_CAST")
     fun additionalValue(attribute: IppAttribute<*>) {
         when {

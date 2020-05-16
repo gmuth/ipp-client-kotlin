@@ -12,15 +12,22 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
         }
     }
 
-    fun put(attribute: IppAttribute<*>): IppAttribute<*>? {
-        if (!attribute.tag.isOutOfBandTag() && attribute.values.isEmpty()) {
-            throw IppException("put attribute rejected: value list is empty")
+    fun put(attribute: IppAttribute<*>, validateTag: Boolean = false): IppAttribute<*>? {
+        try {
+            if (validateTag) {
+                attribute.validateTag()
+            }
+            if (!attribute.tag.isOutOfBandTag() && attribute.values.isEmpty()) {
+                throw IppException("value list is empty")
+            }
+            val replaced = put(attribute.name, attribute)
+            if (replaced != null) {
+                println("WARN: replaced '$replaced' with '$attribute'")
+            }
+            return replaced
+        } catch (exception: Exception) {
+            throw IppException("failed to put attribute '${attribute.name}' to group '$tag'", exception)
         }
-        val replaced = put(attribute.name, attribute)
-        if (replaced != null) {
-            println("WARN: replaced '$replaced' with '$attribute'")
-        }
-        return replaced
     }
 
     fun attribute(name: String, tag: IppTag, values: List<Any>) =
