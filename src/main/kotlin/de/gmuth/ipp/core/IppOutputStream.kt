@@ -56,7 +56,6 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
             if (checkSyntax) {
                 IppRegistrationsSection2.checkSyntaxOfAttribute(name, tag)
             }
-
             if (tag.isOutOfBandTag() || tag == IppTag.EndCollection) {
                 if (values.isNotEmpty()) {
                     throw IppException("'$name' must not have any value")
