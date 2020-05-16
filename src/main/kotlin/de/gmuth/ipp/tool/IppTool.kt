@@ -25,7 +25,7 @@ class IppTool {
     fun run(lines: List<String>) {
         lateinit var currentGroup: IppAttributesGroup
         val request = IppRequest().apply {
-            version = IppVersion(1, 1)
+            version = "1.1"
             requestId = 42
         }
 

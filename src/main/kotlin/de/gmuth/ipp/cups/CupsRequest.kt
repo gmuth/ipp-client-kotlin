@@ -6,7 +6,6 @@ package de.gmuth.ipp.cups
 
 import de.gmuth.ipp.core.IppException
 import de.gmuth.ipp.core.IppRequest
-import de.gmuth.ipp.core.IppVersion
 import java.nio.charset.Charset
 import java.util.*
 
@@ -19,7 +18,7 @@ class CupsRequest : IppRequest {
         get() = CupsOperation.fromShort(code ?: throw IppException("operation-code must not be null"))
 
     constructor(
-            version: IppVersion,
+            version: String,
             operation: CupsOperation,
             requestId: Int,
             charset: Charset = Charsets.UTF_8,

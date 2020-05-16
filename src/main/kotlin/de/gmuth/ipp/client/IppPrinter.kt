@@ -8,7 +8,6 @@ import de.gmuth.http.Http
 import de.gmuth.ipp.core.*
 import java.io.File
 import java.io.FileInputStream
-import java.io.InputStream
 import java.net.URI
 
 class IppPrinter(val printerUri: URI) {
@@ -257,11 +256,7 @@ class IppPrinter(val printerUri: URI) {
                     values.contains(value)
                 }
                 IppTag.Keyword -> {
-                    if (value is IppVersion) {
-                        values.contains(value.toString())
-                    } else {
-                        values.contains(value)
-                    }
+                    values.contains(value)
                 }
                 IppTag.Integer -> {
                     if (is1setOf()) {
@@ -282,8 +277,7 @@ class IppPrinter(val printerUri: URI) {
             if (valueIsSupported) {
                 //println("'${enumValueNameOrValue(value)}' supported by printer. $this")
             } else {
-                println("ERROR: unsupported: $value")
-                println("ERROR: supported: ${values.joinToString(",")}")
+                println("ERROR: unsupported: $value; supported: $values")
                 throw IppException("value '${enumValueNameOrValue(value)}' not supported by printer. $this")
             }
         }
