@@ -4,6 +4,7 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
+import de.gmuth.ipp.client.IppExchangeException
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.io.SequenceInputStream
@@ -22,7 +23,11 @@ open class IppRequest() : IppMessage() {
 
     val inputStream: InputStream
         get() {
-            val encodedInputStream = ByteArrayInputStream(bytes())
+            val encodedInputStream = try {
+                ByteArrayInputStream(encode())
+            } catch (exception: Exception) {
+                throw IppExchangeException(this, null, "failed to encode ipp request", exception)
+            }
             return if (documentInputStream == null) {
                 if (operation.requiresDocument()) {
                     throw IppException("missing document for '$operation' operation")
@@ -37,7 +42,7 @@ open class IppRequest() : IppMessage() {
         }
 
     constructor(
-            version: IppVersion,
+            version: String,
             operationCode: Short,
             requestId: Int,
             charset: Charset = Charsets.UTF_8,

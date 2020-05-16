@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import javax.net.ssl.SSLHandshakeException
 
 class IppClient(
-        var ippVersion: IppVersion = IppVersion(1, 1),
+        var ippVersion: String = "1.1",
         val httpClient: Http.Client = HttpClientByHttpURLConnection()
         //val httpClient: Http.Client = HttpClientByJava11HttpClient()
 ) {
@@ -55,63 +55,52 @@ class IppClient(
     }
 
     fun exchange(ippUri: URI, ippRequest: IppRequest): IppResponse {
-
+        val ippResponse = IppResponse()
+        // internal function
+        fun logRequestResponseDetails() {
+            ippRequest.logDetails("IPP-REQUEST: ")
+            println("exchanged @ $ippUri")
+            ippResponse.logDetails("IPP-RESPONSE: ")
+        }
         // request logging
         if (verbose) {
             println("send '${ippRequest.operation}' request to $ippUri")
             ippRequest.logDetails(">> ")
         }
-
         // convert ipp uri to http uri
         val httpUri = with(ippUri) {
             val scheme = scheme.replace("ipp", "http")
             val port = if (port == -1) 631 else port
             URI.create("$scheme://$host:$port$path")
         }
-
-        // encode attributes, include optional document
-        val ippRequestInputStream = try {
-            ippRequest.inputStream
-        } catch (exception: Exception) {
-            throw IppExchangeException(ippRequest, null, "failed to encode ipp request", exception)
-        }
-
         // http exchange binary ipp message
-        val ippResponseStream = httpExchange(httpUri, ippRequestInputStream)
-
+        val ippResponseStream = httpExchange(httpUri, ippRequest.inputStream)
         // decode ipp response
-        val ippResponse = IppResponse()
         try {
-            ippResponse.readFrom(ippResponseStream)
+            ippResponse.decode(ippResponseStream)
         } catch (exception: Exception) {
-            ippRequest.logDetails("IPP-REQUEST: ")
-            println("exchanged @ $ippUri")
-            ippResponse.logDetails("IPP-RESPONSE: ")
+            logRequestResponseDetails()
             throw IppExchangeException(ippRequest, ippResponse, "failed to decode ipp response", exception)
         }
-
         // response logging
         if (verbose) {
             println("exchanged @ $ippUri")
             ippResponse.logDetails("<< ")
+            with(ippResponse.statusMessage) {
+                if (this != null) println("status-message: $this")
+            }
         }
+        // failure logging
         if (!ippResponse.isSuccessful()) {
-            ippRequest.logDetails("IPP-REQUEST: ")
-            println("exchanged @ $ippUri")
-            ippResponse.logDetails("IPP-RESPONSE: ")
+            logRequestResponseDetails()
         }
-
-        // status message
-        if (ippResponse.statusMessage != null) {
-            println("status-message: $ippResponse.statusMessage")
-        }
-
         // unsupported attributes
         for (unsupported in ippResponse.getAttributesGroups(IppTag.Unsupported)) {
             for (attribute in unsupported.values) {
                 println("WARN: unsupported attribute: $attribute")
             }
         }
+        // the decoded response
         return ippResponse
     }
 

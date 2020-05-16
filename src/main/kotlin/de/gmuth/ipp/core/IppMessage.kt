@@ -12,7 +12,7 @@ import java.nio.charset.Charset
 
 abstract class IppMessage {
 
-    var version: IppVersion? = null
+    var version: String? = null
     var code: Short? = null
     abstract val codeDescription: String // request operation or response status
     var requestId: Int? = null
@@ -43,15 +43,15 @@ abstract class IppMessage {
 
     // --- DECODING ---
 
-    fun readFrom(inputStream: InputStream) =
+    fun decode(inputStream: InputStream) =
             IppInputStream(inputStream).readMessage(this)
 
-    fun readFrom(file: File) =
-            readFrom(FileInputStream(file))
+    fun decode(file: File) =
+            decode(FileInputStream(file))
 
     // --- ENCODING ---
 
-    fun bytes(): ByteArray {
+    fun encode(): ByteArray {
         val byteArrayOutputStream = ByteArrayOutputStream()
         IppOutputStream(byteArrayOutputStream).writeMessage(this)
         return byteArrayOutputStream.toByteArray()
