@@ -6,4 +6,7 @@ package de.gmuth.ipp.core
 
 import java.io.IOException
 
-open class IppException(message: String, cause: Throwable? = null) : IOException(message, cause)
+open class IppException(
+        message: String,
+        cause: Throwable? = null
+) : IOException(message, cause)

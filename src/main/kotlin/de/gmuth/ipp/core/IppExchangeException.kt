@@ -1,16 +1,12 @@
-package de.gmuth.ipp.client
+package de.gmuth.ipp.core
 
 /**
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.ipp.core.IppException
-import de.gmuth.ipp.core.IppRequest
-import de.gmuth.ipp.core.IppResponse
-
 class IppExchangeException(
         val request: IppRequest,
-        val response: IppResponse? = null,
+        val response: IppResponse,
         message: String,
         cause: Exception? = null
 

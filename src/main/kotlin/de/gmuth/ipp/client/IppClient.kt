@@ -16,7 +16,7 @@ class IppClient(
         var ippVersion: String = "1.1",
         val httpClient: Http.Client = HttpClientByHttpURLConnection()
         //val httpClient: Http.Client = HttpClientByJava11HttpClient()
-) {
+) : IppExchange {
 
     private val requestCounter = AtomicInteger(1)
     var requestingUserName: String = System.getenv("USER")
@@ -54,7 +54,7 @@ class IppClient(
         }
     }
 
-    fun exchange(ippUri: URI, ippRequest: IppRequest): IppResponse {
+    override fun exchange(ippUri: URI, ippRequest: IppRequest): IppResponse {
         val ippResponse = IppResponse()
         // internal function
         fun logRequestResponseDetails() {
