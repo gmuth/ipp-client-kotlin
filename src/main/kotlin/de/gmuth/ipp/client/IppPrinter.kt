@@ -225,7 +225,7 @@ class IppPrinter(val printerUri: URI) {
 
     private fun checkValueSupported(supportedAttributeName: String, value: Any) {
         // condition is NOT always false, because this method is used during class initialization
-        if (attributes == null) {
+        if (attributes == null || !checkValueSupported) {
             return
         }
         // instead of providing another signature just check collections iterative
@@ -238,10 +238,7 @@ class IppPrinter(val printerUri: URI) {
         if (!supportedAttributeName.endsWith("-supported")) {
             throw IppException("expected attribute name ending with '-supported' but found: '$supportedAttributeName'")
         }
-        val supportedAttribute = attributes.get(supportedAttributeName)
-        if (supportedAttribute == null || !checkValueSupported) {
-            return
-        }
+        val supportedAttribute = attributes[supportedAttributeName] ?: return
         with(supportedAttribute) {
             val valueIsSupported = when (tag) {
                 IppTag.Boolean -> {
@@ -251,11 +248,9 @@ class IppPrinter(val printerUri: URI) {
                 IppTag.Charset,
                 IppTag.NaturalLanguage,
                 IppTag.MimeMediaType,
+                IppTag.Keyword,
                 IppTag.Enum,
                 IppTag.Resolution -> {
-                    values.contains(value)
-                }
-                IppTag.Keyword -> {
                     values.contains(value)
                 }
                 IppTag.Integer -> {
