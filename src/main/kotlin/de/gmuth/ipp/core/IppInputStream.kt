@@ -9,6 +9,9 @@ import java.io.DataInputStream
 import java.io.InputStream
 import java.net.URI
 import java.nio.charset.Charset
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.util.*
 
 class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
@@ -157,21 +160,10 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                 )
             }
 
-            // value class IppDateTime
+            // value class ZonedDateTime
             IppTag.DateTime -> {
                 readExpectedValueLength(11)
-                IppDateTime(
-                        year = readShort().toInt(),
-                        month = read(),
-                        day = read(),
-                        hour = read(),
-                        minutes = read(),
-                        seconds = read(),
-                        deciSeconds = read(),
-                        directionFromUTC = readByte().toChar(),
-                        hoursFromUTC = read(),
-                        minutesFromUTC = read()
-                )
+                readDateTime()
             }
 
             //  value class IppCollection
@@ -185,6 +177,24 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                 throw IppException("decoding value for tag '$tag' not implemented")
             }
         }
+    }
+
+    private fun readDateTime(): ZonedDateTime {
+        val localDateTime = LocalDateTime.of(
+                readShort().toInt(), // year
+                read(), // month
+                read(), // day
+                read(), // hour
+                read(), // minutes
+                read(), // seconds
+                read() * 100 * 1000 * 1000 // deciSecond -> nanoSecond
+        )
+        val directionFromUTC = readByte().toChar()
+        val minutesFromUTC = read() * 60 + read()
+        val zoneOffset = ZoneOffset.ofTotalSeconds(
+                (if (directionFromUTC == '-') -1 else 1) * minutesFromUTC * 60
+        )
+        return ZonedDateTime.of(localDateTime, zoneOffset)
     }
 
     private fun readCollection(): IppCollection {
