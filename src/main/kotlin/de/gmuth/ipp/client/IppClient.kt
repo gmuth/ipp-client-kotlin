@@ -113,7 +113,7 @@ class IppClient(
                     return content.stream
 
                 } else {
-                    val text =
+                    val textContent =
                             if (content.type.startsWith("text")) {
                                 ", content=" + String(content.stream.readAllBytes())
                             } else {
@@ -123,7 +123,7 @@ class IppClient(
                         426 -> println("ERROR: HTTP 426 suggests using a secure connection for authentication, try setting 'requesting-user-name'")
                         401 -> println("ERROR: HTTP 401 unauthorized, try setting 'requesting-user-name'")
                     }
-                    throw IppException("http request to $httpUri failed: http-status=$status, content-type=${content.type} $text")
+                    throw IppException("http request to $httpUri failed: http-status=$status, content-type=${content.type}$textContent")
                 }
             }
         } catch (sslException: SSLHandshakeException) {
