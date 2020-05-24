@@ -7,6 +7,9 @@ package de.gmuth.ipp.core
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.ipp.iana.IppRegistrationsSection6
 import java.nio.charset.Charset
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.*
 
 class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppAttributeHolder {
@@ -102,7 +105,7 @@ class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppAttrib
                             "$start-$endInclusive"
                         }
                         tag == IppTag.Integer && name.contains("time") && !name.contains("time-out") -> with(it as Int) {
-                            IppIntegerTime.fromInt(this).toString()
+                            "$it (${LocalDateTime.ofInstant(Instant.ofEpochSecond(it.toLong()), ZoneId.systemDefault())})"
                         }
                         else -> with(it as Any) {
                             enumValueNameOrValue(this).toString()
