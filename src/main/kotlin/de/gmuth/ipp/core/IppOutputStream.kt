@@ -27,7 +27,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
         with(message) {
             writeVersion(version ?: throw IppException("missing version"))
             writeShort(code?.toInt() ?: throw IppException("missing operation or status code"))
-            writeInt(requestId ?: throw IppException("missing requestIds"))
+            writeInt(requestId ?: throw IppException("missing requestId"))
             for (group in attributesGroups) {
                 writeTag(group.tag)
                 for (attribute in group.values) {
