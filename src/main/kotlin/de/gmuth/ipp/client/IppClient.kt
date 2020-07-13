@@ -14,12 +14,12 @@ import javax.net.ssl.SSLHandshakeException
 
 class IppClient(
         var ippVersion: String = "1.1",
-        val httpClient: Http.Client = HttpClientByHttpURLConnection()
-        //val httpClient: Http.Client = HttpClientByJava11HttpClient()
+        val httpClient: Http.Client = HttpClientByHttpURLConnection(), // HttpClientByJava11HttpClient()
+        val requestingUserName: String? = System.getProperty("user.name")
+
 ) : IppExchange {
 
     private val requestCounter = AtomicInteger(1)
-    var requestingUserName: String = System.getenv("USER")
     var httpAuth: Http.Auth? = null
     var verbose: Boolean = false
 
@@ -32,7 +32,9 @@ class IppClient(
                 if (printerUri != null) {
                     operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
                 }
-                operationGroup.attribute("requesting-user-name", IppTag.NameWithoutLanguage, requestingUserName)
+                if (requestingUserName != null) {
+                    operationGroup.attribute("requesting-user-name", IppTag.NameWithoutLanguage, requestingUserName)
+                }
             }
 
     fun ippJobRequest(jobOperation: IppOperation, printerUri: URI, jobId: Int) =
