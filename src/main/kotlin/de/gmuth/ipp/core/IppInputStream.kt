@@ -233,7 +233,10 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
     private fun readLengthAndValue(): ByteArray {
         val length = readShort().toInt()
-        return readNBytes(length)
+        val byteArray = ByteArray(length)
+        readFully(byteArray)
+        return byteArray
+        //return readNBytes(length) // Java 11
     }
 
     private fun readExpectedValueLength(expected: Int) {

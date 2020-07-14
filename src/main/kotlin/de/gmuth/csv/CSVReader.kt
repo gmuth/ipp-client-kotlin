@@ -112,7 +112,7 @@ class CSVReader<T>(
             fun maxLength(column: Int) = maxLengthMap[column] ?: throw IllegalArgumentException("column $column not found")
 
             // iterate over all fields and layout with max column widths
-            val printWriter = PrintWriter(outputStream, true, Charsets.UTF_8)
+            val printWriter = PrintWriter(outputStream, true)
             val linesColumnLength: Int = (log10((rows).size.toDouble()) + 1).toInt()
             for ((rowNo, columns) in (rows).withIndex()) {
                 val line = StringBuffer()

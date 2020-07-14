@@ -117,7 +117,8 @@ class IppClient(
                 } else {
                     val textContent =
                             if (content.type.startsWith("text")) {
-                                ", content=" + String(content.stream.readAllBytes())
+                                //", content=" + String(content.stream.readAllBytes()) // Java 11
+                                ", content=" + content.stream.bufferedReader().use { it.readText() }
                             } else {
                                 ""
                             }
