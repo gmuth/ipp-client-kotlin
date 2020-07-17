@@ -8,6 +8,7 @@ import de.gmuth.http.Http
 import de.gmuth.ipp.core.*
 import java.io.File
 import java.io.FileInputStream
+import java.io.InputStream
 import java.net.URI
 
 class IppPrinter(val printerUri: URI) {
@@ -88,18 +89,32 @@ class IppPrinter(val printerUri: URI) {
     // Print-Job
     //----------
 
+    fun printInputStream(
+            inputStream: InputStream,
+            attributeHolders: Array<out IppAttributeHolder>,
+            waitForTermination: Boolean
+
+    ): IppJob {
+        val request = attributeHoldersRequest(IppOperation.PrintJob, attributeHolders).apply {
+            documentInputStream = inputStream
+        }
+        val response = exchangeSuccessful(request)
+        return handlePrintResponse(response, waitForTermination)
+    }
+
+    fun printJob(
+            inputStream: InputStream,
+            vararg attributeHolders: IppAttributeHolder,
+            waitForTermination: Boolean = false
+
+    )= printInputStream(inputStream, attributeHolders, waitForTermination)
+
     fun printJob(
             file: File,
             vararg attributeHolders: IppAttributeHolder,
             waitForTermination: Boolean = false
 
-    ): IppJob {
-        val request = attributeHoldersRequest(IppOperation.PrintJob, attributeHolders).apply {
-            documentInputStream = FileInputStream(file)
-        }
-        val response = exchangeSuccessful(request)
-        return handlePrintResponse(response, waitForTermination)
-    }
+    ) =  printInputStream(FileInputStream(file), attributeHolders, waitForTermination)
 
     //----------
     // Print-Uri

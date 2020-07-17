@@ -10,8 +10,7 @@ import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppTag
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import java.io.File
-import java.io.FileInputStream
+import java.io.InputStream
 import java.net.URI
 import java.time.Duration
 
@@ -100,10 +99,10 @@ class IppJob(
     // Send-Document
     //--------------
 
-    fun sendDocument(file: File, lastDocument: Boolean = true) {
+    fun sendDocument(inputStream: InputStream, lastDocument: Boolean = true) {
         val request = ippJobRequest(IppOperation.SendDocument).apply {
             operationGroup.attribute("last-document", IppTag.Boolean, lastDocument)
-            documentInputStream = FileInputStream(file)
+            documentInputStream = inputStream
         }
         val response = exchangeSuccessful(request)
         attributes = response.jobGroup
