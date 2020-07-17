@@ -107,14 +107,14 @@ class IppPrinter(val printerUri: URI) {
             vararg attributeHolders: IppAttributeHolder,
             waitForTermination: Boolean = false
 
-    )= printInputStream(inputStream, attributeHolders, waitForTermination)
+    ) = printInputStream(inputStream, attributeHolders, waitForTermination)
 
     fun printJob(
             file: File,
             vararg attributeHolders: IppAttributeHolder,
             waitForTermination: Boolean = false
 
-    ) =  printInputStream(FileInputStream(file), attributeHolders, waitForTermination)
+    ) = printInputStream(FileInputStream(file), attributeHolders, waitForTermination)
 
     //----------
     // Print-Uri
