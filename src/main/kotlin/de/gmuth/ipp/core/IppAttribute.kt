@@ -12,7 +12,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
 
-class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppAttributeHolder {
+open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppAttributeHolder {
 
     val values = mutableListOf<T>()
 

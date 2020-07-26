@@ -170,7 +170,9 @@ class IppPrinter(val printerUri: URI) {
         if (wait) {
             job.waitForTermination()
         }
-        job.logDetails()
+        if (ippClient.verbose) {
+            job.logDetails()
+        }
         return job
     }
 
@@ -266,7 +268,7 @@ class IppPrinter(val printerUri: URI) {
                 IppTag.Keyword,
                 IppTag.Enum,
                 IppTag.Resolution -> {
-                    values.contains(value)
+                    values.contains(value) || supportedAttributeName.toLowerCase() == "media-col-supported"
                 }
                 IppTag.Integer -> {
                     if (is1setOf()) {

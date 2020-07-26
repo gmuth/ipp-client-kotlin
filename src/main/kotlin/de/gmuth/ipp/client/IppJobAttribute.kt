@@ -22,9 +22,6 @@ object IppJobAttribute {
     fun documentName(value: String) =
             IppAttribute("document-Name", IppTag.NameWithoutLanguage, value)
 
-    fun media(value: String) =
-            IppAttribute("media", IppTag.Keyword, value)
-
     fun jobName(value: String) =
             IppAttribute("job-name", IppTag.NameWithoutLanguage, value)
 
@@ -42,4 +39,11 @@ object IppJobAttribute {
 
     fun pageRanges(vararg ranges: IntRange) =
             IppAttribute("page-ranges", IppTag.RangeOfInteger, ranges.toList())
+
+    fun media(value: String) =
+            IppAttribute("media", IppTag.Keyword, value)
+
+    fun media(xDimension: Int, yDimension: Int, margin: Int = 0) =
+            IppMedia(IppMedia.Size(xDimension, yDimension), IppMedia.Margins(margin))
+
 }
