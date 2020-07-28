@@ -44,6 +44,6 @@ object IppJobAttribute {
             IppAttribute("media", IppTag.Keyword, value)
 
     fun media(xDimension: Int, yDimension: Int, margin: Int = 0) =
-            IppMedia(IppMedia.Size(xDimension, yDimension), IppMedia.Margins(margin))
+            IppMedia(IppMedia.Size(xDimension, yDimension), IppMedia.Margin(margin))
 
 }
