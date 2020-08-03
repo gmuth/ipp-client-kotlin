@@ -14,7 +14,7 @@ import java.net.URI
 class IppPrinter(val printerUri: URI) {
 
     val ippClient = IppClient()
-    val attributes: IppAttributesGroup = getPrinterAttributes()
+    var attributes: IppAttributesGroup = getPrinterAttributes()
     var httpAuth: Http.Auth?
         get() = ippClient.httpAuth
         set(value) {
@@ -83,6 +83,10 @@ class IppPrinter(val printerUri: URI) {
         }
         val response = exchangeSuccessful(request)
         return response.printerGroup
+    }
+
+    fun updateAttributes() {
+        attributes = getPrinterAttributes()
     }
 
     //----------
