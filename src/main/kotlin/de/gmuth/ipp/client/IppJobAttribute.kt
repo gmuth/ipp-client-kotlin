@@ -43,7 +43,7 @@ object IppJobAttribute {
     fun media(value: String) =
             IppAttribute("media", IppTag.Keyword, value)
 
-    fun media(xDimension: Int, yDimension: Int, margin: Int = 0) =
+    fun mediaCol(xDimension: Int, yDimension: Int, margin: Int = 0) =
             IppMedia(IppMedia.Size(xDimension, yDimension), IppMedia.Margin(margin))
 
 }
