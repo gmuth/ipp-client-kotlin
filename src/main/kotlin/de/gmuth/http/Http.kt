@@ -6,7 +6,6 @@ package de.gmuth.http
 
 import java.io.InputStream
 import java.net.URI
-import java.time.Duration
 
 interface Http {
 
@@ -17,7 +16,7 @@ interface Http {
     data class Auth(val user: String, val password: String)
 
     data class Config(
-            var timeout: Duration = Duration.ofSeconds(3),
+            var timeout: Int = 3000, // milli seconds
             var trustAnySSLCertificate: Boolean = true
     )
 

@@ -8,6 +8,7 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import java.time.Duration
 import java.util.*
 
 class HttpClientByJava11HttpClient(
@@ -26,7 +27,7 @@ class HttpClientByJava11HttpClient(
 
     override fun post(uri: URI, content: Http.Content, auth: Http.Auth?): Http.Response {
         val httpRequest = with(HttpRequest.newBuilder()) {
-            timeout(config.timeout)
+            timeout(Duration.ofMillis(config.timeout.toLong()))
             header("Content-Type", content.type)
             POST(HttpRequest.BodyPublishers.ofInputStream {
                 content.stream

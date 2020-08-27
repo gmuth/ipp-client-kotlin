@@ -21,7 +21,7 @@ class HttpClientByHttpURLConnection(
                 sslSocketFactory = AnyCertificateX509TrustManager.socketFactory
                 hostnameVerifier = HostnameVerifier { _, _ -> true }
             }
-            connectTimeout = config.timeout.toMillis().toInt()
+            connectTimeout = config.timeout
             doOutput = true // trigger POST method
             if (auth != null) {
                 if (uri.scheme in listOf("http", "ipp")) {
