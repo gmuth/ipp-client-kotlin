@@ -24,6 +24,7 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
 
     companion object {
         var allowAutomaticTag: Boolean = true
+        var supportJavaTime: Boolean = true
     }
 
     constructor(name: String, tag: IppTag, vararg values: T) : this(name, tag, values.toList())
@@ -104,7 +105,7 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
                         tag == IppTag.RangeOfInteger -> with(it as IntRange) {
                             "$start-$endInclusive"
                         }
-                        tag == IppTag.Integer && name.contains("time") && !name.contains("time-out") -> with(it as Int) {
+                        supportJavaTime && tag == IppTag.Integer && name.contains("time") && !name.contains("time-out") -> with(it as Int) {
                             "$it (${LocalDateTime.ofInstant(Instant.ofEpochSecond(it.toLong()), ZoneId.systemDefault())})"
                         }
                         else -> with(it as Any) {

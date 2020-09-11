@@ -162,8 +162,13 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
             // value class ZonedDateTime
             IppTag.DateTime -> {
-                readExpectedValueLength(11)
-                readDateTime()
+                if (IppAttribute.supportJavaTime) {
+                    readExpectedValueLength(11)
+                    readDateTime()
+                } else {
+                    readLengthAndValue() // ignore value
+                    "<java.time api missing, value not decoded>"
+                }
             }
 
             //  value class IppCollection
