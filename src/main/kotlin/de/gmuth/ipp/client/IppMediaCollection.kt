@@ -8,11 +8,11 @@ import de.gmuth.ipp.core.*
 
 // PWG 5100.3, 3.13
 
-class IppMedia(
-        val size: Size? = null,
-        val margin: Margin? = null,
-        val source: String? = null,
-        val type: String? = null
+class IppMediaCollection(
+        var size: Size? = null,
+        var margin: Margin? = null,
+        var source: String? = null,
+        var type: String? = null
 
 ) : IppAttributeHolder {
 
@@ -43,7 +43,7 @@ class IppMedia(
         with(IppCollection()) {
             if (source != null) add(IppAttribute("media-source", IppTag.Keyword, source))
             if (type != null) add(IppAttribute("media-type", IppTag.Keyword, type))
-            if (size != null) add(size.getIppAttribute(printerAttributes))
+            if (size != null) add(size!!.getIppAttribute(printerAttributes))
             margin?.getIppAttributes()?.forEach { add(it) }
             return IppAttribute("media-col", IppTag.BegCollection, this)
         }
