@@ -11,16 +11,21 @@ import java.io.FileInputStream
 import java.io.InputStream
 import java.net.URI
 
-class IppPrinter(val printerUri: URI) {
+class IppPrinter(val printerUri: URI, val verbose: Boolean = false) {
 
     val ippClient = IppClient()
-    var attributes: IppAttributesGroup = getPrinterAttributes()
+    var attributes: IppAttributesGroup
     var httpAuth: Http.Auth?
         get() = ippClient.httpAuth
         set(value) {
             ippClient.httpAuth = value
         }
     var checkValueSupported: Boolean = true
+
+    init {
+        ippClient.verbose = verbose
+        attributes = getPrinterAttributes()
+    }
 
     //--------------
     // IppAttributes
