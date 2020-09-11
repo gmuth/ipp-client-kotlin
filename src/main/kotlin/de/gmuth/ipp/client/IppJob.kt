@@ -12,14 +12,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import java.io.InputStream
 import java.net.URI
-import java.time.Duration
 
 class IppJob(
         val printer: IppPrinter,
         var attributes: IppAttributesGroup
 ) {
     companion object {
-        var defaultRefreshRate: Duration = Duration.ofSeconds(3)
+        var defaultRefreshRateMillis: Long = 3000
     }
 
     //--------------
@@ -60,11 +59,11 @@ class IppJob(
     // Wait for terminal state (RFC 8011 5.3.7.)
     //------------------------------------------
 
-    fun waitForTermination(refreshRate: Duration = defaultRefreshRate) {
+    fun waitForTermination(refreshRateMillis: Long = defaultRefreshRateMillis) {
         println("wait for terminal state of job #$id")
         do {
             runBlocking {
-                delay(refreshRate.toMillis())
+                delay(refreshRateMillis)
             }
             updateAttributes()
             println("job-state=$state, job-impressions-completed=$impressionsCompleted")
