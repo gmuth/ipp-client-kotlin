@@ -4,6 +4,7 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
+import de.gmuth.ext.toPluralString
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
@@ -63,7 +64,7 @@ abstract class IppMessage {
             "%s: %s, %s: %s",
             javaClass.simpleName,
             codeDescription,
-            attributesGroups.size.toPluralString("attributes group"),
+            attributesGroups.size.toPluralString ("attributes group"),
             attributesGroups.map { it.tag }
     )
 

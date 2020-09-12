@@ -1,4 +1,4 @@
-package de.gmuth.ipp.core
+package de.gmuth.ext
 
 /**
  * Copyright (c) 2020 Gerhard Muth

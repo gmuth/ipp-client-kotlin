@@ -1,5 +1,7 @@
 package de.gmuth.ipp.core
 
+import de.gmuth.ext.toPluralString
+
 /**
  * Copyright (c) 2020 Gerhard Muth
  */

@@ -4,7 +4,7 @@ package de.gmuth.csv
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.ipp.core.toPluralString
+import de.gmuth.ext.toPluralString
 import java.io.InputStream
 import java.io.OutputStream
 import java.io.PrintWriter
