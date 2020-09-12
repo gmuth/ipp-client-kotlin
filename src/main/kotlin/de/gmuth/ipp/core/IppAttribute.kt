@@ -4,6 +4,7 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
+import de.gmuth.ext.toPluralString
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.ipp.iana.IppRegistrationsSection6
 import java.nio.charset.Charset
@@ -80,40 +81,37 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
             return values.first()
         }
 
-    fun enumValueNameOrValue(value: Any) = when (tag) {
-        IppTag.Enum -> IppRegistrationsSection6.getEnumValueName(name, value)
-        else -> value
-    }
-
     override fun toString(): String {
         val tagString = "${if (is1setOf()) "1setOf " else ""}$tag"
         return "$name ($tagString) = ${valuesToString()}"
     }
 
-    private fun valuesToString(): String =
-            if (values.isEmpty()) {
-                "no-value"
-            } else {
-                values.joinToString(",") {
-                    when {
-                        tag == IppTag.Charset -> with(it as Charset) {
-                            name().toLowerCase()
-                        }
-                        tag == IppTag.NaturalLanguage -> with(it as Locale) {
-                            toLanguageTag().toLowerCase()
-                        }
-                        tag == IppTag.RangeOfInteger -> with(it as IntRange) {
-                            "$start-$endInclusive"
-                        }
-                        supportJavaTime && tag == IppTag.Integer && name.contains("time") && !name.contains("time-out") -> with(it as Int) {
-                            "$it (${LocalDateTime.ofInstant(Instant.ofEpochSecond(it.toLong()), ZoneId.systemDefault())})"
-                        }
-                        else -> with(it as Any) {
-                            enumValueNameOrValue(this).toString()
-                        }
-                    }
-                }
-            }
+    private fun valuesToString() =
+            if (values.isEmpty()) "no-value"
+            else values.joinToString(",") { valueToString(it) }
+
+    private fun valueToString(value: T) = when {
+        tag == IppTag.Charset -> with(value as Charset) {
+            name().toLowerCase()
+        }
+        tag == IppTag.NaturalLanguage -> with(value as Locale) {
+            toLanguageTag().toLowerCase()
+        }
+        tag == IppTag.RangeOfInteger -> with(value as IntRange) {
+            "$start-$endInclusive"
+        }
+        supportJavaTime && tag == IppTag.Integer && name.contains("time") && !name.contains("time-out") -> with(value as Int) {
+            "$value (${LocalDateTime.ofInstant(Instant.ofEpochSecond(value.toLong()), ZoneId.systemDefault())})"
+        }
+        else -> with(value as Any) {
+            enumValueNameOrValue(this).toString()
+        }
+    }
+
+    fun enumValueNameOrValue(value: Any) = when (tag) {
+        IppTag.Enum -> IppRegistrationsSection6.getEnumValueName(name, value)
+        else -> value
+    }
 
     fun logDetails(prefix: String = "") {
         val string = toString()
