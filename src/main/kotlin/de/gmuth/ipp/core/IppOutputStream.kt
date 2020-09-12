@@ -9,10 +9,7 @@ import java.io.DataOutputStream
 import java.io.OutputStream
 import java.net.URI
 import java.nio.charset.Charset
-import java.time.ZonedDateTime
-import java.time.temporal.ChronoField
-import java.util.Locale
-import kotlin.math.absoluteValue
+import java.util.*
 
 class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStream) {
 
