@@ -100,11 +100,11 @@ class IppPrinter(val printerUri: URI, val verbose: Boolean = false) {
 
     fun printInputStream(
             inputStream: InputStream,
-            attributeHolders: Array<out IppAttributeHolder>,
+            attributeBuilders: Array<out IppAttributeBuilder>,
             waitForTermination: Boolean
 
     ): IppJob {
-        val request = attributeHoldersRequest(IppOperation.PrintJob, attributeHolders).apply {
+        val request = attributeHoldersRequest(IppOperation.PrintJob, attributeBuilders).apply {
             documentInputStream = inputStream
         }
         val response = exchangeSuccessful(request)
@@ -113,17 +113,17 @@ class IppPrinter(val printerUri: URI, val verbose: Boolean = false) {
 
     fun printJob(
             inputStream: InputStream,
-            vararg attributeHolders: IppAttributeHolder,
+            vararg attributeBuilders: IppAttributeBuilder,
             waitForTermination: Boolean = false
 
-    ) = printInputStream(inputStream, attributeHolders, waitForTermination)
+    ) = printInputStream(inputStream, attributeBuilders, waitForTermination)
 
     fun printJob(
             file: File,
-            vararg attributeHolders: IppAttributeHolder,
+            vararg attributeBuilders: IppAttributeBuilder,
             waitForTermination: Boolean = false
 
-    ) = printInputStream(FileInputStream(file), attributeHolders, waitForTermination)
+    ) = printInputStream(FileInputStream(file), attributeBuilders, waitForTermination)
 
     //----------
     // Print-Uri
@@ -131,11 +131,11 @@ class IppPrinter(val printerUri: URI, val verbose: Boolean = false) {
 
     fun printUri(
             documentUri: URI,
-            vararg attributeHolders: IppAttributeHolder,
+            vararg attributeBuilders: IppAttributeBuilder,
             waitForTermination: Boolean = false
 
     ): IppJob {
-        val request = attributeHoldersRequest(IppOperation.PrintUri, attributeHolders).apply {
+        val request = attributeHoldersRequest(IppOperation.PrintUri, attributeBuilders).apply {
             operationGroup.attribute("document-uri", IppTag.Uri, documentUri)
         }
         val response = exchangeSuccessful(request)
@@ -146,8 +146,8 @@ class IppPrinter(val printerUri: URI, val verbose: Boolean = false) {
     // Validate-Job
     //-------------
 
-    fun validateJob(vararg attributeHolders: IppAttributeHolder): IppResponse {
-        val request = attributeHoldersRequest(IppOperation.ValidateJob, attributeHolders)
+    fun validateJob(vararg attributeBuilders: IppAttributeBuilder): IppResponse {
+        val request = attributeHoldersRequest(IppOperation.ValidateJob, attributeBuilders)
         return exchangeSuccessful(request)
     }
 
@@ -155,19 +155,19 @@ class IppPrinter(val printerUri: URI, val verbose: Boolean = false) {
     // Create-Job
     //-----------
 
-    fun createJob(vararg attributeHolders: IppAttributeHolder): IppJob {
-        val request = attributeHoldersRequest(IppOperation.CreateJob, attributeHolders)
+    fun createJob(vararg attributeBuilders: IppAttributeBuilder): IppJob {
+        val request = attributeHoldersRequest(IppOperation.CreateJob, attributeBuilders)
         val response = exchangeSuccessful(request)
         return IppJob(this, response.jobGroup)
     }
 
     // ---- factory method for IppRequest with Operation Print-Job, Print-Uri, Validate-Job, Create-Job
 
-    private fun attributeHoldersRequest(operation: IppOperation, attributeHolders: Array<out IppAttributeHolder>) =
+    private fun attributeHoldersRequest(operation: IppOperation, attributeBuilders: Array<out IppAttributeBuilder>) =
             ippRequest(operation).apply {
                 with(ippAttributesGroup(IppTag.Job)) {
-                    for (attributeHolder in attributeHolders) {
-                        val attribute = attributeHolder.getIppAttribute(attributes)
+                    for (attributeHolder in attributeBuilders) {
+                        val attribute = attributeHolder.buildIppAttribute(attributes)
                         checkValueSupported("${attribute.name}-supported", attribute.values)
                         put(attribute, validateTag = true)
                     }

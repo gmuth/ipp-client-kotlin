@@ -11,7 +11,7 @@ import java.nio.charset.Charset
 import java.text.SimpleDateFormat
 import java.util.*
 
-open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppAttributeHolder {
+open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppAttributeBuilder {
 
     val values = mutableListOf<T>()
 
@@ -46,7 +46,7 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
         }
     }
 
-    override fun getIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<*> = this
+    override fun buildIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<*> = this
 
     fun validateTag() {
         val registeredTag = IppRegistrationsSection2.tagForAttribute(name)

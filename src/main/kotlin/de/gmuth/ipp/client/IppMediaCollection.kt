@@ -14,11 +14,11 @@ class IppMediaCollection(
         var source: String? = null,
         var type: String? = null
 
-) : IppAttributeHolder {
+) : IppAttributeBuilder {
 
     // unit: 1/100 mm, e.g. 2540 = 1 inch
-    class Size(val xDimension: Int, val yDimension: Int) : IppAttributeHolder {
-        override fun getIppAttribute(printerAttributes: IppAttributesGroup) =
+    class Size(val xDimension: Int, val yDimension: Int) : IppAttributeBuilder {
+        override fun buildIppAttribute(printerAttributes: IppAttributesGroup) =
                 IppAttribute("media-size", IppTag.BegCollection, IppCollection(
                         IppAttribute("x-dimension", IppTag.Integer, xDimension),
                         IppAttribute("y-dimension", IppTag.Integer, yDimension)
@@ -39,11 +39,11 @@ class IppMediaCollection(
         }
     }
 
-    override fun getIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<*> {
+    override fun buildIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<*> {
         with(IppCollection()) {
             if (source != null) add(IppAttribute("media-source", IppTag.Keyword, source))
             if (type != null) add(IppAttribute("media-type", IppTag.Keyword, type))
-            if (size != null) add(size!!.getIppAttribute(printerAttributes))
+            if (size != null) add(size!!.buildIppAttribute(printerAttributes))
             margin?.getIppAttributes()?.forEach { add(it) }
             return IppAttribute("media-col", IppTag.BegCollection, this)
         }
