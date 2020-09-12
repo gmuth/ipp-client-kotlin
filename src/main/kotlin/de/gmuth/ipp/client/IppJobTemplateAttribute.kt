@@ -11,7 +11,7 @@ import de.gmuth.ipp.core.IppTag
 /**
  * methods to create common job attributes
  */
-object IppJobAttribute {
+object IppJobTemplateAttribute {
 
     fun attribute(name: String, tag: IppTag, vararg values: Any) =
             IppAttribute(name, tag, values.toList())
