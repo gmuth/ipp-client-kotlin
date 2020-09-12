@@ -8,9 +8,7 @@ import de.gmuth.ext.toPluralString
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.ipp.iana.IppRegistrationsSection6
 import java.nio.charset.Charset
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneId
+import java.text.SimpleDateFormat
 import java.util.*
 
 open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppAttributeHolder {
@@ -25,7 +23,7 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
 
     companion object {
         var allowAutomaticTag: Boolean = true
-        var supportJavaTime: Boolean = true
+        val iso8601DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     }
 
     constructor(name: String, tag: IppTag, vararg values: T) : this(name, tag, values.toList())
@@ -100,8 +98,11 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
         tag == IppTag.RangeOfInteger -> with(value as IntRange) {
             "$start-$endInclusive"
         }
-        supportJavaTime && tag == IppTag.Integer && name.contains("time") && !name.contains("time-out") -> with(value as Int) {
-            "$value (${LocalDateTime.ofInstant(Instant.ofEpochSecond(value.toLong()), ZoneId.systemDefault())})"
+        tag == IppTag.Integer && name.contains("time") && !name.contains("time-out") -> with(value as Int) {
+            val seconds = value.toLong() // some printers use 'seconds since startup'
+            val epochSeconds = if (seconds < 60 * 60 * 24 * 365) Date().time / 1000 - seconds else seconds
+            "$value (${iso8601DateFormat.format(Date(epochSeconds * 1000))})"
+            //"$value (${LocalDateTime.ofInstant(Instant.ofEpochSecond(value.toLong()), ZoneId.systemDefault())})" // java.time
         }
         else -> with(value as Any) {
             enumValueNameOrValue(this).toString()
