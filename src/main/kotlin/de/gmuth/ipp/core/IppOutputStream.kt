@@ -165,25 +165,19 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
                 writeStringForTag(value.string)
             }
 
-            IppTag.DateTime ->
-                if (IppAttribute.supportJavaTime)
-                    with(value as ZonedDateTime) {
-                        val offsetTotalMinutes = zone.rules.getOffset(toLocalDateTime()).totalSeconds / 60
-                        val directionFromUTC = if (offsetTotalMinutes < 0) '-' else '+'
-                        writeShort(11)
-                        writeShort(year)
-                        writeByte(monthValue)
-                        writeByte(dayOfMonth)
-                        writeByte(hour)
-                        writeByte(minute)
-                        writeByte(second)
-                        writeByte(get(ChronoField.MILLI_OF_SECOND) / 100) // deciSeconds
-                        writeByte(directionFromUTC.toInt())
-                        writeByte(offsetTotalMinutes.absoluteValue / 60) // hoursFromUTC
-                        writeByte(offsetTotalMinutes.absoluteValue % 60) // minutesFromUTC
-                    }
-                else
-                    println("encoding value for tag '$tag' requires java.time api")
+            IppTag.DateTime -> with(value as IppDateTime) {
+                writeShort(11)
+                writeShort(year)
+                writeByte(month)
+                writeByte(day)
+                writeByte(hour)
+                writeByte(minutes)
+                writeByte(seconds)
+                writeByte(deciSeconds)
+                writeByte(directionFromUTC.toInt())
+                writeByte(hoursFromUTC)
+                writeByte(minutesFromUTC)
+            }
 
             IppTag.BegCollection -> with(value as IppCollection) {
                 writeShort(0)
