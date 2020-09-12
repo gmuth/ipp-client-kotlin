@@ -41,7 +41,7 @@ class IppMediaCollection(
             if (source != null) add(IppAttribute("media-source", IppTag.Keyword, source))
             if (type != null) add(IppAttribute("media-type", IppTag.Keyword, type))
             if (size != null) add(size!!.buildIppAttribute(printerAttributes))
-            if (margins != null) add(margins!!)
+            if (margins != null) addAll(margins!!)
             return IppAttribute("media-col", IppTag.BegCollection, this)
         }
     }
