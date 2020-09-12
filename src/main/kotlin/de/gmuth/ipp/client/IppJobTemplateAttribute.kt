@@ -45,7 +45,7 @@ object IppJobTemplateAttribute {
 
     fun mediaCol(xDimension: Int, yDimension: Int, margin: Int? = null) =
             IppMediaCollection(IppMediaCollection.Size(xDimension, yDimension)).apply {
-                if(margin != null) this.margin = IppMediaCollection.Margin(margin)
+                if(margin != null) this.margins = IppMediaCollection.Margins(margin)
             }
 
 }

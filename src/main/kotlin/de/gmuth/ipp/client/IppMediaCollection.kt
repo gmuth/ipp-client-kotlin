@@ -10,7 +10,7 @@ import de.gmuth.ipp.core.*
 
 class IppMediaCollection(
         var size: Size? = null,
-        var margin: Margin? = null,
+        var margins: Margins? = null,
         var source: String? = null,
         var type: String? = null
 
@@ -25,17 +25,14 @@ class IppMediaCollection(
                 ))
     }
 
-    class Margin(val left: Int? = null, val right: Int? = null, val top: Int? = null, val bottom: Int? = null) {
+    class Margins(left: Int? = null, right: Int? = null, top: Int? = null, bottom: Int? = null) : ArrayList<IppAttribute<*>>() {
         constructor(margin: Int) : this(margin, margin, margin, margin)
 
-        fun getIppAttributes(): Collection<IppAttribute<*>> {
-            with(mutableListOf<IppAttribute<*>>()) {
-                if (top != null) add(IppAttribute("media-top-margin", IppTag.Integer, top))
-                if (left != null) add(IppAttribute("media-left-margin", IppTag.Integer, left))
-                if (right != null) add(IppAttribute("media-right-margin", IppTag.Integer, right))
-                if (bottom != null) add(IppAttribute("media-bottom-margin", IppTag.Integer, bottom))
-                return this
-            }
+        init {
+            if (top != null) add(IppAttribute("media-top-margin", IppTag.Integer, top))
+            if (left != null) add(IppAttribute("media-left-margin", IppTag.Integer, left))
+            if (right != null) add(IppAttribute("media-right-margin", IppTag.Integer, right))
+            if (bottom != null) add(IppAttribute("media-bottom-margin", IppTag.Integer, bottom))
         }
     }
 
@@ -44,7 +41,7 @@ class IppMediaCollection(
             if (source != null) add(IppAttribute("media-source", IppTag.Keyword, source))
             if (type != null) add(IppAttribute("media-type", IppTag.Keyword, type))
             if (size != null) add(size!!.buildIppAttribute(printerAttributes))
-            margin?.getIppAttributes()?.forEach { add(it) }
+            if (margins != null) add(margins!!)
             return IppAttribute("media-col", IppTag.BegCollection, this)
         }
     }

@@ -18,6 +18,10 @@ class IppCollection() {
 
     fun add(attribute: IppAttribute<*>) = members.add(attribute)
 
+    fun add(attributes: Collection<IppAttribute<*>>) {
+        attributes.forEach { attribute -> add(attribute) }
+    }
+
     override fun toString() = members.joinToString(" ", "{", "}") {
         "${it.name}=${it.values.joinToString(",")}"
     }
