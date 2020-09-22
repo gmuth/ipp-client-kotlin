@@ -141,7 +141,7 @@ Currently only the target `jvm` is supported.
 ## Artifacts
 
 [Configure Gradle for use with Github Packages](https://docs.github.com/en/packages/using-github-packages-with-your-projects-ecosystem/configuring-gradle-for-use-with-github-packages).
-Use this [github package](https://github.com/gmuth/ipp-client-kotlin/packages/214725/versions) of the project as maven repo.
+Use this [github packages](https://github.com/gmuth/ipp-client-kotlin/packages/214725/versions) of the project as maven repo.
 I guess you can read the repo with any github account.
 
 ```
