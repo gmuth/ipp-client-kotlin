@@ -136,7 +136,7 @@ This software has **no dependencies** to
 [javax.print](https://docs.oracle.com/javase/7/docs/technotes/guides/jps/),
 [CUPS](https://www.cups.org) or
 [ipptool](https://www.cups.org/doc/man-ipptool.html).
-Currently only the target `jvm` is supported. 
+Operation has mostly been tested for target `jvm. Since v1.6 Android is supported as well.
 
 ## Artifacts
 
