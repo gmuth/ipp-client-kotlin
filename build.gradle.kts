@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "de.gmuth.ipp"
-version = "1.5-SNAPSHOT"
+version = "1.6"
 
 repositories {
     mavenCentral()
@@ -74,7 +74,7 @@ publishing {
     }
     repositories {
         maven {
-            name = "GitHubPackages"
+            name = "github-gmuth-ipp-client-kotlin"
             url = uri("https://maven.pkg.github.com/gmuth/ipp-client-kotlin")
             credentials {
                 username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
