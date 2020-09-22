@@ -140,12 +140,28 @@ Currently only the target `jvm` is supported.
 
 ## Artifacts
 
-Use [github packages](https://github.com/gmuth/ipp-client-kotlin/packages/214725/versions) as maven repo:
+[Configure Gradle for use with Github Packages](https://docs.github.com/en/packages/using-github-packages-with-your-projects-ecosystem/configuring-gradle-for-use-with-github-packages).
+Use this [github package](https://github.com/gmuth/ipp-client-kotlin/packages/214725/versions) of the project as maven repo.
+I guess you can read the repo with any github account.
 
 ```
-<dependency>
-  <groupId>de.gmuth.ipp</groupId>
-  <artifactId>ipp-client-kotlin</artifactId>
-  <version>1.4</version>
-</dependency>
+repositories {
+    jcenter()
+    maven {
+      url = uri("https://maven.pkg.github.com/gmuth/ipp-client-kotlin")
+      credentials {
+          // define gpr.user and gpr.token in ~/.gradle/gradle.properties
+          // gpr.username=myname
+          // gpr.token=mytoken
+          username = project.findProperty("gpr.user") as String?
+          password = project.findProperty("gpr.token") as String?
+      }
+    }
+}
+```
+
+Add dependency:
+
+```
+implementation("de.gmuth.ipp:ipp-client-kotlin:1.6")
 ```
