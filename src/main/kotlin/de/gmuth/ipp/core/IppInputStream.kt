@@ -9,7 +9,7 @@ import java.io.DataInputStream
 import java.io.InputStream
 import java.net.URI
 import java.nio.charset.Charset
-import java.util.Locale
+import java.util.*
 
 class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
@@ -63,9 +63,13 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
         val name = readString(Charsets.US_ASCII)
         // RFC 8010 3.8. & RFC 3380 8
         if (tag.isOutOfBandTag() || tag == IppTag.EndCollection) {
-            readExpectedValueLength(0) // no value
-            return IppAttribute(name, tag)
-
+            val valueBytes = readLengthAndValue()
+            return if (valueBytes.isEmpty()) {
+                IppAttribute(name, tag) // no value
+            } else {
+                // tolerate ipp spec violation, e.g. Xerox B210
+                IppAttribute(name, tag, String(valueBytes))
+            }
         } else {
             val value = try {
                 readAttributeValue(tag)
