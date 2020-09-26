@@ -298,8 +298,8 @@ class IppPrinter(val printerUri: URI, val verbose: Boolean = false) {
             if (valueIsSupported) {
                 //println("'${enumValueNameOrValue(value)}' supported by printer. $this")
             } else {
-                println("ERROR: unsupported: $value; supported: $values")
-                throw IppException("value '${enumValueNameOrValue(value)}' not supported by printer. $this")
+                println("WARN: according to printer attributes value '${enumValueNameOrValue(value)}' is not supported.")
+                println("$this")
             }
         }
     }
