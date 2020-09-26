@@ -62,13 +62,10 @@ with(
 
 `IppPrinter` checks, if attribute values are supported by looking into `'...-supported'` printer attributes.
 ```
-identify("jump", "sound")
+documentFormat("application/pdf")
 
-ERROR: unsupported: jump
-ERROR: supported: flash,sound
-Exception in thread "main" de.gmuth.ipp.core.IppException:
-   value 'jump' not supported by printer.
-   identify-actions-supported (1setOf keyword) = flash,sound
+WARN: according to printer attributes value 'application/pdf' is not supported.
+document-format-supported (1setOf mimeMediaType) = application/octet-stream,application/PCL,application/postscript
 ```
 
 ### exchange [IppRequest](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppRequest.kt) for [IppResponse](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppResponse.kt)
