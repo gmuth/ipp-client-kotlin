@@ -74,25 +74,19 @@ class IppJob(
     // Cancel-Job
     //-----------
 
-    fun cancel() {
-        exchangeSuccessfulIppJobRequest(IppOperation.CancelJob)
-    }
+    fun cancel() = exchangeSuccessfulIppJobRequest(IppOperation.CancelJob)
 
     //---------
     // Hold-Job
     //---------
 
-    fun hold() {
-        exchangeSuccessfulIppJobRequest(IppOperation.HoldJob)
-    }
+    fun hold() = exchangeSuccessfulIppJobRequest(IppOperation.HoldJob)
 
     //------------
     // Release-Job
     //-------------
 
-    fun release() {
-        exchangeSuccessfulIppJobRequest(IppOperation.ReleaseJob)
-    }
+    fun release() = exchangeSuccessfulIppJobRequest(IppOperation.ReleaseJob)
 
     //--------------
     // Send-Document
@@ -125,12 +119,7 @@ class IppJob(
     // -------
 
     override fun toString(): String {
-        val stateString =
-                if (state == null) {
-                    ""
-                } else {
-                    ", state=$state, stateReasons=$stateReasons"
-                }
+        val stateString = if (state == null) "" else ", state=$state, stateReasons=$stateReasons"
         return "IppJob: id=$id, uri=$uri$stateString"
     }
 
