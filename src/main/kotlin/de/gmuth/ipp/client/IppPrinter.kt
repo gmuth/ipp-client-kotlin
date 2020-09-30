@@ -64,17 +64,13 @@ class IppPrinter(val printerUri: URI, val verbose: Boolean = false) {
     // Pause-Printer
     //--------------
 
-    fun pause() {
-        exchangeSuccessfulIppRequest(IppOperation.PausePrinter)
-    }
+    fun pause() = exchangeSuccessfulIppRequest(IppOperation.PausePrinter)
 
     //---------------
     // Resume-Printer
     //---------------
 
-    fun resume() {
-        exchangeSuccessfulIppRequest(IppOperation.ResumePrinter)
-    }
+    fun resume() = exchangeSuccessfulIppRequest(IppOperation.ResumePrinter)
 
     //-----------------------
     // Get-Printer-Attributes
@@ -104,7 +100,7 @@ class IppPrinter(val printerUri: URI, val verbose: Boolean = false) {
             waitForTermination: Boolean
 
     ): IppJob {
-        val request = attributeHoldersRequest(IppOperation.PrintJob, attributeBuilders).apply {
+        val request = attributeBuildersRequest(IppOperation.PrintJob, attributeBuilders).apply {
             documentInputStream = inputStream
         }
         val response = exchangeSuccessful(request)
@@ -135,7 +131,7 @@ class IppPrinter(val printerUri: URI, val verbose: Boolean = false) {
             waitForTermination: Boolean = false
 
     ): IppJob {
-        val request = attributeHoldersRequest(IppOperation.PrintUri, attributeBuilders).apply {
+        val request = attributeBuildersRequest(IppOperation.PrintUri, attributeBuilders).apply {
             operationGroup.attribute("document-uri", IppTag.Uri, documentUri)
         }
         val response = exchangeSuccessful(request)
@@ -147,7 +143,7 @@ class IppPrinter(val printerUri: URI, val verbose: Boolean = false) {
     //-------------
 
     fun validateJob(vararg attributeBuilders: IppAttributeBuilder): IppResponse {
-        val request = attributeHoldersRequest(IppOperation.ValidateJob, attributeBuilders)
+        val request = attributeBuildersRequest(IppOperation.ValidateJob, attributeBuilders)
         return exchangeSuccessful(request)
     }
 
@@ -156,18 +152,18 @@ class IppPrinter(val printerUri: URI, val verbose: Boolean = false) {
     //-----------
 
     fun createJob(vararg attributeBuilders: IppAttributeBuilder): IppJob {
-        val request = attributeHoldersRequest(IppOperation.CreateJob, attributeBuilders)
+        val request = attributeBuildersRequest(IppOperation.CreateJob, attributeBuilders)
         val response = exchangeSuccessful(request)
         return IppJob(this, response.jobGroup)
     }
 
     // ---- factory method for IppRequest with Operation Print-Job, Print-Uri, Validate-Job, Create-Job
 
-    private fun attributeHoldersRequest(operation: IppOperation, attributeBuilders: Array<out IppAttributeBuilder>) =
+    private fun attributeBuildersRequest(operation: IppOperation, attributeBuilders: Array<out IppAttributeBuilder>) =
             ippRequest(operation).apply {
                 with(ippAttributesGroup(IppTag.Job)) {
-                    for (attributeHolder in attributeBuilders) {
-                        val attribute = attributeHolder.buildIppAttribute(attributes)
+                    for (attributeBuilder in attributeBuilders) {
+                        val attribute = attributeBuilder.buildIppAttribute(attributes)
                         checkValueSupported("${attribute.name}-supported", attribute.values)
                         put(attribute, validateTag = true)
                     }
@@ -245,62 +241,51 @@ class IppPrinter(val printerUri: URI, val verbose: Boolean = false) {
     fun logDetails() =
             attributes.logDetails(title = "PRINTER-$name ($makeAndModel), $state (${stateReasons.joinToString(",")})")
 
-    // --------------------------------------------------------
-    // ipp specs checking method, based on printer capabilities
-    // --------------------------------------------------------
+    // ------------------------------------------------------
+    // attribute value checking based on printer capabilities
+    // ------------------------------------------------------
 
     private fun checkValueSupported(supportedAttributeName: String, value: Any) {
         // condition is NOT always false, because this method is used during class initialization
-        if (attributes == null || !checkValueSupported) {
-            return
-        }
-        // instead of providing another signature just check collections iterative
-        if (value is Collection<*>) {
-            for (collectionValue in value) {
-                checkValueSupported(supportedAttributeName, collectionValue!!)
-            }
-            return
-        }
-        if (!supportedAttributeName.endsWith("-supported")) {
-            throw IppException("expected attribute name ending with '-supported' but found: '$supportedAttributeName'")
-        }
-        val supportedAttribute = attributes[supportedAttributeName] ?: return
-        with(supportedAttribute) {
-            val valueIsSupported = when (tag) {
-                IppTag.Boolean -> {
-                    //e.g. 'page-ranges-supported'
-                    supportedAttribute.value as Boolean
-                }
-                IppTag.Charset,
-                IppTag.NaturalLanguage,
-                IppTag.MimeMediaType,
-                IppTag.Keyword,
-                IppTag.Enum,
-                IppTag.Resolution -> {
-                    values.contains(value) || supportedAttributeName.toLowerCase() == "media-col-supported"
-                }
-                IppTag.Integer -> {
-                    if (is1setOf()) {
-                        values.contains(value)
-                    } else {
-                        // e.g. 'job-priority-supported'
-                        value is Int && value <= supportedAttribute.value as Int
-                    }
-                }
-                IppTag.RangeOfInteger -> {
-                    value is Int && value in supportedAttribute.value as IntRange
-                }
-                else -> {
-                    println("WARN: unable to check if value '$value' is supported by $this")
-                    true
-                }
-            }
-            if (valueIsSupported) {
-                //println("'${enumValueNameOrValue(value)}' supported by printer. $this")
-            } else {
-                println("WARN: according to printer attributes value '${enumValueNameOrValue(value)}' is not supported.")
-                println("$this")
-            }
+        if (attributes == null || !checkValueSupported) return
+        if (value is Collection<*>) { // instead of providing another signature just check collections iteratively
+            for (collectionValue in value) checkValueSupported(supportedAttributeName, collectionValue!!)
+        } else {
+            isAttributeValueSupported(supportedAttributeName, value)
         }
     }
+
+    private fun isAttributeValueSupported(supportedAttributeName: String, value: Any): Boolean? {
+        if (!supportedAttributeName.endsWith("-supported"))
+            throw IppException("attribute name not ending with '-supported'")
+
+        val supportedAttribute = attributes[supportedAttributeName] ?: return null
+        val isAttributeValueSupported = when (supportedAttribute.tag) {
+            IppTag.Boolean -> supportedAttribute.value as Boolean // e.g. 'page-ranges-supported'
+            IppTag.Charset,
+            IppTag.NaturalLanguage,
+            IppTag.MimeMediaType,
+            IppTag.Keyword,
+            IppTag.Enum,
+            IppTag.Resolution -> supportedAttribute.values.contains(value) || supportedAttributeName.toLowerCase() == "media-col-supported"
+            IppTag.Integer ->
+                if (supportedAttribute.is1setOf()) supportedAttribute.values.contains(value)
+                else value is Int && value <= supportedAttribute.value as Int // e.g. 'job-priority-supported'
+            IppTag.RangeOfInteger -> value is Int && value in supportedAttribute.value as IntRange
+            else -> null
+        }
+        when (isAttributeValueSupported) {
+            false -> {
+                println("WARN: according to printer attributes value '${supportedAttribute.enumValueNameOrValue(value)}' is not supported.")
+                println(supportedAttribute)
+            }
+            true -> {
+                //println("'${supportedAttribute.enumValueNameOrValue(value)}' supported by printer.")
+                //println(supportedAttribute)
+            }
+            null -> println("WARN: unable to check if value '$value' is supported by $supportedAttribute")
+        }
+        return isAttributeValueSupported
+    }
+
 }
