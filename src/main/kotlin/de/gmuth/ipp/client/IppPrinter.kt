@@ -11,9 +11,8 @@ import java.io.FileInputStream
 import java.io.InputStream
 import java.net.URI
 
-class IppPrinter(val printerUri: URI, val verbose: Boolean = false) {
+class IppPrinter(val printerUri: URI, val ippClient: IppClient = IppClient(), val verbose: Boolean = false) {
 
-    val ippClient = IppClient()
     var attributes: IppAttributesGroup
     var httpAuth: Http.Auth?
         get() = ippClient.httpAuth
