@@ -12,13 +12,18 @@ class SavePrinterAttributes {
             val uri = URI.create(args[0])
             println("uri: ${uri}")
             val ippPrinter = IppPrinter(uri)
-            val filename = ippPrinter.makeAndModel.string.replace("\\s+".toRegex(), "_").plus(".txt")
-            val file = File(filename)
-            file.writeText("# ${uri}\n")
+            val filename = ippPrinter.makeAndModel.string.replace("\\s+".toRegex(), "_")
+
+            val txtFile = File(filename.plus(".txt"))
+            txtFile.writeText("# ${uri}\n")
+            println("txt file: ${txtFile.absolutePath}")
             for (attribute in ippPrinter.attributes.values) {
-                file.appendText("${attribute}\n")
+                txtFile.appendText("${attribute}\n")
             }
-            println("file: ${file.absolutePath}")
+
+            val binFile = File(filename.plus(".bin"))
+            println("bin file: ${binFile.absolutePath}")
+            ippPrinter.ippClient.writeLastIppResponse(binFile)
         }
     }
 }

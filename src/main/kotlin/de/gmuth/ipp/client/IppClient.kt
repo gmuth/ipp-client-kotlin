@@ -7,12 +7,13 @@ package de.gmuth.ipp.client
 import de.gmuth.http.Http
 import de.gmuth.http.HttpClientByHttpURLConnection
 import de.gmuth.ipp.core.*
+import java.io.File
 import java.io.InputStream
 import java.net.URI
 import java.util.concurrent.atomic.AtomicInteger
 import javax.net.ssl.SSLHandshakeException
 
-class IppClient(
+open class IppClient(
         var ippVersion: String = "1.1",
         val httpClient: Http.Client = HttpClientByHttpURLConnection(), // HttpClientByJava11HttpClient()
         val requestingUserName: String? = System.getProperty("user.name")
@@ -22,6 +23,7 @@ class IppClient(
     private val requestCounter = AtomicInteger(1)
     var httpAuth: Http.Auth? = null
     var verbose: Boolean = false
+    var lastIppResponse: IppResponse? = null
 
     //-------------------------------------
     // factory/build methods for IppRequest
@@ -49,6 +51,7 @@ class IppClient(
     fun exchangeSuccessful(ippUri: URI, ippRequest: IppRequest): IppResponse {
         val ippResponse = exchange(ippUri, ippRequest)
         if (ippResponse.isSuccessful()) {
+            println(ippResponse)
             return ippResponse
         } else {
             val exceptionMessage = "'${ippRequest.operation}' failed: '${ippResponse.status}' ${ippResponse.statusMessage ?: ""}"
@@ -79,7 +82,7 @@ class IppClient(
         val ippResponseStream = httpExchange(httpUri, ippRequest.inputStream)
         // decode ipp response
         try {
-            ippResponse.decode(ippResponseStream)
+            ippResponse.read(ippResponseStream)
         } catch (exception: Exception) {
             logRequestResponseDetails()
             throw IppExchangeException(ippRequest, ippResponse, "failed to decode ipp response", exception)
@@ -103,34 +106,34 @@ class IppClient(
             }
         }
         // the decoded response
+        lastIppResponse = ippResponse
         return ippResponse
     }
 
-    private fun httpExchange(httpUri: URI, httpContentStream: InputStream): InputStream {
-        val contentType = "application/ipp"
-        val httpRequestContent = Http.Content(contentType, httpContentStream)
+    open fun httpExchange(httpUri: URI, httpContentStream: InputStream): InputStream {
+        val ippContentType = "application/ipp"
         try {
+            val httpRequestContent = Http.Content(ippContentType, httpContentStream)
             with(httpClient.post(httpUri, httpRequestContent, httpAuth)) {
-                if (status == 200 && content.type == contentType) {
+                if (status == 200 && content.type == ippContentType)
                     return content.stream
 
-                } else {
-                    val textContent =
-                            if (content.type.startsWith("text")) {
-                                //", content=" + String(content.stream.readAllBytes()) // Java 11
-                                ", content=" + content.stream.bufferedReader().use { it.readText() }
-                            } else {
-                                ""
-                            }
-                    when (status) {
-                        426 -> println("ERROR: HTTP 426 suggests using a secure connection for authentication, try setting 'requesting-user-name'")
-                        401 -> println("ERROR: HTTP 401 unauthorized, try setting 'requesting-user-name'")
-                    }
-                    throw IppException("http request to $httpUri failed: http-status=$status, content-type=${content.type}$textContent")
-                }
+                val textContent =
+                        if (content.type.startsWith("text")) {
+                            //", content=" + String(content.stream.readAllBytes()) // Java 11
+                            ", content=" + content.stream.bufferedReader().use { it.readText() }
+                        } else {
+                            ""
+                        }
+                throw IppException("http request to $httpUri failed: http-status=$status, content-type=${content.type}$textContent")
             }
         } catch (sslException: SSLHandshakeException) {
             throw IppException("SSL connection error $httpUri", sslException)
         }
     }
+
+    fun writeLastIppResponse(file: File) {
+        file.writeBytes(lastIppResponse!!.rawBytes ?: throw RuntimeException("missing raw bytes to write"))
+    }
+
 }

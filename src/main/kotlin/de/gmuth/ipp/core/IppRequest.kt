@@ -4,7 +4,6 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.io.SequenceInputStream
 import java.nio.charset.Charset
@@ -23,20 +22,20 @@ open class IppRequest() : IppMessage() {
     val inputStream: InputStream
         get() {
             val encodedInputStream = try {
-                ByteArrayInputStream(encode())
+                encodedInputStream()
             } catch (exception: Exception) {
                 throw IppException("failed to encode ipp request", exception)
             }
             return if (documentInputStream == null) {
-                if (operation.requiresDocument()) {
+                if (operation.requiresDocument())
                     throw IppException("missing document for '$operation' operation")
-                }
-                encodedInputStream
+                else
+                    encodedInputStream
             } else {
-                if (!operation.requiresDocument()) {
+                if (operation.requiresDocument())
+                    SequenceInputStream(encodedInputStream, documentInputStream)
+                else
                     throw IppException("found unexpected document for '$operation' operation")
-                }
-                SequenceInputStream(encodedInputStream, documentInputStream)
             }
         }
 
