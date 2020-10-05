@@ -45,6 +45,7 @@ abstract class IppMessage {
     // --- DECODING ---
 
     fun read(inputStream: InputStream) {
+        if (rawBytes != null) println("WARN: replacing raw bytes")
         val byteArraySavingInputStream = ByteArraySavingInputStream(inputStream)
         IppInputStream(byteArraySavingInputStream).readMessage(this)
         rawBytes = byteArraySavingInputStream.toByteArray()
@@ -57,11 +58,9 @@ abstract class IppMessage {
     // --- ENCODING ---
 
     fun write(outputStream: OutputStream) {
-        if (rawBytes != null) {
-            println("WARN: replacing raw bytes")
-        }
+        if (rawBytes != null) println("WARN: replacing raw bytes")
         val byteArraySavingOutputStream = ByteArraySavingOutputStream(outputStream)
-        IppOutputStream(outputStream).writeMessage(this)
+        IppOutputStream(byteArraySavingOutputStream).writeMessage(this)
         rawBytes = byteArraySavingOutputStream.toByteArray()
     }
 
