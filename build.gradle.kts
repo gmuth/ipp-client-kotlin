@@ -4,6 +4,7 @@ plugins {
     id("org.jetbrains.kotlin.jvm") version "1.3.61"
     id("com.github.johnrengelman.shadow") version "5.2.0"
     id("maven-publish")
+    id("org.sonarqube") version "3.0"
 }
 
 group = "de.gmuth.ipp"
@@ -81,5 +82,13 @@ publishing {
                 password = project.findProperty("gpr.token") as String? ?: System.getenv("GPR_TOKEN")
             }
         }
+    }
+}
+
+sonarqube {
+    properties {
+        property("sonar.projectKey", "gmuth_ipp-client-kotlin")
+        property("sonar.organization", "gmuth")
+        property("sonar.host.url", "https://sonarcloud.io")
     }
 }
