@@ -51,8 +51,18 @@ tasks {
 }
 
 publishing {
+    repositories {
+        maven {
+            name = "GitHub Packages"
+            url = uri("https://maven.pkg.github.com/gmuth/ipp-client-kotlin")
+            credentials {
+                username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
+                password = project.findProperty("gpr.token") as String? ?: System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
     publications {
-        create<MavenPublication>("mavenJava") {
+        create<MavenPublication>("ipp-client") {
             from(components["java"])
             pom {
                 name.set("ipp client library")
@@ -73,18 +83,7 @@ publishing {
             }
         }
     }
-    repositories {
-        maven {
-            name = "github-gmuth-ipp-client-kotlin"
-            url = uri("https://maven.pkg.github.com/gmuth/ipp-client-kotlin")
-            credentials {
-                username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
-                password = project.findProperty("gpr.token") as String? ?: System.getenv("GITHUB_TOKEN")
-//                username = project.findProperty("gpr.user") as String?
-//                password = project.findProperty("gpr.token") as String?
-            }
-        }
-    }
+
 }
 
 sonarqube {
