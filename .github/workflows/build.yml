@@ -13,7 +13,9 @@ on:
 
 jobs:
   build:
+    
     runs-on: ubuntu-latest
+    
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK 11
@@ -24,11 +26,11 @@ jobs:
       run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew build
-    - name: Publish artifact
+#    - name: Publish artifact
+#    - run: ./gradlew publish
 #      env:
 #        GPR_TOKEN: ${{secrets.gprToken}}
-    - run: ./gradlew publish
 #      run: ./gradlew -Pgpr.user=\${{secrets.}} -Pgpr.token=\${{secrets.GPRTOKEN}} publish
 # Github UI: Project > Settings > Secrets
-    - name: Run SonarQube
-      run: ./gradlew sonarqube
+#    - name: Run SonarQube
+#      run: ./gradlew sonarqube
