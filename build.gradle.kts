@@ -53,7 +53,7 @@ tasks {
 publishing {
     repositories {
         maven {
-            name = "GitHub Packages"
+            name = "GitHub-Gmuth-IppClientKotlin" // Must match regex [A-Za-z0-9_\-.]+.
             url = uri("https://maven.pkg.github.com/gmuth/ipp-client-kotlin")
             credentials {
                 username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
