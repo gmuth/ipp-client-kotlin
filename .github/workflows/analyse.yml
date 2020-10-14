@@ -28,6 +28,8 @@ jobs:
           java-version: 11
       - name: Gradle sonarqube
         run: gradle sonarqube
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 #      - name: Analyze sources
 #        uses: sonarsource/sonarcloud-github-action@master
 #        with:
