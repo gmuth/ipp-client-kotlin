@@ -2,7 +2,7 @@
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
 # https://docs.github.com/en/free-pro-team@latest/actions/reference/environment-variables
 
-name: Publish artifact
+name: Publish
 
 on:
   push:
@@ -23,6 +23,13 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
+      - name: Setup build cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
       - name: Grant execute permission
         run: chmod +x gradlew
       - name: Build with gradle wrapper
