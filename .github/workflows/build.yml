@@ -1,5 +1,6 @@
 # This workflow will build a Java project with Gradle
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
+# https://docs.github.com/en/free-pro-team@latest/actions/reference/environment-variables
 
 name: Build and deploy
 
@@ -28,5 +29,6 @@ jobs:
         run: ./gradlew build
       - name: Publish artifact
         env:
-          XGITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-        run: ./gradlew -Pgpr.user=${{env.GITHUB_ACTOR}} -Pgpr.token=${{secrets.GITHUB_TOKEN}} publish
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+#        run: ./gradlew -Pgpr.user=${{env.GITHUB_ACTOR}} -Pgpr.token=${{secrets.GITHUB_TOKEN}} publish
+        run: ./gradlew publish
