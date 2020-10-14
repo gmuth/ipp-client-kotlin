@@ -15,7 +15,7 @@ import javax.net.ssl.SSLHandshakeException
 
 open class IppClient(
         var ippVersion: String = "1.1",
-        val httpClient: Http.Client = HttpClientByHttpURLConnection(), // HttpClientByJava11HttpClient()
+        val httpClient: Http.Client = HttpClientByHttpURLConnection(),
         val requestingUserName: String? = System.getProperty("user.name")
 
 ) : IppExchange {

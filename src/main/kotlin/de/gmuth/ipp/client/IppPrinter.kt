@@ -274,13 +274,12 @@ class IppPrinter(val printerUri: URI, val ippClient: IppClient = IppClient(), va
             else -> null
         }
         when (isAttributeValueSupported) {
+            true -> {
+                // supported by printer
+            }
             false -> {
                 println("WARN: according to printer attributes value '${supportedAttribute.enumValueNameOrValue(value)}' is not supported.")
                 println(supportedAttribute)
-            }
-            true -> {
-                //println("'${supportedAttribute.enumValueNameOrValue(value)}' supported by printer.")
-                //println(supportedAttribute)
             }
             null -> println("WARN: unable to check if value '$value' is supported by $supportedAttribute")
         }
