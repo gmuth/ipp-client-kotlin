@@ -3,12 +3,12 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.3.61"
     id("com.github.johnrengelman.shadow") version "5.2.0"
-    id("maven-publish")
     id("org.sonarqube") version "3.0"
+    id("maven-publish")
 }
 
 group = "de.gmuth.ipp"
-version = "1.7.0-SNAPSHOT"
+version = "1.7.1-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -46,14 +46,14 @@ tasks.withType<ShadowJar> {
 
 tasks {
     build {
-        dependsOn(shadowJar)
+        // dependsOn(shadowJar)
     }
 }
 
 publishing {
     repositories {
         maven {
-            name = "GitHub-Gmuth-IppClientKotlin" // Must match regex [A-Za-z0-9_\-.]+.
+            name = "GitHubPackages" // Must match regex [A-Za-z0-9_\-.]+.
             url = uri("https://maven.pkg.github.com/gmuth/ipp-client-kotlin")
             credentials {
                 username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
@@ -61,6 +61,11 @@ publishing {
             }
         }
     }
+//    publications {
+//        register("gpr") {
+//            from(components["java"])
+//        }
+//    }
     publications {
         create<MavenPublication>("ipp-client") {
             from(components["java"])
