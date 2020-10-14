@@ -4,19 +4,20 @@ A client implementation of the ipp protocol written in kotlin.
 [RFC 8010](https://tools.ietf.org/html/rfc8010),
 [RFC 8011](https://tools.ietf.org/html/rfc8011)
 
-![Build with Gradle](https://github.com/gmuth/ipp-client-kotlin/workflows/Build%20with%20Gradle/badge.svg)
+![Build with Gradle](https://github.com/gmuth/ipp-client-kotlin/workflows/Build/badge.svg)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=gmuth_ipp-client-kotlin&metric=alert_status)](https://sonarcloud.io/dashboard?id=gmuth_ipp-client-kotlin)
 ## Usage
 
 ### [IppPrinter](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppPrinter.kt) and [IppJob](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppJob.kt)
 ```kotlin
-with(
-  IppPrinter(URI.create("ipp://colorjet.local/ipp/printer"))
-) {
+// initialize printer connection and show printer attributes
+val ippPrinter = IppPrinter(URI.create("ipp://colorjet.local/ipp/printer"))
+ippPrinter.attributes.logDetails()
 
-  // print file
-  val file = File("A4-ten-blank.pdf")
-  val job = printJob(file,
+// print file
+val file = File("A4-ten-blank.pdf")
+val job = ippPrinter.printJob(
+    file,
     jobName(file.name),
     jobPriority(30),
     documentFormat("application/pdf"),
@@ -28,35 +29,32 @@ with(
     IppPrintQuality.High,
     IppColorMode.Monochrome,
     IppSides.TwoSidedLongEdge,
-    attribute("document-name", IppTag.NameWithoutLanguage, "IPP Implementation Guide"),
-    waitForTermination = true
-  )
-  job.logDetails()
+)
+job.logDetails()
 
-  // print remote file, make printer pull document from remote server
-  val remoteFile = URI.create("http://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf")
-  printUri(remoteFile)
-  
-  // create job and send document
-  val job = createJob(jobName(file.name))
-  job.sendDocument(file, lastDocument = true)
-  job.waitForTermination()
+// print remote file, make printer pull document from remote server
+val remoteFile = URI.create("http://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf")
+ippPrinter.printUri(remoteFile)
 
-  // manage jobs
-  getJobs().forEach { println(it) }
-  getJobs("completed") // which-jobs
+// create job and send document
+val job = ippPrinter.createJob(jobName(file.name))
+job.sendDocument(file)
+job.waitForTermination()
 
-  val job = getJob(42)
-  job.hold()
-  job.release()
-  job.cancel()
+// manage jobs
+ippPrinter.getJobs().forEach { println(it) }
+ippPrinter.getJobs("completed") // which-jobs
 
-  // admin operations
-  httpAuth = Http.Auth("admin", "secret")
-  pause()
-  resume()
-  identify("sound")
-}
+val job = ippPrinter.getJob(42)
+job.hold()
+job.release()
+job.cancel()
+
+// admin operations
+ippPrinter.httpAuth = Http.Auth("admin", "secret")
+ippPrinter.pause()
+ippPrinter.resume()
+ippPrinter.identify("sound")
 ```
 ### Printer Capabilities
 
@@ -108,7 +106,7 @@ and
 [decoding](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppInputStream.kt)
 operations. RFC 8010 is fully supported.
 E.g. decode a cups spool file: 
-`IppRequest().readFrom(File("/var/spool/cups/c01579")).logDetails()`
+`IppRequest().read(File("/var/spool/cups/c01579")).logDetails()`
 
 Package
 [`de.gmuth.ipp.client`](https://github.com/gmuth/ipp-client-kotlin/tree/master/src/main/kotlin/de/gmuth/ipp/client)
