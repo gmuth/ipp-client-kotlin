@@ -6,15 +6,13 @@ name: Publish
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - master
-      - develop
-  pull_request:
-    branches: [ master ]
+#  push:
+#    branches:
+#      - master
+#      - develop
 
 jobs:
-  build:
+  build-and-publish:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
@@ -30,8 +28,6 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
-#      - name: Grant execute permission
-#        run: chmod +x gradlew
       - name: Gradle build
         run: gradle build
       - name: Gradle publish
