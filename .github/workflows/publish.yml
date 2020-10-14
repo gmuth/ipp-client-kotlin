@@ -33,9 +33,9 @@ jobs:
       - name: Grant execute permission
         run: chmod +x gradlew
       - name: Build with gradle wrapper
-        run: ./gradlew build
+#        run: ./gradlew build
+        run: gradle -x test clean build
       - name: Publish artifact
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-        #        run: ./gradlew publish
-        run: gradle --no-daemon -x test clean build
+        run: gradle publish
