@@ -30,7 +30,7 @@ jobs:
       - name: Publish artifact
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-        run: ./gradlew -Pxgpr.token=${{secrets.GPRTOKEN}} publish
+        run: ./gradlew -Pxogpr.token=${{secrets.GPRTOKEN}} publish
 #      env:
 #        GPR_TOKEN: ${{secrets.gprToken}}
 #      run: ./gradlew -Pgpr.user=\${{secrets.}} -Pgpr.token=\${{secrets.GPRTOKEN}} publish
