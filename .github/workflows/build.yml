@@ -32,5 +32,16 @@ jobs:
             ${{ runner.os }}-gradle-
       - name: Grant execute permission
         run: chmod +x gradlew
+
       - name: Build with gradle wrapper
-        run: ./gradlew
+        run: gradle build
+
+      - name: Publish GitHub Packages
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        run: gradle publish
+
+      - name: Analyse with SonarQube
+        run: gradle sonarqube
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
