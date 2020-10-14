@@ -102,17 +102,14 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
             val seconds = value.toLong() // some printers use 'seconds since startup'
             val epochSeconds = if (seconds < 60 * 60 * 24 * 365) Date().time / 1000 - seconds else seconds
             "$value (${iso8601DateFormat.format(Date(epochSeconds * 1000))})"
-            //"$value (${LocalDateTime.ofInstant(Instant.ofEpochSecond(value.toLong()), ZoneId.systemDefault())})" // java.time
         }
         else -> with(value as Any) {
             enumValueNameOrValue(this).toString()
         }
     }
 
-    fun enumValueNameOrValue(value: Any) = when (tag) {
-        IppTag.Enum -> IppRegistrationsSection6.getEnumValueName(name, value)
-        else -> value
-    }
+    fun enumValueNameOrValue(value: Any) =
+            if (tag == IppTag.Enum) IppRegistrationsSection6.getEnumValueName(name, value) else value
 
     fun logDetails(prefix: String = "") {
         val string = toString()
