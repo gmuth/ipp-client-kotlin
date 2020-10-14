@@ -5,13 +5,13 @@
 name: Build
 
 on:
+  workflow_dispatch:
   #  push:
   #    branches:
   #      - master
   #      - develop
   #  pull_request:
   #    branches: [ master ]
-  workflow_dispatch:
 
 jobs:
   build:
@@ -33,4 +33,5 @@ jobs:
       - name: Grant execute permission
         run: chmod +x gradlew
       - name: Build with gradle wrapper
-        run: ./gradlew
+#        run: ./gradlew
+        run: gradle --no-daemon -x test clean build
