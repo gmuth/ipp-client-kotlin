@@ -2,15 +2,15 @@
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
 # https://docs.github.com/en/free-pro-team@latest/actions/reference/environment-variables
 
-name: Build
+name: Build and publish
 
 on:
-#  push:
-#    branches:
-#      - master
-#      - develop
-#  pull_request:
-#    branches: [ master ]
+  push:
+    branches:
+      - master
+      - develop
+  pull_request:
+    branches: [ master ]
   workflow_dispatch:
 
 jobs:
@@ -26,4 +26,8 @@ jobs:
       - name: Grant execute permission
         run: chmod +x gradlew
       - name: Build with gradle wrapper
-        run: ./gradlew
+        run: ./gradlew build
+      - name: Publish artifact
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        run: ./gradlew publish
