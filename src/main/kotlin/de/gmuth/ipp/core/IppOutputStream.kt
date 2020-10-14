@@ -101,7 +101,6 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
         if (tag.isOutOfBandTag() || tag == IppTag.EndCollection) {
             throw IppException("tag '$tag' does not support any value")
         }
-        //println("value javaClass: ${value?.javaClass}")
         when (tag) {
 
             IppTag.Boolean -> with(value as Boolean) {

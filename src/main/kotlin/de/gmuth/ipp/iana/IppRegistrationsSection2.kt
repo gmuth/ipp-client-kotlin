@@ -83,16 +83,12 @@ class IppRegistrationsSection2 {
         fun attributeIs1setOf(name: String) = attributesMap[name]?.is1setOf()
 
         fun checkSyntaxOfAttribute(name: String, tag: IppTag) {
+            if (tag.isOutOfBandTag()) return
             val syntax = attributesMap[name]?.syntax
-            if (syntax != null && syntax.isNotEmpty()) {
-                if (!tag.isOutOfBandTag() && !syntax.contains(tag.registeredSyntax())) {
-                    println("WARN: $name ($tag) does not match syntax '$syntax'")
-                } else {
-                    //println("$name (${tag.registeredSyntax()}) matches syntax '$syntax'")
-                }
+            if (syntax != null && syntax.isNotEmpty() && !syntax.contains(tag.registeredSyntax())) {
+                println("WARN: $name ($tag) does not match syntax '$syntax'")
             }
         }
-
     }
 }
 

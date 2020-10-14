@@ -54,13 +54,20 @@ class CSVReader<T>(
                 appendCharacter = char != '"'
             } else {
                 when (char) {
-                    ',', '\n' -> {
+                    ',' -> {
                         fields.add(currentField.toString())
-                        if (char == '\n') return fields
-                        else currentField = StringBuffer()
+                        currentField = StringBuffer()
                     }
-                    '"' -> appendCharacter = lastCharacterWasQuote
-                    else -> appendCharacter = char != '\r'
+                    '\n' -> {
+                        fields.add(currentField.toString())
+                        return fields
+                    }
+                    '"' -> {
+                        appendCharacter = lastCharacterWasQuote
+                    }
+                    else -> {
+                        appendCharacter = char != '\r'
+                    }
                 }
             }
             lastCharacterWasQuote = char == '"'
