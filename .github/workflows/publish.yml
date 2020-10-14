@@ -5,13 +5,13 @@
 name: Publish
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
       - develop
   pull_request:
     branches: [ master ]
-  workflow_dispatch:
 
 jobs:
   build:
@@ -37,4 +37,5 @@ jobs:
       - name: Publish artifact
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-        run: ./gradlew publish
+        #        run: ./gradlew publish
+        run: gradle --no-daemon -x test clean build
