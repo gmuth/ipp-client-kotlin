@@ -29,11 +29,13 @@ jobs:
         run: ./gradlew build
       - name: Publish artifact
         env:
-          GITHUB_TOKEN: ${{secrets.GPRTOKEN}}
-        run: ./gradlew publish
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        run: ./gradlew -Pxgpr.token=${{secrets.GPRTOKEN}} publish
 #      env:
 #        GPR_TOKEN: ${{secrets.gprToken}}
 #      run: ./gradlew -Pgpr.user=\${{secrets.}} -Pgpr.token=\${{secrets.GPRTOKEN}} publish
 # Github UI: Project > Settings > Secrets
       - name: Run SonarQube
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         run: ./gradlew sonarqube
