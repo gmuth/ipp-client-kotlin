@@ -79,7 +79,9 @@ publishing {
             url = uri("https://maven.pkg.github.com/gmuth/ipp-client-kotlin")
             credentials {
                 username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
-                password = project.findProperty("gpr.token") as String? ?: System.getenv("GPR_TOKEN")
+                password = project.findProperty("gpr.token") as String? ?: System.getenv("GITHUB_TOKEN")
+                //username = project.findProperty("gpr.user") as String?
+                //password = project.findProperty("gpr.token") as String?
             }
         }
     }
