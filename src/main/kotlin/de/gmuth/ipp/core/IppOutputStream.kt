@@ -50,7 +50,12 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
     private fun writeAttribute(attribute: IppAttribute<*>) {
         with(attribute) {
             attribute.checkSyntax()
-            if (tag.isValueTag()) {
+            if (tag.isOutOfBandTag() || tag == IppTag.EndCollection) {
+                assertNoValues()
+                writeTag(tag)
+                writeString(name)
+                writeShort(0) // no value
+            } else {
                 assertValuesExist()
                 // iterate 1setOf
                 for ((index, value) in values.withIndex()) {
@@ -58,11 +63,6 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
                     writeString(if (index == 0) name else "")
                     writeAttributeValue(tag, value!!)
                 }
-            } else { // tag.isOutOfBandTag() || tag == IppTag.EndCollection
-                assertNoValues()
-                writeTag(tag)
-                writeString(name)
-                writeShort(0) // no value
             }
         }
     }
