@@ -61,6 +61,8 @@ enum class IppTag(
 
     fun isDelimiterTag() = code in 0x00..0x0F
     fun isOutOfBandTag() = code in 0x10..0x1F
+    fun isValueTag() = code in 0x20..0x4F
+    fun isEndTag() = this == End
     fun useAttributesCharset() = this in listOf(TextWithoutLanguage, TextWithLanguage, NameWithoutLanguage, NameWithLanguage)
 
     fun registeredSyntax() = when (this) {
