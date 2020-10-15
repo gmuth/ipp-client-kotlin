@@ -88,16 +88,6 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
     private fun writeTag(tag: IppTag) = writeByte(tag.code.toInt())
 
     private fun writeAttributeValue(tag: IppTag, value: Any) {
-
-        fun writeStringForTag(value: String) {
-            val charset = if (tag.useAttributesCharset()) {
-                attributesCharset ?: throw IppException("missing attributes-charset in IppMessage")
-            } else {
-                Charsets.US_ASCII
-            }
-            writeString(value, charset)
-        }
-
         if (tag.isOutOfBandTag() || tag == IppTag.EndCollection) {
             throw IppException("tag '$tag' does not support any value")
         }
@@ -128,15 +118,15 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
             }
 
             IppTag.Charset -> with(value as Charset) {
-                writeStringForTag(value.name().toLowerCase())
+                writeStringForTag(value.name().toLowerCase(), tag)
             }
 
             IppTag.NaturalLanguage -> with(value as Locale) {
-                writeStringForTag(value.toLanguageTag().toLowerCase())
+                writeStringForTag(value.toLanguageTag().toLowerCase(), tag)
             }
 
             IppTag.Uri -> with(value as URI) {
-                writeStringForTag(value.toString())
+                writeStringForTag(value.toString(), tag)
             }
 
             IppTag.OctetString,
@@ -144,21 +134,21 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
             IppTag.UriScheme,
             IppTag.MimeMediaType,
             IppTag.MemberAttrName -> with(value as String) {
-                writeStringForTag(value)
+                writeStringForTag(value, tag)
             }
 
             IppTag.TextWithoutLanguage,
             IppTag.NameWithoutLanguage -> when {
-                (value is IppString) -> writeStringForTag(value.string)
-                (value is String) -> writeStringForTag(value) // accept String for convenience
+                (value is IppString) -> writeStringForTag(value.string, tag)
+                (value is String) -> writeStringForTag(value, tag) // accept String for convenience
                 else -> throw IppException("expected value class IppString without language or String")
             }
 
             IppTag.TextWithLanguage,
             IppTag.NameWithLanguage -> with(value as IppString) {
                 writeShort(4 + string.length + language?.length!!)
-                writeStringForTag(value.language!!)
-                writeStringForTag(value.string)
+                writeStringForTag(value.language!!, tag)
+                writeStringForTag(value.string, tag)
             }
 
             IppTag.DateTime -> with(value as IppDateTime) {
@@ -196,6 +186,18 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
         with(value.toByteArray(charset)) {
             writeShort(size)
             write(this)
+        }
+    }
+
+    private fun writeStringForTag(value: String, tag: IppTag) {
+        writeString(value, charsetForTag(tag))
+    }
+
+    private fun charsetForTag(tag: IppTag): Charset {
+        return if (tag.useAttributesCharset()) {
+            attributesCharset ?: throw IppException("missing attributes-charset in IppMessage")
+        } else {
+            Charsets.US_ASCII
         }
     }
 
