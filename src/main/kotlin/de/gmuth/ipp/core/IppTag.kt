@@ -63,7 +63,13 @@ enum class IppTag(
     fun isOutOfBandTag() = code in 0x10..0x1F
     fun isValueTag() = code in 0x20..0x4F
     fun isEndTag() = this == End
-    fun useAttributesCharset() = this in listOf(TextWithoutLanguage, TextWithLanguage, NameWithoutLanguage, NameWithLanguage)
+
+    fun selectCharset(attributesCharset: java.nio.charset.Charset?) =
+            if (this in listOf(TextWithoutLanguage, TextWithLanguage, NameWithoutLanguage, NameWithLanguage)) {
+                attributesCharset ?: throw IppException("missing attributes-charset")
+            } else {
+                Charsets.US_ASCII
+            }
 
     fun registeredSyntax() = when (this) {
         // iana registered syntax doesn't care about language
