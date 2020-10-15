@@ -4,7 +4,6 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.ipp.iana.IppRegistrationsSection2
 import java.io.DataOutputStream
 import java.io.OutputStream
 import java.net.URI
@@ -13,14 +12,11 @@ import java.util.*
 
 class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStream) {
 
-    companion object {
-        var checkSyntax: Boolean = true
-    }
-
     // charset for text and name attributes, rfc 8011 4.1.4.1
-    private var attributesCharset: Charset? = null
+    private var messageAttributesCharset: Charset? = null
 
     fun writeMessage(message: IppMessage) {
+        messageAttributesCharset = message.attributesCharset
         with(message) {
             writeVersion(version ?: throw IppException("missing version"))
             writeShort(code?.toInt() ?: throw IppException("missing operation or status code"))
@@ -53,44 +49,37 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
 
     private fun writeAttribute(attribute: IppAttribute<*>) {
         with(attribute) {
-            if (checkSyntax) {
-                IppRegistrationsSection2.checkSyntaxOfAttribute(name, tag)
-            }
-            if (tag.isOutOfBandTag() || tag == IppTag.EndCollection) {
-                if (values.isNotEmpty()) {
-                    throw IppException("'$name' must not have any value")
-                }
-                writeTag(tag)
-                writeString(name, Charsets.US_ASCII)
-                writeShort(0) // no value
-
-            } else {
-                if (values.isEmpty()) {
-                    throw IppException("no values found to write for '$name'")
-                }
-                // 1setOf iteration
+            attribute.checkSyntax()
+            if (tag.isValueTag()) {
+                assertValuesExist()
+                // iterate 1setOf
                 for ((index, value) in values.withIndex()) {
                     writeTag(tag)
-                    writeString(if (index == 0) name else "", Charsets.US_ASCII)
+                    writeString(if (index == 0) name else "")
                     writeAttributeValue(tag, value!!)
                 }
-                if (values.size > 1 && IppRegistrationsSection2.attributeIs1setOf(name) == false) {
-                    println("WARN: '$name' is not registered as '1setOf'")
-                }
-            }
-            // keep attributes-charset for name and text value encoding
-            if (tag == IppTag.Charset && name == "attributes-charset") {
-                attributesCharset = value as Charset
+            } else { // tag.isOutOfBandTag() || tag == IppTag.EndCollection
+                assertNoValues()
+                writeTag(tag)
+                writeString(name)
+                writeShort(0) // no value
             }
         }
     }
 
     private fun writeTag(tag: IppTag) = writeByte(tag.code.toInt())
 
-    private fun writeAttributeValue(tag: IppTag, value: Any) {
-        if (tag.isOutOfBandTag() || tag == IppTag.EndCollection) {
-            throw IppException("tag '$tag' does not support any value")
+    private fun writeString(string: String, charset: Charset = Charsets.US_ASCII) {
+        with(string.toByteArray(charset)) {
+            writeShort(size)
+            write(this)
         }
+    }
+
+    private fun writeAttributeValue(tag: IppTag, value: Any) {
+
+        fun writeString(value: String) = writeString(value, tag.selectCharset(messageAttributesCharset!!))
+
         when (tag) {
 
             IppTag.Boolean -> with(value as Boolean) {
@@ -118,15 +107,15 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
             }
 
             IppTag.Charset -> with(value as Charset) {
-                writeStringForTag(value.name().toLowerCase(), tag)
+                writeString(value.name().toLowerCase())
             }
 
             IppTag.NaturalLanguage -> with(value as Locale) {
-                writeStringForTag(value.toLanguageTag().toLowerCase(), tag)
+                writeString(value.toLanguageTag().toLowerCase())
             }
 
             IppTag.Uri -> with(value as URI) {
-                writeStringForTag(value.toString(), tag)
+                writeString(value.toString())
             }
 
             IppTag.OctetString,
@@ -134,21 +123,21 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
             IppTag.UriScheme,
             IppTag.MimeMediaType,
             IppTag.MemberAttrName -> with(value as String) {
-                writeStringForTag(value, tag)
+                writeString(value)
             }
 
             IppTag.TextWithoutLanguage,
             IppTag.NameWithoutLanguage -> when {
-                (value is IppString) -> writeStringForTag(value.string, tag)
-                (value is String) -> writeStringForTag(value, tag) // accept String for convenience
+                (value is IppString) -> writeString(value.string)
+                (value is String) -> writeString(value) // accept String for convenience
                 else -> throw IppException("expected value class IppString without language or String")
             }
 
             IppTag.TextWithLanguage,
             IppTag.NameWithLanguage -> with(value as IppString) {
                 writeShort(4 + string.length + language?.length!!)
-                writeStringForTag(value.language!!, tag)
-                writeStringForTag(value.string, tag)
+                writeString(value.language!!)
+                writeString(value.string)
             }
 
             IppTag.DateTime -> with(value as IppDateTime) {
@@ -176,29 +165,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
                 writeAttribute(IppAttribute<Unit>("", IppTag.EndCollection))
             }
 
-            else -> {
-                throw IppException(String.format("tag %s (%02X) encoding not implemented", tag, tag.code))
-            }
+            else -> throw IppException(String.format("unable to encode tag %s (%02X)", tag, tag.code))
         }
     }
-
-    private fun writeString(value: String, charset: Charset) {
-        with(value.toByteArray(charset)) {
-            writeShort(size)
-            write(this)
-        }
-    }
-
-    private fun writeStringForTag(value: String, tag: IppTag) {
-        writeString(value, charsetForTag(tag))
-    }
-
-    private fun charsetForTag(tag: IppTag): Charset {
-        return if (tag.useAttributesCharset()) {
-            attributesCharset ?: throw IppException("missing attributes-charset in IppMessage")
-        } else {
-            Charsets.US_ASCII
-        }
-    }
-
 }

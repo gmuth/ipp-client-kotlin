@@ -15,7 +15,6 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
     companion object {
         var verbose: Boolean = false
-        var checkSyntax: Boolean = true
         var check1setOfRegistration: Boolean = false
     }
 
@@ -52,7 +51,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
     private fun readTag(): IppTag = IppTag.fromByte(readByte())
 
     private fun readAttribute(tag: IppTag): IppAttribute<Any> {
-        val name = readString(Charsets.US_ASCII)
+        val name = readString()
         // RFC 8010 3.8. & RFC 3380 8
         if (tag.isOutOfBandTag() || tag == IppTag.EndCollection) {
             val valueBytes = readLengthAndValue()
@@ -68,27 +67,15 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
             } catch (exception: Exception) {
                 throw IppException("failed to read attribute value for '$name' ($tag)", exception)
             }
-            if (checkSyntax) {
-                IppRegistrationsSection2.checkSyntaxOfAttribute(name, tag)
-            }
-            // keep attributes-charset for name and text value decoding
-            if (name == "attributes-charset" && tag == IppTag.Charset) {
-                attributesCharset = value as Charset
-            }
-            return IppAttribute(name, tag, value)
+            // remember attributes-charset for name and text value decoding
+            if (name == "attributes-charset") attributesCharset = value as Charset
+            return IppAttribute(name, tag, value).apply { checkSyntax() }
         }
     }
 
     private fun readAttributeValue(tag: IppTag): Any {
 
-        fun readStringForTag(): String {
-            val charset = if (tag.useAttributesCharset()) {
-                attributesCharset ?: throw IppException("missing attributes-charset")
-            } else {
-                Charsets.US_ASCII
-            }
-            return readString(charset)
-        }
+        fun readStringForTag() = readString(tag.selectCharset(attributesCharset))
 
         return when (tag) {
 
@@ -177,9 +164,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
             }
 
             // unexpected state
-            else -> {
-                throw IppException("decoding value for tag '$tag' not implemented")
-            }
+            else -> throw IppException("decoding value for tag '$tag' not supported")
         }
     }
 
@@ -212,7 +197,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
         return collection
     }
 
-    private fun readString(charset: Charset): String {
+    private fun readString(charset: Charset = Charsets.US_ASCII): String {
         val bytes = readLengthAndValue()
         return String(bytes, charset)
     }
