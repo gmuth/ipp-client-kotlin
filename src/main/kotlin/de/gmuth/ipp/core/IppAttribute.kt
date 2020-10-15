@@ -22,6 +22,7 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
     }
 
     companion object {
+        var checkSyntaxEnabled: Boolean = true
         var allowAutomaticTag: Boolean = true
         val iso8601DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     }
@@ -78,6 +79,23 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
             }
             return values.first()
         }
+
+    fun checkSyntax() {
+        if (checkSyntaxEnabled) {
+            IppRegistrationsSection2.checkSyntaxOfAttribute(name, tag)
+            if (values.size > 1 && IppRegistrationsSection2.attributeIs1setOf(name) == false) {
+                println("WARN: '$name' is not registered as '1setOf'")
+            }
+        }
+    }
+
+    fun assertNoValues() {
+        if (values.isNotEmpty()) throw IppException("'$name' must not have any value")
+    }
+
+    fun assertValuesExist() {
+        if (values.isEmpty()) throw IppException("'$name' has no values")
+    }
 
     override fun toString(): String {
         val tagString = "${if (is1setOf()) "1setOf " else ""}$tag"
