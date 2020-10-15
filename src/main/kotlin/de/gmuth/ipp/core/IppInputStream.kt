@@ -28,33 +28,25 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
         message.version = String.format("%d.%d", read(), read())
         message.code = readShort()
         message.requestId = readInt()
-        tagLoop@ while (true) {
+        do {
             val tag = readTag()
-            when {
-                tag == IppTag.End -> break@tagLoop
-                tag.isDelimiterTag() -> {
-                    currentGroup = message.ippAttributesGroup(tag)
-                    if (verbose) {
-                        println("--- $tag ---")
-                    }
-                }
-                else -> {
-                    val attribute = readAttribute(tag)
-                    if (verbose) {
-                        println("$attribute")
-                    }
-                    if (attribute.name.isNotEmpty()) {
-                        currentGroup.put(attribute)
-                        currentAttribute = attribute
-                    } else { // name.isEmpty() -> 1setOf
-                        currentAttribute.additionalValue(attribute)
-                        if (check1setOfRegistration && IppRegistrationsSection2.attributeIs1setOf(currentAttribute.name) == false) {
-                            println("WARN: '${currentAttribute.name}' is not registered as '1setOf'")
-                        }
-                    }
+            if (tag.isDelimiterTag()) {
+                currentGroup = message.ippAttributesGroup(tag)
+                if (verbose) println("--- $tag ---")
+                continue
+            }
+            val attribute = readAttribute(tag)
+            if (verbose) println("$attribute")
+            if (attribute.name.isNotEmpty()) {
+                currentGroup.put(attribute)
+                currentAttribute = attribute
+            } else { // name.isEmpty() -> 1setOf
+                currentAttribute.additionalValue(attribute)
+                if (check1setOfRegistration && IppRegistrationsSection2.attributeIs1setOf(currentAttribute.name) == false) {
+                    println("WARN: '${currentAttribute.name}' is not registered as '1setOf'")
                 }
             }
-        }
+        } while (!tag.isEndTag())
     }
 
     private fun readTag(): IppTag = IppTag.fromByte(readByte())
