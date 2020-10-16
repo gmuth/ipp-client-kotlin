@@ -21,7 +21,6 @@ interface Http {
     )
 
     interface Client {
-        val config: Config
         fun post(uri: URI, content: Content, auth: Auth? = null): Response
     }
 

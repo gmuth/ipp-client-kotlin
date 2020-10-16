@@ -11,10 +11,7 @@ import java.util.*
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.HttpsURLConnection
 
-class HttpClientByHttpURLConnection(
-        override val config: Http.Config = Http.Config()
-
-) : Http.Client {
+class HttpClientByHttpURLConnection(val config: Http.Config = Http.Config()) : Http.Client {
     override fun post(uri: URI, content: Http.Content, auth: Http.Auth?): Http.Response {
         with(uri.toURL().openConnection() as HttpURLConnection) {
             if (this is HttpsURLConnection && config.trustAnySSLCertificate) {
