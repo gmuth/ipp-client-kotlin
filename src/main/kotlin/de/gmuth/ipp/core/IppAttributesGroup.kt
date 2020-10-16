@@ -9,8 +9,8 @@ import de.gmuth.ext.toPluralString
 class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*>>() {
 
     init {
-        if (!tag.isDelimiterTag()) {
-            throw IppException("'$tag' is not a delimiter tag")
+        if (!tag.isDelimiterTag() || tag.isEndTag()) {
+            throw IppException("'$tag' is not a valid group tag")
         }
     }
 
