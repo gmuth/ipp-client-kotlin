@@ -27,15 +27,18 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
         message.version = String.format("%d.%d", read(), read())
         message.code = readShort()
         message.requestId = readInt()
-        do {
+        tagLoop@ do {
             val tag = readTag()
-            if (tag.isDelimiterTag()) {
-                currentGroup = message.ippAttributesGroup(tag)
-                if (verbose) println("--- $tag ---")
-                continue
+            when {
+                tag.isEndTag() -> break@tagLoop
+                tag.isDelimiterTag() -> {
+                    ifVerbosePrintln("--- $tag ---")
+                    currentGroup = message.ippAttributesGroup(tag)
+                    continue@tagLoop
+                }
             }
             val attribute = readAttribute(tag)
-            if (verbose) println("$attribute")
+            ifVerbosePrintln("$attribute")
             if (attribute.name.isNotEmpty()) {
                 currentGroup.put(attribute)
                 currentAttribute = attribute
@@ -45,7 +48,11 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                     println("WARN: '${currentAttribute.name}' is not registered as '1setOf'")
                 }
             }
-        } while (!tag.isEndTag())
+        } while (true)
+    }
+
+    private fun ifVerbosePrintln(string: String) {
+        if (verbose) println(string)
     }
 
     private fun readTag(): IppTag = IppTag.fromByte(readByte())
