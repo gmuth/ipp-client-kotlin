@@ -14,10 +14,10 @@ import java.net.URI
 class IppPrinter(val printerUri: URI, val ippClient: IppClient = IppClient(), val verbose: Boolean = false) {
 
     var attributes: IppAttributesGroup
-    var httpAuth: Http.Auth?
-        get() = ippClient.httpAuth
+    var httpBasicAuth: Http.BasicAuth?
+        get() = ippClient.httpBasicAuth
         set(value) {
-            ippClient.httpAuth = value
+            ippClient.httpBasicAuth = value
         }
     var checkValueSupported: Boolean = true
 
