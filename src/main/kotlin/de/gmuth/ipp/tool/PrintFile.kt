@@ -12,7 +12,7 @@ fun main(args: Array<String>) {
         uri = URI.create(args[0])
         filename = args[1]
 
-        run(
+        interpret(
                 "OPERATION Print-Job",
                 "GROUP operation-attributes-tag",
                 "ATTR charset attributes-charset utf-8",
@@ -21,4 +21,5 @@ fun main(args: Array<String>) {
                 "FILE \$filename"
         )
     }
+
 }
