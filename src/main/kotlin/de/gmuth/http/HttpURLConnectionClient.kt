@@ -25,10 +25,10 @@ class HttpURLConnectionClient(val config: Http.Config = Http.Config()) : Http.Cl
                 if (uri.scheme in listOf("http", "ipp")) {
                     println("WARN: '${uri.scheme}' does not protect credentials")
                 }
-                val basicAuth = with(basicAuth) {
+                val basicAuthEncoded = with(basicAuth) {
                     Base64.getEncoder().encodeToString("$user:$password".toByteArray())
                 }
-                setRequestProperty("Authorization", "Basic $basicAuth")
+                setRequestProperty("Authorization", "Basic $basicAuthEncoded")
             }
             setRequestProperty("Content-Type", contentType)
             // chunked streaming mode can cause: "HttpRetryException: cannot retry due to server authentication, in streaming mode"
