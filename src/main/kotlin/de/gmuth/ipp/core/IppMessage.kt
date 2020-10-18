@@ -19,6 +19,10 @@ abstract class IppMessage {
     val attributesGroups = mutableListOf<IppAttributesGroup>()
     var rawBytes: ByteArray? = null
 
+    companion object {
+        var storeRawBytes: Boolean = true
+    }
+
     fun getAttributesGroups(tag: IppTag) = attributesGroups.filter { it.tag == tag }
 
     fun getSingleAttributesGroup(tag: IppTag): IppAttributesGroup {
@@ -57,11 +61,15 @@ abstract class IppMessage {
 
     // --- ENCODING ---
 
-    fun write(outputStream: OutputStream) {
-        if (rawBytes != null) println("WARN: replacing raw bytes")
-        val byteArraySavingOutputStream = ByteArraySavingOutputStream(outputStream)
-        IppOutputStream(byteArraySavingOutputStream).writeMessage(this)
-        rawBytes = byteArraySavingOutputStream.toByteArray()
+    open fun write(outputStream: OutputStream) {
+        if (storeRawBytes) {
+            if (rawBytes != null) println("WARN: replacing raw bytes")
+            val byteArraySavingOutputStream = ByteArraySavingOutputStream(outputStream)
+            IppOutputStream(byteArraySavingOutputStream).writeMessage(this)
+            rawBytes = byteArraySavingOutputStream.toByteArray()
+        } else {
+            IppOutputStream(outputStream).writeMessage(this)
+        }
     }
 
     fun write(file: File) = write(FileOutputStream(file))
@@ -71,8 +79,6 @@ abstract class IppMessage {
         write(byteArrayOutputStream)
         return byteArrayOutputStream.toByteArray()
     }
-
-    fun encodedInputStream() = ByteArrayInputStream(encode())
 
     // --- LOGGING ---
 
@@ -86,7 +92,7 @@ abstract class IppMessage {
     )
 
     fun logDetails(prefix: String = "") {
-        if(rawBytes != null) println("${prefix}${rawBytes!!.size} raw ipp bytes")
+        if (rawBytes != null) println("${prefix}${rawBytes!!.size} raw ipp bytes")
         println("${prefix}version = $version")
         println("${prefix}$codeDescription")
         println("${prefix}request-id = $requestId")
