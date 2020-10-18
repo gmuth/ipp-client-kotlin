@@ -82,6 +82,8 @@ val response = ippClient.exchange(uri, request, FileInputStream(file))
 response.logDetails()
 ```    
 ### IppTool
+
+has very limited tag support (only charset, language and uri). If you like this API let me know.
 ```kotlin
 with(IppTool()) {
     uri = URI.create("ipp://colorjet.local/ipp/printer")
