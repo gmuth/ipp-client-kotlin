@@ -46,11 +46,12 @@ tasks.withType<ShadowJar> {
 
 tasks {
     build {
-        // dependsOn(shadowJar)
+        dependsOn(shadowJar)
     }
 }
 
 publishing {
+
     repositories {
         maven {
             name = "GitHubPackages" // Must match regex [A-Za-z0-9_\-.]+.
@@ -61,11 +62,7 @@ publishing {
             }
         }
     }
-//    publications {
-//        register("gpr") {
-//            from(components["java"])
-//        }
-//    }
+
     publications {
         create<MavenPublication>("ipp-client") {
             from(components["java"])
