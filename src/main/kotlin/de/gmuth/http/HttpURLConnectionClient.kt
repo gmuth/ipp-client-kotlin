@@ -5,14 +5,15 @@ package de.gmuth.http
  */
 
 import java.io.IOException
+import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URI
 import java.util.*
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.HttpsURLConnection
 
-class HttpClientByHttpURLConnection(val config: Http.Config = Http.Config()) : Http.Client {
-    override fun post(uri: URI, content: Http.Content, auth: Http.Auth?): Http.Response {
+class HttpURLConnectionClient(val config: Http.Config = Http.Config()) : Http.Client {
+    override fun post(uri: URI, contentType: String, writeContent: (OutputStream) -> Unit, basicAuth: Http.BasicAuth?): Http.Response {
         with(uri.toURL().openConnection() as HttpURLConnection) {
             if (this is HttpsURLConnection && config.trustAnySSLCertificate) {
                 sslSocketFactory = AnyCertificateX509TrustManager.socketFactory
@@ -20,20 +21,20 @@ class HttpClientByHttpURLConnection(val config: Http.Config = Http.Config()) : H
             }
             connectTimeout = config.timeout
             doOutput = true // trigger POST method
-            if (auth != null) {
+            if (basicAuth != null) {
                 if (uri.scheme in listOf("http", "ipp")) {
                     println("WARN: '${uri.scheme}' does not protect credentials")
                 }
-                val basicAuth = with(auth) {
+                val basicAuth = with(basicAuth) {
                     Base64.getEncoder().encodeToString("$user:$password".toByteArray())
                 }
                 setRequestProperty("Authorization", "Basic $basicAuth")
             }
-            setRequestProperty("Content-Type", content.type)
+            setRequestProperty("Content-Type", contentType)
             // chunked streaming mode can cause: "HttpRetryException: cannot retry due to server authentication, in streaming mode"
             //setChunkedStreamingMode(0) // enable chunked transfer
-            content.stream.copyTo(outputStream)
-            val contentStream = try {
+            writeContent(outputStream)
+            val contentResponseStream = try {
                 inputStream
             } catch (ioException: IOException) {
                 println("responseCode = $responseCode")
@@ -43,8 +44,7 @@ class HttpClientByHttpURLConnection(val config: Http.Config = Http.Config()) : H
                 println("ERROR: $ioException")
                 errorStream
             }
-            val responseContent = Http.Content(getHeaderField("Content-Type"), contentStream)
-            return Http.Response(responseCode, responseContent)
+            return Http.Response(responseCode, getHeaderField("Content-Type"), contentResponseStream)
         }
     }
 }
