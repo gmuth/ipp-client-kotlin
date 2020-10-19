@@ -29,9 +29,9 @@ class IppTool {
 
     fun interpret(lines: List<String>) {
         for (line: String in lines) {
+            if (line.startsWith("#")) continue
             if (verbose) println("| ${line.trim()}")
             val lineItems = line.trim().split("\\s+".toRegex())
-            if (line.startsWith("#")) continue
             if (lineItems.size > 1) interpretLine(lineItems)
         }
         executeIppRequest()
