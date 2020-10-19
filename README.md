@@ -8,6 +8,7 @@ A client implementation of the ipp protocol written in kotlin.
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=gmuth_ipp-client-kotlin&metric=alert_status)](https://sonarcloud.io/dashboard?id=gmuth_ipp-client-kotlin)
 ## Usage
 
+You need to know the correct printerUri. You may use ```ippfind``` or other ZeroConf tools for discovery.
 ### [IppPrinter](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppPrinter.kt) and [IppJob](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppJob.kt)
 ```kotlin
 // initialize printer connection and show printer attributes
@@ -28,7 +29,7 @@ val job = ippPrinter.printJob(
     printerResolutionDpi(300),
     IppPrintQuality.High,
     IppColorMode.Monochrome,
-    IppSides.TwoSidedLongEdge,
+    IppSides.TwoSidedLongEdge
 )
 job.logDetails()
 
@@ -115,11 +116,8 @@ Package
 contains the
 [IppClient](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppClient.kt)
 which requires a http transport that implements interface
-[Http.Client](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/Http.kt).
-Provided implementations are
-[HttpClientByHttpURLConnection](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/HttpClientByHttpURLConnection.kt)
-and
-[HttpClientByJava11HttpClient](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/HttpClientByJava11HttpClient.kt).
+[Http.Client](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/Http.kt):
+[HttpURLConnectionClient](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/HttpURLConnectionClient.kt).
 [AnyCertificateX509TrustManager](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/AnyCertificateX509TrustManager.kt)
 helps connecting to ipps endpoints secured by self signed certificates - e.g. CUPS.
 
@@ -138,7 +136,7 @@ Operation has mostly been tested for target `jvm`. Android is supported since v1
 ## Artifacts
 
 [Configure Gradle for use with Github Packages](https://docs.github.com/en/packages/using-github-packages-with-your-projects-ecosystem/configuring-gradle-for-use-with-github-packages).
-Use this [github packages](https://github.com/gmuth/ipp-client-kotlin/packages/214725/versions) of the project as maven repo.
+Use this [github package](https://github.com/gmuth/ipp-client-kotlin/packages/214725/versions) of the project as maven repo.
 You can access the repo with any github account.
 
 ```
@@ -147,9 +145,9 @@ repositories {
     maven {
       url = uri("https://maven.pkg.github.com/gmuth/ipp-client-kotlin")
       credentials {
-          // define gpr.user and gpr.token in ~/.gradle/gradle.properties
-          // gpr.username=myname
-          // gpr.token=mytoken
+          // configure gpr.user and gpr.token in ~/.gradle/gradle.properties
+          // gpr.user=yourname
+          // gpr.token=yourtoken
           username = project.findProperty("gpr.user") as String?
           password = project.findProperty("gpr.token") as String?
       }
