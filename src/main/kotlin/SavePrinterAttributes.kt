@@ -2,7 +2,7 @@ import de.gmuth.ipp.client.IppPrinter
 import java.io.File
 import java.net.URI
 
-// java -cp ipp-client-fat-1.5-SNAPSHOT.jar SavePrinterAttributes  ipp://colorjet.local
+// java -cp ipp-client-fat-...jar SavePrinterAttributes  ipp://colorjet.local
 // file: ..../HP_LaserJet_100_colorMFP_M175nw.txt
 
 class SavePrinterAttributes {
