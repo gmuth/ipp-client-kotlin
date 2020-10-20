@@ -118,8 +118,6 @@ contains the
 which requires a http transport that implements interface
 [Http.Client](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/Http.kt):
 [HttpURLConnectionClient](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/HttpURLConnectionClient.kt).
-[AnyCertificateX509TrustManager](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/AnyCertificateX509TrustManager.kt)
-helps connecting to ipps endpoints secured by self signed certificates - e.g. CUPS.
 
 ## Build
 
