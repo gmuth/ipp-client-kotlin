@@ -7,12 +7,16 @@ package de.gmuth.http
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI
+import javax.net.ssl.SSLSocketFactory
 
 interface Http {
 
     data class Config(
             var timeout: Int = 3000, // milli seconds
-            var trustAnySSLCertificate: Boolean = true
+            var sslSocketFactory: SSLSocketFactory? = null
+            // sslSocketFactoryForAnyCertificate()
+            // sslSocketFactory(loadCertificate(FileInputStream("printer.pem")))
+            // sslSocketFactory(loadTrustStore(FileInputStream("printer.jks"), "changeit"))
     )
 
     data class BasicAuth(
@@ -27,6 +31,7 @@ interface Http {
     )
 
     interface Client {
+        val config: Config
         fun post(
                 uri: URI,
                 contentType: String,

@@ -12,11 +12,11 @@ import java.util.*
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.HttpsURLConnection
 
-class HttpURLConnectionClient(val config: Http.Config = Http.Config()) : Http.Client {
+class HttpURLConnectionClient(override val config: Http.Config = Http.Config()) : Http.Client {
     override fun post(uri: URI, contentType: String, writeContent: (OutputStream) -> Unit, basicAuth: Http.BasicAuth?): Http.Response {
         with(uri.toURL().openConnection() as HttpURLConnection) {
-            if (this is HttpsURLConnection && config.trustAnySSLCertificate) {
-                sslSocketFactory = AnyCertificateX509TrustManager.socketFactory
+            if (this is HttpsURLConnection && config.sslSocketFactory != null) {
+                sslSocketFactory = config.sslSocketFactory
                 hostnameVerifier = HostnameVerifier { _, _ -> true }
             }
             connectTimeout = config.timeout
