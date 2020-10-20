@@ -14,9 +14,9 @@ interface Http {
     data class Config(
             var timeout: Int = 3000, // milli seconds
             var sslSocketFactory: SSLSocketFactory? = null
-            // sslSocketFactoryForAnyCertificate()
-            // sslSocketFactory(loadCertificate(FileInputStream("printer.pem")))
-            // sslSocketFactory(loadTrustStore(FileInputStream("printer.jks"), "changeit"))
+            // trust any certificate: sslSocketFactoryForAnyCertificate()
+            // use individual certificate: sslSocketFactory(loadCertificate(FileInputStream("printer.pem")))
+            // use truststore: sslSocketFactory(loadTrustStore(FileInputStream("printer.jks"), "changeit"))
     )
 
     data class BasicAuth(
