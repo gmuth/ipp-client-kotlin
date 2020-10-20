@@ -90,7 +90,7 @@ has very limited tag support (only charset, language and uri). If you like this 
 with(IppTool()) {
     uri = URI.create("ipp://colorjet.local/ipp/printer")
     filename = "A4-blank.pdf"
-    run(
+    interpret(
         "OPERATION Print-Job",
         "GROUP operation-attributes-tag",
         "ATTR charset attributes-charset utf-8",
