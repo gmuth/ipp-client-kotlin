@@ -113,6 +113,7 @@ open class IppClient(
 
     open fun httpExchange(uri: URI, writeContent: (OutputStream) -> Unit): InputStream {
         val ippContentType = "application/ipp"
+        val start = System.currentTimeMillis()
         try {
             with(httpClient.post(uri, ippContentType, writeContent, httpBasicAuth)) {
                 if (status == 200 && contentType == ippContentType) return contentStream
@@ -126,9 +127,10 @@ open class IppClient(
             }
         } catch (sslException: SSLHandshakeException) {
             throw IppException("SSL connection error $uri", sslException)
+        } finally {
+            if (verbose) println(String.format("http exchange %s: %d ms", uri, System.currentTimeMillis() - start))
         }
     }
-
 
     fun writeLastIppRequest(file: File) {
         file.writeBytes(lastIppRequest!!.rawBytes ?: throw RuntimeException("missing raw bytes to write"))
