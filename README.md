@@ -78,8 +78,9 @@ val request = ippClient.ippRequest(IppOperation.PrintJob).apply {
   operationGroup.attribute("printer-uri", IppTag.Uri, uri)
   operationGroup.attribute("document-format", IppTag.MimeMediaType, "application/pdf")
   operationGroup.attribute("requesting-user-name", IppTag.NameWithoutLanguage, "gmuth")
+  documentInputStream  = FileInputStream(file)
 }
-val response = ippClient.exchange(uri, request, FileInputStream(file))
+val response = ippClient.exchange(uri, request)
 response.logDetails()
 ```    
 ### IppTool
