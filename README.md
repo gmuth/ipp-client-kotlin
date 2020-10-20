@@ -64,7 +64,7 @@ ippPrinter.identify("sound")
 documentFormat("application/pdf")
 
 WARN: according to printer attributes value 'application/pdf' is not supported.
-document-format-supported (1setOf mimeMediaType) = application/octet-stream,application/PCL,application/postscript
+document-format-supported (1setOf mimeMediaType) = application/PCL,application/postscript
 ```
 
 ### exchange [IppRequest](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppRequest.kt) for [IppResponse](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppResponse.kt)
