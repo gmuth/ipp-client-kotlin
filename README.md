@@ -15,6 +15,10 @@ You need to know the correct printerUri. You may use ```ippfind``` or other Zero
 val ippPrinter = IppPrinter(URI.create("ipp://colorjet.local/ipp/printer"))
 ippPrinter.attributes.logDetails()
 
+// marker levels
+ippPrinter.markers().forEach { println(it) }
+println("black: ${ippPrinter.marker(BLACK).levelPercent()} %")
+
 // print file
 val file = File("A4-ten-blank.pdf")
 val job = ippPrinter.printJob(
@@ -159,3 +163,4 @@ Add dependency:
 ```
 implementation("de.gmuth.ipp:ipp-client-kotlin:1.7")
 ```
+
