@@ -170,9 +170,9 @@ class IppPrinter(val printerUri: URI, val ippClient: IppClient = IppClient(), va
                 }
             }
 
-    private fun handlePrintResponse(printResponse: IppResponse, wait: Boolean = false): IppJob {
+    private fun handlePrintResponse(printResponse: IppResponse, waitForTermination: Boolean = false): IppJob {
         val job = IppJob(this, printResponse.jobGroup)
-        if (wait) {
+        if (waitForTermination) {
             job.waitForTermination()
         }
         if (ippClient.verbose) {
