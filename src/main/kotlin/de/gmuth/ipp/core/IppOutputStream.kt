@@ -47,6 +47,13 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
         }
     }
 
+    private fun writeVersion(version: IppVersion) {
+        with(version) {
+            writeByte(major)
+            writeByte(minor)
+        }
+    }
+
     private fun writeAttribute(attribute: IppAttribute<*>) {
         with(attribute) {
             attribute.checkSyntax()

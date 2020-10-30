@@ -15,7 +15,7 @@ class IppTool {
     var uri: URI? = null
     var filename: String? = null
     val request = IppRequest().apply {
-        version = "1.1"
+        version = IppVersion(1, 1)
         requestId = 1
     }
     lateinit var currentGroup: IppAttributesGroup

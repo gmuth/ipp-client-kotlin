@@ -15,15 +15,15 @@ import java.util.concurrent.atomic.AtomicInteger
 import javax.net.ssl.SSLHandshakeException
 
 open class IppClient(
-        var ippVersion: String = "1.1",
+        var ippVersion: IppVersion = IppVersion(1, 1),
         val httpClient: Http.Client = HttpURLConnectionClient(),
         val requestingUserName: String? = System.getProperty("user.name")
 ) : IppExchange {
-    private val requestCounter = AtomicInteger(1)
-    var httpBasicAuth: Http.BasicAuth? = null
     var verbose: Boolean = false
+    var httpBasicAuth: Http.BasicAuth? = null
     var lastIppRequest: IppRequest? = null
     var lastIppResponse: IppResponse? = null
+    val requestCounter = AtomicInteger(1)
 
     //-------------------------------------
     // factory/build methods for IppRequest
@@ -51,7 +51,7 @@ open class IppClient(
     fun exchangeSuccessful(ippUri: URI, ippRequest: IppRequest): IppResponse {
         val ippResponse = exchange(ippUri, ippRequest)
         if (ippResponse.isSuccessful()) {
-            println(ippResponse)
+            if(verbose) println(ippResponse)
             return ippResponse
         } else {
             val exceptionMessage = "'${ippRequest.operation}' failed: '${ippResponse.status}' ${ippResponse.statusMessage ?: ""}"

@@ -18,13 +18,13 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
         var check1setOfRegistration: Boolean = false
     }
 
-    // encoding for text and name attributes, rfc 8011 4.1.4.1
+    // encoding for text and name attributes, RFC 8011 4.1.4.1
     private var attributesCharset: Charset? = null
 
     fun readMessage(message: IppMessage) {
         lateinit var currentGroup: IppAttributesGroup
         lateinit var currentAttribute: IppAttribute<*>
-        message.version = String.format("%d.%d", read(), read())
+        message.version = IppVersion(read(), read())
         message.code = readShort()
         message.requestId = readInt()
         tagLoop@ do {
@@ -81,7 +81,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
     }
 
     private fun readAttributeValue(tag: IppTag): Any {
-
+        // RFC 8011 4.1.4.1
         fun readStringForTag() = readString(tag.selectCharset(attributesCharset))
 
         return when (tag) {

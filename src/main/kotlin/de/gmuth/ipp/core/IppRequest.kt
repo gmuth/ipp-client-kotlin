@@ -6,7 +6,6 @@ package de.gmuth.ipp.core
 
 import java.io.InputStream
 import java.io.OutputStream
-import java.io.SequenceInputStream
 import java.nio.charset.Charset
 import java.util.*
 
@@ -35,7 +34,7 @@ open class IppRequest() : IppMessage() {
     }
 
     constructor(
-            version: String,
+            version: IppVersion,
             operationCode: Short,
             requestId: Int,
             charset: Charset = Charsets.UTF_8,

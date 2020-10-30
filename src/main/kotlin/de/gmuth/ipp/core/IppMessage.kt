@@ -12,7 +12,7 @@ import java.nio.charset.Charset
 
 abstract class IppMessage {
 
-    var version: String? = null
+    var version: IppVersion? = null
     var code: Short? = null
     abstract val codeDescription: String // request operation or response status
     var requestId: Int? = null
@@ -102,5 +102,4 @@ abstract class IppMessage {
             group.logDetails(prefix)
         }
     }
-
 }
