@@ -165,6 +165,7 @@ repositories {
 Add dependency:
 
 ```
-implementation("de.gmuth.ipp:ipp-client-kotlin:1.7")
+    implementation("de.gmuth.ipp:ipp-client-kotlin:1.7")
+or  implementation("de.gmuth.ipp:ipp-client-kotlin:1.8-SNAPSHOT")
 ```
 
