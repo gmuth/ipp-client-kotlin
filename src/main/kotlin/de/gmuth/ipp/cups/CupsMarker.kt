@@ -18,12 +18,12 @@ class CupsMarker(
     val color: Color = Color.fromCode(colorCode)
 
     fun levelPercent() = 100 * level / highLevel
-    fun isLow() = level <= lowLevel
+    fun levelIsLow() = level <= lowLevel
 
     override fun toString() = String.format(
             "%-10s %3d %% %5s %-6s %-7s %s",
             color, levelPercent(),
-            if (isLow()) "(low)" else "",
+            if (levelIsLow()) "(low)" else "",
             type, colorCode, name
     )
 
@@ -53,8 +53,8 @@ class CupsMarker(
 
                 for ((index, name) in names.withIndex()) {
                     val marker = CupsMarker(
+                            name = (name as IppString).string,
                             type = types[index] as String,
-                            name = (names[index] as IppString).string,
                             colorCode = (colors[index] as IppString).string,
                             level = levels[index] as Int,
                             lowLevel = lowLevels[index] as Int,
