@@ -30,7 +30,7 @@ val job = ippPrinter.printJob(
     copies(2),
     numberUp(2),
     pageRanges(2..3, 8..10),
-    printerResolutionDpi(300),
+    printerResolution(300),
     IppPrintQuality.High,
     IppColorMode.Monochrome,
     IppSides.TwoSidedLongEdge
@@ -129,6 +129,10 @@ which requires a http transport that implements interface
 To build `ipp-client.jar` and `ipp-client-fat.jar` into `build/libs` run
 
     ./gradlew
+
+To install the artifcat to your local maven repository run
+
+    ./gradlew publishToMavenLocal
 
 This software has **no dependencies** to
 [javax.print](https://docs.oracle.com/javase/7/docs/technotes/guides/jps/),
