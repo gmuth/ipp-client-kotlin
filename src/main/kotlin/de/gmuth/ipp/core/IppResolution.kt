@@ -8,9 +8,9 @@ package de.gmuth.ipp.core
 data class IppResolution(
         val x: Int,
         val y: Int,
-        val unit: Int = 3
+        val unit: Int
 ) {
-    constructor(xy: Int) : this(xy, xy)
+    constructor(xy: Int, unit: Unit) : this(xy, xy, unit.code)
 
     override fun toString() = "${x}${if (x == y) "" else "x${y}"}${unitString()}"
 
@@ -19,4 +19,10 @@ data class IppResolution(
         4 -> "dpcm"
         else -> "unit-$unit"
     }
+
+    enum class Unit(val code: Int) {
+        DPI(3),
+        DPCM(4)
+    }
+
 }
