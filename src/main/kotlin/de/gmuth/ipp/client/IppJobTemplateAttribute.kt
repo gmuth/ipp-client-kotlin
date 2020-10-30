@@ -6,6 +6,8 @@ package de.gmuth.ipp.client
 
 import de.gmuth.ipp.core.IppAttribute
 import de.gmuth.ipp.core.IppResolution
+import de.gmuth.ipp.core.IppResolution.Unit
+import de.gmuth.ipp.core.IppResolution.Unit.DPI
 import de.gmuth.ipp.core.IppTag
 
 /**
@@ -34,8 +36,8 @@ object IppJobTemplateAttribute {
     fun numberUp(value: Int) =
             IppAttribute("number-up", IppTag.Integer, value)
 
-    fun printerResolutionDpi(value: Int) =
-            IppAttribute("printer-resolution", IppTag.Resolution, IppResolution(value))
+    fun printerResolution(value: Int, unit: Unit = DPI) =
+            IppAttribute("printer-resolution", IppTag.Resolution, IppResolution(value, unit))
 
     fun pageRanges(vararg ranges: IntRange) =
             IppAttribute("page-ranges", IppTag.RangeOfInteger, ranges.toList())
@@ -45,7 +47,7 @@ object IppJobTemplateAttribute {
 
     fun mediaCol(xDimension: Int, yDimension: Int, margin: Int? = null) =
             IppMediaCollection(IppMediaCollection.Size(xDimension, yDimension)).apply {
-                if(margin != null) this.margins = IppMediaCollection.Margins(margin)
+                if (margin != null) this.margins = IppMediaCollection.Margins(margin)
             }
 
 }
