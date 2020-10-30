@@ -247,17 +247,22 @@ class IppPrinter(val printerUri: URI, val ippClient: IppClient = IppClient(), va
 
     private fun checkValueSupported(supportedAttributeName: String, value: Any) {
         // condition is NOT always false, because this method is used during class initialization
-        if (attributes == null || !checkValueSupported) return
+        if (attributes == null || !checkValueSupported)
+            return
+
+        if (!supportedAttributeName.endsWith("-supported"))
+            throw IppException("attribute name not ending with '-supported'")
+
         if (value is Collection<*>) { // instead of providing another signature just check collections iteratively
-            for (collectionValue in value) checkValueSupported(supportedAttributeName, collectionValue!!)
+            for (collectionValue in value) {
+                checkValueSupported(supportedAttributeName, collectionValue!!)
+            }
         } else {
             isAttributeValueSupported(supportedAttributeName, value)
         }
     }
 
     private fun isAttributeValueSupported(supportedAttributeName: String, value: Any): Boolean? {
-        if (!supportedAttributeName.endsWith("-supported"))
-            throw IppException("attribute name not ending with '-supported'")
 
         val supportedAttribute = attributes[supportedAttributeName] ?: return null
         val isAttributeValueSupported = when (supportedAttribute.tag) {
@@ -267,11 +272,26 @@ class IppPrinter(val printerUri: URI, val ippClient: IppClient = IppClient(), va
             IppTag.MimeMediaType,
             IppTag.Keyword,
             IppTag.Enum,
-            IppTag.Resolution -> supportedAttribute.values.contains(value) || supportedAttributeName.toLowerCase() == "media-col-supported"
-            IppTag.Integer ->
+            IppTag.Resolution -> when (supportedAttributeName) {
+                "media-col-supported" -> {
+                    (value as IppCollection).members
+                            .filter { !supportedAttribute.values.contains(it.name) }
+                            .forEach { println("WARN: member unsupported: $it") }
+                    // all member names must be supported
+                    supportedAttribute.values.containsAll(
+                            value.members.map { it.name }
+                    )
+                }
+                "ipp-versions-supported" -> supportedAttribute.values.contains(value.toString())
+                else -> supportedAttribute.values.contains(value)
+            }
+            IppTag.Integer -> {
                 if (supportedAttribute.is1setOf()) supportedAttribute.values.contains(value)
                 else value is Int && value <= supportedAttribute.value as Int // e.g. 'job-priority-supported'
-            IppTag.RangeOfInteger -> value is Int && value in supportedAttribute.value as IntRange
+            }
+            IppTag.RangeOfInteger -> {
+                value is Int && value in supportedAttribute.value as IntRange
+            }
             else -> null
         }
         when (isAttributeValueSupported) {
