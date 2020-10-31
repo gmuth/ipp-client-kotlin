@@ -9,6 +9,6 @@ import java.net.URI
 interface IppExchange {
 
     @Throws(IppExchangeException::class)
-    fun exchange(ippUri: URI, ippRequest: IppRequest): IppResponse
+    fun exchange(ippRequest: IppRequest): IppResponse
 
 }

@@ -18,40 +18,29 @@ open class IppClient(
         var ippVersion: IppVersion = IppVersion(1, 1),
         val httpClient: Http.Client = HttpURLConnectionClient(),
         val requestingUserName: String? = System.getProperty("user.name")
+
 ) : IppExchange {
     var verbose: Boolean = false
     var httpBasicAuth: Http.BasicAuth? = null
     var lastIppRequest: IppRequest? = null
     var lastIppResponse: IppResponse? = null
-    val requestCounter = AtomicInteger(1)
+    private val requestCounter = AtomicInteger(1)
 
-    //-------------------------------------
-    // factory/build methods for IppRequest
-    //-------------------------------------
+    //------------------------------------
+    // factory/build method for IppRequest
+    //------------------------------------
 
-    fun ippRequest(operation: IppOperation, printerUri: URI? = null) =
-            IppRequest(ippVersion, operation.code, requestCounter.getAndIncrement()).apply {
-                if (printerUri != null) {
-                    operationGroup.attribute("printer-uri", IppTag.Uri, printerUri)
-                }
-                if (requestingUserName != null) {
-                    operationGroup.attribute("requesting-user-name", IppTag.NameWithoutLanguage, requestingUserName)
-                }
-            }
-
-    fun ippJobRequest(jobOperation: IppOperation, printerUri: URI, jobId: Int) =
-            ippRequest(jobOperation, printerUri).apply {
-                operationGroup.attribute("job-id", IppTag.Integer, jobId)
-            }
+    fun ippRequest(operation: IppOperation, printerUri: URI) =
+            IppRequest(operation, printerUri, requestingUserName, ippVersion, requestCounter.getAndIncrement())
 
     //-------------------------------------------
     // exchange methods for IppRequest/IppRequest
     //-------------------------------------------
 
-    fun exchangeSuccessful(ippUri: URI, ippRequest: IppRequest): IppResponse {
-        val ippResponse = exchange(ippUri, ippRequest)
+    fun exchangeSuccessful(ippRequest: IppRequest): IppResponse {
+        val ippResponse = exchange(ippRequest)
         if (ippResponse.isSuccessful()) {
-            if(verbose) println(ippResponse)
+            if (verbose) println(ippResponse)
             return ippResponse
         } else {
             val exceptionMessage = "'${ippRequest.operation}' failed: '${ippResponse.status}' ${ippResponse.statusMessage ?: ""}"
@@ -59,7 +48,8 @@ open class IppClient(
         }
     }
 
-    override fun exchange(ippUri: URI, ippRequest: IppRequest): IppResponse {
+    override fun exchange(ippRequest: IppRequest): IppResponse {
+        val ippUri = ippRequest.printerUri
         lastIppRequest = ippRequest
         val ippResponse = IppResponse()
         // internal function
@@ -86,6 +76,10 @@ open class IppClient(
             ippResponse.read(ippResponseStream)
         } catch (exception: Exception) {
             logRequestResponseDetails()
+            if (ippResponse.rawBytes != null) {
+                File("ipp_decoding_failed.response").writeBytes(ippResponse.rawBytes!!)
+                println("WARN: ipp response written to file 'ipp_decoding_failed.response'")
+            }
             throw IppExchangeException(ippRequest, ippResponse, "failed to decode ipp response", exception)
         }
         // response logging
@@ -93,7 +87,7 @@ open class IppClient(
             println("exchanged @ $ippUri")
             ippResponse.logDetails("<< ")
             with(ippResponse.statusMessage) {
-                if (this != null) println("status-message: $this")
+                this?.let { println("status-message: $it") }
             }
         }
         // failure logging
@@ -128,7 +122,8 @@ open class IppClient(
         } catch (sslException: SSLHandshakeException) {
             throw IppException("SSL connection error $uri", sslException)
         } finally {
-            if (verbose) println(String.format("http exchange %s: %d ms", uri, System.currentTimeMillis() - start))
+            val duration = System.currentTimeMillis() - start
+            if (verbose || duration > 5000) println(String.format("http exchange %s: %d ms", uri, duration))
         }
     }
 

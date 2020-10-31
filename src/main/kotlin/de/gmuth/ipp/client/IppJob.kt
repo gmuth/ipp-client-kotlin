@@ -6,7 +6,6 @@ package de.gmuth.ipp.client
 
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppOperation
-import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppTag
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -47,7 +46,7 @@ class IppJob(
     //-------------------
 
     private fun getJobAttributes(): IppAttributesGroup {
-        val response = exchangeSuccessfulIppJobRequest(IppOperation.GetJobAttributes)
+        val response = exchangeSuccessfulIppRequest(IppOperation.GetJobAttributes)
         return response.jobGroup
     }
 
@@ -74,19 +73,19 @@ class IppJob(
     // Cancel-Job
     //-----------
 
-    fun cancel() = exchangeSuccessfulIppJobRequest(IppOperation.CancelJob)
+    fun cancel() = exchangeSuccessfulIppRequest(IppOperation.CancelJob)
 
     //---------
     // Hold-Job
     //---------
 
-    fun hold() = exchangeSuccessfulIppJobRequest(IppOperation.HoldJob)
+    fun hold() = exchangeSuccessfulIppRequest(IppOperation.HoldJob)
 
     //------------
     // Release-Job
     //-------------
 
-    fun release() = exchangeSuccessfulIppJobRequest(IppOperation.ReleaseJob)
+    fun release() = exchangeSuccessfulIppRequest(IppOperation.ReleaseJob)
 
     //--------------
     // Send-Document
@@ -97,7 +96,7 @@ class IppJob(
             operationGroup.attribute("last-document", IppTag.Boolean, lastDocument)
             documentInputStream = inputStream
         }
-        val response = exchangeSuccessful(request)
+        val response = printer.exchangeSuccessful(request)
         attributes = response.jobGroup
     }
 
@@ -106,13 +105,10 @@ class IppJob(
     //-----------------------
 
     private fun ippJobRequest(operation: IppOperation) =
-            printer.ippJobRequest(operation, id)
+            printer.ippRequest(operation, id)
 
-    private fun exchangeSuccessful(request: IppRequest) =
-            printer.exchangeSuccessful(request)
-
-    private fun exchangeSuccessfulIppJobRequest(operation: IppOperation) =
-            printer.exchangeSuccessfulIppJobRequest(operation, id)
+    private fun exchangeSuccessfulIppRequest(operation: IppOperation) =
+            printer.exchangeSuccessfulIppRequest(operation, id)
 
     // -------
     // Logging

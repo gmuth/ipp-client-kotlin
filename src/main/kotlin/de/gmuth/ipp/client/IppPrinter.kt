@@ -205,7 +205,7 @@ class IppPrinter(val printerUri: URI, val ippClient: IppClient = IppClient(), va
     //-------------------------------
 
     fun getJob(jobId: Int): IppJob {
-        val response = exchangeSuccessfulIppJobRequest(IppOperation.GetJobAttributes, jobId)
+        val response = exchangeSuccessfulIppRequest(IppOperation.GetJobAttributes, jobId)
         return IppJob(this, response.jobGroup)
     }
 
@@ -213,23 +213,19 @@ class IppPrinter(val printerUri: URI, val ippClient: IppClient = IppClient(), va
     // delegate to IppClient
     //----------------------
 
-    fun ippRequest(operation: IppOperation) =
-            ippClient.ippRequest(operation, printerUri)
+    fun ippRequest(operation: IppOperation, jobId: Int? = null) =
+            ippClient.ippRequest(operation, printerUri).apply {
+                jobId?.let { operationGroup.attribute("job-id", IppTag.Integer, it) }
+            }
 
-    fun ippJobRequest(operation: IppOperation, jobId: Int) =
-            ippClient.ippJobRequest(operation, printerUri, jobId)
-
-    fun exchangeSuccessfulIppRequest(operation: IppOperation) =
-            exchangeSuccessful(ippRequest(operation))
-
-    fun exchangeSuccessfulIppJobRequest(operation: IppOperation, jobId: Int) =
-            exchangeSuccessful(ippJobRequest(operation, jobId))
+    fun exchangeSuccessfulIppRequest(operation: IppOperation, jobId: Int? = null) =
+            exchangeSuccessful(ippRequest(operation, jobId))
 
     fun exchangeSuccessful(request: IppRequest): IppResponse {
         checkValueSupported("ipp-versions-supported", ippClient.ippVersion)
         checkValueSupported("operations-supported", request.code!!.toInt())
         checkValueSupported("charset-supported", request.attributesCharset)
-        return ippClient.exchangeSuccessful(printerUri, request)
+        return ippClient.exchangeSuccessful(request)
     }
 
     // -------
@@ -318,6 +314,7 @@ class IppPrinter(val printerUri: URI, val ippClient: IppClient = IppClient(), va
     val markers: CupsMarker.List
         get() = CupsMarker.List(attributes)
 
-    fun marker(color: CupsMarker.Color) = markers.single { it.color == color }
+    fun marker(color: CupsMarker.Color) =
+            markers.single { it.color == color }
 
 }

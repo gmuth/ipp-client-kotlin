@@ -14,10 +14,7 @@ class IppTool {
     var verbose: Boolean = false
     var uri: URI? = null
     var filename: String? = null
-    val request = IppRequest().apply {
-        version = IppVersion(1, 1)
-        requestId = 1
-    }
+    val request = IppRequest()
     lateinit var currentGroup: IppAttributesGroup
 
     fun interpretResource(resource: String) = interpret(javaClass.getResourceAsStream(resource))
@@ -84,7 +81,7 @@ class IppTool {
         with(IppClient()) {
             verbose = true
             if (uri == null) throw IppException("uri missing")
-            exchangeSuccessful(uri as URI, request)
+            exchangeSuccessful(request)
         }
     }
 
