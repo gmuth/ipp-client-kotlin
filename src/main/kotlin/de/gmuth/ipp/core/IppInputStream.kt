@@ -16,6 +16,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
     companion object {
         var verbose: Boolean = false
         var check1setOfRegistration: Boolean = false
+        var HP_BUG_WithLanguage_Workaround = true
     }
 
     // encoding for text and name attributes, RFC 8011 4.1.4.1
@@ -72,7 +73,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
             val value = try {
                 readAttributeValue(tag)
             } catch (exception: Exception) {
-                throw IppException("failed to read attribute value for '$name' ($tag)", exception)
+                throw IppException("failed to read attribute value of '$name' ($tag)", exception)
             }
             // remember attributes-charset for name and text value decoding
             if (name == "attributes-charset") attributesCharset = value as Charset
@@ -140,9 +141,18 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
             IppTag.TextWithLanguage,
             IppTag.NameWithLanguage -> {
-                readShort() // ignore redundant value length
+                val attributeValueLength = readShort().toInt()
+                // HP M175nw: PrintJobOperation having a job-name with language & GetJobAttributes
+                // Testcase: german macOS, print with application, read job attributes with ipptool
+                val language = if (HP_BUG_WithLanguage_Workaround && attributeValueLength < 6) {
+                    // attribute value length is missing, treat this as value length for language
+                    String(readBytes(attributeValueLength), tag.selectCharset(attributesCharset))
+                } else {
+                    readStringForTag()
+                }
+
                 IppString(
-                        language = readStringForTag(),
+                        language = language,
                         string = readStringForTag()
                 )
             }
@@ -211,11 +221,12 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
     private fun readLengthAndValue(): ByteArray {
         val length = readShort().toInt()
-        val byteArray = ByteArray(length)
-        readFully(byteArray)
-        return byteArray
+        if (length > 1024) println("WARN: length $length of encoded value looks too large")
+        return readBytes(length)
         //return readNBytes(length) // Java 11
     }
+
+    private fun readBytes(length: Int) = ByteArray(length).apply { readFully(this) }
 
     private fun readExpectedValueLength(expected: Int) {
         val length = readShort().toInt()
