@@ -12,7 +12,7 @@ import javax.net.ssl.SSLSocketFactory
 interface Http {
 
     data class Config(
-            var timeout: Int = 3000, // milli seconds
+            var timeout: Int = 30000, // milli seconds
             var sslSocketFactory: SSLSocketFactory? = null
             // trust any certificate: sslSocketFactoryForAnyCertificate()
             // use individual certificate: sslSocketFactory(loadCertificate(FileInputStream("printer.pem")))
