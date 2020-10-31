@@ -20,11 +20,9 @@ class HttpURLConnectionClient(override val config: Http.Config = Http.Config()) 
                 hostnameVerifier = HostnameVerifier { _, _ -> true }
             }
             connectTimeout = config.timeout
+            readTimeout = config.timeout
             doOutput = true // trigger POST method
-            if (basicAuth != null) {
-                if (uri.scheme in listOf("http", "ipp")) {
-                    println("WARN: '${uri.scheme}' does not protect credentials")
-                }
+            basicAuth?.let {
                 val basicAuthEncoded = with(basicAuth) {
                     Base64.getEncoder().encodeToString("$user:$password".toByteArray())
                 }
