@@ -51,8 +51,14 @@ abstract class IppMessage {
     fun read(inputStream: InputStream) {
         if (storeRawBytes) {
             val byteArraySavingInputStream = ByteArraySavingInputStream(inputStream)
-            IppInputStream(byteArraySavingInputStream).readMessage(this)
-            rawBytes = byteArraySavingInputStream.toByteArray()
+            try {
+                IppInputStream(byteArraySavingInputStream).readMessage(this)
+            } catch (exception: Exception) {
+                // required to 'finally' save bytes
+                throw exception
+            } finally {
+                rawBytes = byteArraySavingInputStream.toByteArray()
+            }
         } else {
             IppInputStream(inputStream).readMessage(this)
         }
