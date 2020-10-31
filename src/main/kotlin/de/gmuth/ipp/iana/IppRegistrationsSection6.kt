@@ -2,7 +2,7 @@ package de.gmuth.ipp.iana
 
 import de.gmuth.csv.CSVReader
 import de.gmuth.csv.CSVReader.RowMapper
-import de.gmuth.ipp.cups.CupsOperation
+import de.gmuth.ipp.core.IppOperation
 
 /**
  * https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xhtml#ipp-registrations-6
@@ -60,7 +60,8 @@ class IppRegistrationsSection6 {
                 if (value < 0x4000) {
                     getEnumAttributeValue("operations-supported", String.format("0x%04X", value))?.name
                 } else {
-                    CupsOperation.fromShort(value.toShort())
+                    // CUPS operations are not iana registered
+                    IppOperation.fromShort(value.toShort()).toString()
                 }
     }
 }
