@@ -78,13 +78,12 @@ val uri = URI.create("ipp://colorjet.local/ipp/printer")
 val file = File("A4-blank.pdf")
 
 val ippClient = IppClient()
-val request = ippClient.ippRequest(IppOperation.PrintJob).apply {
-  operationGroup.attribute("printer-uri", IppTag.Uri, uri)
+val request = IppRequest(IppOperation.PrintJob, uri).apply {
+  // constructor adds 'attributes-charset', 'attributes-natural-language' and 'printer-uri'
   operationGroup.attribute("document-format", IppTag.MimeMediaType, "application/pdf")
-  operationGroup.attribute("requesting-user-name", IppTag.NameWithoutLanguage, "gmuth")
   documentInputStream  = FileInputStream(file)
 }
-val response = ippClient.exchange(uri, request)
+val response = ippClient.exchange(request)
 response.logDetails()
 ```    
 ### IppTool
