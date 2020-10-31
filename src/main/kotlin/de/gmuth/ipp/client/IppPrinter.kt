@@ -7,6 +7,7 @@ package de.gmuth.ipp.client
 import de.gmuth.http.Http
 import de.gmuth.ipp.core.*
 import de.gmuth.ipp.cups.CupsMarker
+import de.gmuth.ipp.cups.CupsPrinterType
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
@@ -311,8 +312,12 @@ class IppPrinter(val printerUri: URI, val ippClient: IppClient = IppClient(), va
     // CUPS extensions
     // ---------------
 
-    fun markers() = CupsMarker.List(attributes)
+    val printerType: CupsPrinterType?
+        get() = CupsPrinterType.fromInt(attributes.getValue("printer-type"))
 
-    fun marker(color: CupsMarker.Color) = markers().single { it.color == color }
+    val markers: CupsMarker.List
+        get() = CupsMarker.List(attributes)
+
+    fun marker(color: CupsMarker.Color) = markers.single { it.color == color }
 
 }

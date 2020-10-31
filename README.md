@@ -16,7 +16,7 @@ val ippPrinter = IppPrinter(URI.create("ipp://colorjet.local/ipp/printer"))
 ippPrinter.attributes.logDetails()
 
 // marker levels
-ippPrinter.markers().forEach { println(it) }
+ippPrinter.markers.forEach { println(it) }
 println("black: ${ippPrinter.marker(BLACK).levelPercent()} %")
 
 // print file
