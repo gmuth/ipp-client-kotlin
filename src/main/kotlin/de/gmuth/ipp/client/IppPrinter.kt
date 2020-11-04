@@ -166,7 +166,7 @@ class IppPrinter(val printerUri: URI, val ippClient: IppClient = IppClient(), va
                     for (attributeBuilder in attributeBuilders) {
                         val attribute = attributeBuilder.buildIppAttribute(attributes)
                         checkValueSupported("${attribute.name}-supported", attribute.values)
-                        put(attribute, validateTag = true)
+                        put(attribute)
                     }
                 }
             }

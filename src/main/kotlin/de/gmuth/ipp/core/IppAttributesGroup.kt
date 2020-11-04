@@ -14,11 +14,9 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
         }
     }
 
-    fun put(attribute: IppAttribute<*>, validateTag: Boolean = false): IppAttribute<*>? {
+    fun put(attribute: IppAttribute<*>): IppAttribute<*>? {
         try {
-            if (validateTag) {
-                attribute.validateTag()
-            }
+            attribute.checkSyntax()
             if (!attribute.tag.isOutOfBandTag() && attribute.values.isEmpty()) {
                 throw IppException("value list is empty")
             }
