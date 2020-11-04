@@ -81,6 +81,8 @@ open class IppClient(
                 println("WARN: ipp response written to file 'ipp_decoding_failed.response'")
             }
             throw IppExchangeException(ippRequest, ippResponse, "failed to decode ipp response", exception)
+        } finally {
+            println(String.format("%-75s=> %s", ippRequest, ippResponse))
         }
         // response logging
         if (verbose) {

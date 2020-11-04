@@ -7,7 +7,7 @@ package de.gmuth.ipp.core
 class IppResponse : IppMessage() {
 
     override val codeDescription: String
-        get() = "status-code = $status"
+        get() = "$status"
 
     val status: IppStatus
         get() = IppStatus.fromShort(code ?: throw IppException("status-code must not be null"))

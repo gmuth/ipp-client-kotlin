@@ -23,7 +23,7 @@ open class IppRequest(
     var documentInputStream: InputStream? = null
 
     override val codeDescription: String
-        get() = "operation = $operation"
+        get() = "$operation"
 
     val operation: IppOperation
         get() = IppOperation.fromShort(code ?: throw IppException("operation-code must not be null"))

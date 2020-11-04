@@ -91,12 +91,10 @@ abstract class IppMessage {
     // --- LOGGING ---
 
     override fun toString(): String = String.format(
-            "%s: %s, %s: %s%s",
-            javaClass.simpleName,
+            "%s %s%s",
             codeDescription,
-            attributesGroups.size.toPluralString("attributes group"),
-            attributesGroups.map { it.tag },
-            if (rawBytes == null) "" else ", ${rawBytes!!.size} raw bytes"
+            attributesGroups.map { "${it.values.size} ${it.tag}" },
+            if (rawBytes == null) "" else " (${rawBytes!!.size} bytes)"
     )
 
     fun logDetails(prefix: String = "") {
