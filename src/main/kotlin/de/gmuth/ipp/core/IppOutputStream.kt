@@ -35,18 +35,6 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
         }
     }
 
-    private fun writeVersion(version: String) {
-        val matchResult = """^(\d)\.(\d)$""".toRegex().find(version)
-        if (matchResult == null) {
-            throw IppException("invalid version string: '$version'")
-        } else with(matchResult) {
-            val major: Int = groups[1]!!.value.toInt()
-            val minor: Int = groups[2]!!.value.toInt()
-            writeByte(major)
-            writeByte(minor)
-        }
-    }
-
     private fun writeVersion(version: IppVersion) {
         with(version) {
             writeByte(major)
@@ -172,7 +160,9 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
                 writeAttribute(IppAttribute<Unit>("", IppTag.EndCollection))
             }
 
-            else -> throw IppException(String.format("unable to encode tag %s (%02X)", tag, tag.code))
+            else -> {
+                throw IppException(String.format("unable to encode tag %s (%02X)", tag, tag.code))
+            }
         }
     }
 }
