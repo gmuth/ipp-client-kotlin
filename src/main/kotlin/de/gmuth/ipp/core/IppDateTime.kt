@@ -4,6 +4,7 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
+import de.gmuth.ext.dstSavingsOffset
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
@@ -19,18 +20,11 @@ data class IppDateTime(
         val hour: Int,
         val minutes: Int,
         val seconds: Int,
-        var deciSeconds: Int = 0,
-        var directionFromUTC: Char = '+', // or '-'
-        var hoursFromUTC: Int = 0,
-        var minutesFromUTC: Int = 0
+        val deciSeconds: Int,
+        val directionFromUTC: Char, // '+' or '-'
+        val hoursFromUTC: Int,
+        val minutesFromUTC: Int
 ) {
-    private fun getOffsetMinutes() = (if (directionFromUTC == '-') -1 else 1) * (hoursFromUTC * 60 + minutesFromUTC)
-
-    private fun setOffsetMinutes(offsetMinutes: Int) {
-        directionFromUTC = if (offsetMinutes < 0) '-' else '+'
-        hoursFromUTC = offsetMinutes.absoluteValue / 60
-        minutesFromUTC = offsetMinutes.absoluteValue % 60
-    }
 
     override fun toString() = toISO8601()
 
@@ -50,11 +44,10 @@ data class IppDateTime(
             zonedDateTime.dayOfMonth,
             zonedDateTime.hour,
             zonedDateTime.minute,
-            zonedDateTime.second
-    ) {
-        deciSeconds = zonedDateTime.get(ChronoField.MILLI_OF_SECOND) / 100
-        setOffsetMinutes(zonedDateTime.zone.rules.getOffset(zonedDateTime.toLocalDateTime()).totalSeconds / 60)
-    }
+            zonedDateTime.second,
+            deciSeconds = zonedDateTime.get(ChronoField.MILLI_OF_SECOND) / 100,
+            offsetMinutes = zonedDateTime.zone.rules.getOffset(zonedDateTime.toLocalDateTime()).totalSeconds / 60
+    )
 
     fun toZonedDateTime(): ZonedDateTime = ZonedDateTime.of(
             LocalDateTime.of(
@@ -78,25 +71,19 @@ data class IppDateTime(
             calendar[Calendar.HOUR_OF_DAY],
             calendar[Calendar.MINUTE],
             calendar[Calendar.SECOND],
-            calendar[Calendar.MILLISECOND] / 100
-    ) {
-        val dstSensitiveOffset = with(calendar.timeZone) {
-            rawOffset + if (useDaylightTime() && inDaylightTime(calendar.time)) dstSavings else 0
-        }
-        setOffsetMinutes(dstSensitiveOffset / 1000 / 60)
-    }
+            deciSeconds = calendar[Calendar.MILLISECOND] / 100,
+            offsetMinutes = calendar.dstSavingsOffset() / 1000 / 60
+    )
 
-    fun toCalendar(): Calendar {
-        val calendar = Calendar.getInstance()
-        calendar[Calendar.YEAR] = year
-        calendar[Calendar.MONTH] = month - 1
-        calendar[Calendar.DAY_OF_MONTH] = day
-        calendar[Calendar.HOUR_OF_DAY] = hour
-        calendar[Calendar.MINUTE] = minutes
-        calendar[Calendar.SECOND] = seconds
-        calendar[Calendar.MILLISECOND] = deciSeconds * 100
-        calendar.timeZone = TimeZone.getTimeZone(String.format("GMT%c%02d%02d", directionFromUTC, hoursFromUTC, minutesFromUTC))
-        return calendar
+    fun toCalendar(): Calendar = Calendar.getInstance().apply {
+        set(Calendar.YEAR, year)
+        set(Calendar.MONTH, month - 1)
+        set(Calendar.DAY_OF_MONTH, day)
+        set(Calendar.HOUR_OF_DAY, hour)
+        set(Calendar.MINUTE, minutes)
+        set(Calendar.SECOND, seconds)
+        set(Calendar.MILLISECOND, deciSeconds * 100)
+        timeZone = TimeZone.getTimeZone(String.format("GMT%c%02d%02d", directionFromUTC, hoursFromUTC, minutesFromUTC))
     }
 
     // support for java.util.Date
@@ -104,5 +91,31 @@ data class IppDateTime(
     constructor(date: Date) : this(Calendar.getInstance().apply { time = date })
 
     fun toDate(): Date = toCalendar().time
+
+    // support for offset minutes
+
+    private constructor(
+            year: Int,
+            month: Int,
+            day: Int,
+            hour: Int,
+            minutes: Int,
+            seconds: Int,
+            deciSeconds: Int,
+            offsetMinutes: Int
+    ) : this(
+            year,
+            month,
+            day,
+            hour,
+            minutes,
+            seconds,
+            deciSeconds,
+            directionFromUTC = if (offsetMinutes < 0) '-' else '+',
+            hoursFromUTC = offsetMinutes.absoluteValue / 60,
+            minutesFromUTC = offsetMinutes.absoluteValue % 60
+    )
+
+    private fun getOffsetMinutes() = (if (directionFromUTC == '-') -1 else 1) * (hoursFromUTC * 60 + minutesFromUTC)
 
 }
