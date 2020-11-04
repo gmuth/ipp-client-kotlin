@@ -84,7 +84,11 @@ val request = IppRequest(IppOperation.PrintJob, uri).apply {
   documentInputStream  = FileInputStream(file)
 }
 val response = ippClient.exchange(request)
-response.logDetails()
+if (response.isSuccessful()) {
+    println(response.jobGroup["job-id"])
+} else {
+    println(response.status)
+}
 ```    
 ### IppTool
 
