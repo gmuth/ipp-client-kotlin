@@ -129,7 +129,7 @@ To build `ipp-client.jar` and `ipp-client-fat.jar` into `build/libs` run
 
     ./gradlew
 
-To install the artifcat to your local maven repository run
+To install the artifact to your local maven repository run
 
     ./gradlew publishToMavenLocal
 
