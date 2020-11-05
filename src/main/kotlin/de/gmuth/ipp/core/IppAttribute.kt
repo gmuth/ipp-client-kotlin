@@ -103,9 +103,6 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
         tag == IppTag.Charset -> with(value as Charset) {
             name().toLowerCase()
         }
-        tag == IppTag.NaturalLanguage -> with(value as Locale) {
-            toLanguageTag().toLowerCase()
-        }
         tag == IppTag.RangeOfInteger -> with(value as IntRange) {
             "$start-$endInclusive"
         }

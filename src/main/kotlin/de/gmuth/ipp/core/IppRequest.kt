@@ -8,7 +8,6 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI
 import java.nio.charset.Charset
-import java.util.*
 
 open class IppRequest(
         version: IppVersion = IppVersion(),
@@ -54,7 +53,7 @@ open class IppRequest(
             version: IppVersion = IppVersion(),
             requestId: Int = 1,
             charset: Charset = Charsets.UTF_8,
-            naturalLanguage: Locale = Locale.ENGLISH
+            naturalLanguage: String = "en"
 
     ) : this(version, requestId) {
         this.code = operation.code

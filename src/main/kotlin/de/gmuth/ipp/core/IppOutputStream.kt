@@ -8,7 +8,6 @@ import java.io.DataOutputStream
 import java.io.OutputStream
 import java.net.URI
 import java.nio.charset.Charset
-import java.util.*
 
 class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStream) {
 
@@ -105,19 +104,16 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
                 writeString(value.name().toLowerCase())
             }
 
-            IppTag.NaturalLanguage -> with(value as Locale) {
-                writeString(value.toLanguageTag().toLowerCase())
-            }
-
             IppTag.Uri -> with(value as URI) {
                 writeString(value.toString())
             }
 
-            IppTag.OctetString,
             IppTag.Keyword,
             IppTag.UriScheme,
+            IppTag.OctetString,
             IppTag.MimeMediaType,
-            IppTag.MemberAttrName -> with(value as String) {
+            IppTag.MemberAttrName,
+            IppTag.NaturalLanguage -> with(value as String) {
                 writeString(value)
             }
 

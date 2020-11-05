@@ -9,7 +9,6 @@ import java.io.DataInputStream
 import java.io.InputStream
 import java.net.URI
 import java.nio.charset.Charset
-import java.util.*
 
 class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
@@ -122,18 +121,16 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
             // value class Charset
             IppTag.Charset -> Charset.forName(readStringForTag())
 
-            // value class Locale
-            IppTag.NaturalLanguage -> Locale.forLanguageTag(readStringForTag())
-
             // value class URI
             IppTag.Uri -> URI.create(readStringForTag())
 
             // value class String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
-            IppTag.OctetString,
             IppTag.Keyword,
             IppTag.UriScheme,
+            IppTag.OctetString,
             IppTag.MimeMediaType,
-            IppTag.MemberAttrName -> readStringForTag()
+            IppTag.MemberAttrName,
+            IppTag.NaturalLanguage -> readStringForTag()
 
             // value class IppString
             IppTag.TextWithoutLanguage,
@@ -222,8 +219,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
     private fun readLengthAndValue(): ByteArray {
         val length = readShort().toInt()
         if (length > 1024) println("WARN: length $length of encoded value looks too large")
-        return readBytes(length)
-        //return readNBytes(length) // Java 11
+        return readBytes(length) // avoid Java-11-readNBytes(length) for backwards compatibility
     }
 
     private fun readBytes(length: Int) = ByteArray(length).apply { readFully(this) }
