@@ -8,12 +8,13 @@ import de.gmuth.http.Http
 import de.gmuth.ipp.core.*
 import de.gmuth.ipp.cups.CupsMarker
 import de.gmuth.ipp.cups.CupsPrinterType
+import de.gmuth.ipp.iana.IppRegistrationsSection2
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
 import java.net.URI
 
-class IppPrinter(val printerUri: URI, val ippClient: IppClient = IppClient(), val verbose: Boolean = false) {
+open class IppPrinter(val printerUri: URI, val ippClient: IppClient = IppClient(), val verbose: Boolean = false) {
 
     var attributes: IppAttributesGroup
     var httpBasicAuth: Http.BasicAuth?
@@ -162,12 +163,12 @@ class IppPrinter(val printerUri: URI, val ippClient: IppClient = IppClient(), va
 
     private fun attributeBuildersRequest(operation: IppOperation, attributeBuilders: Array<out IppAttributeBuilder>) =
             ippRequest(operation).apply {
-                with(ippAttributesGroup(IppTag.Job)) {
-                    for (attributeBuilder in attributeBuilders) {
-                        val attribute = attributeBuilder.buildIppAttribute(attributes)
-                        checkValueSupported("${attribute.name}-supported", attribute.values)
-                        put(attribute)
-                    }
+                for (attributeBuilder in attributeBuilders) {
+                    val attribute = attributeBuilder.buildIppAttribute(attributes)
+                    checkValueSupported("${attribute.name}-supported", attribute.values)
+                    // put attribute in operation or job group?
+                    val groupTag = IppRegistrationsSection2.attributesMap[attribute.name]?.collectionGroupTag() ?: IppTag.Job
+                    getSingleAttributesGroup(groupTag, true).put(attribute)
                 }
             }
 
