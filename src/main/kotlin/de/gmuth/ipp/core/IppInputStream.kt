@@ -191,16 +191,18 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
             if (attribute.name.isNotEmpty()) {
                 throw IppException("expected empty name but found '${attribute.name}'")
             }
-            // if we have a member and the next attribute indicates a new member, add the current member to the collection
-            if (currentMemberAttribute != null && attribute.tag in listOf(IppTag.MemberAttrName, IppTag.EndCollection)) {
-                collection.add(currentMemberAttribute)
-                currentMemberAttribute = null
-            }
             when (attribute.tag) {
-                IppTag.MemberAttrName -> memberName = attribute.value as String
-                IppTag.EndCollection -> break@memberLoop
+                IppTag.EndCollection -> {
+                    currentMemberAttribute?.let { collection.add(it) }
+                    break@memberLoop
+                }
+                IppTag.MemberAttrName -> {
+                    currentMemberAttribute?.let { collection.add(it) }
+                    currentMemberAttribute = null
+                    memberName = attribute.value as String
+                }
                 else -> { // memberAttrValue
-                    if (currentMemberAttribute == null) {
+                    if (currentMemberAttribute == null) { // new memberduce
                         currentMemberAttribute = IppAttribute(memberName, attribute.tag, attribute.value)
                     } else {
                         currentMemberAttribute.additionalValue(attribute)
