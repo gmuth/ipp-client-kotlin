@@ -11,6 +11,7 @@ import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI
+import java.nio.charset.Charset
 import java.util.concurrent.atomic.AtomicInteger
 import javax.net.ssl.SSLHandshakeException
 
@@ -21,6 +22,8 @@ open class IppClient(
 
 ) : IppExchange {
     var verbose: Boolean = false
+    var requestCharset: Charset = Charsets.UTF_8
+    var requestNaturalLanguage: String = "en"
     var httpBasicAuth: Http.BasicAuth? = null
     var lastIppRequest: IppRequest? = null
     var lastIppResponse: IppResponse? = null
@@ -30,8 +33,15 @@ open class IppClient(
     // factory/build method for IppRequest
     //------------------------------------
 
-    fun ippRequest(operation: IppOperation, printerUri: URI) =
-            IppRequest(operation, printerUri, requestingUserName, ippVersion, requestCounter.getAndIncrement())
+    fun ippRequest(operation: IppOperation, printerUri: URI) = IppRequest(
+            operation,
+            printerUri,
+            requestingUserName,
+            ippVersion,
+            requestCounter.getAndIncrement(),
+            requestCharset,
+            requestNaturalLanguage
+    )
 
     //-------------------------------------------
     // exchange methods for IppRequest/IppRequest
