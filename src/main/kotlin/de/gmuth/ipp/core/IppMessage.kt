@@ -7,7 +7,6 @@ package de.gmuth.ipp.core
 import de.gmuth.io.ByteArraySavingInputStream
 import de.gmuth.io.ByteArraySavingOutputStream
 import java.io.*
-import java.nio.charset.Charset
 
 abstract class IppMessage {
 
