@@ -24,10 +24,14 @@ abstract class IppMessage {
 
     fun getAttributesGroups(tag: IppTag) = attributesGroups.filter { it.tag == tag }
 
-    fun getSingleAttributesGroup(tag: IppTag): IppAttributesGroup {
+    fun getSingleAttributesGroup(tag: IppTag, createIfMissing: Boolean = false): IppAttributesGroup {
         val groups = getAttributesGroups(tag)
         if (groups.isEmpty()) {
-            throw IppException("no group found with tag '$tag' in $attributesGroups")
+            if (createIfMissing) {
+                return ippAttributesGroup(tag)
+            } else {
+                throw IppException("no group found with tag '$tag' in $attributesGroups")
+            }
         }
         return groups.single()
     }
