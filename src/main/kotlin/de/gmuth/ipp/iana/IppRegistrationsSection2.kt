@@ -35,7 +35,7 @@ class IppRegistrationsSection2 {
             }
         }
 
-        override fun toString() = "$name: syntax = \"$syntax\""
+        override fun toString() = String.format("%-30s%-70s%s", collection, key(), syntax)
 
         fun is1setOf() = syntax.contains("1setOf")
 
@@ -68,6 +68,13 @@ class IppRegistrationsSection2 {
             if (subMemberAttribute.isNotBlank()) key.append("/$subMemberAttribute")
             return key.toString()
         }
+
+        fun collectionGroupTag() = when (collection) {
+            "Operation" -> IppTag.Operation
+            "Job Template" -> IppTag.Job
+            else -> IppTag.Job
+        }
+
     }
 
     companion object {
@@ -93,11 +100,18 @@ class IppRegistrationsSection2 {
 }
 
 fun main() {
-    CSVReader.prettyPrintResource("/ipp-registrations-2.csv")
-    for (attribute in IppRegistrationsSection2.allAttributes) {
-        println("$attribute  -->  tag = '${attribute.tag()}'")
-    }
+    //CSVReader.prettyPrintResource("/ipp-registrations-2.csv")
+//    for (attribute in IppRegistrationsSection2.allAttributes) {
+//        println("$attribute  -->  tag = '${attribute.tag()}'")
+//    }
     println(IppRegistrationsSection2.tagForAttribute("job-state")) // 'enum'
     println(IppRegistrationsSection2.attributesMap["printer-resolution-supported"]) // 'printer-resolution-supported: syntax = "1setOf resolution"'
     println(IppRegistrationsSection2.attributeIs1setOf("printer-resolution-supported")) // 'true'
+
+    println(IppRegistrationsSection2.attributesMap["job-name"]?.collection)  // 'Operation'
+
+    for (attribute in IppRegistrationsSection2.allAttributes) {
+        //if(attribute.collection.toLowerCase().contains("template"))
+        //println("$attribute")
+    }
 }
