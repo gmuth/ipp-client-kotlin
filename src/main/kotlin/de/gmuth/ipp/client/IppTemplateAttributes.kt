@@ -13,10 +13,12 @@ import de.gmuth.ipp.core.IppTag
 /**
  * methods to create common job attributes
  */
-object IppJobTemplateAttribute {
+object IppTemplateAttributes {
 
     fun attribute(name: String, tag: IppTag, vararg values: Any) =
             IppAttribute(name, tag, values.toList())
+
+    // for operation group
 
     fun documentFormat(value: String) =
             IppAttribute("document-format", IppTag.MimeMediaType, value)
@@ -26,6 +28,8 @@ object IppJobTemplateAttribute {
 
     fun jobName(value: String) =
             IppAttribute("job-name", IppTag.NameWithoutLanguage, value)
+
+    // for job group
 
     fun jobPriority(value: Int) =
             IppAttribute("job-priority", IppTag.Integer, value)
