@@ -1,6 +1,7 @@
 package de.gmuth.ipp.core
 
 import de.gmuth.ext.toPluralString
+import java.nio.charset.Charset
 
 /**
  * Copyright (c) 2020 Gerhard Muth
@@ -46,6 +47,9 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     fun <T> getValues(name: String) = get(name)?.values as T
 
     override fun toString() = "'$tag' with ${size.toPluralString("attribute")}"
+
+    val attributesCharset: Charset
+        get() = getValue("attributes-charset") ?: throw IppException("missing 'attributes-charset'")
 
     fun logDetails(prefix: String = "", title: String = "$tag") {
         println("${prefix}$title")

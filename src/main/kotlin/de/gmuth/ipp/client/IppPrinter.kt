@@ -225,7 +225,7 @@ open class IppPrinter(val printerUri: URI, val ippClient: IppClient = IppClient(
     fun exchangeSuccessful(request: IppRequest): IppResponse {
         checkValueSupported("ipp-versions-supported", ippClient.ippVersion)
         checkValueSupported("operations-supported", request.code!!.toInt())
-        checkValueSupported("charset-supported", request.attributesCharset)
+        checkValueSupported("charset-supported", request.operationGroup.attributesCharset)
         return ippClient.exchangeSuccessful(request)
     }
 

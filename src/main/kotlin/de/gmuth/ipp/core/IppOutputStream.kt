@@ -12,10 +12,10 @@ import java.nio.charset.Charset
 class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStream) {
 
     // charset for text and name attributes, rfc 8011 4.1.4.1
-    private var messageAttributesCharset: Charset? = null
+    private var operationAttributesCharset: Charset? = null
 
     fun writeMessage(message: IppMessage) {
-        messageAttributesCharset = message.attributesCharset
+        operationAttributesCharset = message.operationGroup.attributesCharset
         with(message) {
             writeVersion(version ?: throw IppException("missing version"))
             writeShort(code?.toInt() ?: throw IppException("missing operation or status code"))
@@ -72,7 +72,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
 
     private fun writeAttributeValue(tag: IppTag, value: Any) {
 
-        fun writeString(value: String) = writeString(value, tag.selectCharset(messageAttributesCharset!!))
+        fun writeString(value: String) = writeString(value, tag.selectCharset(operationAttributesCharset!!))
 
         when (tag) {
 

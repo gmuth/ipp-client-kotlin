@@ -45,10 +45,6 @@ abstract class IppMessage {
     val operationGroup: IppAttributesGroup
         get() = getSingleAttributesGroup(IppTag.Operation)
 
-    val attributesCharset: Charset
-        get() = (operationGroup["attributes-charset"] ?: throw IppException("missing 'attributes-charset'"))
-                .value as Charset
-
     // --- DECODING ---
 
     fun read(inputStream: InputStream) {
