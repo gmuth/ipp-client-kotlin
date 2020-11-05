@@ -64,15 +64,5 @@ class IppRegistrationsSection6 {
                     IppOperation.fromShort(value.toShort()).toString()
                 }
     }
-}
 
-fun main() {
-    CSVReader.prettyPrintResource("/ipp-registrations-6.csv")
-    for (enumAttributeValue in IppRegistrationsSection6.allEnumAttributeValues) {
-        println(enumAttributeValue)
-    }
-    println(IppRegistrationsSection6.getEnumValueName("job-state", 9)) // 'completed'
-    println(IppRegistrationsSection6.getEnumValueName("finishings", 4)) // 'staple'
-    println(IppRegistrationsSection6.getEnumValueName("finishings-supported", 4)) // 'staple'
-    println(IppRegistrationsSection6.aliasMap["finishings-supported"]) // 'finishings'
 }

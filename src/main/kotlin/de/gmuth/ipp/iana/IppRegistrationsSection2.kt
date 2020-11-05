@@ -97,21 +97,5 @@ class IppRegistrationsSection2 {
             }
         }
     }
-}
 
-fun main() {
-    //CSVReader.prettyPrintResource("/ipp-registrations-2.csv")
-//    for (attribute in IppRegistrationsSection2.allAttributes) {
-//        println("$attribute  -->  tag = '${attribute.tag()}'")
-//    }
-    println(IppRegistrationsSection2.tagForAttribute("job-state")) // 'enum'
-    println(IppRegistrationsSection2.attributesMap["printer-resolution-supported"]) // 'printer-resolution-supported: syntax = "1setOf resolution"'
-    println(IppRegistrationsSection2.attributeIs1setOf("printer-resolution-supported")) // 'true'
-
-    println(IppRegistrationsSection2.attributesMap["job-name"]?.collection)  // 'Operation'
-
-    for (attribute in IppRegistrationsSection2.allAttributes) {
-        //if(attribute.collection.toLowerCase().contains("template"))
-        //println("$attribute")
-    }
 }
