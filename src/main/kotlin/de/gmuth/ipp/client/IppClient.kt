@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import javax.net.ssl.SSLHandshakeException
 
 open class IppClient(
-        var ippVersion: IppVersion = IppVersion(1, 1),
+        var ippVersion: IppVersion = IppVersion(),
         val httpClient: Http.Client = HttpURLConnectionClient(),
         val requestingUserName: String? = System.getProperty("user.name")
 
@@ -62,12 +62,6 @@ open class IppClient(
         val ippUri = ippRequest.printerUri
         lastIppRequest = ippRequest
         val ippResponse = IppResponse()
-        // internal function
-        fun logRequestResponseDetails() {
-            ippRequest.logDetails("IPP-REQUEST: ")
-            println("exchanged @ $ippUri")
-            ippResponse.logDetails("IPP-RESPONSE: ")
-        }
         // request logging
         if (verbose) {
             println("send '${ippRequest.operation}' request to $ippUri")
@@ -85,7 +79,6 @@ open class IppClient(
         try {
             ippResponse.read(ippResponseStream)
         } catch (exception: Exception) {
-            logRequestResponseDetails()
             if (ippResponse.rawBytes != null) {
                 File("ipp_decoding_failed.response").writeBytes(ippResponse.rawBytes!!)
                 println("WARN: ipp response written to file 'ipp_decoding_failed.response'")
@@ -101,10 +94,6 @@ open class IppClient(
             with(ippResponse.statusMessage) {
                 this?.let { println("status-message: $it") }
             }
-        }
-        // failure logging
-        if (!ippResponse.isSuccessful()) {
-            logRequestResponseDetails()
         }
         // unsupported attributes
         for (unsupported in ippResponse.getAttributesGroups(IppTag.Unsupported)) {

@@ -5,9 +5,16 @@ package de.gmuth.ipp.core
  */
 
 class IppExchangeException(
-        val request: IppRequest,
-        val response: IppResponse,
+        val ippRequest: IppRequest,
+        val ippResponse: IppResponse,
         message: String,
         cause: Exception? = null
 
-) : IppException(message, cause)
+) : IppException(message, cause) {
+
+    fun logDetails() {
+        ippRequest.logDetails("IPP-REQUEST: ")
+        ippResponse.logDetails("IPP-RESPONSE: ")
+    }
+
+}
