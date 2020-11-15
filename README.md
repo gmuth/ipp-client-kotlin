@@ -107,6 +107,21 @@ with(IppTool()) {
     )
 }
 ```
+
+### CupsClient
+
+```
+// connect to default ipp://localhost:631
+val cupsClient = CupsClient() 
+cupsClient.getPrinters().forEach { 
+    println("${it.printerUri} -> ${it.deviceUri}")
+}
+
+val defaultPrinter = cupsClient.getDefault()
+if(defaultPrinter.printerType!!.contains(CupsPrinterCapability.CanPrintInColor))
+    println("${defaultPrinter.name} can print in color")
+```
+
 ## Packages
 
 Package
