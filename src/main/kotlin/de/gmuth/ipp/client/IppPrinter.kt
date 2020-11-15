@@ -14,20 +14,37 @@ import java.io.FileInputStream
 import java.io.InputStream
 import java.net.URI
 
-open class IppPrinter(val printerUri: URI, val ippClient: IppClient = IppClient(), val verbose: Boolean = false) {
+open class IppPrinter(
+        val printerUri: URI,
+        var attributes: IppAttributesGroup = IppAttributesGroup(IppTag.Printer),
+        val ippClient: IppClient = IppClient()
+) {
 
-    var attributes: IppAttributesGroup
+    var verbose: Boolean
+        get() = ippClient.verbose
+        set(value) {
+            ippClient.verbose = value
+        }
+
     var httpBasicAuth: Http.BasicAuth?
         get() = ippClient.httpBasicAuth
         set(value) {
             ippClient.httpBasicAuth = value
         }
+
     var checkValueSupported: Boolean = true
 
     init {
-        ippClient.verbose = verbose
-        attributes = getPrinterAttributes()
+        if (attributes.size == 0) {
+            attributes = getPrinterAttributes()
+        }
     }
+
+    constructor(printerAttributes: IppAttributesGroup, ippClient: IppClient = IppClient()) : this(
+            (printerAttributes.getValues("printer-uri-supported") as List<URI>).first(),
+            printerAttributes,
+            ippClient
+    )
 
     //--------------
     // IppAttributes
@@ -47,6 +64,9 @@ open class IppPrinter(val printerUri: URI, val ippClient: IppClient = IppClient(
 
     val stateReasons: List<String>
         get() = attributes.getValues("printer-state-reasons")
+
+    val printerUriSupported: List<URI>
+        get() = attributes.getValues("printer-uri-supported")
 
     //-----------------
     // Identify-Printer
@@ -245,7 +265,7 @@ open class IppPrinter(val printerUri: URI, val ippClient: IppClient = IppClient(
 
     private fun checkValueSupported(supportedAttributeName: String, value: Any) {
         // condition is NOT always false, because this method is used during class initialization
-        if (attributes == null || !checkValueSupported)
+        if (attributes.size == 0 || !checkValueSupported)
             return
 
         if (!supportedAttributeName.endsWith("-supported"))
@@ -317,5 +337,8 @@ open class IppPrinter(val printerUri: URI, val ippClient: IppClient = IppClient(
 
     fun marker(color: CupsMarker.Color) =
             markers.single { it.color == color }
+
+    val deviceUri: URI
+        get() = attributes.getValue("device-uri")
 
 }
