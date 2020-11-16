@@ -112,14 +112,23 @@ with(IppTool()) {
 
 ```
 // connect to default ipp://localhost:631
-val cupsClient = CupsClient() 
+val cupsClient = CupsClient()
+
+// list all queues
 cupsClient.getPrinters().forEach { 
-    println("${it.printerUri} -> ${it.deviceUri}")
+    println("${it.name} -> ${it.printerUri}")
 }
 
+// get printer by queue name
+println(cupsClient.getPrinter("ColorJet_HP"))
+
+// default printer
 val defaultPrinter = cupsClient.getDefault()
-if(defaultPrinter.hasCapability(CupsPrinterCapability.CanPrintInColor))
+
+// check capabality
+if(defaultPrinter.hasCapability(CupsPrinterCapability.CanPrintInColor)) {
     println("${defaultPrinter.name} can print in color")
+}
 ```
 
 ## Packages

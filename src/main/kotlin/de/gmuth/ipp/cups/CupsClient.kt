@@ -33,4 +33,6 @@ class CupsClient(val cupsUri: URI) : IppClient() {
                     .map { printerAttributes -> IppPrinter(printerAttributes, this) }
                     .collect(Collectors.toList())
 
+    fun getPrinter(name: String) = getPrinters().first { it.name.string == name }
+
 }
