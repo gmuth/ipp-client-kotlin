@@ -7,6 +7,7 @@ package de.gmuth.ipp.client
 import de.gmuth.http.Http
 import de.gmuth.ipp.core.*
 import de.gmuth.ipp.cups.CupsMarker
+import de.gmuth.ipp.cups.CupsPrinterCapability
 import de.gmuth.ipp.cups.CupsPrinterType
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import java.io.File
@@ -35,9 +36,7 @@ open class IppPrinter(
     var checkValueSupported: Boolean = true
 
     init {
-        if (attributes.size == 0) {
-            attributes = getPrinterAttributes()
-        }
+        if (attributes.size == 0) updateAllAttributes()
     }
 
     constructor(printerAttributes: IppAttributesGroup, ippClient: IppClient = IppClient()) : this(
@@ -108,7 +107,8 @@ open class IppPrinter(
         return response.printerGroup
     }
 
-    fun updateAttributes() {
+    fun updateAllAttributes() {
+        // should we implement/incremental partial updates? e.g. for printer-state?
         attributes = getPrinterAttributes()
     }
 
@@ -264,7 +264,6 @@ open class IppPrinter(
     // ------------------------------------------------------
 
     private fun checkValueSupported(supportedAttributeName: String, value: Any) {
-        // condition is NOT always false, because this method is used during class initialization
         if (attributes.size == 0 || !checkValueSupported)
             return
 
@@ -331,6 +330,9 @@ open class IppPrinter(
 
     val printerType: CupsPrinterType?
         get() = CupsPrinterType.fromInt(attributes.getValue("printer-type"))
+
+    fun hasCapability(capability: CupsPrinterCapability) =
+            printerType?.contains(capability) ?: throw IppException("missing printer-type")
 
     val markers: CupsMarker.List
         get() = CupsMarker.List(attributes)

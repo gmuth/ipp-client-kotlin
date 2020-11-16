@@ -118,7 +118,7 @@ cupsClient.getPrinters().forEach {
 }
 
 val defaultPrinter = cupsClient.getDefault()
-if(defaultPrinter.printerType!!.contains(CupsPrinterCapability.CanPrintInColor))
+if(defaultPrinter.hasCapability(CupsPrinterCapability.CanPrintInColor))
     println("${defaultPrinter.name} can print in color")
 ```
 
