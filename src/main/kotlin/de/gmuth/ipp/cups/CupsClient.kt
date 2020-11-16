@@ -9,7 +9,6 @@ import de.gmuth.ipp.client.IppPrinter
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppTag
 import java.net.URI
-import java.util.stream.Collectors
 
 class CupsClient(val cupsUri: URI) : IppClient() {
 
@@ -29,9 +28,7 @@ class CupsClient(val cupsUri: URI) : IppClient() {
     fun getPrinters(): List<IppPrinter> =
             exchangeSuccessfulIppRequest(IppOperation.CupsGetPrinters)
                     .getAttributesGroups(IppTag.Printer)
-                    .stream()
                     .map { printerAttributes -> IppPrinter(printerAttributes, this) }
-                    .collect(Collectors.toList())
 
     fun getPrinter(name: String) = getPrinters().first { it.name.string == name }
 
