@@ -1,4 +1,4 @@
-package de.gmuth.ipp.tool
+package de.gmuth.ipp.cli
 
 import de.gmuth.ipp.client.IppClient
 import de.gmuth.ipp.core.*
