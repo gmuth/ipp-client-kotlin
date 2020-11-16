@@ -27,12 +27,3 @@ class CupsPrinterType(val value: Int) {
     }
 
 }
-
-fun main() {
-    for (c in CupsPrinterCapability.values()) {
-        println(String.format("0x%08X  %s", 1 shl c.bit, c.description))
-    }
-    val printerType = CupsPrinterType(75534412)
-    println(printerType)
-    printerType.logDetails()
-}
