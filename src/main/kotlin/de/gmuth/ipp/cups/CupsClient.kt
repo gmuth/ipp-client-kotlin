@@ -15,6 +15,10 @@ class CupsClient(val cupsUri: URI) : IppClient() {
     constructor(host: String = "localhost", port: Int = 631) :
             this(URI.create(String.format("ipp://%s:%d", host, port)))
 
+    init {
+        if (cupsUri.scheme == "ipps") trustAnyCertificate()
+    }
+
     private fun ippRequest(operation: IppOperation) = ippRequest(operation, cupsUri)
 
     private fun exchangeSuccessfulIppRequest(operation: IppOperation) = exchangeSuccessful(ippRequest(operation))
