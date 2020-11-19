@@ -12,7 +12,7 @@ class IppResponse : IppMessage() {
     val status: IppStatus
         get() = IppStatus.fromShort(code ?: throw IppException("status-code must not be null"))
 
-    val statusMessage: IppString?
+    val statusMessage: IppString
         get() = operationGroup.getValue("status-message")
 
     val jobGroup: IppAttributesGroup
