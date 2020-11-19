@@ -6,6 +6,7 @@ package de.gmuth.ipp.client
 
 import de.gmuth.http.Http
 import de.gmuth.http.HttpURLConnectionClient
+import de.gmuth.http.SSLHelper
 import de.gmuth.ipp.core.*
 import java.io.File
 import java.io.InputStream
@@ -22,12 +23,17 @@ open class IppClient(
 
 ) : IppExchange {
     var verbose: Boolean = false
+    var logRequestResponseLine: Boolean = false
     var requestCharset: Charset = Charsets.UTF_8
     var requestNaturalLanguage: String = "en"
     var httpBasicAuth: Http.BasicAuth? = null
     var lastIppRequest: IppRequest? = null
     var lastIppResponse: IppResponse? = null
     private val requestCounter = AtomicInteger(1)
+
+    fun trustAnyCertificate() {
+        httpClient.config.sslSocketFactory = SSLHelper.sslSocketFactoryForAnyCertificate()
+    }
 
     //------------------------------------
     // factory/build method for IppRequest
@@ -85,7 +91,7 @@ open class IppClient(
             }
             throw IppExchangeException(ippRequest, ippResponse, "failed to decode ipp response", exception)
         } finally {
-            println(String.format("%-75s=> %s", ippRequest, ippResponse))
+            if (logRequestResponseLine) println(String.format("%-75s=> %s", ippRequest, ippResponse))
         }
         // response logging
         if (verbose) {
