@@ -22,8 +22,4 @@ class CupsPrinterType(val value: Int) {
         }
     }
 
-    companion object {
-        fun fromInt(value: Int?): CupsPrinterType? = if (value == null) null else CupsPrinterType(value)
-    }
-
 }

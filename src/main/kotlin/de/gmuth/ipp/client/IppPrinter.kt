@@ -18,7 +18,8 @@ import java.net.URI
 open class IppPrinter(
         val printerUri: URI,
         var attributes: IppAttributesGroup = IppAttributesGroup(IppTag.Printer),
-        val ippClient: IppClient = IppClient()
+        val ippClient: IppClient = IppClient(),
+        trustAnyCertificate: Boolean = true
 ) {
 
     var verbose: Boolean
@@ -36,6 +37,7 @@ open class IppPrinter(
     var checkValueSupported: Boolean = true
 
     init {
+        if (trustAnyCertificate) ippClient.trustAnyCertificate()
         if (attributes.size == 0) updateAllAttributes()
     }
 
@@ -59,7 +61,7 @@ open class IppPrinter(
         get() = attributes.getValue("printer-is-accepting-jobs")
 
     val state: IppPrinterState
-        get() = IppPrinterState.fromInt(attributes.getValue("printer-state") as Int)
+        get() = IppPrinterState.fromInt(attributes.getValue("printer-state"))
 
     val stateReasons: List<String>
         get() = attributes.getValues("printer-state-reasons")
@@ -328,11 +330,11 @@ open class IppPrinter(
     // CUPS extensions
     // ---------------
 
-    val printerType: CupsPrinterType?
-        get() = CupsPrinterType.fromInt(attributes.getValue("printer-type"))
+    val printerType: CupsPrinterType
+        get() = CupsPrinterType(attributes.getValue("printer-type"))
 
     fun hasCapability(capability: CupsPrinterCapability) =
-            printerType?.contains(capability) ?: throw IppException("missing printer-type")
+            printerType.contains(capability)
 
     val markers: CupsMarker.List
         get() = CupsMarker.List(attributes)
