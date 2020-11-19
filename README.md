@@ -110,7 +110,7 @@ with(IppTool()) {
 
 ### CupsClient
 
-```
+```kotlin
 // connect to default ipp://localhost:631
 val cupsClient = CupsClient()
 
