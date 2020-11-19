@@ -41,10 +41,10 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
             put(IppAttribute(name, values.toMutableList()))
 
     @Suppress("UNCHECKED_CAST")
-    fun <T> getValue(name: String) = get(name)?.value as T
+    fun <T> getValue(name: String) = get(name)?.value as T ?: throw IppException("attribute '$name' not found (in group $tag)")
 
     @Suppress("UNCHECKED_CAST")
-    fun <T> getValues(name: String) = get(name)?.values as T
+    fun <T> getValues(name: String) = get(name)?.values as T ?: throw IppException("attribute '$name' not found (in group $tag)")
 
     override fun toString() = "'$tag' with ${size.toPluralString("attribute")}"
 
