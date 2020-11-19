@@ -8,7 +8,8 @@ A client implementation of the ipp protocol written in kotlin.
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=gmuth_ipp-client-kotlin&metric=alert_status)](https://sonarcloud.io/dashboard?id=gmuth_ipp-client-kotlin)
 ## Usage
 
-You need to know the correct printerUri. You may use ```ippfind``` or other ZeroConf tools for discovery.
+You should know the IPP printerUri. You may use ```ippfind``` or other ZeroConf tools for discovery. The CupsClient supports printer lookup up by queue name. 
+
 ### [IppPrinter](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppPrinter.kt) and [IppJob](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppJob.kt)
 ```kotlin
 // initialize printer connection and show printer attributes
