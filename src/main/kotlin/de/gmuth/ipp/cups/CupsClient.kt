@@ -30,6 +30,6 @@ class CupsClient(val cupsUri: URI) : IppClient() {
                     .getAttributesGroups(IppTag.Printer)
                     .map { printerAttributes -> IppPrinter(printerAttributes, this) }
 
-    fun getPrinter(name: String) = getPrinters().first { it.name.string == name }
+    fun getPrinter(name: String) = getPrinters().firstOrNull { it.name.string == name } ?: throw NoSuchElementException(name)
 
 }
