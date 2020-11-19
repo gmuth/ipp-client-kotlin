@@ -6,6 +6,7 @@ package de.gmuth.ipp.client
 
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppOperation
+import de.gmuth.ipp.core.IppString
 import de.gmuth.ipp.core.IppTag
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -30,16 +31,28 @@ class IppJob(
     val uri: URI
         get() = attributes.getValue("job-uri")
 
-    val state: IppJobState?
-        get() = IppJobState.fromInt(attributes.getValue("job-state") as Int?)
+    val state: IppJobState
+        get() = IppJobState.fromInt(attributes.getValue("job-state"))
 
-    val stateReasons: List<String>?
+    val stateReasons: List<String>
         get() = attributes.getValues("job-state-reasons")
 
-    val impressionsCompleted: Int?
+    val name: IppString
+        get() = attributes.getValue("job-name")
+
+    val originatingUserName: IppString
+        get() = attributes.getValue("job-originating-user-name")
+
+    val kOctets: Int
+        get() = attributes.getValue("job-k-octets")
+
+    val impressionsCompleted: Int
         get() = attributes.getValue("job-impressions-completed")
 
-    fun isTerminated() = state != null && state!!.isTerminated()
+    val mediaSheetsCompleted: Int
+        get() = attributes.getValue("job-media-sheets-completed")
+
+    fun isTerminated() = state.isTerminated()
 
     //-------------------
     // Get-Job-Attributes
