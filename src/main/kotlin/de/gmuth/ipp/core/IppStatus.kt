@@ -65,17 +65,13 @@ enum class IppStatus(val code: Short) {
     fun isServerError() = code in 0x0500..0x05FF
 
     // https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-11
-    private fun registeredValue() = name
+    override fun toString() = name
             .replace("[A-Z]".toRegex()) { "-" + it.value.toLowerCase() }
             .replace("^-".toRegex(), "")
 
-    override fun toString() = registeredValue()
-
     companion object {
-        private val codeMap = values().associateBy(IppStatus::code)
-
-        fun fromShort(code: Short): IppStatus = codeMap[code]
+        fun fromShort(code: Short): IppStatus = values().firstOrNull { it.code == code }
                 ?: throw IllegalArgumentException(String.format("ipp status code '%04X' unknown", code))
-
     }
+
 }
