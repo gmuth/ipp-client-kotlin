@@ -96,6 +96,9 @@ class IppRegistrationsSection2 {
                 println("WARN: $name ($tag) does not match syntax '$syntax'")
             }
         }
+
+        fun selectGroupForAttribute(name: String) = attributesMap[name]?.collectionGroupTag() ?: IppTag.Job
+
     }
 
 }
