@@ -5,6 +5,14 @@ package de.gmuth.ipp.client
  */
 
 // "job-state": type1 enum [RFC8011]
+//                                                    +----> canceled
+//                                                   /
+//     +----> pending --------> processing ---------+------> completed
+//     |         ^                   ^               \
+// --->+         |                   |                +----> aborted
+//     |         v                   v               /
+//     +----> pending-held    processing-stopped ---+
+
 enum class IppJobState(val code: Int, private val registeredValue: String) {
 
     Pending(3, "pending"),
@@ -21,12 +29,7 @@ enum class IppJobState(val code: Int, private val registeredValue: String) {
     override fun toString() = registeredValue
 
     companion object {
-        fun fromInt(code: Int?) =
-                if (code == null) {
-                    null
-                } else {
-                    values().single { it.code == code }
-                }
+        fun fromInt(code: Int) = values().single { it.code == code }
     }
 
 }
