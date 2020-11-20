@@ -79,7 +79,7 @@ class IppJob(
             updateAllAttributes()
             if (verbose) {
                 println(StringBuffer("job-id=$id, job-state=$state").apply {
-                    if (attributes.available("job-impressions-completed")) append(", job-impressions-completed=$impressionsCompleted")
+                    if (attributes.containsKey("job-impressions-completed")) append(", job-impressions-completed=$impressionsCompleted")
                 })
             }
         } while (!isTerminated())
@@ -136,10 +136,10 @@ class IppJob(
     override fun toString(): String =
             StringBuffer("IppJob: id=$id, uri=$uri").apply {
                 // by default Get-Jobs operation only returns job-id and job-uri
-                if (attributes.available("job-state")) append(", state=$state")
-                if (attributes.available("job-state-reasons")) append(", stateReasons=$stateReasons")
-                if (attributes.available("job-originating-user-name")) append(", originatingUserName=$originatingUserName")
-                if (attributes.available("job-name")) append(", name=$name")
+                if (attributes.containsKey("job-state")) append(", state=$state")
+                if (attributes.containsKey("job-state-reasons")) append(", stateReasons=$stateReasons")
+                if (attributes.containsKey("job-originating-user-name")) append(", originatingUserName=$originatingUserName")
+                if (attributes.containsKey("job-name")) append(", name=$name")
             }.toString()
 
     fun logDetails() =

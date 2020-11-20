@@ -48,9 +48,6 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     fun <T> getValues(name: String) =
             get(name)?.values as T ?: throw IppException("attribute '$name' not found (in group $tag)")
 
-    fun available(name: String) =
-            keys.contains(name)
-
     override fun toString() =
             "'$tag' with ${size.toPluralString("attribute")}"
 
