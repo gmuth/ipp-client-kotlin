@@ -120,8 +120,10 @@ cupsClient.getPrinters().forEach {
     println("${it.name} -> ${it.printerUri}")
 }
 
-// get printer by queue name
-println(cupsClient.getPrinter("ColorJet_HP"))
+// list all completed jobs for queue
+cupsClient.getPrinter("ColorJet_HP")
+          .getJobs("completed")
+          .forEach { println(it) }
 
 // default printer
 val defaultPrinter = cupsClient.getDefault()
