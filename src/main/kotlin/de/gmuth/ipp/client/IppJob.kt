@@ -54,7 +54,8 @@ class IppJob(
     val mediaSheetsCompleted: Int
         get() = attributes.getValue("job-media-sheets-completed")
 
-    fun isTerminated() = attributes.available("job-state") && state.isTerminated()
+    fun isTerminated() =
+            state.isTerminated()
 
     //-------------------
     // Get-Job-Attributes
