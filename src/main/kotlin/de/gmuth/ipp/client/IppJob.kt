@@ -58,13 +58,11 @@ class IppJob(
     // Get-Job-Attributes
     //-------------------
 
-    private fun getJobAttributes(): IppAttributesGroup {
-        val response = exchangeSuccessfulIppRequest(IppOperation.GetJobAttributes)
-        return response.jobGroup
-    }
+    fun getJobAttributes() =
+            exchangeSuccessfulIppRequest(IppOperation.GetJobAttributes)
 
-    fun updateAttributes() {
-        attributes = getJobAttributes()
+    fun updateAllAttributes() {
+        attributes = getJobAttributes().jobGroup
     }
 
     //------------------------------------------
@@ -74,11 +72,11 @@ class IppJob(
     fun waitForTermination(refreshRateMillis: Long = defaultRefreshRateMillis) {
         println("wait for terminal state of job #$id")
         do {
-            runBlocking {
-                delay(refreshRateMillis)
+            runBlocking { delay(refreshRateMillis) }
+            updateAllAttributes()
+            if (printer.verbose) {
+                println("job-id=$id, job-state=$state, job-impressions-completed=$impressionsCompleted")
             }
-            updateAttributes()
-            println("job-state=$state, job-impressions-completed=$impressionsCompleted")
         } while (!isTerminated())
     }
 
@@ -86,19 +84,22 @@ class IppJob(
     // Cancel-Job
     //-----------
 
-    fun cancel() = exchangeSuccessfulIppRequest(IppOperation.CancelJob)
+    fun cancel() =
+            exchangeSuccessfulIppRequest(IppOperation.CancelJob)
 
     //---------
     // Hold-Job
     //---------
 
-    fun hold() = exchangeSuccessfulIppRequest(IppOperation.HoldJob)
+    fun hold() =
+            exchangeSuccessfulIppRequest(IppOperation.HoldJob)
 
     //------------
     // Release-Job
     //-------------
 
-    fun release() = exchangeSuccessfulIppRequest(IppOperation.ReleaseJob)
+    fun release() =
+            exchangeSuccessfulIppRequest(IppOperation.ReleaseJob)
 
     //--------------
     // Send-Document
@@ -127,14 +128,14 @@ class IppJob(
     // Logging
     // -------
 
-    override fun toString(): String {
-        // operation Get-Jobs only returns job-id and job-uri
-        val stateStringBuffer = StringBuffer().apply {
-            if (attributes.available("job-state")) append(", state=$state")
-            if (attributes.available("job-state-reasons")) append(", stateReasons=$stateReasons")
-        }
-        return "IppJob: id=$id, uri=$uri$stateStringBuffer"
-    }
+    override fun toString(): String =
+            StringBuffer("IppJob: id=$id, uri=$uri").apply {
+                // by default Get-Jobs operation only returns job-id and job-uri
+                if (attributes.available("job-state")) append(", state=$state")
+                if (attributes.available("job-state-reasons")) append(", stateReasons=$stateReasons")
+                if (attributes.available("job-originating-user-name")) append(", originatingUserName=$originatingUserName")
+                if (attributes.available("job-name")) append(", name=$name")
+            }.toString()
 
     fun logDetails() =
             attributes.logDetails("", "JOB-$id")
