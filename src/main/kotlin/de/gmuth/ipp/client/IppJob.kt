@@ -17,6 +17,8 @@ class IppJob(
         val printer: IppPrinter,
         var attributes: IppAttributesGroup
 ) {
+    var verbose: Boolean = true
+
     companion object {
         var defaultRefreshRateMillis: Long = 3000
     }
@@ -70,11 +72,11 @@ class IppJob(
     //------------------------------------------
 
     fun waitForTermination(refreshRateMillis: Long = defaultRefreshRateMillis) {
-        println("wait for terminal state of job #$id")
+        if (verbose) println("wait for terminal state of job #$id")
         do {
             runBlocking { delay(refreshRateMillis) }
             updateAllAttributes()
-            if (printer.verbose) {
+            if (verbose) {
                 println("job-id=$id, job-state=$state, job-impressions-completed=$impressionsCompleted")
             }
         } while (!isTerminated())
