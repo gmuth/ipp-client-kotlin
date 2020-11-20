@@ -126,7 +126,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
 
             IppTag.TextWithLanguage,
             IppTag.NameWithLanguage -> with(value as IppString) {
-                writeShort(4 + text.length + language?.length!!)
+                writeShort(4 + text.length + language!!.length)
                 writeString(value.language!!)
                 writeString(value.text)
             }
