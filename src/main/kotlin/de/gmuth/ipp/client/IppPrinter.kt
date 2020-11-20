@@ -36,6 +36,11 @@ open class IppPrinter(
 
     var checkValueSupported: Boolean = true
 
+    // by default operation Get-Jobs would only return attributes 'job-id' and 'job-uri'
+    var requestedAttributesForGetJobsOperation = listOf(
+            "job-id", "job-uri", "job-state", "job-state-reasons", "job-name", "job-originating-user-name"
+    )
+
     init {
         if (trustAnyCertificate) ippClient.trustAnyCertificate()
         if (attributes.size == 0) updateAllAttributes()
@@ -87,26 +92,23 @@ open class IppPrinter(
     // Pause-Printer
     //--------------
 
-    fun pause() = exchangeSuccessfulIppRequest(IppOperation.PausePrinter)
+    fun pause() =
+            exchangeSuccessfulIppRequest(IppOperation.PausePrinter)
 
     //---------------
     // Resume-Printer
     //---------------
 
-    fun resume() = exchangeSuccessfulIppRequest(IppOperation.ResumePrinter)
+    fun resume() =
+            exchangeSuccessfulIppRequest(IppOperation.ResumePrinter)
 
     //-----------------------
     // Get-Printer-Attributes
     //-----------------------
 
-    fun getPrinterAttributes(requestedAttributes: List<String> = listOf()): IppAttributesGroup {
-        val request = ippRequest(IppOperation.GetPrinterAttributes).apply {
-            if (requestedAttributes.isNotEmpty()) {
-                operationGroup.attribute("requested-attributes", IppTag.Keyword, requestedAttributes)
-            }
-        }
-        val response = exchangeSuccessful(request)
-        return response.printerGroup
+    fun getPrinterAttributes(requestedAttributes: List<String>? = null): IppAttributesGroup {
+        val ippRequest = ippRequest(IppOperation.GetPrinterAttributes, requestedAttributes = requestedAttributes)
+        return exchangeSuccessful(ippRequest).printerGroup
     }
 
     fun updateAllAttributes() {
@@ -209,8 +211,11 @@ open class IppPrinter(
     // Get-Jobs (as List<IppJob>)
     //---------------------------
 
-    fun getJobs(whichJobs: String? = null): List<IppJob> {
-        val ippRequest = ippRequest(IppOperation.GetJobs)
+    fun getJobs(
+            whichJobs: String? = null,
+            requestedAttributes: List<String> = requestedAttributesForGetJobsOperation
+    ): List<IppJob> {
+        val ippRequest = ippRequest(IppOperation.GetJobs, requestedAttributes = requestedAttributes)
         if (whichJobs != null) {
             // PWG Job and Printer Extensions Set 2
             checkValueSupported("which-jobs-supported", whichJobs)
@@ -226,17 +231,24 @@ open class IppPrinter(
     //-------------------------------
 
     fun getJob(jobId: Int): IppJob {
-        val response = exchangeSuccessfulIppRequest(IppOperation.GetJobAttributes, jobId)
-        return IppJob(this, response.jobGroup)
+        val ippResponse = exchangeSuccessfulIppRequest(IppOperation.GetJobAttributes, jobId)
+        return IppJob(this, ippResponse.jobGroup)
     }
 
     //----------------------
     // delegate to IppClient
     //----------------------
 
-    fun ippRequest(operation: IppOperation, jobId: Int? = null) =
+    fun ippRequest(operation: IppOperation, jobId: Int? = null, requestedAttributes: List<String>? = null) =
             ippClient.ippRequest(operation, printerUri).apply {
-                jobId?.let { operationGroup.attribute("job-id", IppTag.Integer, it) }
+                // add optional 'job-id'
+                if (jobId != null) {
+                    operationGroup.attribute("job-id", IppTag.Integer, jobId)
+                }
+                // add optional 'requested-attributes'
+                if (requestedAttributes != null && requestedAttributes.isNotEmpty()) {
+                    operationGroup.attribute("requested-attributes", IppTag.Keyword, requestedAttributes)
+                }
             }
 
     fun exchangeSuccessfulIppRequest(operation: IppOperation, jobId: Int? = null) =
