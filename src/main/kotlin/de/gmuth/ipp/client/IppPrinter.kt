@@ -66,7 +66,7 @@ open class IppPrinter(
     val stateReasons: List<String>
         get() = attributes.getValues("printer-state-reasons")
 
-    val printerUriSupported: List<URI>
+    val uriSupported: List<URI>
         get() = attributes.getValues("printer-uri-supported")
 
     //-----------------
