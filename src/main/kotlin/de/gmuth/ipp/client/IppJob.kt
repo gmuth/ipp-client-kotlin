@@ -78,7 +78,9 @@ class IppJob(
             runBlocking { delay(refreshRateMillis) }
             updateAllAttributes()
             if (verbose) {
-                println("job-id=$id, job-state=$state, job-impressions-completed=$impressionsCompleted")
+                println(StringBuffer("job-id=$id, job-state=$state").apply {
+                    if (attributes.available("job-impressions-completed")) append(", job-impressions-completed=$impressionsCompleted")
+                })
             }
         } while (!isTerminated())
     }
