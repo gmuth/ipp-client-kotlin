@@ -41,17 +41,21 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
             put(IppAttribute(name, values.toMutableList()))
 
     @Suppress("UNCHECKED_CAST")
-    fun <T> getValue(name: String) = get(name)?.value as T ?: throw IppException("attribute '$name' not found (in group $tag)")
+    fun <T> getValue(name: String) =
+            get(name)?.value as T ?: throw IppException("attribute '$name' not found (in group $tag)")
 
     @Suppress("UNCHECKED_CAST")
-    fun <T> getValues(name: String) = get(name)?.values as T ?: throw IppException("attribute '$name' not found (in group $tag)")
+    fun <T> getValues(name: String) =
+            get(name)?.values as T ?: throw IppException("attribute '$name' not found (in group $tag)")
 
-    fun available(name: String) = keys.contains(name)
+    fun available(name: String) =
+            keys.contains(name)
 
-    override fun toString() = "'$tag' with ${size.toPluralString("attribute")}"
+    override fun toString() =
+            "'$tag' with ${size.toPluralString("attribute")}"
 
     val attributesCharset: Charset
-        get() = getValue("attributes-charset") ?: throw IppException("missing 'attributes-charset'")
+        get() = getValue("attributes-charset")
 
     fun logDetails(prefix: String = "", title: String = "$tag") {
         println("${prefix}$title")
