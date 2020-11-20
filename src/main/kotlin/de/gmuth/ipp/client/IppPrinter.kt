@@ -210,17 +210,15 @@ open class IppPrinter(
     //---------------------------
 
     fun getJobs(whichJobs: String? = null): List<IppJob> {
-        val request = ippRequest(IppOperation.GetJobs)
+        val ippRequest = ippRequest(IppOperation.GetJobs)
         if (whichJobs != null) {
             // PWG Job and Printer Extensions Set 2
             checkValueSupported("which-jobs-supported", whichJobs)
-            request.operationGroup.attribute("which-jobs", IppTag.Keyword, whichJobs)
+            ippRequest.operationGroup.attribute("which-jobs", IppTag.Keyword, whichJobs)
         }
-        val response = exchangeSuccessful(request)
-        val jobGroups = response.getAttributesGroups(IppTag.Job)
-        return jobGroups.map {
-            IppJob(this, it)
-        }
+        return exchangeSuccessful(ippRequest) // -> IppResponse
+                .getAttributesGroups(IppTag.Job)
+                .map { IppJob(this, it) }
     }
 
     //-------------------------------
