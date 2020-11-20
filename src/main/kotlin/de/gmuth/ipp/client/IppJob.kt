@@ -52,7 +52,7 @@ class IppJob(
     val mediaSheetsCompleted: Int
         get() = attributes.getValue("job-media-sheets-completed")
 
-    fun isTerminated() = state.isTerminated()
+    fun isTerminated() = attributes.available("job-state") && state.isTerminated()
 
     //-------------------
     // Get-Job-Attributes
@@ -127,8 +127,14 @@ class IppJob(
     // Logging
     // -------
 
-    override fun toString() =
-            "IppJob: id=$id, uri=$uri$, state=$state, stateReasons=$stateReasons"
+    override fun toString(): String {
+        // operation Get-Jobs only returns job-id and job-uri
+        val stateStringBuffer = StringBuffer().apply {
+            if (attributes.available("job-state")) append(", state=$state")
+            if (attributes.available("job-state-reasons")) append(", stateReasons=$stateReasons")
+        }
+        return "IppJob: id=$id, uri=$uri$stateStringBuffer"
+    }
 
     fun logDetails() =
             attributes.logDetails("", "JOB-$id")
