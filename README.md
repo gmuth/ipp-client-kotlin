@@ -134,6 +134,20 @@ if(defaultPrinter.hasCapability(CupsPrinterCapability.CanPrintInColor)) {
 }
 ```
 
+### Print jpeg to 2" label printer
+
+```kotlin
+val labelPrinter = IppPrinter(URI.create("ipp://192.168.2.64"))
+val rollWidth = 2540 * 2 // hundreds of mm
+val jpgFile = File("label.jpg")
+val image = ImageIO.read(jpgFile)
+labelPrinter.printJob(
+    jpegFile, documentFormat("image/jpeg"),
+    mediaCol(rollWidth, rollWidth * image.height / image.width, margin = 0)
+)
+
+```
+                
 ## Packages
 
 Package
