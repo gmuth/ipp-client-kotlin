@@ -14,7 +14,7 @@ class SavePrinterAttributes {
             val uri = URI.create(args[0])
             println("uri: ${uri}")
             val ippPrinter = IppPrinter(uri)
-            val printerMakeAndModel = ippPrinter.makeAndModel.string.replace("\\s+".toRegex(), "_")
+            val printerMakeAndModel = ippPrinter.makeAndModel.text.replace("\\s+".toRegex(), "_")
 
             val txtFile = File(printerMakeAndModel.plus(".txt"))
             txtFile.writeText("# ${uri}\n")

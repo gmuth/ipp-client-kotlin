@@ -53,9 +53,9 @@ class CupsMarker(
 
                 for ((index, name) in names.withIndex()) {
                     val marker = CupsMarker(
-                            name = (name as IppString).string,
+                            name = (name as IppString).text,
                             type = types[index] as String,
-                            colorCode = (colors[index] as IppString).string,
+                            colorCode = (colors[index] as IppString).text,
                             level = levels[index] as Int,
                             lowLevel = lowLevels[index] as Int,
                             highLevel = highLevels[index] as Int

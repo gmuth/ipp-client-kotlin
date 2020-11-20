@@ -6,9 +6,8 @@ package de.gmuth.ipp.core
 
 // name or text value with or without language
 
-data class IppString(
-        val string: String,
-        val language: String? = null
-) {
-    override fun toString() = "$string${if (language == null) "" else "[$language]"}"
+data class IppString(val text: String, val language: String? = null) {
+
+    override fun toString() = "$text${if (language == null) "" else "[$language]"}"
+
 }

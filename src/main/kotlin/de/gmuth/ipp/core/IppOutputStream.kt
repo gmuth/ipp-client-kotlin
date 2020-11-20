@@ -119,16 +119,16 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
 
             IppTag.TextWithoutLanguage,
             IppTag.NameWithoutLanguage -> when {
-                (value is IppString) -> writeString(value.string)
+                (value is IppString) -> writeString(value.text)
                 (value is String) -> writeString(value) // accept String for convenience
                 else -> throw IppException("expected value class IppString without language or String")
             }
 
             IppTag.TextWithLanguage,
             IppTag.NameWithLanguage -> with(value as IppString) {
-                writeShort(4 + string.length + language?.length!!)
+                writeShort(4 + text.length + language?.length!!)
                 writeString(value.language!!)
-                writeString(value.string)
+                writeString(value.text)
             }
 
             IppTag.DateTime -> with(value as IppDateTime) {

@@ -134,7 +134,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
             // value class IppString
             IppTag.TextWithoutLanguage,
-            IppTag.NameWithoutLanguage -> IppString(string = readStringForTag())
+            IppTag.NameWithoutLanguage -> IppString(text = readStringForTag())
 
             IppTag.TextWithLanguage,
             IppTag.NameWithLanguage -> {
@@ -150,7 +150,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
                 IppString(
                         language = language,
-                        string = readStringForTag()
+                        text = readStringForTag()
                 )
             }
 
