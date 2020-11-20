@@ -127,11 +127,10 @@ class IppJob(
     // Logging
     // -------
 
-    override fun toString(): String {
-        val stateString = if (state == null) "" else ", state=$state, stateReasons=$stateReasons"
-        return "IppJob: id=$id, uri=$uri$stateString"
-    }
+    override fun toString() =
+            "IppJob: id=$id, uri=$uri$, state=$state, stateReasons=$stateReasons"
 
-    fun logDetails() = attributes.logDetails("", "JOB-$id")
+    fun logDetails() =
+            attributes.logDetails("", "JOB-$id")
 
 }
