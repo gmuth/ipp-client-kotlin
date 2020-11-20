@@ -53,16 +53,14 @@ open class IppClient(
     // exchange methods for IppRequest/IppRequest
     //-------------------------------------------
 
-    fun exchangeSuccessful(ippRequest: IppRequest): IppResponse {
-        val ippResponse = exchange(ippRequest)
-        if (ippResponse.isSuccessful()) {
-            if (verbose) println(ippResponse)
-            return ippResponse
-        } else {
-            val exceptionMessage = "'${ippRequest.operation}' failed: '${ippResponse.status}' ${ippResponse.statusMessage ?: ""}"
-            throw IppExchangeException(ippRequest, ippResponse, exceptionMessage)
-        }
-    }
+    fun exchangeSuccessful(ippRequest: IppRequest) =
+            with(exchange(ippRequest)) {
+                if (!isSuccessful()) {
+                    throw IppExchangeException(ippRequest, this, "operation ${ippRequest.operation} failed: '$status' $statusMessage")
+                }
+                if (verbose) println(this)
+                this // successful ippResponse
+            }
 
     override fun exchange(ippRequest: IppRequest): IppResponse {
         val ippUri = ippRequest.printerUri
@@ -98,7 +96,7 @@ open class IppClient(
             println("exchanged @ $ippUri")
             ippResponse.logDetails("<< ")
             with(ippResponse.statusMessage) {
-                this?.let { println("status-message: $it") }
+                this.let { println("status-message: $it") }
             }
         }
         // unsupported attributes
