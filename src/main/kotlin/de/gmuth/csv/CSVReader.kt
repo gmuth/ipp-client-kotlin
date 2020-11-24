@@ -5,6 +5,7 @@ package de.gmuth.csv
  */
 
 import de.gmuth.ext.toPluralString
+import de.gmuth.log.Log
 import java.io.InputStream
 import java.io.OutputStream
 import java.io.PrintWriter
@@ -12,10 +13,7 @@ import kotlin.math.log10
 
 // https://tools.ietf.org/html/rfc4180
 
-class CSVReader<T>(
-        private val rowMapper: RowMapper<T>,
-        var verbose: Boolean = false
-) {
+class CSVReader<T>(private val rowMapper: RowMapper<T>) {
 
     interface RowMapper<T> {
         fun mapRow(columns: List<String>, rowNum: Int): T
@@ -34,9 +32,7 @@ class CSVReader<T>(
             val row = rowMapper.mapRow(columns, ++rowNum)
             mappedRows.add(row)
         }
-        if (verbose) {
-            println("mapped ${mappedRows.size.toPluralString("row")}")
-        }
+        log.info { "mapped ${mappedRows.size.toPluralString("row")}" }
         return mappedRows
     }
 
@@ -82,6 +78,8 @@ class CSVReader<T>(
     // --- Utility for pretty printing ---
 
     companion object {
+
+        val log = Log.getWriter("CSVReader", Log.Level.WARN)
 
         fun prettyPrintResource(resource: String) {
             val rows = readRowsFromResource(resource)

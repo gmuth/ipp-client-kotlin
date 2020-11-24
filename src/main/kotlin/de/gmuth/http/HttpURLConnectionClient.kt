@@ -4,6 +4,7 @@ package de.gmuth.http
  * Copyright (c) 2020 Gerhard Muth
  */
 
+import de.gmuth.log.Log
 import java.io.IOException
 import java.io.OutputStream
 import java.net.HttpURLConnection
@@ -13,6 +14,11 @@ import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.HttpsURLConnection
 
 class HttpURLConnectionClient(override val config: Http.Config = Http.Config()) : Http.Client {
+
+    companion object {
+        val log = Log.getWriter("HttpURLConnectionClient", Log.Level.WARN)
+    }
+
     override fun post(uri: URI, contentType: String, writeContent: (OutputStream) -> Unit, basicAuth: Http.BasicAuth?): Http.Response {
         with(uri.toURL().openConnection() as HttpURLConnection) {
             if (this is HttpsURLConnection && config.sslSocketFactory != null) {
@@ -35,11 +41,11 @@ class HttpURLConnectionClient(override val config: Http.Config = Http.Config()) 
             val contentResponseStream = try {
                 inputStream
             } catch (ioException: IOException) {
-                println("responseCode = $responseCode")
+                log.error { "responseCode = $responseCode" }
                 for ((key, values) in headerFields) {
-                    println("$key = $values")
+                    log.warn { "$key = $values" }
                 }
-                println("ERROR: $ioException")
+                log.error { "$ioException" }
                 errorStream
             }
             return Http.Response(responseCode, getHeaderField("Content-Type"), contentResponseStream)

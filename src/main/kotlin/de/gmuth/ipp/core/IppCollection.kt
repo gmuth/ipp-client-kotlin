@@ -1,11 +1,17 @@
 package de.gmuth.ipp.core
 
+import de.gmuth.log.Log
+
 /**
  * Copyright (c) 2020 Gerhard Muth
  */
 
 // RFC8010 3.1.6.
 class IppCollection() {
+
+    companion object {
+        val log = Log.getWriter("IppCollection", Log.Level.INFO)
+    }
 
     // with inheritance the attribute value would be handled as "normal list"
     val members = mutableListOf<IppAttribute<*>>()
@@ -27,7 +33,7 @@ class IppCollection() {
     fun logDetails(prefix: String = "") {
         val string = toString()
         if (string.length < 160) {
-            println("$prefix$string")
+            log.info { "$prefix$string" }
         } else {
             for (member in members) {
                 member.logDetails("$prefix")

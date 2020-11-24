@@ -7,6 +7,7 @@ package de.gmuth.ipp.iana
 import de.gmuth.csv.CSVReader
 import de.gmuth.csv.CSVReader.RowMapper
 import de.gmuth.ipp.core.IppTag
+import de.gmuth.log.Log
 
 /**
  * https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-2
@@ -79,6 +80,8 @@ class IppRegistrationsSection2 {
 
     companion object {
 
+        val log = Log.getWriter("IppRegistrationsSection2", Log.Level.WARN)
+
         // source: https://www.iana.org/assignments/ipp-registrations/ipp-registrations-2.csv
         val allAttributes = CSVReader(Attribute.rowMapper)
                 .readResource("/ipp-registrations-2.csv", true)
@@ -93,7 +96,7 @@ class IppRegistrationsSection2 {
             if (tag.isOutOfBandTag()) return
             val syntax = attributesMap[name]?.syntax
             if (syntax != null && syntax.isNotEmpty() && !syntax.contains(tag.registeredSyntax())) {
-                println("WARN: $name ($tag) does not match syntax '$syntax'")
+                log.warn { "$name ($tag) does not match syntax '$syntax'" }
             }
         }
 

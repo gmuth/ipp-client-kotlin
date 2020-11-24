@@ -10,6 +10,7 @@ import de.gmuth.ipp.cups.CupsMarker
 import de.gmuth.ipp.cups.CupsPrinterCapability
 import de.gmuth.ipp.cups.CupsPrinterType
 import de.gmuth.ipp.iana.IppRegistrationsSection2
+import de.gmuth.log.Log
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
@@ -22,10 +23,14 @@ open class IppPrinter(
         trustAnyCertificate: Boolean = true
 ) {
 
-    var verbose: Boolean
-        get() = ippClient.verbose
+    companion object {
+        val log = Log.getWriter("IppPrinter", Log.Level.WARN)
+    }
+
+    var logDetails: Boolean
+        get() = ippClient.logDetails
         set(value) {
-            ippClient.verbose = value
+            ippClient.logDetails = value
         }
 
     var httpBasicAuth: Http.BasicAuth?
@@ -36,7 +41,7 @@ open class IppPrinter(
 
     var checkValueSupported: Boolean = true
 
-    // by default operation Get-Jobs would only return attributes 'job-id' and 'job-uri'
+    // by default operation Get-Jobs only returns attributes 'job-id' and 'job-uri'
     var requestedAttributesForGetJobsOperation = listOf(
             "job-id", "job-uri", "job-state", "job-state-reasons", "job-name", "job-originating-user-name"
     )
@@ -201,7 +206,7 @@ open class IppPrinter(
         if (waitForTermination) {
             job.waitForTermination()
         }
-        if (ippClient.verbose) {
+        if (ippClient.logDetails) {
             job.logDetails()
         }
         return job
@@ -305,7 +310,7 @@ open class IppPrinter(
                 "media-col-supported" -> {
                     (value as IppCollection).members
                             .filter { !supportedAttribute.values.contains(it.name) }
-                            .forEach { println("WARN: member unsupported: $it") }
+                            .forEach { log.warn { "member unsupported: $it" } }
                     // all member names must be supported
                     supportedAttribute.values.containsAll(
                             value.members.map { it.name }
@@ -328,10 +333,10 @@ open class IppPrinter(
                 // supported by printer
             }
             false -> {
-                println("WARN: according to printer attributes value '${supportedAttribute.enumValueNameOrValue(value)}' is not supported.")
-                println(supportedAttribute)
+                log.warn { "according to printer attributes value '${supportedAttribute.enumValueNameOrValue(value)}' is not supported." }
+                log.warn { "$supportedAttribute" }
             }
-            null -> println("WARN: unable to check if value '$value' is supported by $supportedAttribute")
+            null -> log.warn { "unable to check if value '$value' is supported by $supportedAttribute" }
         }
         return isAttributeValueSupported
     }

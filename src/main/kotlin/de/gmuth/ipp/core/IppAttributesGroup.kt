@@ -1,6 +1,7 @@
 package de.gmuth.ipp.core
 
 import de.gmuth.ext.toPluralString
+import de.gmuth.log.Log
 import java.nio.charset.Charset
 
 /**
@@ -9,10 +10,12 @@ import java.nio.charset.Charset
 
 class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*>>() {
 
+    companion object {
+        val log = Log.getWriter("IppAttributesGroup", Log.Level.INFO)
+    }
+
     init {
-        if (!tag.isDelimiterTag() || tag.isEndTag()) {
-            throw IppException("'$tag' is not a valid group tag")
-        }
+        if (!tag.isDelimiterTag() || tag.isEndTag()) throw IppException("'$tag' is not a valid group tag")
     }
 
     fun put(attribute: IppAttribute<*>): IppAttribute<*>? {
@@ -23,7 +26,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
             }
             val replaced = put(attribute.name, attribute)
             if (replaced != null) {
-                println("WARN: replaced '$replaced' with '$attribute'")
+                log.warn { "replaced '$replaced' with '$attribute'" }
             }
             return replaced
         } catch (exception: Exception) {
@@ -55,9 +58,9 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
         get() = getValue("attributes-charset")
 
     fun logDetails(prefix: String = "", title: String = "$tag") {
-        println("${prefix}$title")
+        log.info { "${prefix}$title" }
         for (key in keys) {
-            println("$prefix  ${get(key)}")
+            log.info { "$prefix  ${get(key)}" }
         }
     }
 

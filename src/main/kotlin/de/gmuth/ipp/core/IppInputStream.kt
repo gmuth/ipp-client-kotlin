@@ -5,6 +5,7 @@ package de.gmuth.ipp.core
  */
 
 import de.gmuth.ipp.iana.IppRegistrationsSection2
+import de.gmuth.log.Log
 import java.io.DataInputStream
 import java.io.InputStream
 import java.net.URI
@@ -13,7 +14,7 @@ import java.nio.charset.Charset
 class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
     companion object {
-        var verbose: Boolean = false
+        val log = Log.getWriter("IppInputStream", Log.Level.WARN)
         var check1setOfRegistration: Boolean = false
         var HP_BUG_WithLanguage_Workaround = true
     }
@@ -32,27 +33,23 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
             when {
                 tag.isEndTag() -> break@tagLoop
                 tag.isDelimiterTag() -> {
-                    ifVerbosePrintln("--- $tag ---")
+                    log.trace { "--- $tag ---" }
                     currentGroup = message.ippAttributesGroup(tag)
                     continue@tagLoop
                 }
             }
             val attribute = readAttribute(tag)
-            ifVerbosePrintln("$attribute")
+            log.trace { "$attribute" }
             if (attribute.name.isNotEmpty()) {
                 currentGroup.put(attribute)
                 currentAttribute = attribute
             } else { // name.isEmpty() -> 1setOf
                 currentAttribute.additionalValue(attribute)
                 if (check1setOfRegistration && IppRegistrationsSection2.attributeIs1setOf(currentAttribute.name) == false) {
-                    println("WARN: '${currentAttribute.name}' is not registered as '1setOf'")
+                    log.warn { "'${currentAttribute.name}' is not registered as '1setOf'" }
                 }
             }
         } while (true)
-    }
-
-    private fun ifVerbosePrintln(string: String) {
-        if (verbose) println(string)
     }
 
     private fun readTag(): IppTag = IppTag.fromByte(readByte())
@@ -220,7 +217,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
     private fun readLengthAndValue(): ByteArray {
         val length = readShort().toInt()
-        if (length > 1024) println("WARN: length $length of encoded value looks too large")
+        if (length > 1000) log.warn { "length $length of encoded value looks too large" }
         return readBytes(length) // avoid Java-11-readNBytes(length) for backwards compatibility
     }
 

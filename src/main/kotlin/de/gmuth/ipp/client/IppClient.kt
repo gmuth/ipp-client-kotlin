@@ -8,6 +8,7 @@ import de.gmuth.http.Http
 import de.gmuth.http.HttpURLConnectionClient
 import de.gmuth.http.SSLHelper
 import de.gmuth.ipp.core.*
+import de.gmuth.log.Log
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
@@ -22,8 +23,7 @@ open class IppClient(
         val requestingUserName: String? = System.getProperty("user.name")
 
 ) : IppExchange {
-    var verbose: Boolean = false
-    var logRequestResponseLine: Boolean = false
+    var logDetails: Boolean = false
     var requestCharset: Charset = Charsets.UTF_8
     var requestNaturalLanguage: String = "en"
     var httpBasicAuth: Http.BasicAuth? = null
@@ -33,6 +33,10 @@ open class IppClient(
 
     fun trustAnyCertificate() {
         httpClient.config.sslSocketFactory = SSLHelper.sslSocketFactoryForAnyCertificate()
+    }
+
+    companion object {
+        val log = Log.getWriter("IppClient", Log.Level.WARN)
     }
 
     //------------------------------------
@@ -58,7 +62,7 @@ open class IppClient(
                 if (!isSuccessful()) {
                     throw IppExchangeException(ippRequest, this, "operation ${ippRequest.operation} failed: '$status' $statusMessage")
                 }
-                if (verbose) println(this)
+                log.debug { this.toString() }
                 this // successful ippResponse
             }
 
@@ -66,45 +70,48 @@ open class IppClient(
         val ippUri = ippRequest.printerUri
         lastIppRequest = ippRequest
         val ippResponse = IppResponse()
+
         // request logging
-        if (verbose) {
-            println("send '${ippRequest.operation}' request to $ippUri")
-            ippRequest.logDetails(">> ")
-        }
+        log.debug { "send '${ippRequest.operation}' request to $ippUri" }
+        if (logDetails) ippRequest.logDetails(">> ")
+
         // convert ipp uri to http uri
         val httpUri = with(ippUri) {
             val scheme = scheme.replace("ipp", "http")
             val port = if (port == -1) 631 else port
             URI.create("$scheme://$host:$port$path")
         }
+
         // http exchange binary ipp message
         val ippResponseStream = httpExchange(httpUri) { ippRequestStream -> ippRequest.write(ippRequestStream) }
+
         // decode ipp response
         try {
             ippResponse.read(ippResponseStream)
         } catch (exception: Exception) {
             if (ippResponse.rawBytes != null) {
                 File("ipp_decoding_failed.response").writeBytes(ippResponse.rawBytes!!)
-                println("WARN: ipp response written to file 'ipp_decoding_failed.response'")
+                log.warn { "ipp response written to file 'ipp_decoding_failed.response'" }
             }
             throw IppExchangeException(ippRequest, ippResponse, "failed to decode ipp response", exception)
         } finally {
-            if (logRequestResponseLine) println(String.format("%-75s=> %s", ippRequest, ippResponse))
+            log.info { String.format("%-75s=> %s", ippRequest, ippResponse) }
         }
+
         // response logging
-        if (verbose) {
-            println("exchanged @ $ippUri")
-            ippResponse.logDetails("<< ")
-            with(ippResponse.statusMessage) {
-                this.let { println("status-message: $it") }
-            }
+        log.debug { "exchanged @ $ippUri" }
+        if (logDetails) ippResponse.logDetails("<< ")
+        if (ippResponse.operationGroup.containsKey("status-message")) {
+            log.debug { "status-message: ${ippResponse.statusMessage}" }
         }
+
         // unsupported attributes
         for (unsupported in ippResponse.getAttributesGroups(IppTag.Unsupported)) {
             for (attribute in unsupported.values) {
-                println("WARN: unsupported attribute: $attribute")
+                log.warn { "unsupported attribute: $attribute" }
             }
         }
+
         // the decoded response
         lastIppResponse = ippResponse
         return ippResponse
@@ -128,7 +135,7 @@ open class IppClient(
             throw IppException("SSL connection error $uri", sslException)
         } finally {
             val duration = System.currentTimeMillis() - start
-            if (verbose || duration > 5000) println(String.format("http exchange %s: %d ms", uri, duration))
+            if (duration > 5000) log.warn { String.format("http exchange %s: %d ms", uri, duration) }
         }
     }
 

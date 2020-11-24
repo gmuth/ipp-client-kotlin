@@ -8,6 +8,7 @@ import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppString
 import de.gmuth.ipp.core.IppTag
+import de.gmuth.log.Log
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import java.io.InputStream
@@ -17,9 +18,8 @@ class IppJob(
         val printer: IppPrinter,
         var attributes: IppAttributesGroup
 ) {
-    var verbose: Boolean = true
-
     companion object {
+        val log = Log.getWriter("IppJob", Log.Level.INFO)
         var defaultRefreshRateMillis: Long = 3000
     }
 
@@ -73,14 +73,14 @@ class IppJob(
     //------------------------------------------
 
     fun waitForTermination(refreshRateMillis: Long = defaultRefreshRateMillis) {
-        if (verbose) println("wait for terminal state of job #$id")
+        log.info { "wait for terminal state of job #$id" }
         do {
             runBlocking { delay(refreshRateMillis) }
             updateAllAttributes()
-            if (verbose) {
-                println(StringBuffer("job-id=$id, job-state=$state").apply {
+            log.info {
+                StringBuffer("job-id=$id, job-state=$state").apply {
                     if (attributes.containsKey("job-impressions-completed")) append(", job-impressions-completed=$impressionsCompleted")
-                })
+                }.toString()
             }
         } while (!isTerminated())
     }

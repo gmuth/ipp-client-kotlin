@@ -6,6 +6,7 @@ package de.gmuth.ipp.core
 
 import de.gmuth.io.ByteArraySavingInputStream
 import de.gmuth.io.ByteArraySavingOutputStream
+import de.gmuth.log.Log
 import java.io.*
 
 abstract class IppMessage {
@@ -18,6 +19,7 @@ abstract class IppMessage {
     var rawBytes: ByteArray? = null
 
     companion object {
+        val log = Log.getWriter("IppMessage", Log.Level.INFO)
         var storeRawBytes: Boolean = true
     }
 
@@ -62,9 +64,11 @@ abstract class IppMessage {
         }
     }
 
-    fun read(file: File) = read(FileInputStream(file))
+    fun read(file: File) =
+            read(FileInputStream(file))
 
-    fun decode(byteArray: ByteArray) = read(ByteArrayInputStream(byteArray))
+    fun decode(byteArray: ByteArray) =
+            read(ByteArrayInputStream(byteArray))
 
     // --- ENCODING ---
 
@@ -78,7 +82,8 @@ abstract class IppMessage {
         }
     }
 
-    fun write(file: File) = write(FileOutputStream(file))
+    fun write(file: File) =
+            write(FileOutputStream(file))
 
     fun encode(): ByteArray {
         val byteArrayOutputStream = ByteArrayOutputStream()
@@ -96,10 +101,10 @@ abstract class IppMessage {
     )
 
     fun logDetails(prefix: String = "") {
-        if (rawBytes != null) println("${prefix}${rawBytes!!.size} raw ipp bytes")
-        println("${prefix}version = $version")
-        println("${prefix}$codeDescription")
-        println("${prefix}request-id = $requestId")
+        if (rawBytes != null) log.info { "${prefix}${rawBytes!!.size} raw ipp bytes" }
+        log.info { "${prefix}version = $version" }
+        log.info { "${prefix}$codeDescription" }
+        log.info { "${prefix}request-id = $requestId" }
         for (group in attributesGroups) {
             group.logDetails(prefix)
         }

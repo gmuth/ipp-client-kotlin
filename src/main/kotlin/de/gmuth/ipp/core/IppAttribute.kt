@@ -7,6 +7,7 @@ package de.gmuth.ipp.core
 import de.gmuth.ext.toPluralString
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.ipp.iana.IppRegistrationsSection6
+import de.gmuth.log.Log
 import java.nio.charset.Charset
 import java.text.SimpleDateFormat
 import java.util.*
@@ -16,12 +17,11 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
     val values = mutableListOf<T>()
 
     init {
-        if (tag.isDelimiterTag()) {
-            throw IppException("delimiter tag '$tag' must not be used for attributes")
-        }
+        if (tag.isDelimiterTag()) throw IppException("delimiter tag '$tag' must not be used for attributes")
     }
 
     companion object {
+        val log = Log.getWriter("IppAttribute", Log.Level.WARN)
         var checkSyntaxEnabled: Boolean = true
         var allowAutomaticTag: Boolean = true
         val iso8601DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
@@ -42,9 +42,7 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
             IppRegistrationsSection2.tagForAttribute(name) ?: throw IppException("no tag found for attribute '$name'"),
             values
     ) {
-        if (!allowAutomaticTag) {
-            throw IppException("automatic tag disabled: for attribute '$name' use IppTag.${tag.name}")
-        }
+        if (!allowAutomaticTag) throw IppException("automatic tag disabled: for attribute '$name' use IppTag.${tag.name}")
     }
 
     override fun buildIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<*> = this
@@ -65,7 +63,7 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
     val value: T
         get() {
             if (IppRegistrationsSection2.attributeIs1setOf(name) == true) {
-                println("WARN: '$name' is registered as '1setOf', use 'values' instead")
+                log.warn { "'$name' is registered as '1setOf', use 'values' instead" }
             }
             if (values.size > 1) {
                 throw IppException("found ${values.size.toPluralString("value")} but expected 0 or 1 for '$name'")
@@ -77,7 +75,7 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
         if (checkSyntaxEnabled) {
             IppRegistrationsSection2.checkSyntaxOfAttribute(name, tag)
             if (values.size > 1 && IppRegistrationsSection2.attributeIs1setOf(name) == false) {
-                println("WARN: '$name' is not registered as '1setOf'")
+                log.warn { "'$name' is not registered as '1setOf'" }
             }
         }
     }
@@ -122,14 +120,14 @@ open class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
     fun logDetails(prefix: String = "") {
         val string = toString()
         if (string.length < 160) {
-            println("$prefix$string")
+            log.info { "$prefix$string" }
         } else {
-            println("$prefix$name ($tag) =")
+            log.info { "$prefix$name ($tag) =" }
             for (value in values) {
                 if (value is IppCollection) {
                     value.logDetails("$prefix  ")
                 } else {
-                    println("${prefix}  ${enumValueNameOrValue(value as Any)}")
+                    log.info { "${prefix}  ${enumValueNameOrValue(value as Any)}" }
                 }
             }
         }
