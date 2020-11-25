@@ -12,14 +12,17 @@ class CupsPrinterType(val value: Int) {
         val log = Log.getWriter("CupsPrinterType", Log.Level.INFO)
     }
 
-    fun toSet(): Set<CupsPrinterCapability> = CupsPrinterCapability
-            .values()
-            .filter { (value shr it.bit) and 1 == 1 }
-            .toSet()
+    fun toSet(): Set<CupsPrinterCapability> =
+            CupsPrinterCapability
+                    .values()
+                    .filter { (value shr it.bit) and 1 == 1 }
+                    .toSet()
 
-    fun contains(capability: CupsPrinterCapability) = toSet().contains(capability)
+    fun contains(capability: CupsPrinterCapability) =
+            toSet().contains(capability)
 
-    override fun toString() = "$value (${toSet().joinToString(",")})"
+    override fun toString() =
+            "$value (${toSet().joinToString(",")})"
 
     fun logDetails() {
         log.info { String.format("PRINTER-TYPE 0x%08X capabilities:", value) }
