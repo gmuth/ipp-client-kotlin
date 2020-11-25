@@ -4,7 +4,6 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.http.Http
 import de.gmuth.ipp.core.*
 import de.gmuth.ipp.cups.CupsMarker
 import de.gmuth.ipp.cups.CupsPrinterCapability
@@ -18,33 +17,10 @@ import java.net.URI
 
 open class IppPrinter(
         val printerUri: URI,
-        var attributes: IppAttributesGroup = IppAttributesGroup(IppTag.Printer),
+        var attributes: IppAttributesGroup = IppAttributesGroup(IppTag.Printer), // empty group
         val ippClient: IppClient = IppClient(),
         trustAnyCertificate: Boolean = true
 ) {
-
-    companion object {
-        val log = Log.getWriter("IppPrinter", Log.Level.WARN)
-    }
-
-    var logDetails: Boolean
-        get() = ippClient.logDetails
-        set(value) {
-            ippClient.logDetails = value
-        }
-
-    var httpBasicAuth: Http.BasicAuth?
-        get() = ippClient.httpBasicAuth
-        set(value) {
-            ippClient.httpBasicAuth = value
-        }
-
-    var checkValueSupported: Boolean = true
-
-    // by default operation Get-Jobs only returns attributes 'job-id' and 'job-uri'
-    var requestedAttributesForGetJobsOperation = listOf(
-            "job-id", "job-uri", "job-state", "job-state-reasons", "job-name", "job-originating-user-name"
-    )
 
     init {
         if (trustAnyCertificate) ippClient.trustAnyCertificate()
@@ -56,6 +32,18 @@ open class IppPrinter(
             printerAttributes,
             ippClient
     )
+
+    fun basicAuth(user: String, password: String) {
+        ippClient.basicAuth(user, password)
+    }
+
+    companion object {
+        val log = Log.getWriter("IppPrinter", Log.Level.WARN)
+        var checkIfValueIsSupported: Boolean = true
+        var getJobsRequestedAttributes = listOf(
+                "job-id", "job-uri", "job-state", "job-state-reasons", "job-name", "job-originating-user-name"
+        )
+    }
 
     //--------------
     // IppAttributes
@@ -79,94 +67,69 @@ open class IppPrinter(
     val uriSupported: List<URI>
         get() = attributes.getValues("printer-uri-supported")
 
+    // ---------------
+    // CUPS Extensions
+    // ---------------
+
+    val deviceUri: URI
+        get() = attributes.getValue("device-uri")
+
+    val printerType: CupsPrinterType
+        get() = CupsPrinterType(attributes.getValue("printer-type"))
+
+    fun hasCapability(capability: CupsPrinterCapability) =
+            printerType.contains(capability)
+
+    val markers: CupsMarker.List
+        get() = CupsMarker.List(attributes)
+
+    fun marker(color: CupsMarker.Color) =
+            markers.single { it.color == color }
+
     //-----------------
     // Identify-Printer
     //-----------------
 
-    fun identify(vararg actions: String) = identify(actions.toList())
+    fun identify(vararg actions: String) =
+            identify(actions.toList())
 
-    fun identify(actions: List<String>) {
-        checkValueSupported("identify-actions-supported", actions)
+    fun identify(actions: List<String>): IppResponse {
+        checkIfValueIsSupported("identify-actions-supported", actions)
         val request = ippRequest(IppOperation.IdentifyPrinter).apply {
             operationGroup.attribute("identify-actions", IppTag.Keyword, actions)
         }
-        exchangeSuccessful(request)
+        return exchangeSuccessful(request)
     }
 
     //--------------
     // Pause-Printer
     //--------------
 
-    fun pause() =
-            exchangeSuccessfulIppRequest(IppOperation.PausePrinter)
+    fun pause() {
+        exchangeSuccessfulIppRequest(IppOperation.PausePrinter)
+        updateAllAttributes()
+    }
 
     //---------------
     // Resume-Printer
     //---------------
 
-    fun resume() =
-            exchangeSuccessfulIppRequest(IppOperation.ResumePrinter)
+    fun resume() {
+        exchangeSuccessfulIppRequest(IppOperation.ResumePrinter)
+        updateAllAttributes()
+    }
 
     //-----------------------
     // Get-Printer-Attributes
     //-----------------------
 
-    fun getPrinterAttributes(requestedAttributes: List<String>? = null): IppAttributesGroup {
-        val ippRequest = ippRequest(IppOperation.GetPrinterAttributes, requestedAttributes = requestedAttributes)
-        return exchangeSuccessful(ippRequest).printerGroup
+    fun getPrinterAttributes(requestedAttributes: List<String>? = null): IppResponse {
+        val request = ippRequest(IppOperation.GetPrinterAttributes, requestedAttributes = requestedAttributes)
+        return exchangeSuccessful(request)
     }
 
     fun updateAllAttributes() {
-        // should we implement/incremental partial updates? e.g. for printer-state?
-        attributes = getPrinterAttributes()
-    }
-
-    //----------
-    // Print-Job
-    //----------
-
-    fun printInputStream(
-            inputStream: InputStream,
-            attributeBuilders: Array<out IppAttributeBuilder>,
-            waitForTermination: Boolean
-
-    ): IppJob {
-        val request = attributeBuildersRequest(IppOperation.PrintJob, attributeBuilders).apply {
-            documentInputStream = inputStream
-        }
-        val response = exchangeSuccessful(request)
-        return handlePrintResponse(response, waitForTermination)
-    }
-
-    fun printJob(
-            inputStream: InputStream,
-            vararg attributeBuilders: IppAttributeBuilder,
-            waitForTermination: Boolean = false
-
-    ) = printInputStream(inputStream, attributeBuilders, waitForTermination)
-
-    fun printJob(
-            file: File,
-            vararg attributeBuilders: IppAttributeBuilder,
-            waitForTermination: Boolean = false
-
-    ) = printInputStream(FileInputStream(file), attributeBuilders, waitForTermination)
-
-    //----------
-    // Print-Uri
-    //----------
-
-    fun printUri(
-            documentUri: URI,
-            vararg attributeBuilders: IppAttributeBuilder,
-            waitForTermination: Boolean = false
-
-    ): IppJob {
-        val request = attributeBuildersRequest(IppOperation.PrintUri, attributeBuilders).apply {
-            operationGroup.attribute("document-uri", IppTag.Uri, documentUri)
-        }
-        val response = exchangeSuccessful(request)
-        return handlePrintResponse(response, waitForTermination)
+        attributes = getPrinterAttributes().printerGroup
     }
 
     //-------------
@@ -178,38 +141,63 @@ open class IppPrinter(
         return exchangeSuccessful(request)
     }
 
+    //----------
+    // Print-Job
+    //----------
+
+    fun printJob(inputStream: InputStream, vararg attributeBuilders: IppAttributeBuilder) =
+            printInputStream(inputStream, attributeBuilders)
+
+    fun printJob(file: File, vararg attributeBuilders: IppAttributeBuilder) =
+            printInputStream(FileInputStream(file), attributeBuilders)
+
+    private fun printInputStream(inputStream: InputStream, attributeBuilders: Array<out IppAttributeBuilder>): IppJob {
+        val request = attributeBuildersRequest(IppOperation.PrintJob, attributeBuilders).apply {
+            documentInputStream = inputStream
+        }
+        return exchangeSuccessfulForIppJob(request)
+    }
+
+    //----------
+    // Print-Uri
+    //----------
+
+    fun printUri(documentUri: URI, vararg attributeBuilders: IppAttributeBuilder): IppJob {
+        val request = attributeBuildersRequest(IppOperation.PrintUri, attributeBuilders).apply {
+            operationGroup.attribute("document-uri", IppTag.Uri, documentUri)
+        }
+        return exchangeSuccessfulForIppJob(request)
+    }
+
     //-----------
     // Create-Job
     //-----------
 
     fun createJob(vararg attributeBuilders: IppAttributeBuilder): IppJob {
         val request = attributeBuildersRequest(IppOperation.CreateJob, attributeBuilders)
-        val response = exchangeSuccessful(request)
-        return IppJob(this, response.jobGroup)
+        return exchangeSuccessfulForIppJob(request)
     }
 
-    // ---- factory method for IppRequest with Operation Print-Job, Print-Uri, Validate-Job, Create-Job
+    // ---- factory method for IppRequest with operation Validate-Job, Print-Job, Print-Uri, Create-Job
 
     private fun attributeBuildersRequest(operation: IppOperation, attributeBuilders: Array<out IppAttributeBuilder>) =
             ippRequest(operation).apply {
                 for (attributeBuilder in attributeBuilders) {
                     val attribute = attributeBuilder.buildIppAttribute(attributes)
-                    checkValueSupported("${attribute.name}-supported", attribute.values)
+                    checkIfValueIsSupported("${attribute.name}-supported", attribute.values)
                     // put attribute in operation or job group?
                     val groupTag = IppRegistrationsSection2.selectGroupForAttribute(attribute.name)
                     getSingleAttributesGroup(groupTag, createIfMissing = true).put(attribute)
                 }
             }
 
-    private fun handlePrintResponse(printResponse: IppResponse, waitForTermination: Boolean = false): IppJob {
-        val job = IppJob(this, printResponse.jobGroup)
-        if (waitForTermination) {
-            job.waitForTermination()
-        }
-        if (ippClient.logDetails) {
-            job.logDetails()
-        }
-        return job
+    //-------------------------------
+    // Get-Job-Attributes (as IppJob)
+    //-------------------------------
+
+    fun getJob(jobId: Int): IppJob {
+        val request = ippRequest(IppOperation.GetJobAttributes, jobId)
+        return exchangeSuccessfulForIppJob(request)
     }
 
     //---------------------------
@@ -218,26 +206,18 @@ open class IppPrinter(
 
     fun getJobs(
             whichJobs: String? = null,
-            requestedAttributes: List<String> = requestedAttributesForGetJobsOperation
+            requestedAttributes: List<String> = getJobsRequestedAttributes
+
     ): List<IppJob> {
-        val ippRequest = ippRequest(IppOperation.GetJobs, requestedAttributes = requestedAttributes)
+        val request = ippRequest(IppOperation.GetJobs, requestedAttributes = requestedAttributes)
         if (whichJobs != null) {
             // PWG Job and Printer Extensions Set 2
-            checkValueSupported("which-jobs-supported", whichJobs)
-            ippRequest.operationGroup.attribute("which-jobs", IppTag.Keyword, whichJobs)
+            checkIfValueIsSupported("which-jobs-supported", whichJobs)
+            request.operationGroup.attribute("which-jobs", IppTag.Keyword, whichJobs)
         }
-        return exchangeSuccessful(ippRequest) // -> IppResponse
+        return exchangeSuccessful(request) // IppResponse
                 .getAttributesGroups(IppTag.Job)
                 .map { IppJob(this, it) }
-    }
-
-    //-------------------------------
-    // Get-Job-Attributes (as IppJob)
-    //-------------------------------
-
-    fun getJob(jobId: Int): IppJob {
-        val ippResponse = exchangeSuccessfulIppRequest(IppOperation.GetJobAttributes, jobId)
-        return IppJob(this, ippResponse.jobGroup)
     }
 
     //----------------------
@@ -245,25 +225,21 @@ open class IppPrinter(
     //----------------------
 
     fun ippRequest(operation: IppOperation, jobId: Int? = null, requestedAttributes: List<String>? = null) =
-            ippClient.ippRequest(operation, printerUri).apply {
-                // add optional 'job-id'
-                if (jobId != null) {
-                    operationGroup.attribute("job-id", IppTag.Integer, jobId)
-                }
-                // add optional 'requested-attributes'
-                if (requestedAttributes != null && requestedAttributes.isNotEmpty()) {
-                    operationGroup.attribute("requested-attributes", IppTag.Keyword, requestedAttributes)
-                }
-            }
+            ippClient.ippRequest(operation, printerUri, jobId, requestedAttributes)
+
+    fun exchangeSuccessful(request: IppRequest): IppResponse {
+        checkIfValueIsSupported("ipp-versions-supported", ippClient.ippVersion)
+        checkIfValueIsSupported("operations-supported", request.code!!.toInt())
+        checkIfValueIsSupported("charset-supported", request.operationGroup.attributesCharset)
+        return ippClient.exchangeSuccessful(request)
+    }
 
     fun exchangeSuccessfulIppRequest(operation: IppOperation, jobId: Int? = null) =
             exchangeSuccessful(ippRequest(operation, jobId))
 
-    fun exchangeSuccessful(request: IppRequest): IppResponse {
-        checkValueSupported("ipp-versions-supported", ippClient.ippVersion)
-        checkValueSupported("operations-supported", request.code!!.toInt())
-        checkValueSupported("charset-supported", request.operationGroup.attributesCharset)
-        return ippClient.exchangeSuccessful(request)
+    fun exchangeSuccessfulForIppJob(request: IppRequest): IppJob {
+        val response = exchangeSuccessful(request)
+        return IppJob(this, response.jobGroup)
     }
 
     // -------
@@ -271,7 +247,7 @@ open class IppPrinter(
     // -------
 
     override fun toString() =
-            "IppPrinter: name='$name', makeAndModel='$makeAndModel', state=$state, stateReasons=$stateReasons"
+            "IppPrinter: name=$name, makeAndModel=$makeAndModel, state=$state, stateReasons=$stateReasons"
 
     fun logDetails() =
             attributes.logDetails(title = "PRINTER-$name ($makeAndModel), $state (${stateReasons.joinToString(",")})")
@@ -280,8 +256,8 @@ open class IppPrinter(
     // attribute value checking based on printer capabilities
     // ------------------------------------------------------
 
-    private fun checkValueSupported(supportedAttributeName: String, value: Any) {
-        if (attributes.size == 0 || !checkValueSupported)
+    private fun checkIfValueIsSupported(supportedAttributeName: String, value: Any) {
+        if (attributes.size == 0 || !checkIfValueIsSupported)
             return
 
         if (!supportedAttributeName.endsWith("-supported"))
@@ -289,7 +265,7 @@ open class IppPrinter(
 
         if (value is Collection<*>) { // instead of providing another signature just check collections iteratively
             for (collectionValue in value) {
-                checkValueSupported(supportedAttributeName, collectionValue!!)
+                checkIfValueIsSupported(supportedAttributeName, collectionValue!!)
             }
         } else {
             isAttributeValueSupported(supportedAttributeName, value)
@@ -340,24 +316,5 @@ open class IppPrinter(
         }
         return isAttributeValueSupported
     }
-
-    // ---------------
-    // CUPS extensions
-    // ---------------
-
-    val printerType: CupsPrinterType
-        get() = CupsPrinterType(attributes.getValue("printer-type"))
-
-    fun hasCapability(capability: CupsPrinterCapability) =
-            printerType.contains(capability)
-
-    val markers: CupsMarker.List
-        get() = CupsMarker.List(attributes)
-
-    fun marker(color: CupsMarker.Color) =
-            markers.single { it.color == color }
-
-    val deviceUri: URI
-        get() = attributes.getValue("device-uri")
 
 }

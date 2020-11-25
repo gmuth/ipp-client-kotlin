@@ -11,12 +11,9 @@ import de.gmuth.ipp.core.IppResolution.Unit.DPI
 import de.gmuth.ipp.core.IppTag
 
 /**
- * methods to create common job attributes
+ * create common job attributes
  */
 object IppTemplateAttributes {
-
-    fun attribute(name: String, tag: IppTag, vararg values: Any) =
-            IppAttribute(name, tag, values.toList())
 
     // for operation group
 
@@ -51,6 +48,6 @@ object IppTemplateAttributes {
 
     fun mediaCol(xDimension: Int, yDimension: Int, margin: Int? = null) =
             IppMedia.Collection(IppMedia.Size(xDimension, yDimension)).apply {
-                margin?.let { this.margins = IppMedia.Margins(it) }
+                if (margin != null) margins = IppMedia.Margins(margin)
             }
 }

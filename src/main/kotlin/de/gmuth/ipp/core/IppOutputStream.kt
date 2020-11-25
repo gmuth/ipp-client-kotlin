@@ -4,12 +4,17 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
+import de.gmuth.log.Log
 import java.io.DataOutputStream
 import java.io.OutputStream
 import java.net.URI
 import java.nio.charset.Charset
 
 class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStream) {
+
+    companion object {
+        val log = Log.getWriter("IppOutputStream", Log.Level.WARN)
+    }
 
     // charset for text and name attributes, rfc 8011 4.1.4.1
     private var operationAttributesCharset: Charset? = null
@@ -18,8 +23,14 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
         operationAttributesCharset = message.operationGroup.attributesCharset
         with(message) {
             writeVersion(version ?: throw IppException("missing version"))
+            log.trace { "version = $version" }
+
             writeShort(code?.toInt() ?: throw IppException("missing operation or status code"))
+            log.trace { "code = $code ($codeDescription)" }
+
             writeInt(requestId ?: throw IppException("missing requestId"))
+            log.trace { "requestId = $requestId" }
+
             for (group in attributesGroups) {
                 writeTag(group.tag)
                 for (attribute in group.values) {
@@ -30,6 +41,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
                     }
                 }
             }
+
             writeTag(IppTag.End)
         }
     }
@@ -42,6 +54,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
     }
 
     private fun writeAttribute(attribute: IppAttribute<*>) {
+        log.trace { "$attribute" }
         with(attribute) {
             attribute.checkSyntax()
             if (tag.isOutOfBandTag() || tag == IppTag.EndCollection) {
@@ -61,7 +74,10 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
         }
     }
 
-    private fun writeTag(tag: IppTag) = writeByte(tag.code.toInt())
+    private fun writeTag(tag: IppTag) {
+        if (tag.isDelimiterTag()) log.trace { "--- $tag ---" }
+        writeByte(tag.code.toInt())
+    }
 
     private fun writeString(string: String, charset: Charset = Charsets.US_ASCII) {
         with(string.toByteArray(charset)) {

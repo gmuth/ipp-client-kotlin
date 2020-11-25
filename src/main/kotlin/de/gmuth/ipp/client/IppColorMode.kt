@@ -6,7 +6,7 @@ package de.gmuth.ipp.client
 
 import de.gmuth.ipp.core.*
 
-enum class IppColorMode(val value: String) : IppAttributeBuilder {
+enum class IppColorMode(private val keyword: String) : IppAttributeBuilder {
 
     Auto("auto"),
     Color("color"),
@@ -19,7 +19,7 @@ enum class IppColorMode(val value: String) : IppAttributeBuilder {
             printerAttributes.containsKey("output-mode-supported") -> "output-mode" // cups extension
             else -> throw IppException("printer does not support 'output-mode' or 'print-color-mode'")
         }
-        return IppAttribute(modeAttributeName, IppTag.Keyword, value)
+        return IppAttribute(modeAttributeName, IppTag.Keyword, keyword)
     }
 
 }

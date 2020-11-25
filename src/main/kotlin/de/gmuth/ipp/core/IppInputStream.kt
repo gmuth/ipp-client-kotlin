@@ -25,15 +25,23 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
     fun readMessage(message: IppMessage) {
         lateinit var currentGroup: IppAttributesGroup
         lateinit var currentAttribute: IppAttribute<*>
-        message.version = IppVersion(read(), read())
-        message.code = readShort()
-        message.requestId = readInt()
+
+        with(message) {
+            version = IppVersion(read(), read())
+            log.trace { "version = $version" }
+
+            code = readShort()
+            log.trace { "code = $code ($codeDescription)" }
+
+            requestId = readInt()
+            log.trace { "requestId = $requestId" }
+        }
+
         tagLoop@ do {
             val tag = readTag()
             when {
                 tag.isEndTag() -> break@tagLoop
                 tag.isDelimiterTag() -> {
-                    log.trace { "--- $tag ---" }
                     currentGroup = message.ippAttributesGroup(tag)
                     continue@tagLoop
                 }
@@ -52,7 +60,10 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
         } while (true)
     }
 
-    private fun readTag(): IppTag = IppTag.fromByte(readByte())
+    private fun readTag() =
+            IppTag.fromByte(readByte()).apply {
+                if (isDelimiterTag()) log.trace { "--- $this ---" }
+            }
 
     private fun readAttribute(tag: IppTag): IppAttribute<Any> {
         val name = readString()
@@ -62,8 +73,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
             return if (valueBytes.isEmpty()) {
                 IppAttribute(name, tag) // no value
             } else {
-                // tolerate ipp spec violation, e.g. Xerox B210
-                IppAttribute(name, tag, String(valueBytes))
+                IppAttribute(name, tag, valueBytes)
             }
         } else {
             val value = try {
@@ -225,8 +235,6 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
     private fun readExpectedValueLength(expected: Int) {
         val length = readShort().toInt()
-        if (length != expected) {
-            throw IppException("expected value length of $expected bytes but found $length")
-        }
+        if (length != expected) throw IppException("expected value length of $expected bytes but found $length")
     }
 }

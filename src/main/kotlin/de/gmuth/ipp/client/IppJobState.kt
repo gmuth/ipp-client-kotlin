@@ -13,7 +13,7 @@ package de.gmuth.ipp.client
 //     |         v                   v               /
 //     +----> pending-held    processing-stopped ---+
 
-enum class IppJobState(val code: Int, private val registeredValue: String) {
+enum class IppJobState(val code: Int, private val registeredName: String) {
 
     Pending(3, "pending"),
     PendingHeld(4, "pending-held"),
@@ -26,7 +26,7 @@ enum class IppJobState(val code: Int, private val registeredValue: String) {
     fun isTerminated() = this in listOf(Canceled, Aborted, Completed)
 
     // https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-6
-    override fun toString() = registeredValue
+    override fun toString() = registeredName
 
     companion object {
         fun fromInt(code: Int) = values().single { it.code == code }

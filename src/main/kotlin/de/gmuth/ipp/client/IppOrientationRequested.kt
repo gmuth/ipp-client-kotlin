@@ -9,7 +9,7 @@ import de.gmuth.ipp.core.IppAttributeBuilder
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppTag
 
-enum class IppOrientationRequested(val value: Int) : IppAttributeBuilder {
+enum class IppOrientationRequested(private val code: Int) : IppAttributeBuilder {
 
     Portrait(3),
     Landscape(4),
@@ -18,6 +18,6 @@ enum class IppOrientationRequested(val value: Int) : IppAttributeBuilder {
     None(7); // PWG 5100.13
 
     override fun buildIppAttribute(printerAttributes: IppAttributesGroup) =
-            IppAttribute("orientation-requested", IppTag.Enum, value)
+            IppAttribute("orientation-requested", IppTag.Enum, code)
 
 }

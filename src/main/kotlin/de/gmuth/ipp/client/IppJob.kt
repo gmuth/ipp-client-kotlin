@@ -4,10 +4,7 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.ipp.core.IppAttributesGroup
-import de.gmuth.ipp.core.IppOperation
-import de.gmuth.ipp.core.IppString
-import de.gmuth.ipp.core.IppTag
+import de.gmuth.ipp.core.*
 import de.gmuth.log.Log
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -20,7 +17,7 @@ class IppJob(
 ) {
     companion object {
         val log = Log.getWriter("IppJob", Log.Level.INFO)
-        var defaultRefreshRateMillis: Long = 3000
+        var defaultDelayMillis: Long = 3000
     }
 
     //--------------
@@ -61,8 +58,10 @@ class IppJob(
     // Get-Job-Attributes
     //-------------------
 
-    fun getJobAttributes() =
-            exchangeSuccessfulIppRequest(IppOperation.GetJobAttributes)
+    fun getJobAttributes(requestedAttributes: List<String>? = null): IppResponse {
+        val request = ippRequest(IppOperation.GetJobAttributes, requestedAttributes)
+        return exchangeSuccessful(request)
+    }
 
     fun updateAllAttributes() {
         attributes = getJobAttributes().jobGroup
@@ -72,10 +71,10 @@ class IppJob(
     // Wait for terminal state (RFC 8011 5.3.7.)
     //------------------------------------------
 
-    fun waitForTermination(refreshRateMillis: Long = defaultRefreshRateMillis) {
-        log.info { "wait for terminal state of job #$id" }
+    fun waitForTermination(delayMillis: Long = defaultDelayMillis) {
+        log.info { "wait for termination of job #$id" }
         do {
-            runBlocking { delay(refreshRateMillis) }
+            runBlocking { delay(delayMillis) }
             updateAllAttributes()
             log.info {
                 StringBuffer("job-id=$id, job-state=$state").apply {
@@ -111,11 +110,11 @@ class IppJob(
     //--------------
 
     fun sendDocument(inputStream: InputStream, lastDocument: Boolean = true) {
-        val request = ippJobRequest(IppOperation.SendDocument).apply {
+        val request = ippRequest(IppOperation.SendDocument).apply {
             operationGroup.attribute("last-document", IppTag.Boolean, lastDocument)
             documentInputStream = inputStream
         }
-        val response = printer.exchangeSuccessful(request)
+        val response = exchangeSuccessful(request)
         attributes = response.jobGroup
     }
 
@@ -123,11 +122,14 @@ class IppJob(
     // delegate to IppPrinter
     //-----------------------
 
-    private fun ippJobRequest(operation: IppOperation) =
-            printer.ippRequest(operation, id)
+    fun ippRequest(operation: IppOperation, requestedAttributes: List<String>? = null) =
+            printer.ippRequest(operation, id, requestedAttributes)
 
-    private fun exchangeSuccessfulIppRequest(operation: IppOperation) =
+    fun exchangeSuccessfulIppRequest(operation: IppOperation) =
             printer.exchangeSuccessfulIppRequest(operation, id)
+
+    fun exchangeSuccessful(request: IppRequest) =
+            printer.exchangeSuccessful(request)
 
     // -------
     // Logging

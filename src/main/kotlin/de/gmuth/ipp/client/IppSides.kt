@@ -9,13 +9,13 @@ import de.gmuth.ipp.core.IppAttributeBuilder
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppTag
 
-enum class IppSides(val value: String) : IppAttributeBuilder {
+enum class IppSides(private val keyword: String) : IppAttributeBuilder {
 
     OneSided("one-sided"),
     TwoSidedLongEdge("two-sided-long-edge"),
     TwoSidedShortEdge("two-sided-short-edge");
 
     override fun buildIppAttribute(printerAttributes: IppAttributesGroup) =
-            IppAttribute("sides", IppTag.Keyword, value)
+            IppAttribute("sides", IppTag.Keyword, keyword)
 
 }

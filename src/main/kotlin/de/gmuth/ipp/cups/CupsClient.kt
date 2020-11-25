@@ -6,6 +6,7 @@ package de.gmuth.ipp.cups
 
 import de.gmuth.ipp.client.IppClient
 import de.gmuth.ipp.client.IppPrinter
+import de.gmuth.ipp.core.IppAttribute
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppTag
 import java.net.URI
@@ -16,12 +17,15 @@ class CupsClient(val cupsUri: URI) : IppClient() {
             this(URI.create(String.format("ipp://%s:%d", host, port)))
 
     init {
+        IppAttribute.checkSyntaxEnabled = false // avoid syntax warnings
         if (cupsUri.scheme == "ipps") trustAnyCertificate()
     }
 
-    private fun ippRequest(operation: IppOperation) = ippRequest(operation, cupsUri)
+    private fun ippRequest(operation: IppOperation) =
+            ippRequest(operation, cupsUri)
 
-    private fun exchangeSuccessfulIppRequest(operation: IppOperation) = exchangeSuccessful(ippRequest(operation))
+    private fun exchangeSuccessfulIppRequest(operation: IppOperation) =
+            exchangeSuccessful(ippRequest(operation))
 
     fun setDefault(defaultPrinterUri: URI) =
             exchangeSuccessful(ippRequest(IppOperation.CupsSetDefault, defaultPrinterUri))
@@ -34,6 +38,7 @@ class CupsClient(val cupsUri: URI) : IppClient() {
                     .getAttributesGroups(IppTag.Printer)
                     .map { printerAttributes -> IppPrinter(printerAttributes, this) }
 
-    fun getPrinter(name: String) = getPrinters().firstOrNull { it.name.text == name } ?: throw NoSuchElementException(name)
+    fun getPrinter(name: String) =
+            getPrinters().firstOrNull { it.name.text == name } ?: throw NoSuchElementException(name)
 
 }

@@ -9,11 +9,11 @@ import de.gmuth.ipp.core.IppAttributeBuilder
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppTag
 
-enum class IppPrintQuality(val value: Int) : IppAttributeBuilder {
+enum class IppPrintQuality(private val code: Int) : IppAttributeBuilder {
 
     Draft(3), Normal(4), High(5);
 
     override fun buildIppAttribute(printerAttributes: IppAttributesGroup) =
-            IppAttribute("print-quality", IppTag.Enum, value)
+            IppAttribute("print-quality", IppTag.Enum, code)
 
 }

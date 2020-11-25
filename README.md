@@ -57,7 +57,7 @@ job.release()
 job.cancel()
 
 // admin operations
-ippPrinter.httpBasicAuth = Http.BasicAuth("admin", "secret")
+ippPrinter.basicAuth("admin", "secret")
 ippPrinter.pause()
 ippPrinter.resume()
 ippPrinter.identify("sound")

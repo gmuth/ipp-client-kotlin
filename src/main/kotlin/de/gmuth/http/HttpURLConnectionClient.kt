@@ -41,14 +41,18 @@ class HttpURLConnectionClient(override val config: Http.Config = Http.Config()) 
             val contentResponseStream = try {
                 inputStream
             } catch (ioException: IOException) {
-                log.error { "responseCode = $responseCode" }
-                for ((key, values) in headerFields) {
-                    log.warn { "$key = $values" }
-                }
                 log.error { "$ioException" }
+                for ((key, values) in headerFields) {
+                    log.debug { "$key = $values" }
+                }
                 errorStream
             }
-            return Http.Response(responseCode, getHeaderField("Content-Type"), contentResponseStream)
+            return Http.Response(
+                    responseCode,
+                    getHeaderField("Server"),
+                    getHeaderField("Content-Type"),
+                    contentResponseStream
+            )
         }
     }
 }

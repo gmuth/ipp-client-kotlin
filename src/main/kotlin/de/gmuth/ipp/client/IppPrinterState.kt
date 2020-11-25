@@ -5,14 +5,14 @@ package de.gmuth.ipp.client
  */
 
 // "printer-state": type1 enum [RFC8011]
-enum class IppPrinterState(val code: Int, private val registeredValue: String) {
+enum class IppPrinterState(val code: Int) {
 
-    Idle(3, "idle"),
-    Processing(4, "processing"),
-    Stopped(5, "stopped");
+    Idle(3),
+    Processing(4),
+    Stopped(5);
 
     // https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-6
-    override fun toString() = registeredValue
+    override fun toString() = name.toLowerCase()
 
     companion object {
         fun fromInt(code: Int) = values().single { it.code == code }

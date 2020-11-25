@@ -35,17 +35,30 @@ open class IppClient(
         httpClient.config.sslSocketFactory = SSLHelper.sslSocketFactoryForAnyCertificate()
     }
 
+    fun basicAuth(user: String = requestingUserName!!, password: String) {
+        httpBasicAuth = Http.BasicAuth(user, password)
+    }
+
     companion object {
         val log = Log.getWriter("IppClient", Log.Level.WARN)
+        val ippContentType = "application/ipp"
     }
 
     //------------------------------------
     // factory/build method for IppRequest
     //------------------------------------
 
-    fun ippRequest(operation: IppOperation, printerUri: URI) = IppRequest(
+    fun ippRequest(
+            operation: IppOperation,
+            printerUri: URI,
+            jobId: Int? = null,
+            requestedAttributes: List<String>? = null
+
+    ) = IppRequest(
             operation,
             printerUri,
+            jobId,
+            requestedAttributes,
             requestingUserName,
             ippVersion,
             requestCounter.getAndIncrement(),
@@ -118,17 +131,29 @@ open class IppClient(
     }
 
     open fun httpExchange(uri: URI, writeContent: (OutputStream) -> Unit): InputStream {
-        val ippContentType = "application/ipp"
         val start = System.currentTimeMillis()
         try {
             with(httpClient.post(uri, ippContentType, writeContent, httpBasicAuth)) {
+                log.debug { "ipp-server: $server" }
                 if (status == 200 && contentType == ippContentType) return contentStream
-                val textContent =
-                        if (contentType.startsWith("text")) {
-                            ", content=" + contentStream.bufferedReader().use { it.readText() }
-                        } else {
-                            ""
+                if (server.toLowerCase().contains("cups")) {
+                    when (status) {
+                        426 -> {
+                            val httpsUri = with(uri) { URI.create("https://$host:$port$path") }
+                            log.warn { "$server says '426 Upgrade Required' -> trying $httpsUri" }
+                            return httpExchange(httpsUri, writeContent)
                         }
+                        401 -> {
+                            log.warn { "call basicAuth(\"user\", \"password\") to set credentials." }
+                            throw IppException("$server says '401 Unauthorized'")
+                        }
+                    }
+                }
+                val textContent = StringBuffer().apply {
+                    if (contentType.startsWith("text")) {
+                        append(", content=" + contentStream.bufferedReader().use { it.readText() })
+                    }
+                }
                 throw IppException("http request to $uri failed: http-status=$status, content-type=${contentType}$textContent")
             }
         } catch (sslException: SSLHandshakeException) {
