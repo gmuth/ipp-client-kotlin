@@ -15,28 +15,29 @@ class CupsMarker(
         val lowLevel: Int,
         val highLevel: Int
 ) {
-    val color: Color = Color.fromCode(colorCode)
+    val color: Color = Color.fromString(colorCode)
 
     fun levelPercent() = 100 * level / highLevel
     fun levelIsLow() = level <= lowLevel
 
-    override fun toString() = String.format(
-            "%-10s %3d %% %5s %-6s %-7s %s",
-            color, levelPercent(),
-            if (levelIsLow()) "(low)" else "",
-            type, colorCode, name
-    )
+    override fun toString() =
+            String.format(
+                    "%-10s %3d %% %5s %-6s %-7s %s",
+                    color, levelPercent(),
+                    if (levelIsLow()) "(low)" else "",
+                    type, colorCode, name
+            )
 
     enum class Color(val code: String) {
-        BLACK("#000000"),
+        NONE("none"),
         CYAN("#00FFFF"),
+        BLACK("#000000"),
         YELLOW("#FFFF00"),
-        MAGENTA("#FF00FF"),
-        NONE("none");
+        MAGENTA("#FF00FF");
 
         companion object {
-            private val codeMap = values().associateBy(Color::code)
-            fun fromCode(code: String): Color = codeMap[code] ?: throw IllegalArgumentException(String.format("color code '%s' unknown", code))
+            fun fromString(code: String): Color =
+                    values().firstOrNull { it.code == code } ?: throw IllegalArgumentException(String.format("color code %s", code))
         }
     }
 
