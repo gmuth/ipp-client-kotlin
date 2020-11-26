@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "de.gmuth.ipp"
-version = "1.9"
+version = "2.0-SNAPSHOT"
 
 repositories {
     mavenCentral()

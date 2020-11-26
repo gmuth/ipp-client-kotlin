@@ -209,7 +209,7 @@ repositories {
 Add dependency:
 
 ```
-    implementation("de.gmuth.ipp:ipp-client-kotlin:1.7")
-or  implementation("de.gmuth.ipp:ipp-client-kotlin:1.8-SNAPSHOT")
+    implementation("de.gmuth.ipp:ipp-client-kotlin:1.9")
+or  implementation("de.gmuth.ipp:ipp-client-kotlin:2.0-SNAPSHOT")
 ```
 
