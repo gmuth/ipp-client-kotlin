@@ -16,7 +16,6 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
     companion object {
         val log = Log.getWriter("IppAttribute")
         var checkSyntax: Boolean = true
-        var check1setOfRegistration: Boolean = false
         val iso8601DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     }
 
@@ -59,10 +58,8 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
     }
 
     fun check1setOfRegistration() {
-        if (check1setOfRegistration) {
-            if (values.size > 1 && IppRegistrationsSection2.attributeIs1setOf(name) == false) {
-                log.warn { "'$name' is not registered as '1setOf'" }
-            }
+        if (values.size > 1 && IppRegistrationsSection2.attributeIs1setOf(name) == false) {
+            log.warn { "'$name' is not registered as '1setOf'" }
         }
     }
 

@@ -138,8 +138,8 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
 
             IppTag.TextWithLanguage,
             IppTag.NameWithLanguage -> with(value as IppString) {
-                if (language == null) throw IppException("expected IppString with language")
-                writeShort(4 + text.length + language.length)
+                expectLanguageOrThrow()
+                writeShort(4 + text.length + language!!.length)
                 writeString(language)
                 writeString(text)
             }

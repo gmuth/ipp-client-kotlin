@@ -10,4 +10,8 @@ data class IppString(val text: String, val language: String? = null) {
 
     override fun toString() = "$text${if (language == null) "" else "[$language]"}"
 
+    fun expectLanguageOrThrow() {
+        if (language == null) throw IppException("expected IppString with language")
+    }
+
 }
