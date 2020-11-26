@@ -188,7 +188,7 @@ Operation has mostly been tested for target `jvm`. Android is supported since v1
 
 [Configure Gradle for use with Github Packages](https://docs.github.com/en/packages/using-github-packages-with-your-projects-ecosystem/configuring-gradle-for-use-with-github-packages).
 Use this [github package](https://github.com/gmuth/ipp-client-kotlin/packages/214725/versions) of the project as maven repo.
-You can access the repo with any github account.
+You can access the repo with any github account. If you prefer to download the jar look for [Release assets](https://github.com/gmuth/ipp-client-kotlin/releases).
 
 ```
 repositories {
