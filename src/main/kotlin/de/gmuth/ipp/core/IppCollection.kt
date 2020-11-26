@@ -7,28 +7,24 @@ import de.gmuth.log.Log
  */
 
 // RFC8010 3.1.6.
-class IppCollection() {
+data class IppCollection(val members: MutableList<IppAttribute<*>> = mutableListOf()) {
 
     companion object {
         val log = Log.getWriter("IppCollection", Log.Level.INFO)
     }
 
-    // with inheritance the attribute value would be handled as "normal list"
-    val members = mutableListOf<IppAttribute<*>>()
+    constructor(vararg attributes: IppAttribute<*>) : this(attributes.toMutableList())
 
-    constructor(vararg attributes: IppAttribute<*>) : this(attributes.toList())
+    fun add(attribute: IppAttribute<*>) =
+            members.add(attribute)
 
-    constructor(attributes: Collection<IppAttribute<*>>) : this() {
-        members.addAll(attributes)
-    }
+    fun addAll(attributes: Collection<IppAttribute<*>>) =
+            members.addAll(attributes)
 
-    fun add(attribute: IppAttribute<*>) = members.add(attribute)
-
-    fun addAll(attributes: Collection<IppAttribute<*>>) = members.addAll(attributes)
-
-    override fun toString() = members.joinToString(" ", "{", "}") {
-        "${it.name}=${it.values.joinToString(",")}"
-    }
+    override fun toString() =
+            members.joinToString(" ", "{", "}") {
+                "${it.name}=${it.values.joinToString(",")}"
+            }
 
     fun logDetails(prefix: String = "") {
         val string = toString()

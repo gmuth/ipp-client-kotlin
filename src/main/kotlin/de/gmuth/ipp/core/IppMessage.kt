@@ -11,19 +11,25 @@ import java.io.*
 
 abstract class IppMessage {
 
-    var version: IppVersion? = null
     var code: Short? = null
-    abstract val codeDescription: String // request operation or response status
     var requestId: Int? = null
+    var version: IppVersion? = null
     val attributesGroups = mutableListOf<IppAttributesGroup>()
+    var documentInputStream: InputStream? = null
     var rawBytes: ByteArray? = null
+
+    abstract val codeDescription: String // request operation or response status
 
     companion object {
         val log = Log.getWriter("IppMessage", Log.Level.INFO)
         var storeRawBytes: Boolean = true
     }
 
-    fun getAttributesGroups(tag: IppTag) = attributesGroups.filter { it.tag == tag }
+    val operationGroup: IppAttributesGroup
+        get() = getSingleAttributesGroup(IppTag.Operation)
+
+    fun getAttributesGroups(tag: IppTag) =
+            attributesGroups.filter { it.tag == tag }
 
     fun getSingleAttributesGroup(tag: IppTag, createIfMissing: Boolean = false): IppAttributesGroup {
         val groups = getAttributesGroups(tag)
@@ -37,31 +43,53 @@ abstract class IppMessage {
         return groups.single()
     }
 
-    fun ippAttributesGroup(tag: IppTag): IppAttributesGroup {
-        val group = IppAttributesGroup(tag)
-        attributesGroups.add(group)
-        return group
+    // factory/build method for IppAttributesGroup
+    fun ippAttributesGroup(tag: IppTag): IppAttributesGroup =
+            IppAttributesGroup(tag).apply { attributesGroups.add(this) }
+
+    // --------
+    // ENCODING
+    // --------
+
+    fun write(outputStream: OutputStream) {
+        if (storeRawBytes) {
+            val byteArraySavingOutputStream = ByteArraySavingOutputStream(outputStream)
+            try {
+                IppOutputStream(byteArraySavingOutputStream).writeMessage(this)
+            } finally {
+                rawBytes = byteArraySavingOutputStream.toByteArray()
+            }
+        } else {
+            IppOutputStream(outputStream).writeMessage(this)
+        }
+        documentInputStream?.copyTo(outputStream)
     }
 
-    val operationGroup: IppAttributesGroup
-        get() = getSingleAttributesGroup(IppTag.Operation)
+    fun write(file: File) =
+            write(FileOutputStream(file))
 
-    // --- DECODING ---
+    fun encode(): ByteArray =
+            with(ByteArrayOutputStream()) {
+                write(this)
+                return toByteArray()
+            }
+
+    // --------
+    // DECODING
+    // --------
 
     fun read(inputStream: InputStream) {
         if (storeRawBytes) {
             val byteArraySavingInputStream = ByteArraySavingInputStream(inputStream)
             try {
                 IppInputStream(byteArraySavingInputStream).readMessage(this)
-            } catch (exception: Exception) {
-                // required to 'finally' save bytes
-                throw exception
             } finally {
                 rawBytes = byteArraySavingInputStream.toByteArray()
             }
         } else {
             IppInputStream(inputStream).readMessage(this)
         }
+        documentInputStream = inputStream
     }
 
     fun read(file: File) =
@@ -70,35 +98,17 @@ abstract class IppMessage {
     fun decode(byteArray: ByteArray) =
             read(ByteArrayInputStream(byteArray))
 
-    // --- ENCODING ---
+    // -------
+    // LOGGING
+    // -------
 
-    open fun write(outputStream: OutputStream) {
-        if (storeRawBytes) {
-            val byteArraySavingOutputStream = ByteArraySavingOutputStream(outputStream)
-            IppOutputStream(byteArraySavingOutputStream).writeMessage(this)
-            rawBytes = byteArraySavingOutputStream.toByteArray()
-        } else {
-            IppOutputStream(outputStream).writeMessage(this)
-        }
-    }
-
-    fun write(file: File) =
-            write(FileOutputStream(file))
-
-    fun encode(): ByteArray {
-        val byteArrayOutputStream = ByteArrayOutputStream()
-        write(byteArrayOutputStream)
-        return byteArrayOutputStream.toByteArray()
-    }
-
-    // --- LOGGING ---
-
-    override fun toString(): String = String.format(
-            "%s %s%s",
-            codeDescription,
-            attributesGroups.map { "${it.values.size} ${it.tag}" },
-            if (rawBytes == null) "" else " (${rawBytes!!.size} bytes)"
-    )
+    override fun toString(): String =
+            String.format(
+                    "%s %s%s",
+                    codeDescription,
+                    attributesGroups.map { "${it.values.size} ${it.tag}" },
+                    if (rawBytes == null) "" else " (${rawBytes!!.size} bytes)"
+            )
 
     fun logDetails(prefix: String = "") {
         if (rawBytes != null) log.info { "${prefix}${rawBytes!!.size} raw ipp bytes" }
@@ -109,4 +119,5 @@ abstract class IppMessage {
             group.logDetails(prefix)
         }
     }
+
 }

@@ -80,16 +80,13 @@ enum class IppOperation(val code: Short) {
             .replace("[A-Z]".toRegex()) { "-" + it.value }
             .replace("^-".toRegex(), "")
 
-    fun requiresDocument() = this in listOf(PrintJob, SendDocument)
-
     companion object {
-        private val codeMap = values().associateBy(IppOperation::code)
-        fun fromShort(code: Short): IppOperation = codeMap[code]
-                ?: throw IppException(String.format("operation code '%04X' unknown", code))
 
-        private val registeredNameMap = values().associateBy(IppOperation::registeredName)
-        fun fromRegisteredName(name: String): IppOperation = registeredNameMap[name]
-                ?: throw IppException(String.format("operation name '%s' unknown", name))
+        fun fromShort(code: Short): IppOperation =
+                values().find { it.code == code } ?: throw IllegalArgumentException(String.format("operation code 0x%04X", code))
+
+        fun fromString(name: String): IppOperation =
+                values().find { it.registeredName() == name } ?: throw IllegalArgumentException(name)
     }
 
 }

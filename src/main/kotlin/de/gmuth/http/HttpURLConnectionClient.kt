@@ -16,7 +16,7 @@ import javax.net.ssl.HttpsURLConnection
 class HttpURLConnectionClient(override val config: Http.Config = Http.Config()) : Http.Client {
 
     companion object {
-        val log = Log.getWriter("HttpURLConnectionClient", Log.Level.WARN)
+        val log = Log.getWriter("HttpURLConnectionClient")
     }
 
     override fun post(uri: URI, contentType: String, writeContent: (OutputStream) -> Unit, basicAuth: Http.BasicAuth?): Http.Response {
@@ -38,13 +38,13 @@ class HttpURLConnectionClient(override val config: Http.Config = Http.Config()) 
             // chunked streaming mode can cause: "HttpRetryException: cannot retry due to server authentication, in streaming mode"
             //setChunkedStreamingMode(0) // enable chunked transfer
             writeContent(outputStream)
+            for ((key, values) in headerFields) {
+                log.debug { "$key = $values" }
+            }
             val contentResponseStream = try {
                 inputStream
-            } catch (ioException: IOException) {
-                log.error { "$ioException" }
-                for ((key, values) in headerFields) {
-                    log.debug { "$key = $values" }
-                }
+            } catch (exception: Exception) {
+                log.error { "$exception" }
                 errorStream
             }
             return Http.Response(

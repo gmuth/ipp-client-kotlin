@@ -2,15 +2,10 @@ package de.gmuth.ipp.cli
 
 import java.net.URI
 
-fun main(args: Array<String>) {
-    if (args.size < 2) {
-        println("usage: java -jar ipp-client-fat.jar <printer-uri> <file>")
-        return
-    }
-
+fun main() {
     with(IppTool()) {
-        uri = URI.create(args[0])
-        filename = args[1]
+        uri = URI.create("ipp://localhost:8632/printers/laser")
+        filename = "tool/A4-blank.pdf"
 
         interpret(
                 "OPERATION Print-Job",
@@ -21,5 +16,4 @@ fun main(args: Array<String>) {
                 "FILE \$filename"
         )
     }
-
 }

@@ -39,11 +39,11 @@ class IppTool {
         val firstArgument = lineItems[1]
         when (command) {
             "OPERATION" -> {
-                val operation = IppOperation.fromRegisteredName(firstArgument)
+                val operation = IppOperation.fromString(firstArgument)
                 request.code = operation.code
             }
             "GROUP" -> {
-                val groupTag = IppTag.fromRegisteredName(firstArgument)
+                val groupTag = IppTag.fromString(firstArgument)
                 currentGroup = request.ippAttributesGroup(groupTag)
             }
             "ATTR" -> {
@@ -64,14 +64,13 @@ class IppTool {
 
     private fun interpretAttr(lineItems: List<String>): IppAttribute<*> {
         val tagName = if (lineItems[1] == "language") "naturalLanguage" else lineItems[1]
-        val tag = IppTag.fromRegisteredName(tagName)
+        val tag = IppTag.fromString(tagName)
         val name = lineItems[2]
         val valueString = lineItems[3]
         val value: Any = when {
             valueString == "\$uri" -> uri ?: throw IppException("\$uri undefined")
             tag == IppTag.Uri -> URI.create(valueString)
             tag == IppTag.Charset -> Charset.forName(valueString)
-            tag == IppTag.NaturalLanguage -> Locale.forLanguageTag(valueString)
             else -> valueString
         }
         return IppAttribute(name, tag, value)

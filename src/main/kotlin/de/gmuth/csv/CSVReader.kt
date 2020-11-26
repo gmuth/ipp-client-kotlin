@@ -79,7 +79,7 @@ class CSVReader<T>(private val rowMapper: RowMapper<T>) {
 
     companion object {
 
-        val log = Log.getWriter("CSVReader", Log.Level.WARN)
+        val log = Log.getWriter("CSVReader")
 
         fun prettyPrintResource(resource: String) {
             val rows = readRowsFromResource(resource)

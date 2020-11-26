@@ -13,14 +13,14 @@ import java.nio.charset.Charset
 class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStream) {
 
     companion object {
-        val log = Log.getWriter("IppOutputStream", Log.Level.WARN)
+        val log = Log.getWriter("IppOutputStream")
     }
 
     // charset for text and name attributes, rfc 8011 4.1.4.1
-    private var operationAttributesCharset: Charset? = null
+    private lateinit var attributesCharset: Charset
 
     fun writeMessage(message: IppMessage) {
-        operationAttributesCharset = message.operationGroup.attributesCharset
+        attributesCharset = message.operationGroup.getValue("attributes-charset")
         with(message) {
             writeVersion(version ?: throw IppException("missing version"))
             log.trace { "version = $version" }
@@ -41,7 +41,6 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
                     }
                 }
             }
-
             writeTag(IppTag.End)
         }
     }
@@ -50,27 +49,6 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
         with(version) {
             writeByte(major)
             writeByte(minor)
-        }
-    }
-
-    private fun writeAttribute(attribute: IppAttribute<*>) {
-        log.trace { "$attribute" }
-        with(attribute) {
-            attribute.checkSyntax()
-            if (tag.isOutOfBandTag() || tag == IppTag.EndCollection) {
-                assertNoValues()
-                writeTag(tag)
-                writeString(name)
-                writeShort(0) // no value
-            } else {
-                assertValuesExist()
-                // iterate 1setOf
-                for ((index, value) in values.withIndex()) {
-                    writeTag(tag)
-                    writeString(if (index == 0) name else "")
-                    writeAttributeValue(tag, value!!)
-                }
-            }
         }
     }
 
@@ -86,9 +64,27 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
         }
     }
 
+    private fun writeAttribute(attribute: IppAttribute<*>) {
+        log.trace { "$attribute" }
+        with(attribute) {
+            if (tag.isOutOfBandTag() || tag == IppTag.EndCollection) {
+                writeTag(tag)
+                writeString(name)
+                writeShort(0) // no value
+            } else {
+                // single value or iterate 1setOf
+                for ((index, value) in values.withIndex()) {
+                    writeTag(tag)
+                    writeString(if (index == 0) name else "")
+                    writeAttributeValue(tag, value!!)
+                }
+            }
+        }
+    }
+
     private fun writeAttributeValue(tag: IppTag, value: Any) {
 
-        fun writeString(value: String) = writeString(value, tag.selectCharset(operationAttributesCharset!!))
+        fun writeString(value: String) = writeString(value, tag.selectCharset(attributesCharset))
 
         when (tag) {
 
@@ -117,7 +113,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
             }
 
             IppTag.Charset -> with(value as Charset) {
-                writeString(value.name().toLowerCase())
+                writeString(name().toLowerCase())
             }
 
             IppTag.Uri -> with(value as URI) {
@@ -142,9 +138,10 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
 
             IppTag.TextWithLanguage,
             IppTag.NameWithLanguage -> with(value as IppString) {
-                writeShort(4 + text.length + language!!.length)
-                writeString(value.language!!)
-                writeString(value.text)
+                if (language == null) throw IppException("expected IppString with language")
+                writeShort(4 + text.length + language.length)
+                writeString(language)
+                writeString(text)
             }
 
             IppTag.DateTime -> with(value as IppDateTime) {
@@ -173,7 +170,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
             }
 
             else -> {
-                throw IppException(String.format("unable to encode tag %s (%02X)", tag, tag.code))
+                throw IllegalArgumentException(String.format("tag 0x%02X %s", tag.code, tag))
             }
         }
     }

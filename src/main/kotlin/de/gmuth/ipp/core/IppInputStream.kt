@@ -14,7 +14,7 @@ import java.nio.charset.Charset
 class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
     companion object {
-        val log = Log.getWriter("IppInputStream", Log.Level.WARN)
+        val log = Log.getWriter("IppInputStream")
         var check1setOfRegistration: Boolean = false
         var HP_BUG_WithLanguage_Workaround = true
     }
@@ -39,18 +39,20 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
         tagLoop@ do {
             val tag = readTag()
-            when {
-                tag.isEndTag() -> break@tagLoop
-                tag.isDelimiterTag() -> {
-                    currentGroup = message.ippAttributesGroup(tag)
-                    continue@tagLoop
-                }
+            if (tag.isEndTag()) {
+                break@tagLoop
+            }
+            if (tag.isDelimiterTag()) {
+                currentGroup = message.ippAttributesGroup(tag)
+                continue@tagLoop
             }
             val attribute = readAttribute(tag)
             log.trace { "$attribute" }
+
             if (attribute.name.isNotEmpty()) {
                 currentGroup.put(attribute)
                 currentAttribute = attribute
+
             } else { // name.isEmpty() -> 1setOf
                 currentAttribute.additionalValue(attribute)
                 if (check1setOfRegistration && IppRegistrationsSection2.attributeIs1setOf(currentAttribute.name) == false) {
@@ -83,7 +85,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
             }
             // remember attributes-charset for name and text value decoding
             if (name == "attributes-charset") attributesCharset = value as Charset
-            return IppAttribute(name, tag, value).apply { checkSyntax() }
+            return IppAttribute(name, tag, value)
         }
     }
 
@@ -237,4 +239,5 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
         val length = readShort().toInt()
         if (length != expected) throw IppException("expected value length of $expected bytes but found $length")
     }
+
 }

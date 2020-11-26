@@ -40,7 +40,7 @@ open class IppClient(
     }
 
     companion object {
-        val log = Log.getWriter("IppClient", Log.Level.WARN)
+        val log = Log.getWriter("IppClient")
         val ippContentType = "application/ipp"
     }
 
@@ -73,16 +73,16 @@ open class IppClient(
     fun exchangeSuccessful(ippRequest: IppRequest) =
             with(exchange(ippRequest)) {
                 if (!isSuccessful()) {
-                    throw IppExchangeException(ippRequest, this, "operation ${ippRequest.operation} failed: '$status' $statusMessage")
+                    val message = "operation ${ippRequest.operation} failed: '$status' $statusMessage"
+                    throw IppExchangeException(ippRequest, this, message).apply { logDetails() }
                 }
                 log.debug { this.toString() }
                 this // successful ippResponse
             }
 
     override fun exchange(ippRequest: IppRequest): IppResponse {
-        val ippUri = ippRequest.printerUri
+        val ippUri: URI = ippRequest.operationGroup.getValue("printer-uri") ?: throw IppException("missing printer-uri")
         lastIppRequest = ippRequest
-        val ippResponse = IppResponse()
 
         // request logging
         log.debug { "send '${ippRequest.operation}' request to $ippUri" }
@@ -99,6 +99,7 @@ open class IppClient(
         val ippResponseStream = httpExchange(httpUri) { ippRequestStream -> ippRequest.write(ippRequestStream) }
 
         // decode ipp response
+        val ippResponse = IppResponse()
         try {
             ippResponse.read(ippResponseStream)
         } catch (exception: Exception) {
@@ -136,7 +137,7 @@ open class IppClient(
             with(httpClient.post(uri, ippContentType, writeContent, httpBasicAuth)) {
                 log.debug { "ipp-server: $server" }
                 if (status == 200 && contentType == ippContentType) return contentStream
-                if (server.toLowerCase().contains("cups")) {
+                if (server != null && server.toLowerCase().contains("cups")) {
                     when (status) {
                         426 -> {
                             val httpsUri = with(uri) { URI.create("https://$host:$port$path") }

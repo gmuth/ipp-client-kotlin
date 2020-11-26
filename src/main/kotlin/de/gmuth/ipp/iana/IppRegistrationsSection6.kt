@@ -16,6 +16,7 @@ class IppRegistrationsSection6 {
             val syntax: String,
             val reference: String
     ) {
+
         companion object {
             val rowMapper = object : RowMapper<EnumAttributeValue> {
                 override fun mapRow(columns: List<String>, rowNum: Int) =
@@ -35,10 +36,11 @@ class IppRegistrationsSection6 {
     companion object {
 
         // source: https://www.iana.org/assignments/ipp-registrations/ipp-registrations-6.csv
-        val allEnumAttributeValues = CSVReader(EnumAttributeValue.rowMapper)
-                .readResource("/ipp-registrations-6.csv", true)
+        val allEnumAttributeValues =
+                CSVReader(EnumAttributeValue.rowMapper).readResource("/ipp-registrations-6.csv", true)
 
-        val enumAttributeValuesMap = allEnumAttributeValues.associateBy { "${it.attribute}/${it.value}" }
+        val enumAttributeValuesMap =
+                allEnumAttributeValues.associateBy { "${it.attribute}/${it.value}" }
 
         // alias example: finishings-default, <Any "finishings" value>
         val aliasMap = mutableMapOf<String, String>().apply {
@@ -47,7 +49,8 @@ class IppRegistrationsSection6 {
                     .forEach { put(it.attribute, it.value.replace("^.*\"(.+)\".*$".toRegex(), "$1")) }
         }
 
-        fun getEnumAttributeValue(attribute: String, value: Any) = enumAttributeValuesMap.get("$attribute/$value")
+        fun getEnumAttributeValue(attribute: String, value: Any) =
+                enumAttributeValuesMap.get("$attribute/$value")
 
         fun getEnumValueName(attribute: String, value: Any) =
                 if (attribute == "operations-supported" && value is Int) {

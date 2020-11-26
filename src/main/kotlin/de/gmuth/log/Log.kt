@@ -37,10 +37,9 @@ object Log {
     // setup your own customized log factory here
     var factory: Factory = ConsoleLogWriter.Factory
 
-    fun getWriter(category: String, level: Level? = null): Writer {
-        val writer = factory.getWriter(category)
-        if (level != null) writer.level = level
-        return writer
-    }
-    
+    var defaultLevel = Level.WARN
+
+    fun getWriter(category: String, level: Level = defaultLevel) =
+            factory.getWriter(category).apply { this.level = level }
+
 }

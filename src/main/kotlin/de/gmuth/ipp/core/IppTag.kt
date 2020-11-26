@@ -5,10 +5,8 @@ package de.gmuth.ipp.core
  */
 
 // [RFC 8010] and [RFC 3380]
-enum class IppTag(
-        val code: Byte,
-        private val registeredName: String
-) {
+enum class IppTag(val code: Byte, private val registeredName: String) {
+
     // delimiter tags
     // https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-7
     Operation(0x01, "operation-attributes-tag"),
@@ -62,14 +60,10 @@ enum class IppTag(
     fun isDelimiterTag() = code in 0x00..0x0F
     fun isOutOfBandTag() = code in 0x10..0x1F
     fun isValueTag() = code in 0x20..0x4F
-    fun isEndTag() = this == End
+    fun isEndTag() = code == End.code
+    fun isTextOrName() = this in listOf(TextWithoutLanguage, TextWithLanguage, NameWithoutLanguage, NameWithLanguage)
 
-    fun selectCharset(attributesCharset: java.nio.charset.Charset?) =
-            if (this in listOf(TextWithoutLanguage, TextWithLanguage, NameWithoutLanguage, NameWithLanguage)) {
-                attributesCharset ?: throw IppException("missing attributes-charset")
-            } else {
-                Charsets.US_ASCII
-            }
+    override fun toString() = registeredName
 
     fun registeredSyntax() = when (this) {
         // iana registered syntax doesn't care about language
@@ -78,16 +72,20 @@ enum class IppTag(
         else -> registeredName
     }
 
-    override fun toString() = registeredName
+    fun selectCharset(attributesCharset: java.nio.charset.Charset?) =
+            if (isTextOrName()) {
+                attributesCharset ?: throw IppException("missing attributes-charset")
+            } else {
+                Charsets.US_ASCII
+            }
 
     companion object {
-        private val codeMap = values().associateBy(IppTag::code)
-        fun fromByte(code: Byte): IppTag = codeMap[code]
-                ?: throw IppException(String.format("ipp tag code '%02X' unknown", code))
 
-        private val registeredNameMap = values().associateBy(IppTag::registeredName)
-        fun fromRegisteredName(name: String): IppTag = registeredNameMap[name]
-                ?: throw IppException(String.format("ipp tag name '%s' unknown", name))
+        fun fromByte(code: Byte): IppTag =
+                values().find { it.code == code } ?: throw IllegalArgumentException(String.format("tag '%02X'", code))
+
+        fun fromString(name: String): IppTag =
+                values().find { it.registeredName == name } ?: throw IllegalArgumentException(name)
     }
 
 }

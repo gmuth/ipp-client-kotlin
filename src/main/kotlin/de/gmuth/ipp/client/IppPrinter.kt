@@ -14,6 +14,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
 import java.net.URI
+import java.nio.charset.Charset
 
 open class IppPrinter(
         val printerUri: URI,
@@ -38,7 +39,7 @@ open class IppPrinter(
     }
 
     companion object {
-        val log = Log.getWriter("IppPrinter", Log.Level.WARN)
+        val log = Log.getWriter("IppPrinter")
         var checkIfValueIsSupported: Boolean = true
         var getJobsRequestedAttributes = listOf(
                 "job-id", "job-uri", "job-state", "job-state-reasons", "job-name", "job-originating-user-name"
@@ -230,7 +231,7 @@ open class IppPrinter(
     fun exchangeSuccessful(request: IppRequest): IppResponse {
         checkIfValueIsSupported("ipp-versions-supported", ippClient.ippVersion)
         checkIfValueIsSupported("operations-supported", request.code!!.toInt())
-        checkIfValueIsSupported("charset-supported", request.operationGroup.attributesCharset)
+        checkIfValueIsSupported("charset-supported", request.operationGroup.getValue("attributes-charset") as Charset)
         return ippClient.exchangeSuccessful(request)
     }
 

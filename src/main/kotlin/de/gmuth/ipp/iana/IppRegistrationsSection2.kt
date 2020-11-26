@@ -80,17 +80,20 @@ class IppRegistrationsSection2 {
 
     companion object {
 
-        val log = Log.getWriter("IppRegistrationsSection2", Log.Level.WARN)
+        val log = Log.getWriter("IppRegistrationsSection2")
 
         // source: https://www.iana.org/assignments/ipp-registrations/ipp-registrations-2.csv
         val allAttributes = CSVReader(Attribute.rowMapper)
                 .readResource("/ipp-registrations-2.csv", true)
 
-        val attributesMap = allAttributes.associateBy(Attribute::key)
+        val attributesMap =
+                allAttributes.associateBy(Attribute::key)
 
-        fun tagForAttribute(name: String) = attributesMap[name]?.tag()
+        fun tagForAttribute(name: String) =
+                attributesMap[name]?.tag()
 
-        fun attributeIs1setOf(name: String) = attributesMap[name]?.is1setOf()
+        fun attributeIs1setOf(name: String) =
+                attributesMap[name]?.is1setOf()
 
         fun checkSyntaxOfAttribute(name: String, tag: IppTag) {
             if (tag.isOutOfBandTag()) return
@@ -100,7 +103,8 @@ class IppRegistrationsSection2 {
             }
         }
 
-        fun selectGroupForAttribute(name: String) = attributesMap[name]?.collectionGroupTag() ?: IppTag.Job
+        fun selectGroupForAttribute(name: String) =
+                attributesMap[name]?.collectionGroupTag() ?: IppTag.Job
 
     }
 

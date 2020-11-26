@@ -10,17 +10,18 @@ class IppResponse : IppMessage() {
         get() = "$status"
 
     val status: IppStatus
-        get() = IppStatus.fromShort(code ?: throw IppException("status-code must not be null"))
+        get() = IppStatus.fromShort(code!!)
 
     val statusMessage: IppString
         get() = operationGroup.getValue("status-message")
 
-    val jobGroup: IppAttributesGroup
-        get() = getSingleAttributesGroup(IppTag.Job)
-
     val printerGroup: IppAttributesGroup
         get() = getSingleAttributesGroup(IppTag.Printer)
 
-    fun isSuccessful() = status.isSuccessful()
+    val jobGroup: IppAttributesGroup
+        get() = getSingleAttributesGroup(IppTag.Job)
+
+    fun isSuccessful() =
+            status.isSuccessful()
 
 }

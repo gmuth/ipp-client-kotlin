@@ -70,8 +70,8 @@ enum class IppStatus(val code: Short) {
             .replace("^-".toRegex(), "")
 
     companion object {
-        fun fromShort(code: Short): IppStatus = values().firstOrNull { it.code == code }
-                ?: throw IllegalArgumentException(String.format("ipp status code '%04X' unknown", code))
+        fun fromShort(code: Short): IppStatus =
+                values().find { it.code == code } ?: throw IllegalArgumentException(String.format("status code '%04X'", code))
     }
 
 }
