@@ -39,6 +39,6 @@ class CupsClient(val cupsUri: URI) : IppClient() {
                     .map { printerAttributes -> IppPrinter(printerAttributes, this) }
 
     fun getPrinter(name: String) =
-            getPrinters().firstOrNull { it.name.text == name } ?: throw NoSuchElementException(name)
+            getPrinters().find { it.name.text == name } ?: throw NoSuchElementException(name)
 
 }
