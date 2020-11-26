@@ -229,7 +229,7 @@ open class IppPrinter(
             ippClient.ippRequest(operation, printerUri, jobId, requestedAttributes)
 
     fun exchangeSuccessful(request: IppRequest): IppResponse {
-        checkIfValueIsSupported("ipp-versions-supported", ippClient.ippVersion)
+        checkIfValueIsSupported("ipp-versions-supported", request.version!!)
         checkIfValueIsSupported("operations-supported", request.code!!.toInt())
         checkIfValueIsSupported("charset-supported", request.operationGroup.getValue("attributes-charset") as Charset)
         return ippClient.exchangeSuccessful(request)
