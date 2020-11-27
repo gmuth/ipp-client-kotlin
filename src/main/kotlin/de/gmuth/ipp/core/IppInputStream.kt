@@ -192,40 +192,32 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
     }
 
     private fun readCollection(): IppCollection {
-        lateinit var memberName: String
-        var currentMemberAttribute: IppAttribute<Any>? = null
         val collection = IppCollection()
+        var memberAttribute: IppAttribute<Any>? = null
         memberLoop@ while (true) {
             val attribute = readAttribute(readTag())
-            if (attribute.name.isNotEmpty()) {
-                throw IppException("expected empty name but found '${attribute.name}'")
-            }
+            if (attribute.name.isNotEmpty()) throw IppException("expected empty name but found '${attribute.name}'")
             when (attribute.tag) {
                 IppTag.EndCollection -> {
-                    currentMemberAttribute?.let { collection.add(it) }
+                    memberAttribute?.let { collection.add(it) }
                     break@memberLoop
                 }
                 IppTag.MemberAttrName -> {
-                    currentMemberAttribute?.let { collection.add(it) }
-                    currentMemberAttribute = null
-                    memberName = attribute.value as String
+                    memberAttribute?.let { collection.add(it) }
+                    val memberName = attribute.value as String
+                    val firstValue = readAttribute(readTag())
+                    memberAttribute = IppAttribute(memberName, firstValue.tag, firstValue.value)
                 }
-                else -> { // memberAttrValue
-                    if (currentMemberAttribute == null) { // new memberduce
-                        currentMemberAttribute = IppAttribute(memberName, attribute.tag, attribute.value)
-                    } else {
-                        currentMemberAttribute.additionalValue(attribute)
-                    }
+                else -> { // member value
+                    memberAttribute!!.additionalValue(attribute)
                 }
             }
         }
         return collection
     }
 
-    private fun readString(charset: Charset = Charsets.US_ASCII): String {
-        val bytes = readLengthAndValue()
-        return String(bytes, charset)
-    }
+    private fun readString(charset: Charset = Charsets.US_ASCII) =
+            String(readLengthAndValue(), charset)
 
     private fun readLengthAndValue(): ByteArray {
         val length = readShort().toInt()
