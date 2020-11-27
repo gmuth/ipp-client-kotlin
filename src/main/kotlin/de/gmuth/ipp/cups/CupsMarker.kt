@@ -37,7 +37,7 @@ class CupsMarker(
 
         companion object {
             fun fromString(code: String): Color =
-                    values().firstOrNull { it.code == code } ?: throw IllegalArgumentException(String.format("color code %s", code))
+                    values().find { it.code == code } ?: throw IllegalArgumentException(String.format("color code %s", code))
         }
     }
 
