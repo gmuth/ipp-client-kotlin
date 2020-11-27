@@ -4,7 +4,6 @@ package de.gmuth.csv
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.ext.toPluralString
 import de.gmuth.log.Log
 import java.io.InputStream
 import java.io.OutputStream
@@ -32,7 +31,7 @@ class CSVReader<T>(private val rowMapper: RowMapper<T>) {
             val row = rowMapper.mapRow(columns, ++rowNum)
             mappedRows.add(row)
         }
-        log.info { "mapped ${mappedRows.size.toPluralString("row")}" }
+        log.info { "rows read: ${mappedRows.size}" }
         return mappedRows
     }
 

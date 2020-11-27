@@ -1,6 +1,5 @@
 package de.gmuth.ipp.core
 
-import de.gmuth.ext.toPluralString
 import de.gmuth.log.Log
 
 /**
@@ -43,8 +42,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     fun <T> getValues(name: String) =
             get(name)?.values as T ?: throw NoSuchElementException("'$name' not in group $tag")
 
-    override fun toString() =
-            "'$tag' ${size.toPluralString("attribute")}"
+    override fun toString() = "'$tag' $size attributes"
 
     fun logDetails(prefix: String = "", title: String = "$tag") {
         log.info { "${prefix}$title" }
