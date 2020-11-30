@@ -93,10 +93,18 @@ publishing {
 
 }
 
+tasks.jacocoTestReport {
+    reports {
+        xml.isEnabled = true
+    }
+}
+
 sonarqube {
     properties {
         property("sonar.projectKey", "gmuth_ipp-client-kotlin")
         property("sonar.organization", "gmuth")
         property("sonar.host.url", "https://sonarcloud.io")
+        property("sonar.java.coveragePlugin", "jacoco")
+        property("sonar.coverage.jacoco.xmlReportPaths", "$buildDir/test-results/test/*.xml")
     }
 }
