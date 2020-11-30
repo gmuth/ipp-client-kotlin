@@ -5,8 +5,13 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.ipp.core.*
+import de.gmuth.log.Log
 
 class IppMedia {
+
+    companion object {
+        val log = Log.getWriter("IppMedia")
+    }
 
     // unit: 1/100 mm, e.g. 2540 = 1 inch
     class Size(val xDimension: Int, val yDimension: Int) : IppAttributeBuilder {
@@ -40,11 +45,26 @@ class IppMedia {
 
         override fun buildIppAttribute(printerAttributes: IppAttributesGroup) =
                 IppAttribute("media-col", IppTag.BegCollection, IppCollection().apply {
-                    source?.let { add(IppAttribute("media-source", IppTag.Keyword, it)) }
+                    if (source != null) {
+                        checkIfSourceIsSupported(printerAttributes)
+                        add(IppAttribute("media-source", IppTag.Keyword, source))
+                    }
                     type?.let { add(IppAttribute("media-type", IppTag.Keyword, it)) }
                     size?.let { add(it.buildIppAttribute(printerAttributes)) }
                     margins?.let { addAll(it) }
                 })
+
+        private fun checkIfSourceIsSupported(printerAttributes: IppAttributesGroup) {
+            val mediaSourceSupported = printerAttributes["media-source-supported"]
+            if (mediaSourceSupported == null) {
+                log.debug { "printer does not provide attribute 'media-source-supported'" }
+            } else {
+                if (!mediaSourceSupported.values.contains(source)) {
+                    log.warn { "media-source '$source' not supported by printer" }
+                    log.warn { mediaSourceSupported.toString() }
+                }
+            }
+        }
     }
 
 }

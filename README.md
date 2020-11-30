@@ -34,7 +34,11 @@ val job = ippPrinter.printJob(
     printerResolution(300),
     IppPrintQuality.High,
     IppColorMode.Monochrome,
-    IppSides.TwoSidedLongEdge
+    IppSides.TwoSidedLongEdge,
+    IppMedia.Collection(
+        type = "stationery",
+        source = "tray-1"
+    )
 )
 job.logDetails()
 
@@ -134,18 +138,22 @@ if(defaultPrinter.hasCapability(CupsPrinterCapability.CanPrintInColor)) {
 }
 ```
 
-### Print jpeg to 2" roll printer
+### Print jpeg to 2" label printer
 
 ```kotlin
-val rollPrinter = IppPrinter(URI.create("ipp://192.168.2.64"))
-val rollWidth = 2540 * 2 // hundreds of mm
-val jpgFile = File("label.jpg")
-val image = ImageIO.read(jpgFile)
-rollPrinter.printJob(
-    jpegFile, documentFormat("image/jpeg"),
-    mediaCol(rollWidth, rollWidth * image.height / image.width, margin = 0)
-)
+val printer = IppPrinter(URI.create("ipp://192.168.2.64"))
+val width = 2540 * 2 // hundreds of mm
 
+val jpegFile = File("label.jpg")
+val image = javax.imageio.ImageIO.read(jpegFile)
+            
+printer.printJob(
+    jpegFile, documentFormat("image/jpeg"),
+    IppMedia.Collection(
+        size = IppMedia.Size(width, width * image.height / image.width),
+        margins = IppMedia.Margins(0)
+    )
+)
 ```
                 
 ## Packages

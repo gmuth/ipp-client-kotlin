@@ -43,11 +43,7 @@ object IppTemplateAttributes {
     fun pageRanges(vararg ranges: IntRange) =
             IppAttribute("page-ranges", IppTag.RangeOfInteger, ranges.toList())
 
-    fun media(value: String) =
-            IppAttribute("media", IppTag.Keyword, value)
+    fun media(keyword: String) =
+            IppAttribute("media", IppTag.Keyword, keyword)
 
-    fun mediaCol(xDimension: Int, yDimension: Int, margin: Int? = null) =
-            IppMedia.Collection(IppMedia.Size(xDimension, yDimension)).apply {
-                if (margin != null) margins = IppMedia.Margins(margin)
-            }
 }
