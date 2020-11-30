@@ -13,8 +13,8 @@ class IppExchangeException(
 ) : IppException(message, cause) {
 
     fun logDetails() {
-        ippRequest.logDetails("IPP-REQUEST: ")
-        ippResponse.logDetails("IPP-RESPONSE: ")
+        ippRequest.logDetails(" REQUEST: ")
+        ippResponse.logDetails("RESPONSE: ")
     }
 
 }
