@@ -4,7 +4,7 @@ A client implementation of the ipp protocol written in kotlin.
 [RFC 8010](https://tools.ietf.org/html/rfc8010),
 [RFC 8011](https://tools.ietf.org/html/rfc8011)
 
-![Build with Gradle](https://github.com/gmuth/ipp-client-kotlin/workflows/Build/badge.svg)
+[![Build with Gradle](https://github.com/gmuth/ipp-client-kotlin/workflows/Build/badge.svg)](https://github.com/gmuth/ipp-client-kotlin/actions?query=workflow%3ABuild)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=gmuth_ipp-client-kotlin&metric=alert_status)](https://sonarcloud.io/dashboard?id=gmuth_ipp-client-kotlin)
 ## Usage
 
