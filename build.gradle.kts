@@ -5,6 +5,7 @@ plugins {
     id("com.github.johnrengelman.shadow") version "5.2.0"
     id("org.sonarqube") version "3.0"
     id("maven-publish")
+    id("jacoco")
 }
 
 group = "de.gmuth.ipp"
