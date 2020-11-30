@@ -17,7 +17,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
     }
 
     // charset for text and name attributes, rfc 8011 4.1.4.1
-    private lateinit var attributesCharset: Charset
+    internal lateinit var attributesCharset: Charset
 
     fun writeMessage(message: IppMessage) {
         attributesCharset = message.operationGroup.getValue("attributes-charset")
@@ -45,26 +45,26 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
         }
     }
 
-    private fun writeVersion(version: IppVersion) {
+    internal fun writeVersion(version: IppVersion) {
         with(version) {
             writeByte(major)
             writeByte(minor)
         }
     }
 
-    private fun writeTag(tag: IppTag) {
+    internal fun writeTag(tag: IppTag) {
         if (tag.isDelimiterTag()) log.trace { "--- $tag ---" }
         writeByte(tag.code.toInt())
     }
 
-    private fun writeString(string: String, charset: Charset = Charsets.US_ASCII) {
+    internal fun writeString(string: String, charset: Charset = Charsets.US_ASCII) {
         with(string.toByteArray(charset)) {
             writeShort(size)
             write(this)
         }
     }
 
-    private fun writeAttribute(attribute: IppAttribute<*>) {
+    internal fun writeAttribute(attribute: IppAttribute<*>) {
         log.trace { "$attribute" }
         with(attribute) {
             if (tag.isOutOfBandTag() || tag == IppTag.EndCollection) {
@@ -82,7 +82,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
         }
     }
 
-    private fun writeAttributeValue(tag: IppTag, value: Any) {
+    internal fun writeAttributeValue(tag: IppTag, value: Any) {
 
         fun writeString(value: String) = writeString(value, tag.selectCharset(attributesCharset))
 
