@@ -1,9 +1,11 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.sonarqube.gradle.SonarQubeTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.3.72"
     id("com.github.johnrengelman.shadow") version "5.2.0"
-    id("jacoco") // required for sonarqube code coverage
+    id("jacoco")
     id("org.sonarqube") version "3.0"
     id("maven-publish")
 }
@@ -26,7 +28,7 @@ dependencies {
 
 defaultTasks("clean", "build")
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+tasks.withType<KotlinCompile> {
     kotlinOptions {
         jvmTarget = "1.6"
     }
@@ -93,12 +95,23 @@ publishing {
 
 }
 
+// ====== SONAR CODE ANALYSIS ======
+
+// required for sonarqube code coverage
 tasks.jacocoTestReport {
+    dependsOn(tasks.test)
     reports {
         xml.isEnabled = true
+        csv.isEnabled = false
+        html.isEnabled = true
     }
 }
 
+
+// gradle test jacocoTestReport sonarqube
+// https://docs.sonarqube.org/latest/analysis/scan/sonarscanner-for-gradle/
+// configure token with 'publish analysis' permission in file ~/.gradle/gradle.properties:
+// systemProp.sonar.login=<token>
 sonarqube {
     properties {
         property("sonar.projectKey", "gmuth_ipp-client-kotlin")
