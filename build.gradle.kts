@@ -3,9 +3,9 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.3.72"
     id("com.github.johnrengelman.shadow") version "5.2.0"
+    id("jacoco") // required for sonarqube code coverage
     id("org.sonarqube") version "3.0"
     id("maven-publish")
-    id("jacoco")
 }
 
 group = "de.gmuth.ipp"
@@ -93,11 +93,11 @@ publishing {
 
 }
 
-//tasks.jacocoTestReport {
-//    reports {
-//        xml.isEnabled = true
-//    }
-//}
+tasks.jacocoTestReport {
+    reports {
+        xml.isEnabled = true
+    }
+}
 
 sonarqube {
     properties {
