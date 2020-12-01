@@ -228,6 +228,6 @@ class IppOutputStreamTest {
 
 // hex utility extensions
 
-fun ByteArray.toHex() = map { String.format("%02X", it) }.joinToString(" ")
+fun ByteArray.toHex() = joinToString(" ") { String.format("%02X", it) }
 
 fun ByteArrayOutputStream.toHex() = toByteArray().toHex()
