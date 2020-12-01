@@ -113,6 +113,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
             }
 
             IppTag.Charset -> with(value as Charset) {
+                // jacoco says: '1 of 2 branches missed'
                 writeString(name().toLowerCase())
             }
 
