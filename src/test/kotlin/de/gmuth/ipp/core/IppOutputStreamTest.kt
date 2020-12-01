@@ -75,7 +75,7 @@ class IppOutputStreamTest {
     @Test
     fun writeAttributeValueCharset() {
         ippOutputStream.writeAttributeValue(IppTag.Charset, Charsets.US_ASCII)
-        //assertEquals("00 08 75 73 2D 61 73 63 69 69", byteArrayOutputStream.toHex())
+        assertEquals("00 08 75 73 2D 61 73 63 69 69", byteArrayOutputStream.toHex())
     }
 
     @Test
