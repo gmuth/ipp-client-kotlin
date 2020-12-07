@@ -6,6 +6,7 @@ package de.gmuth.ipp.core
 
 import de.gmuth.log.Log
 import java.io.ByteArrayInputStream
+import java.io.EOFException
 import java.net.URI
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -131,8 +132,18 @@ class IppInputStreamTest {
         assertEquals(IppString("einNameMitSprache", "de"), encoded.readAttributeValue(IppTag.NameWithLanguage))
     }
 
+
     @Test
-    fun readAttributeValueNameWithLanguage_HP_Bug() {
+    fun readAttributeValueNameWithLanguage_HP_BugFails() {
+        IppInputStream.HP_BUG_WithLanguage_Workaround = false
+        // value length 0x0017 is missing
+        val encoded = "00 02 64 65 00 11 65 69 6E 4E 61 6D 65 4D 69 74 53 70 72 61 63 68 65"
+        assertFailsWith<EOFException> { encoded.readAttributeValue(IppTag.NameWithLanguage) }
+    }
+
+    @Test
+    fun readAttributeValueNameWithLanguage_HP_BugWorkaround() {
+        IppInputStream.HP_BUG_WithLanguage_Workaround = true
         // value length 0x0017 is missing
         val encoded = "00 02 64 65 00 11 65 69 6E 4E 61 6D 65 4D 69 74 53 70 72 61 63 68 65"
         assertEquals(IppString("einNameMitSprache", "de"), encoded.readAttributeValue(IppTag.NameWithLanguage))
@@ -153,9 +164,7 @@ class IppInputStreamTest {
     @Test
     fun readAttributeValueUnknownFails() {
         val encoded = "00 00 12"
-        assertFailsWith<IllegalArgumentException> {
-            encoded.readAttributeValue(IppTag.Unknown)
-        }
+        assertFailsWith<IllegalArgumentException> { encoded.readAttributeValue(IppTag.Unknown) }
     }
 
     @Test
@@ -185,9 +194,7 @@ class IppInputStreamTest {
     @Test
     fun readMessageReadAttributeFails() {
         val encoded = "00 03 66 6F 6F 00 03 62 61 72"
-        assertFailsWith<IppException> {
-            encoded.toIppInputStream().readAttribute(IppTag.Integer)
-        }
+        assertFailsWith<IppException> { encoded.toIppInputStream().readAttribute(IppTag.Integer) }
     }
 
     @Test
