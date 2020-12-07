@@ -16,7 +16,6 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
     companion object {
         val log = Log.getWriter("IppInputStream")
         var check1setOfRegistration: Boolean = false
-        var HP_BUG_WithLanguage_Workaround = true
     }
 
     // encoding for text and name attributes, RFC 8011 4.1.4.1
@@ -149,8 +148,8 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
             IppTag.NameWithLanguage -> {
                 val attributeValueLength = readShort().toInt()
                 // HP M175nw: PrintJobOperation having a job-name with language & GetJobAttributes
-                // Testcase: german macOS, print with application, read job attributes with ipptool
-                val language = if (HP_BUG_WithLanguage_Workaround && attributeValueLength < 6) {
+                // Testcase: german macOS, print with application, read job attributes
+                val language = if (attributeValueLength < 6) {
                     // attribute value length is missing, treat this as value length for language
                     String(readBytes(attributeValueLength), tag.selectCharset(attributesCharset))
                 } else {
