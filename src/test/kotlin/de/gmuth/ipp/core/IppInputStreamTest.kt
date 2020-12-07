@@ -132,7 +132,6 @@ class IppInputStreamTest {
         assertEquals(IppString("einNameMitSprache", "de"), encoded.readAttributeValue(IppTag.NameWithLanguage))
     }
 
-
     @Test
     fun readAttributeValueNameWithLanguage_HP_BugFails() {
         IppInputStream.HP_BUG_WithLanguage_Workaround = false
