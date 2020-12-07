@@ -203,8 +203,17 @@ class IppInputStreamTest {
     }
 
     @Test
-    fun coverCheck1setOf() {
+    fun coverCheck1setOf_On() {
         IppInputStream.check1setOfRegistration = true
+        // jobGroup with job-state 1setOf boolean -> 'job-state' is not registered as '1setOf'
+        val encoded = "01 01 00 02 00 00 00 01 02 22 00 09 6A 6F 62 2D 73 74 61 74 65 00 01 01 22 00 00 00 01 00 03"
+        encoded.toIppInputStream().readMessage(message)
+        assertEquals(1, message.attributesGroups.size)
+    }
+
+    @Test
+    fun coverCheck1setOf_Off() {
+        IppInputStream.check1setOfRegistration = false
         // jobGroup with job-state 1setOf boolean -> 'job-state' is not registered as '1setOf'
         val encoded = "01 01 00 02 00 00 00 01 02 22 00 09 6A 6F 62 2D 73 74 61 74 65 00 01 01 22 00 00 00 01 00 03"
         encoded.toIppInputStream().readMessage(message)
