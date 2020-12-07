@@ -68,8 +68,8 @@ class IppOutputStreamTest {
 
     @Test
     fun writeAttributeValueResolution() {
-        ippOutputStream.writeAttributeValue(IppTag.Resolution, IppResolution(256, 128, DPI))
-        assertEquals("00 09 00 00 01 00 00 00 00 80 03", byteArrayOutputStream.toHex())
+        ippOutputStream.writeAttributeValue(IppTag.Resolution, IppResolution(600, 600, DPI))
+        assertEquals("00 09 00 00 02 58 00 00 02 58 03", byteArrayOutputStream.toHex())
     }
 
     @Test
@@ -159,12 +159,12 @@ class IppOutputStreamTest {
 
     @Test
     fun writeAttributeValueCollection() {
-        ippOutputStream.writeAttributeValue(IppTag.BegCollection, IppCollection(IppAttribute("foo", IppTag.Keyword, "bar")))
-        assertEquals("00 00 4A 00 00 00 03 66 6F 6F 44 00 00 00 03 62 61 72 37 00 00 00 00", byteArrayOutputStream.toHex())
+        ippOutputStream.writeAttributeValue(IppTag.BegCollection, IppCollection(IppAttribute("foo", IppTag.Keyword, "a", "b")))
+        assertEquals("00 00 4A 00 00 00 03 66 6F 6F 44 00 00 00 01 61 44 00 00 00 01 62 37 00 00 00 00", byteArrayOutputStream.toHex())
     }
 
     @Test
-    fun writeAttributeValueUnknown() {
+    fun writeAttributeValueUnknownFails() {
         assertFailsWith<IllegalArgumentException> {
             ippOutputStream.writeAttributeValue(IppTag.Unknown, "unknownValue")
         }
@@ -213,7 +213,7 @@ class IppOutputStreamTest {
     }
 
     @Test
-    fun writeMessageFailsToWriteAttribute() {
+    fun writeMessageWriteAttributeFails() {
         with(message) {
             version = IppVersion(2, 1)
             code = IppOperation.GetPrinterAttributes.code
@@ -228,6 +228,6 @@ class IppOutputStreamTest {
 
 // hex utility extensions
 
-fun ByteArray.toHex() = joinToString(" ") { String.format("%02X", it) }
+fun ByteArray.toHex() = joinToString(" ") { "%02X".format(it) }
 
 fun ByteArrayOutputStream.toHex() = toByteArray().toHex()
