@@ -219,8 +219,8 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
     private fun readLengthAndValue(): ByteArray {
         val length = readShort().toInt()
-        if (length > 1000) log.warn { "length $length of encoded value looks too large" }
-        return readBytes(length) // avoid Java-11-readNBytes(length) for backwards compatibility
+        // avoid Java-11-readNBytes(length) for backwards compatibility
+        return readBytes(length)
     }
 
     private fun readBytes(length: Int) = ByteArray(length).apply { readFully(this) }
