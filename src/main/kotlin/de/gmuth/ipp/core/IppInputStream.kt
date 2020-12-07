@@ -20,7 +20,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
     }
 
     // encoding for text and name attributes, RFC 8011 4.1.4.1
-    private var attributesCharset: Charset? = null
+    internal var attributesCharset: Charset? = null
 
     fun readMessage(message: IppMessage) {
         lateinit var currentGroup: IppAttributesGroup
@@ -67,7 +67,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                 if (isDelimiterTag()) log.trace { "--- $this ---" }
             }
 
-    private fun readAttribute(tag: IppTag): IppAttribute<Any> {
+    internal fun readAttribute(tag: IppTag): IppAttribute<Any> {
         val name = readString()
         // RFC 8010 3.8. & RFC 3380 8
         if (tag.isOutOfBandTag() || tag == IppTag.EndCollection) {
@@ -89,7 +89,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
         }
     }
 
-    private fun readAttributeValue(tag: IppTag): Any {
+    internal fun readAttributeValue(tag: IppTag): Any {
         // RFC 8011 4.1.4.1
         fun readStringForTag() = readString(tag.selectCharset(attributesCharset))
 
@@ -186,8 +186,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                 readCollection()
             }
 
-            // unexpected state
-            else -> throw IppException("decoding value for tag '$tag' not supported")
+            else -> throw IllegalArgumentException("tag '$tag'")
         }
     }
 
