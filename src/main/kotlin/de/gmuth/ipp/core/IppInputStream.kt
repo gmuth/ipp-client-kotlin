@@ -195,14 +195,14 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
         var memberAttribute: IppAttribute<Any>? = null
         memberLoop@ while (true) {
             val attribute = readAttribute(readTag())
-            if (attribute.name.isNotEmpty()) throw IppException("expected empty name but found '${attribute.name}'")
+            if (memberAttribute != null && attribute.tag in listOf(IppTag.EndCollection, IppTag.MemberAttrName)) {
+                collection.add(memberAttribute)
+            }
             when (attribute.tag) {
                 IppTag.EndCollection -> {
-                    memberAttribute?.let { collection.add(it) }
                     break@memberLoop
                 }
                 IppTag.MemberAttrName -> {
-                    memberAttribute?.let { collection.add(it) }
                     val memberName = attribute.value as String
                     val firstValue = readAttribute(readTag())
                     memberAttribute = IppAttribute(memberName, firstValue.tag, firstValue.value)
