@@ -179,7 +179,7 @@ class IppInputStreamTest {
                 assertEquals(2, size)
                 with(get("1")!!) {
                     assertEquals(IppTag.Boolean, this.tag)
-                    assertEquals(listOf(true, false), values as List<Boolean>)
+                    assertEquals(listOf(true, false), values as List<*>)
                 }
                 with(get("0")!!) {
                     assertEquals(IppTag.NoValue, this.tag)
