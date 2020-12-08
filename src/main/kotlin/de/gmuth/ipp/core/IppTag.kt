@@ -57,11 +57,9 @@ enum class IppTag(val code: Byte, private val registeredName: String) {
     MimeMediaType(0x49, "mimeMediaType"),
     MemberAttrName(0x4A, "memberAttrName");
 
-    fun isDelimiterTag() = code in 0x00..0x0F
+    fun isDelimiterTag() = code <= 0x0F
     fun isOutOfBandTag() = code in 0x10..0x1F
-    fun isValueTag() = code in 0x20..0x4F
     fun isEndTag() = code == End.code
-    fun isTextOrName() = this in listOf(TextWithoutLanguage, TextWithLanguage, NameWithoutLanguage, NameWithLanguage)
 
     override fun toString() = registeredName
 
@@ -72,17 +70,9 @@ enum class IppTag(val code: Byte, private val registeredName: String) {
         else -> registeredName
     }
 
-    fun selectCharset(attributesCharset: java.nio.charset.Charset?) =
-            if (isTextOrName()) {
-                attributesCharset ?: throw IppException("missing attributes-charset")
-            } else {
-                Charsets.US_ASCII
-            }
-
     companion object {
-
         fun fromByte(code: Byte): IppTag =
-                values().find { it.code == code } ?: throw IllegalArgumentException(String.format("tag '%02X'", code))
+                values().find { it.code == code } ?: throw IllegalArgumentException(String.format("code '%02X'", code))
 
         fun fromString(name: String): IppTag =
                 values().find { it.registeredName == name } ?: throw IllegalArgumentException(name)

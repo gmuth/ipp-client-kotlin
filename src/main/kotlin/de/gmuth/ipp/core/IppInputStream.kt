@@ -88,142 +88,136 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
         }
     }
 
-    internal fun readAttributeValue(tag: IppTag): Any {
-        // RFC 8011 4.1.4.1
-        fun readStringForTag() = readString(tag.selectCharset(attributesCharset))
+    internal fun readAttributeValue(tag: IppTag): Any =
+            when (tag) {
 
-        return when (tag) {
-
-            // value class Boolean
-            IppTag.Boolean -> {
-                readExpectedValueLength(1)
-                readByte() == 0x01.toByte()
-            }
-
-            // value class Int
-            IppTag.Integer,
-            IppTag.Enum -> {
-                readExpectedValueLength(4)
-                readInt()
-            }
-
-            // value class IntRange
-            IppTag.RangeOfInteger -> {
-                readExpectedValueLength(8)
-                IntRange(
-                        start = readInt(),
-                        endInclusive = readInt()
-                )
-            }
-
-            // value class IppResolution
-            IppTag.Resolution -> {
-                readExpectedValueLength(9)
-                IppResolution(
-                        x = readInt(),
-                        y = readInt(),
-                        unit = readByte().toInt()
-                )
-            }
-
-            // value class Charset
-            IppTag.Charset -> Charset.forName(readStringForTag())
-
-            // value class URI
-            IppTag.Uri -> URI.create(readStringForTag())
-
-            // value class String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
-            IppTag.Keyword,
-            IppTag.UriScheme,
-            IppTag.OctetString,
-            IppTag.MimeMediaType,
-            IppTag.MemberAttrName,
-            IppTag.NaturalLanguage -> readStringForTag()
-
-            // value class IppString
-            IppTag.TextWithoutLanguage,
-            IppTag.NameWithoutLanguage -> IppString(text = readStringForTag())
-
-            IppTag.TextWithLanguage,
-            IppTag.NameWithLanguage -> {
-                val attributeValueLength = readShort().toInt()
-                // HP M175nw: PrintJobOperation having a job-name with language & GetJobAttributes
-                // Testcase: german macOS, print with application, read job attributes
-                val language = if (attributeValueLength < 6) {
-                    // attribute value length is missing, treat this as value length for language
-                    String(readBytes(attributeValueLength), tag.selectCharset(attributesCharset))
-                } else {
-                    readStringForTag()
+                // value class Boolean
+                IppTag.Boolean -> {
+                    readExpectedValueLength(1)
+                    readByte() == 0x01.toByte()
                 }
 
-                IppString(
-                        language = language,
-                        text = readStringForTag()
-                )
-            }
-
-            // value class IppDateTime
-            IppTag.DateTime -> {
-                readExpectedValueLength(11)
-                IppDateTime(
-                        year = readShort().toInt(),
-                        month = read(),
-                        day = read(),
-                        hour = read(),
-                        minutes = read(),
-                        seconds = read(),
-                        deciSeconds = read(),
-                        directionFromUTC = readByte().toChar(),
-                        hoursFromUTC = read(),
-                        minutesFromUTC = read()
-                )
-            }
-
-            //  value class IppCollection
-            IppTag.BegCollection -> {
-                readExpectedValueLength(0)
-                readCollection()
-            }
-
-            else -> throw IllegalArgumentException("tag '$tag'")
-        }
-    }
-
-    private fun readCollection(): IppCollection {
-        val collection = IppCollection()
-        var memberAttribute: IppAttribute<Any>? = null
-        memberLoop@ while (true) {
-            val attribute = readAttribute(readTag())
-            if (memberAttribute != null && attribute.tag in listOf(IppTag.EndCollection, IppTag.MemberAttrName)) {
-                collection.add(memberAttribute)
-            }
-            when (attribute.tag) {
-                IppTag.EndCollection -> {
-                    break@memberLoop
+                // value class Int
+                IppTag.Integer,
+                IppTag.Enum -> {
+                    readExpectedValueLength(4)
+                    readInt()
                 }
-                IppTag.MemberAttrName -> {
-                    val memberName = attribute.value as String
-                    val firstValue = readAttribute(readTag())
-                    memberAttribute = IppAttribute(memberName, firstValue.tag, firstValue.value)
+
+                // value class IntRange
+                IppTag.RangeOfInteger -> {
+                    readExpectedValueLength(8)
+                    IntRange(
+                            start = readInt(),
+                            endInclusive = readInt()
+                    )
                 }
-                else -> { // member value
-                    memberAttribute!!.additionalValue(attribute)
+
+                // value class IppResolution
+                IppTag.Resolution -> {
+                    readExpectedValueLength(9)
+                    IppResolution(
+                            x = readInt(),
+                            y = readInt(),
+                            unit = readByte().toInt()
+                    )
+                }
+
+                // value class Charset
+                IppTag.Charset -> Charset.forName(readString())
+
+                // value class URI
+                IppTag.Uri -> URI.create(readString())
+
+                // value class String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
+                IppTag.Keyword,
+                IppTag.UriScheme,
+                IppTag.OctetString,
+                IppTag.MimeMediaType,
+                IppTag.MemberAttrName,
+                IppTag.NaturalLanguage -> readString()
+
+                // value class IppString
+                IppTag.TextWithoutLanguage,
+                IppTag.NameWithoutLanguage -> IppString(text = readString(attributesCharset!!))
+
+                IppTag.TextWithLanguage,
+                IppTag.NameWithLanguage -> {
+                    val attributeValueLength = readShort().toInt()
+                    // HP M175nw: PrintJobOperation having a job-name with language & GetJobAttributes
+                    // Testcase: german macOS, print with application, read job attributes
+                    val language = if (attributeValueLength < 6) {
+                        // attribute value length is missing, treat this as value length for language
+                        String(readBytes(attributeValueLength), attributesCharset!!)
+                    } else {
+                        readString(attributesCharset!!)
+                    }
+                    IppString(
+                            language = language,
+                            text = readString(attributesCharset!!)
+                    )
+                }
+
+                // value class IppDateTime
+                IppTag.DateTime -> {
+                    readExpectedValueLength(11)
+                    IppDateTime(
+                            year = readShort().toInt(),
+                            month = read(),
+                            day = read(),
+                            hour = read(),
+                            minutes = read(),
+                            seconds = read(),
+                            deciSeconds = read(),
+                            directionFromUTC = readByte().toChar(),
+                            hoursFromUTC = read(),
+                            minutesFromUTC = read()
+                    )
+                }
+
+                //  value class IppCollection
+                IppTag.BegCollection -> {
+                    readExpectedValueLength(0)
+                    readCollection()
+                }
+
+                else -> throw IllegalArgumentException("tag '$tag'")
+            }
+
+    private fun readCollection() =
+            IppCollection().apply {
+                var memberAttribute: IppAttribute<Any>? = null
+                memberLoop@ while (true) {
+                    val attribute = readAttribute(readTag())
+                    if (memberAttribute != null && attribute.tag in listOf(IppTag.EndCollection, IppTag.MemberAttrName)) {
+                        add(memberAttribute)
+                    }
+                    when (attribute.tag) {
+                        IppTag.EndCollection -> {
+                            break@memberLoop
+                        }
+                        IppTag.MemberAttrName -> {
+                            val memberName = attribute.value as String
+                            val firstValue = readAttribute(readTag())
+                            memberAttribute = IppAttribute(memberName, firstValue.tag, firstValue.value)
+                        }
+                        else -> { // member value
+                            memberAttribute!!.additionalValue(attribute)
+                        }
+                    }
                 }
             }
-        }
-        return collection
-    }
 
+    // RFC 8011 4.1.4.1 -> use attributes-charset
     private fun readString(charset: Charset = Charsets.US_ASCII) =
             String(readLengthAndValue(), charset)
 
-    private fun readLengthAndValue(): ByteArray {
-        val length = readShort().toInt()
-        // avoid Java-11-readNBytes(length) for backwards compatibility
-        return readBytes(length)
-    }
+    private fun readLengthAndValue() =
+            readBytes(readShort().toInt())
 
-    private fun readBytes(length: Int) = ByteArray(length).apply { readFully(this) }
+    // avoid Java-11-readNBytes(length) for backwards compatibility
+    private fun readBytes(length: Int) =
+            ByteArray(length).apply { readFully(this) }
 
     private fun readExpectedValueLength(expected: Int) {
         val length = readShort().toInt()

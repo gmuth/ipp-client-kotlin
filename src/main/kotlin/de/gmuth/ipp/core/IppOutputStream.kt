@@ -52,19 +52,19 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
         }
     }
 
-    internal fun writeTag(tag: IppTag) {
+    private fun writeTag(tag: IppTag) {
         if (tag.isDelimiterTag()) log.trace { "--- $tag ---" }
         writeByte(tag.code.toInt())
     }
 
-    internal fun writeString(string: String, charset: Charset = Charsets.US_ASCII) {
+    private fun writeString(string: String, charset: Charset = Charsets.US_ASCII) {
         with(string.toByteArray(charset)) {
             writeShort(size)
             write(this)
         }
     }
 
-    internal fun writeAttribute(attribute: IppAttribute<*>) {
+    private fun writeAttribute(attribute: IppAttribute<*>) {
         log.trace { "$attribute" }
         with(attribute) {
             if (tag.isOutOfBandTag() || tag == IppTag.EndCollection) {
@@ -83,9 +83,6 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
     }
 
     internal fun writeAttributeValue(tag: IppTag, value: Any) {
-
-        fun writeString(value: String) = writeString(value, tag.selectCharset(attributesCharset))
-
         when (tag) {
 
             IppTag.Boolean -> with(value as Boolean) {
@@ -132,8 +129,8 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
 
             IppTag.TextWithoutLanguage,
             IppTag.NameWithoutLanguage -> when {
-                (value is IppString) -> writeString(value.text)
-                (value is String) -> writeString(value) // accept String for convenience
+                (value is IppString) -> writeString(value.text, attributesCharset)
+                (value is String) -> writeString(value, attributesCharset) // accept String for convenience
                 else -> throw IppException("expected value class IppString without language or String")
             }
 
@@ -141,8 +138,8 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
             IppTag.NameWithLanguage -> with(value as IppString) {
                 expectLanguageOrThrow()
                 writeShort(4 + text.length + language!!.length)
-                writeString(language)
-                writeString(text)
+                writeString(language, attributesCharset)
+                writeString(text, attributesCharset)
             }
 
             IppTag.DateTime -> with(value as IppDateTime) {
