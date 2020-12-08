@@ -134,9 +134,7 @@ class IppOutputStreamTest {
 
     @Test
     fun writeAttributeValueNameWithoutLanguageFails() {
-        assertFailsWith<IppException> {
-            ippOutputStream.writeAttributeValue(IppTag.NameWithoutLanguage, 0)
-        }
+        assertFailsWith<IppException> { ippOutputStream.writeAttributeValue(IppTag.NameWithoutLanguage, 0) }
     }
 
     @Test
@@ -165,9 +163,7 @@ class IppOutputStreamTest {
 
     @Test
     fun writeAttributeValueUnknownFails() {
-        assertFailsWith<IllegalArgumentException> {
-            ippOutputStream.writeAttributeValue(IppTag.Unknown, "unknownValue")
-        }
+        assertFailsWith<IllegalArgumentException> { ippOutputStream.writeAttributeValue(IppTag.Unknown, "unknownValue") }
     }
 
     @Test
