@@ -58,6 +58,7 @@ enum class IppTag(val code: Byte, private val registeredName: String) {
     MemberAttrName(0x4A, "memberAttrName");
 
     fun isDelimiterTag() = code <= 0x0F
+    // jacoco says: 1 of 4 branches missed
     fun isOutOfBandTag() = code in 0x10..0x1F
     fun isEndTag() = code == End.code
 
