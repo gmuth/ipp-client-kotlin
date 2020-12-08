@@ -22,6 +22,7 @@ class IppTagTest {
     fun registeredSyntax() {
         assertEquals("name", IppTag.NameWithoutLanguage.registeredSyntax())
         assertEquals("text", IppTag.TextWithoutLanguage.registeredSyntax())
+        assertEquals("keyword", IppTag.Keyword.registeredSyntax())
     }
 
     @Test
