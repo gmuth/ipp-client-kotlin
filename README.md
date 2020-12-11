@@ -132,7 +132,7 @@ cupsClient.getPrinter("ColorJet_HP")
 // default printer
 val defaultPrinter = cupsClient.getDefault()
 
-// check capabality
+// check capability
 if(defaultPrinter.hasCapability(CupsPrinterCapability.CanPrintInColor)) {
     println("${defaultPrinter.name} can print in color")
 }
