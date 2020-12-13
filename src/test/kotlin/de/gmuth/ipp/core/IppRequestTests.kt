@@ -51,8 +51,8 @@ class IppRequestTests {
         val requestEncoded = request.encode()
         log.info { request.toString() }
         request.logDetails()
-        val printJobBytes = File("src/test/resources/printJob.request").readBytes()
-        assertEquals(printJobBytes.toHex(), requestEncoded.toHex())
+        val printJobRequest = File("src/test/resources/printJob.request").readBytes()
+        assertEquals(printJobRequest.toHex(), requestEncoded.toHex())
     }
 
 }
