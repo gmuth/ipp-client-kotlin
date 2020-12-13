@@ -10,7 +10,7 @@ import java.net.URI
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class IppRequestTest {
+class IppRequestTests {
 
     companion object {
         val log = Log.getWriter("IppRequestTest", Log.Level.INFO)

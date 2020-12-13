@@ -9,7 +9,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
-class IppTagTest {
+class IppTagTests {
 
     @Test
     fun tagClassification() {

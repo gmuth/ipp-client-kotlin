@@ -4,6 +4,7 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
+import de.gmuth.ipp.core.IppResolution.Unit.DPI
 import de.gmuth.log.Log
 import java.io.ByteArrayInputStream
 import java.io.EOFException
@@ -57,7 +58,7 @@ class IppInputStreamTest {
     @Test
     fun readAttributeValueResolution() {
         val encoded = "00 09 00 00 02 58 00 00 02 58 03"
-        assertEquals(IppResolution(600), encoded.readAttributeValue(IppTag.Resolution))
+        assertEquals(IppResolution(600, DPI), encoded.readAttributeValue(IppTag.Resolution))
     }
 
     @Test

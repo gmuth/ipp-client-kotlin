@@ -7,7 +7,7 @@ package de.gmuth.ipp.core
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 
-class IppVersionTest {
+class IppVersionTests {
 
     @Test
     fun constructorFails() {

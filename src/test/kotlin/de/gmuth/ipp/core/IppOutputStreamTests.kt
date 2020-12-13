@@ -68,7 +68,7 @@ class IppOutputStreamTest {
 
     @Test
     fun writeAttributeValueResolution() {
-        ippOutputStream.writeAttributeValue(IppTag.Resolution, IppResolution(600, 600, DPI))
+        ippOutputStream.writeAttributeValue(IppTag.Resolution, IppResolution(600, DPI))
         assertEquals("00 09 00 00 02 58 00 00 02 58 03", byteArrayOutputStream.toHex())
     }
 
