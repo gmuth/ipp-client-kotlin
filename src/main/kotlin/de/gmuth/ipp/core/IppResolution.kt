@@ -16,7 +16,7 @@ data class IppResolution(val x: Int, val y: Int, val unit: Int) {
     enum class Unit(val code: Int) {
         DPI(3), DPC(4);
 
-        override fun toString() = name.toLowerCase()
+        override fun toString() = name.lowerCase()
 
         companion object {
             fun fromInt(code: Int) = values().single { it.code == code }

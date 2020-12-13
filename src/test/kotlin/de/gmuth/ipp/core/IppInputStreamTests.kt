@@ -7,7 +7,6 @@ package de.gmuth.ipp.core
 import de.gmuth.ipp.core.IppResolution.Unit.DPI
 import de.gmuth.log.Log
 import java.io.ByteArrayInputStream
-import java.io.EOFException
 import java.net.URI
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -133,13 +132,6 @@ class IppInputStreamTest {
         assertEquals(IppString("einNameMitSprache", "de"), encoded.readAttributeValue(IppTag.NameWithLanguage))
     }
 
-    fun readAttributeValueNameWithLanguage_HP_BugFails() {
-        //IppInputStream.HP_BUG_WithLanguage_Workaround = false
-        // value length 0x0017 is missing
-        val encoded = "00 02 64 65 00 11 65 69 6E 4E 61 6D 65 4D 69 74 53 70 72 61 63 68 65"
-        assertFailsWith<EOFException> { encoded.readAttributeValue(IppTag.NameWithLanguage) }
-    }
-
     @Test
     fun readAttributeValueNameWithLanguage_HP_BugWorkaround() {
         // value length 0x0017 is missing
@@ -168,7 +160,6 @@ class IppInputStreamTest {
     @Test
     fun readMessage() {
         val encoded = "02 01 00 0B 00 00 00 08 01 47 00 12 61 74 74 72 69 62 75 74 65 73 2D 63 68 61 72 73 65 74 00 05 75 74 66 2D 38 02 22 00 01 31 00 01 01 22 00 00 00 01 00 13 00 01 30 00 00 03"
-
         IppInputStream.log.level = Log.Level.TRACE
         encoded.toIppInputStream().readMessage(message)
         IppInputStream.log.level = Log.Level.TRACE

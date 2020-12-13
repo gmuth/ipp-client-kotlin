@@ -60,13 +60,13 @@ enum class IppStatus(val code: Short) {
     ServerErrorTooManyJobs(0x050B),
     ServerErrorTooManyDocuments(0x050c);
 
-    fun isSuccessful() = code in 0x0000..0x00FF
-    fun isClientError() = code in 0x0400..0x04FF
-    fun isServerError() = code in 0x0500..0x05FF
+    fun isSuccessful() = (0x0000..0x00FF).contains(code)
+    fun isClientError() = (0x0400..0x04FF).contains(code)
+    fun isServerError() = (0x0500..0x05FF).contains(code)
 
     // https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-11
     override fun toString() = name
-            .replace("[A-Z]".toRegex()) { "-" + it.value.toLowerCase() }
+            .replace("[A-Z]".toRegex()) { "-" + it.value.lowerCase() }
             .replace("^-".toRegex(), "")
 
     companion object {
