@@ -16,6 +16,7 @@ abstract class IppMessage {
     var version: IppVersion? = null
     val attributesGroups = mutableListOf<IppAttributesGroup>()
     var documentInputStream: InputStream? = null
+    var documentInputStreamIsConsumed: Boolean = false
     var rawBytes: ByteArray? = null
 
     abstract val codeDescription: String // request operation or response status
@@ -62,7 +63,10 @@ abstract class IppMessage {
         } else {
             IppOutputStream(outputStream).writeMessage(this)
         }
+        if (documentInputStreamIsConsumed) throw IllegalStateException("documentInputStream has previously been consumed")
         documentInputStream?.copyTo(outputStream)
+        log.debug { "consumed documentInputStream" }
+        documentInputStreamIsConsumed = true
     }
 
     fun write(file: File) =
