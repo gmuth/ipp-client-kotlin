@@ -50,10 +50,10 @@ class IppRequestTest {
         val requestEncoded = request.encode()
         log.info { request.toString() }
         request.logDetails()
-        assertEquals(readIppFile("validate-request.ipp").toHex(), requestEncoded.toHex())
+        assertEquals(testResourceBytes("validateJob.request").toHex(), requestEncoded.toHex())
     }
 
-    private fun readIppFile(filename: String) =
+    private fun testResourceBytes(filename: String) =
             File("src/test/resources/${filename}").readBytes()
 
 }
