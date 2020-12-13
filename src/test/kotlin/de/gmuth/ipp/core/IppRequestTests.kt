@@ -13,7 +13,7 @@ import kotlin.test.assertEquals
 class IppRequestTests {
 
     companion object {
-        val log = Log.getWriter("IppRequestTest", Log.Level.INFO)
+        val log = Log.getWriter("IppRequestTests", Log.Level.INFO)
     }
 
     @Test

@@ -16,7 +16,7 @@ import kotlin.test.assertTrue
 class IppInputStreamTest {
 
     companion object {
-        val log = Log.getWriter("IppInputStreamTest", Log.Level.INFO)
+        val log = Log.getWriter("IppInputStreamTests", Log.Level.INFO)
     }
 
     private val message = object : IppMessage() {

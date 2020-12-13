@@ -15,7 +15,7 @@ import kotlin.test.assertFailsWith
 class IppOutputStreamTest {
 
     companion object {
-        val log = Log.getWriter("IppOutputStreamTest", Log.Level.INFO)
+        val log = Log.getWriter("IppOutputStreamTests", Log.Level.INFO)
     }
 
     private val byteArrayOutputStream = ByteArrayOutputStream()
