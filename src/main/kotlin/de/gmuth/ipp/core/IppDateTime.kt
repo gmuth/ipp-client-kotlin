@@ -83,13 +83,16 @@ data class IppDateTime(
                 set(Calendar.MINUTE, minutes)
                 set(Calendar.SECOND, seconds)
                 set(Calendar.MILLISECOND, deciSeconds * 100)
-                timeZone = TimeZone.getTimeZone(String.format("GMT%c%02d%02d", directionFromUTC, hoursFromUTC, minutesFromUTC))
+                timeZone = TimeZone.getTimeZone(getTimeZoneId())
             }
 
     // support for java.util.Date
 
     constructor(date: Date) :
-            this(Calendar.getInstance().apply { time = date })
+            this(Calendar.getInstance().apply {
+                time = date
+                timeZone = TimeZone.getTimeZone("UTC")
+            })
 
     fun toDate(): Date =
             toCalendar().time
@@ -120,6 +123,9 @@ data class IppDateTime(
 
     private fun getOffsetMinutes() =
             (if (directionFromUTC == '-') -1 else 1) * (hoursFromUTC * 60 + minutesFromUTC)
+
+    internal fun getTimeZoneId() =
+            "GMT%c%02d%02d".format(directionFromUTC, hoursFromUTC, minutesFromUTC)
 
 }
 
