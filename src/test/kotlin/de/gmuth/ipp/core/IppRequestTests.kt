@@ -42,18 +42,17 @@ class IppRequestTests {
     }
 
     @Test
-    fun validateJobRequest() {
+    fun printJobRequest() {
         val request = IppRequest(
-                IppOperation.ValidateJob, URI.create("ipp://localhost:8632/printers/laser"),
-                1969, listOf("requested", "attributes"), "gmuth"
+                IppOperation.PrintJob, URI.create("ipp://printer"),
+                0, listOf("one", "two"), "user"
         )
+        request.documentInputStream = "content".byteInputStream()
         val requestEncoded = request.encode()
         log.info { request.toString() }
         request.logDetails()
-        assertEquals(testResourceBytes("validateJob.request").toHex(), requestEncoded.toHex())
+        val printJobBytes = File("src/test/resources/printJob.request").readBytes()
+        assertEquals(printJobBytes.toHex(), requestEncoded.toHex())
     }
-
-    private fun testResourceBytes(filename: String) =
-            File("src/test/resources/${filename}").readBytes()
 
 }
