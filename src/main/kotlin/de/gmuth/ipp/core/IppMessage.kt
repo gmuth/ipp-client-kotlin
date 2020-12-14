@@ -63,7 +63,7 @@ abstract class IppMessage {
         } else {
             IppOutputStream(outputStream).writeMessage(this)
         }
-        if (documentInputStreamIsConsumed) throw IllegalStateException("documentInputStream has previously been consumed")
+        if (documentInputStreamIsConsumed) throw IllegalStateException("documentInputStream is consumed")
         documentInputStream?.copyTo(outputStream)
         log.debug { "consumed documentInputStream" }
         documentInputStreamIsConsumed = true

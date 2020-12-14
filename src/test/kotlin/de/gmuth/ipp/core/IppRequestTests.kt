@@ -18,18 +18,20 @@ class IppRequestTests {
 
     @Test
     fun requestConstructor1() {
-        val request = IppRequest()
-        request.code = 5
-        log.info { request.toString() }
-        request.logDetails()
-        assertEquals(1, request.requestId)
-        assertEquals(IppVersion("1.1"), request.version)
-        assertEquals(IppOperation.CreateJob, request.operation)
+        with(IppRequest()) {
+            code = 5
+            log.info { toString() }
+            logDetails()
+            assertEquals(1, requestId)
+            assertEquals(IppVersion("1.1"), version)
+            assertEquals(IppOperation.CreateJob, operation)
+        }
     }
 
     @Test
     fun requestConstructor2() {
-        IppMessage.storeRawBytes = false
+        IppMessage.log.level = Log.Level.DEBUG
+        IppMessage.storeRawBytes = !IppMessage.storeRawBytes
         val request = IppRequest(IppOperation.StartupPrinter)
         assertEquals(1, request.requestId)
         assertEquals(IppVersion("1.1"), request.version)
@@ -37,8 +39,10 @@ class IppRequestTests {
         assertEquals(Charsets.UTF_8, request.operationGroup.getValue("attributes-charset"))
         assertEquals("en", request.operationGroup.getValue("attributes-natural-language"))
         assertEquals("Startup-Printer", request.codeDescription)
-        assertEquals(72, request.encode().size)
-        IppMessage.storeRawBytes = true
+        val requestEncoded = request.encode()
+        assertEquals(72, requestEncoded.size)
+        IppMessage.storeRawBytes = !IppMessage.storeRawBytes
+        IppMessage.log.level = Log.Level.INFO
     }
 
     @Test

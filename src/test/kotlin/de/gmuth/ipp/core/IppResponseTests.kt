@@ -12,7 +12,7 @@ import kotlin.test.assertTrue
 class IppResponseTests {
 
     @Test
-    fun printJobResponse2() {
+    fun printJobResponse1() {
         val response = IppResponse().apply { read(File("src/test/resources/printJob.response")) }
         with(response) {
             assertTrue(isSuccessful())
@@ -21,6 +21,13 @@ class IppResponseTests {
             assertEquals("successful-ok", codeDescription)
             assertEquals("not-infected", statusMessage.toString())
         }
+    }
+
+    @Test
+    fun printJobResponse2() {
+        IppMessage.storeRawBytes = !IppMessage.storeRawBytes
+        IppResponse().apply { decode(File("src/test/resources/printJob.response").readBytes()) }
+        IppMessage.storeRawBytes = !IppMessage.storeRawBytes
     }
 
 }
