@@ -4,16 +4,11 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.log.Log
 import java.io.ByteArrayOutputStream
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 
 class IppMessageTests {
-
-    companion object {
-        val log = Log.getWriter("IppMessageTests", Log.Level.INFO)
-    }
 
     private val message = object : IppMessage() {
         override val codeDescription: String
