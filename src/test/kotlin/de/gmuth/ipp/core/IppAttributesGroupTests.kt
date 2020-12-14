@@ -87,7 +87,7 @@ class IppAttributesGroupTests {
         group.remove("b")
         group.remove("c", c)
 
-        assertTrue(group.entries.size >= 0)
+        assertTrue(group.entries.size == 0)
     }
 
 }
