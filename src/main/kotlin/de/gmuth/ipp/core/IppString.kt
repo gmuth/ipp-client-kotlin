@@ -15,3 +15,5 @@ data class IppString(val text: String, val language: String? = null) {
     }
 
 }
+
+fun String.toIppString() = IppString(this)
