@@ -29,4 +29,9 @@ class IppStringTests {
         assertEquals("string-with-language[en]", withLanguage.toString())
     }
 
+    @Test
+    fun toIppStringExtension() {
+        assertEquals("some-text", "some-text".toIppString().text)
+    }
+
 }
