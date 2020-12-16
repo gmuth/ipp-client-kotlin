@@ -94,7 +94,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                 // value class Boolean
                 IppTag.Boolean -> {
                     readExpectedValueLength(1)
-                    readByte() == 0x01.toByte()
+                    readBoolean()
                 }
 
                 // value class Int

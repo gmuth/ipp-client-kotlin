@@ -87,7 +87,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
 
             IppTag.Boolean -> with(value as Boolean) {
                 writeShort(1)
-                writeByte(if (value) 0x01 else 0x00)
+                writeBoolean(value)
             }
 
             IppTag.Integer,
