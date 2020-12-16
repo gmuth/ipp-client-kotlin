@@ -61,7 +61,7 @@ class IppRegistrationsSection6 {
 
         fun getOperationsSupportedValueName(value: Int): Any? =
                 if (value < 0x4000) {
-                    getEnumAttributeValue("operations-supported", String.format("0x%04X", value))?.name
+                    getEnumAttributeValue("operations-supported", "0x%04X".format(value))?.name
                 } else {
                     // CUPS operations are not iana registered
                     IppOperation.fromShort(value.toShort()).toString()
