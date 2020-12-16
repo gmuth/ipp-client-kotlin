@@ -11,10 +11,12 @@ import kotlin.test.assertTrue
 
 class IppResponseTests {
 
+    private val ippResponse = IppResponse()
+
     @Test
     fun printJobResponse1() {
-        val response = IppResponse().apply { read(File("src/test/resources/printJob.response")) }
-        with(response) {
+        with(ippResponse) {
+            read(File("src/test/resources/printJob.response"))
             assertTrue(isSuccessful())
             assertEquals(0, printerGroup.size)
             assertEquals(0, jobGroup.size)
@@ -26,8 +28,14 @@ class IppResponseTests {
     @Test
     fun printJobResponse2() {
         IppMessage.storeRawBytes = !IppMessage.storeRawBytes
-        IppResponse().apply { decode(File("src/test/resources/printJob.response").readBytes()) }
+        ippResponse.decode(File("src/test/resources/printJob.response").readBytes())
         IppMessage.storeRawBytes = !IppMessage.storeRawBytes
+    }
+
+    @Test
+    fun setStatus() {
+        ippResponse.status = IppStatus.ClientErrorDocumentFormatNotSupported
+        assertEquals(0x040A, ippResponse.code)
     }
 
 }
