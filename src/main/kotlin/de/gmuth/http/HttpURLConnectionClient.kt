@@ -5,7 +5,6 @@ package de.gmuth.http
  */
 
 import de.gmuth.log.Log
-import java.io.IOException
 import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URI
@@ -34,6 +33,7 @@ class HttpURLConnectionClient(override val config: Http.Config = Http.Config()) 
                 }
                 setRequestProperty("Authorization", "Basic $basicAuthEncoded")
             }
+            setRequestProperty("User-Agent", config.userAgent)
             setRequestProperty("Content-Type", contentType)
             // chunked streaming mode can cause: "HttpRetryException: cannot retry due to server authentication, in streaming mode"
             //setChunkedStreamingMode(0) // enable chunked transfer
