@@ -9,8 +9,11 @@ class IppResponse : IppMessage() {
     override val codeDescription: String
         get() = "$status"
 
-    val status: IppStatus
+    var status: IppStatus
         get() = IppStatus.fromShort(code!!)
+        set(ippStatus) {
+            code = ippStatus.code
+        }
 
     val statusMessage: IppString
         get() = operationGroup.getValue("status-message")
