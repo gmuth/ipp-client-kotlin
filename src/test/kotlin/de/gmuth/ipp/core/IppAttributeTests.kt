@@ -90,8 +90,8 @@ class IppAttributeTests {
 
 
     @Test
-    fun enumValueNameOrValue() {
-        assertEquals("processing", IppAttribute("printer-state", IppTag.Enum, 0).enumValueNameOrValue(4))
+    fun enumNameOrValue() {
+        assertEquals("processing", IppAttribute("printer-state", IppTag.Enum, 0).enumNameOrValue(4))
     }
 
     @Test

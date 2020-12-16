@@ -310,7 +310,7 @@ open class IppPrinter(
                 // supported by printer
             }
             false -> {
-                log.warn { "according to printer attributes value '${supportedAttribute.enumValueNameOrValue(value)}' is not supported." }
+                log.warn { "according to printer attributes value '${supportedAttribute.enumNameOrValue(value)}' is not supported." }
                 log.warn { "$supportedAttribute" }
             }
             null -> log.warn { "unable to check if value '$value' is supported by $supportedAttribute" }

@@ -86,13 +86,13 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
             "$value (${iso8601DateFormat.format(Date(epochSeconds * 1000))})"
         }
         else -> with(value as Any) {
-            enumValueNameOrValue(this).toString()
+            enumNameOrValue(this).toString()
         }
     }
 
-    fun enumValueNameOrValue(value: Any) =
+    fun enumNameOrValue(value: Any) =
             if (tag == IppTag.Enum) {
-                IppRegistrationsSection6.getEnumValueName(name, value)
+                IppRegistrationsSection6.getEnumName(name, value)
             } else {
                 value
             }
@@ -107,7 +107,7 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
                 if (value is IppCollection) {
                     value.logDetails("$prefix  ")
                 } else {
-                    log.info { "${prefix}  ${enumValueNameOrValue(value as Any)}" }
+                    log.info { "${prefix}  ${enumNameOrValue(value as Any)}" }
                 }
             }
         }
