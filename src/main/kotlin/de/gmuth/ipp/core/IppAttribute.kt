@@ -22,7 +22,10 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
     val values = mutableListOf<T>()
 
     init {
-        if (tag.isDelimiterTag()) throw IppException("delimiter tag '$tag' must not be used for attributes")
+        if (tag.isDelimiterTag()) {
+            log.error { "delimiter tag '$tag' must not be used for attributes" }
+            throw IllegalArgumentException("$tag")
+        }
     }
 
     constructor(name: String, tag: IppTag, values: Collection<T>) : this(name, tag) {
@@ -57,12 +60,6 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
         }
     }
 
-    fun check1setOfRegistration() {
-        if (values.size > 1 && IppRegistrationsSection2.attributeIs1setOf(name) == false) {
-            log.warn { "'$name' is not registered as '1setOf'" }
-        }
-    }
-
     override fun buildIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<*> = this
 
     override fun toString(): String {
@@ -78,7 +75,7 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
 
     private fun valueToString(value: T) = when {
         tag == IppTag.Charset -> with(value as Charset) {
-            name().toLowerCase()
+            name().lowerCase()
         }
         tag == IppTag.RangeOfInteger -> with(value as IntRange) {
             "$start-$endInclusive"
