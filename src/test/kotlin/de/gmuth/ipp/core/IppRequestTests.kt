@@ -31,7 +31,7 @@ class IppRequestTests {
     @Test
     fun requestConstructor2() {
         IppMessage.log.level = Log.Level.DEBUG
-        IppMessage.storeRawBytes = !IppMessage.storeRawBytes
+        IppMessage.saveRawBytes = !IppMessage.saveRawBytes
         val request = IppRequest(IppOperation.StartupPrinter)
         assertEquals(1, request.requestId)
         assertEquals(IppVersion("1.1"), request.version)
@@ -41,7 +41,7 @@ class IppRequestTests {
         assertEquals("Startup-Printer", request.codeDescription)
         val requestEncoded = request.encode()
         assertEquals(72, requestEncoded.size)
-        IppMessage.storeRawBytes = !IppMessage.storeRawBytes
+        IppMessage.saveRawBytes = !IppMessage.saveRawBytes
         IppMessage.log.level = Log.Level.INFO
     }
 

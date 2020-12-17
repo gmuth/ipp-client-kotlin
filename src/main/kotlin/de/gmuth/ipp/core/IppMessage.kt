@@ -23,7 +23,7 @@ abstract class IppMessage {
 
     companion object {
         val log = Log.getWriter("IppMessage", Log.Level.INFO)
-        var storeRawBytes: Boolean = true
+        var saveRawBytes: Boolean = true
     }
 
     val operationGroup: IppAttributesGroup
@@ -53,7 +53,7 @@ abstract class IppMessage {
     // --------
 
     fun write(outputStream: OutputStream) {
-        if (storeRawBytes) {
+        if (saveRawBytes) {
             val byteArraySavingOutputStream = ByteArraySavingOutputStream(outputStream)
             try {
                 IppOutputStream(byteArraySavingOutputStream).writeMessage(this)
@@ -83,7 +83,7 @@ abstract class IppMessage {
     // --------
 
     fun read(inputStream: InputStream) {
-        if (storeRawBytes) {
+        if (saveRawBytes) {
             val byteArraySavingInputStream = ByteArraySavingInputStream(inputStream)
             try {
                 IppInputStream(byteArraySavingInputStream).readMessage(this)

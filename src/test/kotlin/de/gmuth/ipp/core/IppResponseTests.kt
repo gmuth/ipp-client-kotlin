@@ -27,9 +27,9 @@ class IppResponseTests {
 
     @Test
     fun printJobResponse2() {
-        IppMessage.storeRawBytes = !IppMessage.storeRawBytes
+        IppMessage.saveRawBytes = !IppMessage.saveRawBytes
         ippResponse.decode(File("src/test/resources/printJob.response").readBytes())
-        IppMessage.storeRawBytes = !IppMessage.storeRawBytes
+        IppMessage.saveRawBytes = !IppMessage.saveRawBytes
     }
 
     @Test
