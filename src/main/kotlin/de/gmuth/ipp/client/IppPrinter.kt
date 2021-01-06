@@ -143,6 +143,7 @@ open class IppPrinter(
     // Validate-Job
     //-------------
 
+    @Throws(IppExchangeException::class)
     fun validateJob(vararg attributeBuilders: IppAttributeBuilder): IppResponse {
         val request = attributeBuildersRequest(IppOperation.ValidateJob, attributeBuilders)
         return exchangeSuccessful(request)
