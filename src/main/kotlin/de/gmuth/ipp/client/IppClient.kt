@@ -146,11 +146,7 @@ open class IppClient(
                             return httpExchange(httpsUri, writeContent)
                         }
                         401 -> {
-                            if (httpBasicAuth == null) {
-                                log.warn { "call basicAuth(\"user\", \"password\") to set valid credentials." }
-                            } else {
-                                log.warn { "invalid credentials (user=${httpBasicAuth!!.user})" }
-                            }
+                            log.warn { "invalid credentials. call basicAuth(\"user\", \"password\") to set valid credentials." }
                             throw IppException("$server says '401 Unauthorized'")
                         }
                     }

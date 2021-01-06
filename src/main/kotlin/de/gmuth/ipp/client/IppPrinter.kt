@@ -73,9 +73,6 @@ open class IppPrinter(
     val documentFormatSupported: List<String>
         get() = attributes.getValues("document-format-supported")
 
-    val ippVersionsSupported: List<String>
-        get() = attributes.getValues("ipp-versions-supported")
-
     // ---------------
     // CUPS Extensions
     // ---------------
