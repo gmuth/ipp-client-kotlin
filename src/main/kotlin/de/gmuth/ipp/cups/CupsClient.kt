@@ -17,7 +17,7 @@ class CupsClient(val cupsUri: URI) : IppClient() {
             this(URI.create(String.format("ipp://%s:%d", host, port)))
 
     // for convenient java usage
-    constructor() : this("localhost")
+    constructor(host: String) : this(host, 631)
 
     init {
         IppAttribute.checkSyntax = false // avoid syntax warnings
