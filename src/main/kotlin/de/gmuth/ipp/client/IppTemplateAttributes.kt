@@ -17,32 +17,41 @@ object IppTemplateAttributes {
 
     // for operation group
 
+    @JvmStatic
     fun documentFormat(value: String) =
             IppAttribute("document-format", IppTag.MimeMediaType, value)
 
+    @JvmStatic
     fun documentName(value: String) =
             IppAttribute("document-Name", IppTag.NameWithoutLanguage, value)
 
+    @JvmStatic
     fun jobName(value: String) =
             IppAttribute("job-name", IppTag.NameWithoutLanguage, value)
 
     // for job group
 
+    @JvmStatic
     fun jobPriority(value: Int) =
             IppAttribute("job-priority", IppTag.Integer, value)
 
+    @JvmStatic
     fun copies(value: Int) =
             IppAttribute("copies", IppTag.Integer, value)
 
+    @JvmStatic
     fun numberUp(value: Int) =
             IppAttribute("number-up", IppTag.Integer, value)
 
+    @JvmStatic
     fun printerResolution(value: Int, unit: Unit = DPI) =
             IppAttribute("printer-resolution", IppTag.Resolution, IppResolution(value, unit))
 
+    @JvmStatic
     fun pageRanges(vararg ranges: IntRange) =
             IppAttribute("page-ranges", IppTag.RangeOfInteger, ranges.toList())
 
+    @JvmStatic
     fun media(keyword: String) =
             IppAttribute("media", IppTag.Keyword, keyword)
 

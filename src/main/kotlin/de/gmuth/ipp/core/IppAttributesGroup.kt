@@ -44,6 +44,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
 
     override fun toString() = "'$tag' $size attributes"
 
+    @JvmOverloads
     fun logDetails(prefix: String = "", title: String = "$tag") {
         log.info { "${prefix}$title" }
         for (key in keys) {

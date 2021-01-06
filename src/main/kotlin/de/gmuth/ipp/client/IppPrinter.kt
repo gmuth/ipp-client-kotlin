@@ -34,6 +34,8 @@ open class IppPrinter(
             ippClient
     )
 
+    constructor(printerUri: String) : this(URI.create(printerUri))
+
     fun basicAuth(user: String, password: String) {
         ippClient.basicAuth(user, password)
     }
@@ -67,6 +69,12 @@ open class IppPrinter(
 
     val uriSupported: List<URI>
         get() = attributes.getValues("printer-uri-supported")
+
+    val documentFormatSupported: List<String>
+        get() = attributes.getValues("document-format-supported")
+
+    val ippVersionsSupported: List<String>
+        get() = attributes.getValues("ipp-versions-supported")
 
     // ---------------
     // CUPS Extensions
@@ -124,6 +132,7 @@ open class IppPrinter(
     // Get-Printer-Attributes
     //-----------------------
 
+    @JvmOverloads
     fun getPrinterAttributes(requestedAttributes: List<String>? = null): IppResponse {
         val request = ippRequest(IppOperation.GetPrinterAttributes, requestedAttributes = requestedAttributes)
         return exchangeSuccessful(request)
@@ -205,6 +214,7 @@ open class IppPrinter(
     // Get-Jobs (as List<IppJob>)
     //---------------------------
 
+    @JvmOverloads
     fun getJobs(
             whichJobs: String? = null,
             requestedAttributes: List<String> = getJobsRequestedAttributes

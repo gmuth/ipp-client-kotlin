@@ -58,6 +58,7 @@ class IppJob(
     // Get-Job-Attributes
     //-------------------
 
+    @JvmOverloads
     fun getJobAttributes(requestedAttributes: List<String>? = null): IppResponse {
         val request = ippRequest(IppOperation.GetJobAttributes, requestedAttributes)
         return exchangeSuccessful(request)
@@ -71,6 +72,7 @@ class IppJob(
     // Wait for terminal state (RFC 8011 5.3.7.)
     //------------------------------------------
 
+    @JvmOverloads
     fun waitForTermination(delayMillis: Long = defaultDelayMillis) {
         log.info { "wait for termination of job #$id" }
         do {
@@ -109,6 +111,7 @@ class IppJob(
     // Send-Document
     //--------------
 
+    @JvmOverloads
     fun sendDocument(inputStream: InputStream, lastDocument: Boolean = true) {
         val request = ippRequest(IppOperation.SendDocument).apply {
             operationGroup.attribute("last-document", IppTag.Boolean, lastDocument)

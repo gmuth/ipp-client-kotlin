@@ -16,6 +16,9 @@ class CupsClient(val cupsUri: URI) : IppClient() {
     constructor(host: String = "localhost", port: Int = 631) :
             this(URI.create(String.format("ipp://%s:%d", host, port)))
 
+    // for convenient java usage
+    constructor() : this("localhost")
+
     init {
         IppAttribute.checkSyntax = false // avoid syntax warnings
         if (cupsUri.scheme == "ipps") trustAnyCertificate()
