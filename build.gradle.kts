@@ -1,10 +1,10 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+//import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.sonarqube.gradle.SonarQubeTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.3.72"
-    id("com.github.johnrengelman.shadow") version "5.2.0"
+    //id("com.github.johnrengelman.shadow") version "5.2.0"
     id("jacoco")
     id("org.sonarqube") version "3.0"
     id("maven-publish")
@@ -26,7 +26,7 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 }
 
-defaultTasks("clean", "build")
+defaultTasks("clean", "build", "publishToMavenLocal")
 
 tasks.withType<KotlinCompile> {
     kotlinOptions {
@@ -39,19 +39,19 @@ tasks.withType<Jar> {
     archiveClassifier.set("")
 }
 
-tasks.withType<ShadowJar> {
-    archiveBaseName.set("ipp-client-fat")
-    archiveClassifier.set("")
-    manifest {
-        attributes(mapOf("Main-Class" to "de.gmuth.ipp.tool.PrintFileKt"))
-    }
-}
+//tasks.withType<ShadowJar> {
+//    archiveBaseName.set("ipp-client-fat")
+//    archiveClassifier.set("")
+//    manifest {
+//        attributes(mapOf("Main-Class" to "de.gmuth.ipp.tool.PrintFileKt"))
+//    }
+//}
 
-tasks {
-    build {
-        dependsOn(shadowJar)
-    }
-}
+//tasks {
+//    build {
+//        dependsOn(shadowJar)
+//    }
+//}
 
 // do NOT publish from your developer host!
 // to release: 1. remove SNAPSHOT from version; 2. commit & push; 3. check github workflow results
