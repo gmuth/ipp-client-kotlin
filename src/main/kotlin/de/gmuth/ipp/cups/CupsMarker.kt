@@ -45,23 +45,22 @@ class CupsMarker(
         init {
             with(attributes) {
                 // https://www.cups.org/doc/spec-ipp.html
-                val types = get("marker-types")!!.values
-                val names = get("marker-names")!!.values
-                val colors = get("marker-colors")!!.values
-                val levels = get("marker-levels")!!.values
-                val lowLevels = get("marker-low-levels")!!.values
-                val highLevels = get("marker-high-levels")!!.values
+                val types: kotlin.collections.List<String> = getValues("marker-types")
+                val names: kotlin.collections.List<IppString> = getValues("marker-names")
+                val colors: kotlin.collections.List<IppString> = getValues("marker-colors")
+                val levels: kotlin.collections.List<Int> = getValues("marker-levels")
+                val lowLevels: kotlin.collections.List<Int> = getValues("marker-low-levels")
+                val highLevels: kotlin.collections.List<Int> = getValues("marker-high-levels")
 
-                for ((index, name) in names.withIndex()) {
-                    val marker = CupsMarker(
-                            name = (name as IppString).text,
-                            type = types[index] as String,
-                            colorCode = (colors[index] as IppString).text,
-                            level = levels[index] as Int,
-                            lowLevel = lowLevels[index] as Int,
-                            highLevel = highLevels[index] as Int
-                    )
-                    add(marker)
+                for ((index, type) in types.withIndex()) {
+                    add(CupsMarker(
+                            type,
+                            names[index].text,
+                            colors[index].text,
+                            levels[index],
+                            lowLevels[index],
+                            highLevels[index]
+                    ))
                 }
             }
         }
