@@ -34,7 +34,7 @@ object Log {
         fun getWriter(category: String): Writer
     }
 
-    // setup your own customized log factory here
+    // default log factory for simple console logging
     var factory: Factory = ConsoleLogWriter.Factory
 
     var defaultLevel = Level.WARN
