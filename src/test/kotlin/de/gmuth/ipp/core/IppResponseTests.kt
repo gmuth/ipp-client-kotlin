@@ -7,6 +7,7 @@ package de.gmuth.ipp.core
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class IppResponseTests {
@@ -20,7 +21,7 @@ class IppResponseTests {
             assertTrue(isSuccessful())
             assertEquals(0, printerGroup.size)
             assertEquals(0, jobGroup.size)
-            assertEquals(0, unsupportedGroup.size)
+            assertFailsWith<IppException> { unsupportedGroup }
             assertEquals("successful-ok", codeDescription)
             assertEquals("not-infected", statusMessage.toString())
         }
