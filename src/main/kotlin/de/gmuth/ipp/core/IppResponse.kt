@@ -24,6 +24,9 @@ class IppResponse : IppMessage() {
     val jobGroup: IppAttributesGroup
         get() = getSingleAttributesGroup(IppTag.Job)
 
+    val unsupportedGroup: IppAttributesGroup
+        get() = getSingleAttributesGroup(IppTag.Unsupported)
+
     fun isSuccessful() =
             status.isSuccessful()
 
