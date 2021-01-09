@@ -8,7 +8,7 @@ import de.gmuth.http.Http
 import de.gmuth.http.HttpURLConnectionClient
 import de.gmuth.http.SSLHelper
 import de.gmuth.ipp.core.*
-import de.gmuth.log.Log
+import de.gmuth.log.Logging
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
@@ -40,7 +40,7 @@ open class IppClient(
     }
 
     companion object {
-        val log = Log.getWriter("IppClient")
+        val log = Logging.getLogger(Logging.LogLevel.WARN) {}
         val ippContentType = "application/ipp"
     }
 

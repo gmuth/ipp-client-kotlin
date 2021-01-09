@@ -1,16 +1,13 @@
 package de.gmuth.ipp.cups
 
-import de.gmuth.log.Log
+import de.gmuth.log.Logging
+import de.gmuth.log.Logging.LogLevel
 
 /**
  * Copyright (c) 2020 Gerhard Muth
  */
 
 class CupsPrinterType(val value: Int) {
-
-    companion object {
-        val log = Log.getWriter("CupsPrinterType", Log.Level.INFO)
-    }
 
     fun toSet(): Set<CupsPrinterCapability> =
             CupsPrinterCapability
@@ -24,10 +21,10 @@ class CupsPrinterType(val value: Int) {
     override fun toString() =
             "$value (${toSet().joinToString(",")})"
 
-    fun logDetails() {
-        log.info { String.format("PRINTER-TYPE 0x%08X capabilities:", value) }
+    fun logDetails(logger: Logging.Logger, logLevel: LogLevel = logger.logLevel) {
+        logger.log(logLevel) { String.format("PRINTER-TYPE 0x%08X capabilities:", value) }
         for (capability in toSet()) {
-            log.info { " - ${capability.description}" }
+            logger.log(logLevel) { " - ${capability.description}" }
         }
     }
 

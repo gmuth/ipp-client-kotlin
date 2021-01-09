@@ -4,7 +4,7 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.log.Log
+import de.gmuth.log.Logging
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -15,7 +15,7 @@ class IppAttributeTests {
     private val ippAttribute = IppAttribute("printer-state-reasons", IppTag.Keyword, "none")
 
     companion object {
-        val log = Log.getWriter("IppAttributeTests", Log.Level.INFO)
+        val log = Logging.getLogger(Logging.LogLevel.INFO) {}
     }
 
     @Test

@@ -1,6 +1,6 @@
 package de.gmuth.ipp.core
 
-import de.gmuth.log.Log
+import de.gmuth.log.Logging
 
 /**
  * Copyright (c) 2020 Gerhard Muth
@@ -9,7 +9,7 @@ import de.gmuth.log.Log
 class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*>>() {
 
     companion object {
-        val log = Log.getWriter("IppAttributesGroup", Log.Level.INFO)
+        val log = Logging.getLogger {}
     }
 
     init {

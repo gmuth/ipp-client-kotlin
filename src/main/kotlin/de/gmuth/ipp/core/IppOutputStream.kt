@@ -4,7 +4,7 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.log.Log
+import de.gmuth.log.Logging
 import java.io.DataOutputStream
 import java.io.OutputStream
 import java.net.URI
@@ -13,7 +13,7 @@ import java.nio.charset.Charset
 class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStream) {
 
     companion object {
-        val log = Log.getWriter("IppOutputStream")
+        val log = Logging.getLogger {}
     }
 
     // charset for text and name attributes, rfc 8011 4.1.4.1

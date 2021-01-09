@@ -7,7 +7,7 @@ package de.gmuth.ipp.iana
 import de.gmuth.csv.CSVReader
 import de.gmuth.csv.CSVReader.RowMapper
 import de.gmuth.ipp.core.IppTag
-import de.gmuth.log.Log
+import de.gmuth.log.Logging
 
 /**
  * https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-2
@@ -80,7 +80,7 @@ class IppRegistrationsSection2 {
 
     companion object {
 
-        val log = Log.getWriter("IppRegistrationsSection2")
+        val log = Logging.getLogger {}
 
         // source: https://www.iana.org/assignments/ipp-registrations/ipp-registrations-2.csv
         val allAttributes = CSVReader(Attribute.rowMapper)

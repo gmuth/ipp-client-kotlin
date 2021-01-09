@@ -5,7 +5,7 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.ipp.core.*
-import de.gmuth.log.Log
+import de.gmuth.log.Logging
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import java.io.InputStream
@@ -16,7 +16,7 @@ class IppJob(
         var attributes: IppAttributesGroup
 ) {
     companion object {
-        val log = Log.getWriter("IppJob", Log.Level.INFO)
+        val log = Logging.getLogger {}
         var defaultDelayMillis: Long = 3000
     }
 

@@ -5,12 +5,12 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.ipp.core.*
-import de.gmuth.log.Log
+import de.gmuth.log.Logging
 
 class IppMedia {
 
     companion object {
-        val log = Log.getWriter("IppMedia")
+        val log = Logging.getLogger {}
     }
 
     // unit: 1/100 mm, e.g. 2540 = 1 inch

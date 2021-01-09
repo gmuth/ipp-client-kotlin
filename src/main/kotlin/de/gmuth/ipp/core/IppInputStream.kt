@@ -5,7 +5,7 @@ package de.gmuth.ipp.core
  */
 
 import de.gmuth.ipp.iana.IppRegistrationsSection2
-import de.gmuth.log.Log
+import de.gmuth.log.Logging
 import java.io.DataInputStream
 import java.io.InputStream
 import java.net.URI
@@ -14,7 +14,7 @@ import java.nio.charset.Charset
 class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
     companion object {
-        val log = Log.getWriter("IppInputStream")
+        val log = Logging.getLogger {}
         var check1setOfRegistration: Boolean = false
     }
 

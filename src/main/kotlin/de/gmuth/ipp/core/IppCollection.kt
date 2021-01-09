@@ -1,6 +1,6 @@
 package de.gmuth.ipp.core
 
-import de.gmuth.log.Log
+import de.gmuth.log.Logging
 
 /**
  * Copyright (c) 2020 Gerhard Muth
@@ -10,7 +10,7 @@ import de.gmuth.log.Log
 data class IppCollection(val members: MutableList<IppAttribute<*>> = mutableListOf()) {
 
     companion object {
-        val log = Log.getWriter("IppCollection", Log.Level.INFO)
+        val log = Logging.getLogger {}
     }
 
     constructor(vararg attributes: IppAttribute<*>) : this(attributes.toMutableList())

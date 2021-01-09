@@ -6,7 +6,7 @@ package de.gmuth.ipp.core
 
 import de.gmuth.io.ByteArraySavingInputStream
 import de.gmuth.io.ByteArraySavingOutputStream
-import de.gmuth.log.Log
+import de.gmuth.log.Logging
 import java.io.*
 
 abstract class IppMessage {
@@ -22,7 +22,7 @@ abstract class IppMessage {
     abstract val codeDescription: String // request operation or response status
 
     companion object {
-        val log = Log.getWriter("IppMessage", Log.Level.INFO)
+        val log = Logging.getLogger {}
         var saveRawBytes: Boolean = true
     }
 

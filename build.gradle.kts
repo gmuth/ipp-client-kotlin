@@ -3,7 +3,7 @@ import org.sonarqube.gradle.SonarQubeTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.3.72"
+    id("org.jetbrains.kotlin.jvm") version "1.4.10"
     //id("com.github.johnrengelman.shadow") version "5.2.0"
     id("jacoco")
     id("org.sonarqube") version "3.0"
@@ -28,11 +28,17 @@ dependencies {
 
 defaultTasks("clean", "build", "publishToMavenLocal")
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = "1.6"
-    }
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.kotlinOptions {
+    languageVersion = "1.4"
+    jvmTarget = "1.6"
 }
+
+//tasks.withType<KotlinCompile> {
+//    kotlinOptions {
+//        jvmTarget = "1.6"
+//    }
+//}
 
 tasks.withType<Jar> {
     archiveBaseName.set("ipp-client")

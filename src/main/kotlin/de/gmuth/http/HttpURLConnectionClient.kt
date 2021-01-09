@@ -4,7 +4,7 @@ package de.gmuth.http
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.log.Log
+import de.gmuth.log.Logging
 import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URI
@@ -15,7 +15,7 @@ import javax.net.ssl.HttpsURLConnection
 class HttpURLConnectionClient(override val config: Http.Config = Http.Config()) : Http.Client {
 
     companion object {
-        val log = Log.getWriter("HttpURLConnectionClient")
+        val log = Logging.getLogger {}
     }
 
     override fun post(uri: URI, contentType: String, writeContent: (OutputStream) -> Unit, basicAuth: Http.BasicAuth?): Http.Response {

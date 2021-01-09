@@ -4,7 +4,7 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.log.Log
+import de.gmuth.log.Logging
 import java.io.File
 import java.net.URI
 import kotlin.test.Test
@@ -13,7 +13,7 @@ import kotlin.test.assertEquals
 class IppRequestTests {
 
     companion object {
-        val log = Log.getWriter("IppRequestTests", Log.Level.INFO)
+        val log = Logging.getLogger(Logging.LogLevel.INFO) {}
     }
 
     @Test
@@ -30,7 +30,7 @@ class IppRequestTests {
 
     @Test
     fun requestConstructor2() {
-        IppMessage.log.level = Log.Level.DEBUG
+        IppMessage.log.logLevel = Logging.LogLevel.DEBUG
         IppMessage.saveRawBytes = !IppMessage.saveRawBytes
         val request = IppRequest(IppOperation.StartupPrinter)
         assertEquals(1, request.requestId)
@@ -42,7 +42,7 @@ class IppRequestTests {
         val requestEncoded = request.encode()
         assertEquals(72, requestEncoded.size)
         IppMessage.saveRawBytes = !IppMessage.saveRawBytes
-        IppMessage.log.level = Log.Level.INFO
+        IppMessage.log.logLevel = Logging.LogLevel.INFO
     }
 
     @Test

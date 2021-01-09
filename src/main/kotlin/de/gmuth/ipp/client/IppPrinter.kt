@@ -9,7 +9,7 @@ import de.gmuth.ipp.cups.CupsMarker
 import de.gmuth.ipp.cups.CupsPrinterCapability
 import de.gmuth.ipp.cups.CupsPrinterType
 import de.gmuth.ipp.iana.IppRegistrationsSection2
-import de.gmuth.log.Log
+import de.gmuth.log.Logging
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
@@ -41,7 +41,7 @@ open class IppPrinter(
     }
 
     companion object {
-        val log = Log.getWriter("IppPrinter")
+        val log = Logging.getLogger {}
         var checkIfValueIsSupported: Boolean = true
         var getJobsRequestedAttributes = listOf(
                 "job-id", "job-uri", "job-state", "job-state-reasons", "job-name", "job-originating-user-name"

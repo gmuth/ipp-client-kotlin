@@ -4,7 +4,7 @@ package de.gmuth.csv
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.log.Log
+import de.gmuth.log.Logging
 import java.io.InputStream
 import java.io.OutputStream
 import java.io.PrintWriter
@@ -31,7 +31,7 @@ class CSVReader<T>(private val rowMapper: RowMapper<T>) {
             val row = rowMapper.mapRow(columns, ++rowNum)
             mappedRows.add(row)
         }
-        log.info { "rows read: ${mappedRows.size}" }
+        log.debug { "rows read: ${mappedRows.size}" }
         return mappedRows
     }
 
@@ -78,7 +78,7 @@ class CSVReader<T>(private val rowMapper: RowMapper<T>) {
 
     companion object {
 
-        val log = Log.getWriter("CSVReader")
+        val log = Logging.getLogger {}
 
         fun prettyPrintResource(resource: String) {
             val rows = readRowsFromResource(resource)

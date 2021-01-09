@@ -4,7 +4,7 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.log.Log
+import de.gmuth.log.Logging
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -26,7 +26,7 @@ class IppAttributesGroupTests {
 
     @Test
     fun putTwice() {
-        IppAttributesGroup.log.level = Log.Level.INFO
+        IppAttributesGroup.log.logLevel = Logging.LogLevel.INFO
         group.attribute("number", IppTag.Integer, 0)
         group.attribute("number", IppTag.Integer, 1, 2)
         assertEquals(1, group.size)

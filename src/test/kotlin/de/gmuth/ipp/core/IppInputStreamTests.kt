@@ -5,7 +5,7 @@ package de.gmuth.ipp.core
  */
 
 import de.gmuth.ipp.core.IppResolution.Unit.DPI
-import de.gmuth.log.Log
+import de.gmuth.log.Logging
 import java.io.ByteArrayInputStream
 import java.net.URI
 import kotlin.test.Test
@@ -16,7 +16,7 @@ import kotlin.test.assertTrue
 class IppInputStreamTest {
 
     companion object {
-        val log = Log.getWriter("IppInputStreamTests", Log.Level.INFO)
+        val log = Logging.getLogger(Logging.LogLevel.INFO) {}
     }
 
     private val message = object : IppMessage() {
@@ -160,9 +160,9 @@ class IppInputStreamTest {
     @Test
     fun readMessage() {
         val encoded = "02 01 00 0B 00 00 00 08 01 47 00 12 61 74 74 72 69 62 75 74 65 73 2D 63 68 61 72 73 65 74 00 05 75 74 66 2D 38 02 22 00 01 31 00 01 01 22 00 00 00 01 00 13 00 01 30 00 00 03"
-        IppInputStream.log.level = Log.Level.TRACE
+        IppInputStream.log.logLevel = Logging.LogLevel.TRACE
         encoded.toIppInputStream().readMessage(message)
-        IppInputStream.log.level = Log.Level.TRACE
+        IppInputStream.log.logLevel = Logging.LogLevel.TRACE
         with(message) {
             assertEquals(IppVersion("2.1"), version)
             assertEquals(IppOperation.GetPrinterAttributes.code, code)

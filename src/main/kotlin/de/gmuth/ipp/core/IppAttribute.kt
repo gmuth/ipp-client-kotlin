@@ -6,7 +6,7 @@ package de.gmuth.ipp.core
 
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.ipp.iana.IppRegistrationsSection6
-import de.gmuth.log.Log
+import de.gmuth.log.Logging
 import java.nio.charset.Charset
 import java.text.SimpleDateFormat
 import java.util.*
@@ -14,7 +14,7 @@ import java.util.*
 data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppAttributeBuilder {
 
     companion object {
-        val log = Log.getWriter("IppAttribute")
+        val log = Logging.getLogger {}
         var checkSyntax: Boolean = true
         val iso8601DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     }
