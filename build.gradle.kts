@@ -1,5 +1,4 @@
 //import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import org.sonarqube.gradle.SonarQubeTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -18,7 +17,15 @@ repositories {
     jcenter()
 }
 
+//java {
+//    registerFeature("slf4jSupport") {
+//        usingSourceSet(sourceSets["main"])
+//    }
+//}
+
 dependencies {
+    //"slf4jSupportImplementation"("org.slf4j:slf4j-api:1.7.30") // pom.xml: scope=compile, optional=true
+    compileOnly("org.slf4j:slf4j-api:1.7.30")
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9")
@@ -26,6 +33,7 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 }
 
+// gradlew clean -x test build publishToMavenLocal
 defaultTasks("clean", "build", "publishToMavenLocal")
 
 val compileKotlin: KotlinCompile by tasks
