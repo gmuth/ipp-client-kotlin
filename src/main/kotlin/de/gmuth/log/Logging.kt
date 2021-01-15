@@ -23,7 +23,11 @@ object Logging {
         fun error(messageProducer: () -> Any?) = log(LogLevel.ERROR, messageProducer)
 
         fun log(messageLogLevel: LogLevel, messageProducer: () -> Any?) {
-            if (logLevel <= messageLogLevel) dispatch(messageLogLevel, messageProducer()?.toString() ?: "null")
+            if (isEnabled(messageLogLevel)) dispatch(messageLogLevel, messageProducer()?.toString() ?: "null")
+        }
+
+        open fun isEnabled(level: LogLevel): Boolean {
+            return logLevel <= level
         }
 
         open fun dispatch(messageLogLevel: LogLevel, messageString: String) {
