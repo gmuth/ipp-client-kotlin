@@ -24,13 +24,16 @@ repositories {
 //}
 
 dependencies {
-    //"slf4jSupportImplementation"("org.slf4j:slf4j-api:1.7.30") // pom.xml: scope=compile, optional=true
-    compileOnly("org.slf4j:slf4j-api:1.7.30")
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9")
+
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
+
+    //"slf4jSupportImplementation"("org.slf4j:slf4j-api:1.7.30") // pom.xml: scope=compile, optional=true
+    compileOnly("org.slf4j:slf4j-api:1.7.30")
+    testRuntimeOnly("org.slf4j:slf4j-simple:1.7.30")
 }
 
 // gradlew clean -x test build publishToMavenLocal

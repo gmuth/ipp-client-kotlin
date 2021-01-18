@@ -1,5 +1,8 @@
 package de.gmuth.log
 
+import de.gmuth.log.Logging.Factory
+import java.io.PrintWriter
+
 /**
  * Copyright (c) 2020 Gerhard Muth
  */
@@ -16,26 +19,32 @@ object Logging {
 
     open class Logger(val name: String, var logLevel: LogLevel = defaultLogLevel) {
 
-        fun trace(messageProducer: () -> Any?) = log(LogLevel.TRACE, messageProducer)
-        fun debug(messageProducer: () -> Any?) = log(LogLevel.DEBUG, messageProducer)
-        fun info(messageProducer: () -> Any?) = log(LogLevel.INFO, messageProducer)
-        fun warn(messageProducer: () -> Any?) = log(LogLevel.WARN, messageProducer)
-        fun error(messageProducer: () -> Any?) = log(LogLevel.ERROR, messageProducer)
+        fun trace(messageProducer: () -> Any?) = trace(null, messageProducer)
+        fun debug(messageProducer: () -> Any?) = debug(null, messageProducer)
+        fun info(messageProducer: () -> Any?) = info(null, messageProducer)
+        fun warn(messageProducer: () -> Any?) = warn(null, messageProducer)
+        fun error(messageProducer: () -> Any?) = error(null, messageProducer)
 
-        fun log(messageLogLevel: LogLevel, messageProducer: () -> Any?) {
-            if (isEnabled(messageLogLevel)) dispatch(messageLogLevel, messageProducer()?.toString() ?: "null")
+        fun trace(throwable: Throwable?, messageProducer: () -> Any?) = log(LogLevel.TRACE, throwable, messageProducer)
+        fun debug(throwable: Throwable?, messageProducer: () -> Any?) = log(LogLevel.DEBUG, throwable, messageProducer)
+        fun info(throwable: Throwable?, messageProducer: () -> Any?) = log(LogLevel.INFO, throwable, messageProducer)
+        fun warn(throwable: Throwable?, messageProducer: () -> Any?) = log(LogLevel.WARN, throwable, messageProducer)
+        fun error(throwable: Throwable?, messageProducer: () -> Any?) = log(LogLevel.ERROR, throwable, messageProducer)
+
+        fun log(messageLogLevel: LogLevel, throwable: Throwable?, messageProducer: () -> Any?) {
+            if (isEnabled(messageLogLevel)) dispatch(messageLogLevel, throwable, messageProducer()?.toString() ?: "null")
         }
 
-        open fun isEnabled(level: LogLevel): Boolean {
-            return logLevel <= level
-        }
+        fun log(messageLogLevel: LogLevel, messageProducer: () -> Any?) =
+                log(messageLogLevel, null, messageProducer)
 
-        open fun dispatch(messageLogLevel: LogLevel, messageString: String) {
-            if (consoleWriterEnabled) writeConsole(messageLogLevel, messageString)
-        }
+        open fun isEnabled(level: LogLevel) = logLevel <= level
 
-        open fun writeConsole(messageLogLevel: LogLevel, message: String) {
-            println(String.format(consoleWriterFormat, name, messageLogLevel, message))
+        open fun dispatch(messageLogLevel: LogLevel, throwable: Throwable?, messageString: String) {
+            if (consoleWriterEnabled) {
+                println(String.format(consoleWriterFormat, name, messageLogLevel, messageString))
+                throwable?.printStackTrace(PrintWriter(System.out, true))
+            }
         }
     }
 
