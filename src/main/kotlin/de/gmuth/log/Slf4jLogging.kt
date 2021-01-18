@@ -3,7 +3,7 @@ package de.gmuth.log
 import de.gmuth.log.Logging.LogLevel
 import de.gmuth.log.Logging.LogLevel.*
 
-class Slf4JLogging {
+class Slf4jLogging {
 
     class Logger(name: String, logLevel: LogLevel = Logging.defaultLogLevel) : Logging.Logger(name, logLevel) {
 
