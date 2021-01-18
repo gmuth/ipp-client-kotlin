@@ -22,7 +22,7 @@ open class IppClient(
         val httpClient: Http.Client = HttpURLConnectionClient(),
         val requestingUserName: String? = System.getProperty("user.name")
 
-) : IppExchange {
+) {
     var logDetails: Boolean = false
     var requestCharset: Charset = Charsets.UTF_8
     var requestNaturalLanguage: String = "en"
@@ -81,7 +81,7 @@ open class IppClient(
                 this // successful ippResponse
             }
 
-    override fun exchange(ippRequest: IppRequest): IppResponse {
+    fun exchange(ippRequest: IppRequest): IppResponse {
         val ippUri: URI = ippRequest.operationGroup.getValue("printer-uri") ?: throw IppException("missing printer-uri")
         lastIppRequest = ippRequest
 
