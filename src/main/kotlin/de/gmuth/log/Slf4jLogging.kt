@@ -11,7 +11,7 @@ class Slf4jLogging {
 
         override fun isEnabled(level: Logging.LogLevel) =
                 with(slf4jLogger) {
-                    when (level) {
+                    when (level) { // is enabled
                         TRACE -> isTraceEnabled
                         DEBUG -> isDebugEnabled
                         INFO -> isInfoEnabled
@@ -22,7 +22,7 @@ class Slf4jLogging {
 
         override fun dispatch(messageLogLevel: LogLevel, throwable: Throwable?, messageString: String) =
                 with(slf4jLogger) {
-                    when (messageLogLevel) {
+                    when (messageLogLevel) { // delegate to slf4j
                         TRACE -> trace(messageString, throwable)
                         DEBUG -> debug(messageString, throwable)
                         INFO -> info(messageString, throwable)
