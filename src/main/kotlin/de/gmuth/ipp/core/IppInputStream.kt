@@ -36,14 +36,11 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
             log.trace { "requestId = $requestId" }
         }
 
-        tagLoop@ do {
+        do {
             val tag = readTag()
-            if (tag.isEndTag()) {
-                break@tagLoop
-            }
             if (tag.isDelimiterTag()) {
-                currentGroup = message.ippAttributesGroup(tag)
-                continue@tagLoop
+                if (tag.isGroupTag()) currentGroup = message.ippAttributesGroup(tag)
+                continue
             }
             val attribute = readAttribute(tag)
             log.trace { "$attribute" }
@@ -58,7 +55,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                     log.warn { "'${currentAttribute.name}' is not registered as '1setOf'" }
                 }
             }
-        } while (true)
+        } while (!tag.isEndTag())
     }
 
     private fun readTag() =

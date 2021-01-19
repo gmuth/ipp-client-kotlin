@@ -60,6 +60,7 @@ enum class IppTag(val code: Byte, private val registeredName: String) {
     fun isDelimiterTag() = (0x00..0x0F).contains(code)
     fun isOutOfBandTag() = (0x10..0x1F).contains(code)
     fun isEndTag() = code == End.code
+    fun isGroupTag() = isDelimiterTag() && !isEndTag()
 
     override fun toString() = registeredName
 
