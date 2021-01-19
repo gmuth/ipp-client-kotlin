@@ -124,7 +124,6 @@ tasks.jacocoTestReport {
     }
 }
 
-
 // gradle test jacocoTestReport sonarqube
 // https://docs.sonarqube.org/latest/analysis/scan/sonarscanner-for-gradle/
 // configure token with 'publish analysis' permission in file ~/.gradle/gradle.properties:
