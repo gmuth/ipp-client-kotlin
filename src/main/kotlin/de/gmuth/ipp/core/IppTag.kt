@@ -57,10 +57,12 @@ enum class IppTag(val code: Byte, private val registeredName: String) {
     MimeMediaType(0x49, "mimeMediaType"),
     MemberAttrName(0x4A, "memberAttrName");
 
-    fun isDelimiterTag() = (0x00..0x0F).contains(code)
-    fun isOutOfBandTag() = (0x10..0x1F).contains(code)
-    fun isEndTag() = code == End.code
-    fun isGroupTag() = isDelimiterTag() && !isEndTag()
+    fun isDelimiterTag() = code < 0x10
+    fun isGroupTag() = code < 0x10 && code != End.code
+    fun isValueTag() = 0x10 <= code
+    fun isOutOfBandTag() = 0x10 <= code && code < 0x20
+    fun isMemberAttrName() = code == MemberAttrName.code
+    fun isMemberAttrValue() = 0x10 <= code && code != MemberAttrName.code && code != EndCollection.code
 
     override fun toString() = registeredName
 

@@ -13,7 +13,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     }
 
     init {
-        if (!tag.isDelimiterTag() || tag.isEndTag()) throw IppException("'$tag' is not a valid group tag")
+        if (!tag.isGroupTag()) throw IppException("'$tag' is not a valid group tag")
     }
 
     fun put(attribute: IppAttribute<*>): IppAttribute<*>? {

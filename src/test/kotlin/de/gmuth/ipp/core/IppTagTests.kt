@@ -7,15 +7,15 @@ package de.gmuth.ipp.core
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.assertTrue
+import kotlin.test.assertFalse
 
 class IppTagTests {
 
     @Test
     fun tagClassification() {
-        assertTrue(IppTag.Subscription.isDelimiterTag())
-        assertTrue(IppTag.NoValue.isOutOfBandTag())
-        assertTrue(IppTag.End.isEndTag())
+        assertFalse(IppTag.Printer.isOutOfBandTag())
+        assertFalse(IppTag.Printer.isMemberAttrValue())
+        assertFalse(IppTag.MemberAttrName.isMemberAttrValue())
     }
 
     @Test

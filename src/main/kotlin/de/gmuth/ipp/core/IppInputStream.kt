@@ -22,9 +22,6 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
     internal var attributesCharset: Charset? = null
 
     fun readMessage(message: IppMessage) {
-        lateinit var currentGroup: IppAttributesGroup
-        lateinit var currentAttribute: IppAttribute<*>
-
         with(message) {
             version = IppVersion(read(), read())
             log.trace { "version = $version" }
@@ -36,26 +33,29 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
             log.trace { "requestId = $requestId" }
         }
 
+        lateinit var currentGroup: IppAttributesGroup
+        lateinit var currentAttribute: IppAttribute<*>
         do {
             val tag = readTag()
-            if (tag.isDelimiterTag()) {
-                if (tag.isGroupTag()) currentGroup = message.ippAttributesGroup(tag)
-                continue
-            }
-            val attribute = readAttribute(tag)
-            log.trace { "$attribute" }
-
-            if (attribute.name.isNotEmpty()) {
-                currentGroup.put(attribute)
-                currentAttribute = attribute
-
-            } else { // name.isEmpty() -> 1setOf
-                currentAttribute.additionalValue(attribute)
-                if (check1setOfRegistration && IppRegistrationsSection2.attributeIs1setOf(currentAttribute.name) == false) {
-                    log.warn { "'${currentAttribute.name}' is not registered as '1setOf'" }
+            when {
+                tag.isGroupTag() -> {
+                    currentGroup = message.ippAttributesGroup(tag)
+                }
+                tag.isValueTag() -> {
+                    val attribute = readAttribute(tag)
+                    log.trace { "$attribute" }
+                    if (attribute.name.isNotEmpty()) {
+                        currentGroup.put(attribute)
+                        currentAttribute = attribute
+                    } else { // name.isEmpty() -> 1setOf
+                        currentAttribute.additionalValue(attribute)
+                        if (check1setOfRegistration && IppRegistrationsSection2.attributeIs1setOf(currentAttribute.name) == false) {
+                            log.warn { "'${currentAttribute.name}' is not registered as '1setOf'" }
+                        }
+                    }
                 }
             }
-        } while (!tag.isEndTag())
+        } while (tag != IppTag.End)
     }
 
     private fun readTag() =
@@ -184,25 +184,22 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
     private fun readCollection() =
             IppCollection().apply {
                 var memberAttribute: IppAttribute<Any>? = null
-                memberLoop@ while (true) {
+                do {
                     val attribute = readAttribute(readTag())
                     if (memberAttribute != null && attribute.tag in listOf(IppTag.EndCollection, IppTag.MemberAttrName)) {
                         add(memberAttribute)
                     }
-                    when (attribute.tag) {
-                        IppTag.EndCollection -> {
-                            break@memberLoop
-                        }
-                        IppTag.MemberAttrName -> {
+                    when {
+                        attribute.tag.isMemberAttrName() -> {
                             val memberName = attribute.value as String
                             val firstValue = readAttribute(readTag())
                             memberAttribute = IppAttribute(memberName, firstValue.tag, firstValue.value)
                         }
-                        else -> { // member value
+                        attribute.tag.isMemberAttrValue() -> {
                             memberAttribute!!.additionalValue(attribute)
                         }
                     }
-                }
+                } while (attribute.tag != IppTag.EndCollection)
             }
 
     // RFC 8011 4.1.4.1 -> use attributes-charset
