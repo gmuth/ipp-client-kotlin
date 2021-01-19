@@ -60,18 +60,10 @@ object Logging {
     }
 
     fun getLogger(logLevel: LogLevel = defaultLogLevel, noOperation: () -> Unit): Logger {
-        val fullClassName = className(noOperation)
-        val loggerName = if (useSimpleClassName) fullClassName.substringAfterLast(".") else fullClassName
+        val loggerName = with(noOperation.javaClass.enclosingClass.name) {
+            if (useSimpleClassName) substringAfterLast(".") else this
+        }
         return getLogger(loggerName, logLevel)
     }
 
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun className(noinline noOperation: () -> Unit) =
-            with(noOperation.javaClass.name) {
-                when {
-                    contains("Kt$") -> substringBefore("Kt$")
-                    contains("$") -> substringBefore("$")
-                    else -> this
-                }
-            }
 }
