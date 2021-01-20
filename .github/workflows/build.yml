@@ -2,7 +2,7 @@
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
 # https://docs.github.com/en/free-pro-team@latest/actions/reference/environment-variables
 
-name: Build
+name: build
 
 on:
   workflow_dispatch:
