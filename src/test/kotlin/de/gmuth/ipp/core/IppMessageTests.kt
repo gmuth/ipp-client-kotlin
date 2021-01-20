@@ -7,6 +7,7 @@ package de.gmuth.ipp.core
 import java.io.ByteArrayOutputStream
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 
 class IppMessageTests {
 
@@ -18,6 +19,11 @@ class IppMessageTests {
     @Test
     fun getSingleAttributesGroupFails() {
         assertFailsWith<IppException> { message.getSingleAttributesGroup(IppTag.Operation) }
+    }
+
+    @Test
+    fun containsGroup() {
+        assertFalse(message.containsGroup(IppTag.Job))
     }
 
     @Test
