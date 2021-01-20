@@ -44,6 +44,9 @@ abstract class IppMessage {
         return groups.single()
     }
 
+    fun containsGroup(tag: IppTag) =
+            attributesGroups.map { it.tag }.contains(tag)
+
     // factory/build method for IppAttributesGroup
     fun ippAttributesGroup(tag: IppTag): IppAttributesGroup =
             IppAttributesGroup(tag).apply { attributesGroups.add(this) }
