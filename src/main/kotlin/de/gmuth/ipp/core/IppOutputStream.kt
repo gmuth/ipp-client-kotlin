@@ -91,9 +91,9 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
             }
 
             IppTag.Integer,
-            IppTag.Enum -> with(value as Int) {
+            IppTag.Enum -> with(value as Number) { // Int or Short expected
                 writeShort(4)
-                writeInt(value)
+                writeInt(value.toInt())
             }
 
             IppTag.RangeOfInteger -> with(value as IntRange) {

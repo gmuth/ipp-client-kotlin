@@ -53,8 +53,8 @@ class IppRegistrationsSection6 {
                 enumAttributeValuesMap.get("$attribute/$value")
 
         fun getEnumName(attribute: String, value: Any) =
-                if (attribute == "operations-supported" && value is Int) {
-                    getOperationsSupportedValueName(value)
+                if (attribute == "operations-supported" && value is Number) {
+                    getOperationsSupportedValueName(value.toInt())
                 } else {
                     getEnumAttributeValue(aliasMap[attribute] ?: attribute, value)?.name
                 } ?: value
