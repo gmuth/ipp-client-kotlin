@@ -36,7 +36,7 @@ abstract class IppMessage {
         val groups = getAttributesGroups(tag)
         if (groups.isEmpty()) {
             if (createIfMissing) {
-                return ippAttributesGroup(tag)
+                return createAttributesGroup(tag)
             } else {
                 throw IppException("no group found with tag '$tag' in $attributesGroups")
             }
@@ -48,8 +48,8 @@ abstract class IppMessage {
             attributesGroups.map { it.tag }.contains(tag)
 
     // factory/build method for IppAttributesGroup
-    fun ippAttributesGroup(tag: IppTag): IppAttributesGroup =
-            IppAttributesGroup(tag).apply { attributesGroups.add(this) }
+    fun createAttributesGroup(tag: IppTag, replacementAllowed: Boolean = true): IppAttributesGroup =
+            IppAttributesGroup(tag, replacementAllowed).apply { attributesGroups.add(this) }
 
     // --------
     // ENCODING

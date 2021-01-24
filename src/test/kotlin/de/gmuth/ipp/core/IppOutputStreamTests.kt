@@ -26,7 +26,7 @@ class IppOutputStreamTest {
             get() = "codeDescription"
 
         init {
-            ippAttributesGroup(IppTag.Operation).attribute("attributes-charset", IppTag.Charset, Charsets.UTF_8)
+            createAttributesGroup(IppTag.Operation).attribute("attributes-charset", IppTag.Charset, Charsets.UTF_8)
         }
     }
 
@@ -172,7 +172,7 @@ class IppOutputStreamTest {
             version = IppVersion(2, 1)
             code = IppOperation.GetPrinterAttributes.code
             requestId = 8
-            with(ippAttributesGroup(IppTag.Job)) {
+            with(createAttributesGroup(IppTag.Job)) {
                 attribute("1", IppTag.Boolean, true, false) // cover 1setOf
                 attribute("0", IppTag.NoValue) // cover OutOfBand
             }

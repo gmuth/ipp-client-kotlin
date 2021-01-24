@@ -38,7 +38,7 @@ class IppRequest : IppMessage {
         this.code = operation.code
         this.requestId = requestId
 
-        with(ippAttributesGroup(IppTag.Operation)) {
+        with(createAttributesGroup(IppTag.Operation)) {
 
             // required attributes
             attribute("attributes-charset", IppTag.Charset, charset)

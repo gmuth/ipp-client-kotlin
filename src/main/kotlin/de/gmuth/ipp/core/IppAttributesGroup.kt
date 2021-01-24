@@ -6,7 +6,7 @@ import de.gmuth.log.Logging
  * Copyright (c) 2020 Gerhard Muth
  */
 
-class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*>>() {
+class IppAttributesGroup(val tag: IppTag, private val replacementAllowed: Boolean = true) : LinkedHashMap<String, IppAttribute<*>>() {
 
     companion object {
         val log = Logging.getLogger {}
@@ -21,11 +21,16 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
         if (attribute.values.isEmpty() && !attribute.tag.isOutOfBandTag()) {
             throw IllegalArgumentException("empty value list")
         }
-        val replaced = put(attribute.name, attribute)
-        if (replaced != null) {
-            log.warn { "replaced '$replaced' with '$attribute' in group $tag" }
+        return if (containsKey(attribute.name) && !replacementAllowed) {
+            log.warn { "replacement denied for '$attribute' in group $tag" }
+            get(attribute.name)
+        } else {
+            val replaced = put(attribute.name, attribute)
+            if (replaced != null) {
+                log.warn { "replaced '$replaced' with '$attribute' in group $tag" }
+            }
+            replaced
         }
-        return replaced
     }
 
     fun attribute(name: String, tag: IppTag, vararg values: Any) =

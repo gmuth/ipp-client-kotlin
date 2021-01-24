@@ -39,7 +39,8 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
             val tag = readTag()
             when {
                 tag.isGroupTag() -> {
-                    currentGroup = message.ippAttributesGroup(tag)
+                    // bugfix for macOS-CUPS-PrintJob-Operation (sends "document-format" multiple times): deny attribute replacement
+                    currentGroup = message.createAttributesGroup(tag, tag != IppTag.Operation)
                 }
                 tag.isValueTag() -> {
                     val attribute = readAttribute(tag)

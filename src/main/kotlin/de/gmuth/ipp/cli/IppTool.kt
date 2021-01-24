@@ -44,7 +44,7 @@ class IppTool {
             }
             "GROUP" -> {
                 val groupTag = IppTag.fromString(firstArgument)
-                currentGroup = request.ippAttributesGroup(groupTag)
+                currentGroup = request.createAttributesGroup(groupTag)
             }
             "ATTR" -> {
                 val attribute = interpretAttr(lineItems)
