@@ -4,9 +4,9 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020 Gerhard Muth
  */
 
+import de.gmuth.http.Http
 import de.gmuth.ipp.core.*
 import de.gmuth.ipp.cups.CupsMarker
-import de.gmuth.ipp.cups.CupsPrinterCapability
 import de.gmuth.ipp.cups.CupsPrinterType
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.log.Logging
@@ -19,19 +19,19 @@ import java.nio.charset.Charset
 open class IppPrinter(
         val printerUri: URI,
         var attributes: IppAttributesGroup = IppAttributesGroup(IppTag.Printer), // empty group
-        val ippClient: IppClient = IppClient(),
-        trustAnyCertificate: Boolean = true
+        trustAnyCertificate: Boolean = true,
+        httpBasicAuth: Http.BasicAuth? = null,
+        val ippClient: IppClient = IppClient(httpBasicAuth = httpBasicAuth)
 ) {
-
     init {
         if (trustAnyCertificate) ippClient.trustAnyCertificate()
         if (attributes.size == 0) updateAllAttributes()
     }
 
     constructor(printerAttributes: IppAttributesGroup, ippClient: IppClient = IppClient()) : this(
-            (printerAttributes.getValues("printer-uri-supported") as List<URI>).first(),
+            printerAttributes.getValues<List<URI>>("printer-uri-supported").first(),
             printerAttributes,
-            ippClient
+            ippClient = ippClient
     )
 
     constructor(printerUri: String) : this(URI.create(printerUri))
@@ -83,7 +83,7 @@ open class IppPrinter(
     val printerType: CupsPrinterType
         get() = CupsPrinterType(attributes.getValue("printer-type"))
 
-    fun hasCapability(capability: CupsPrinterCapability) =
+    fun hasCapability(capability: CupsPrinterType.Capability) =
             printerType.contains(capability)
 
     val markers: CupsMarker.List

@@ -20,13 +20,12 @@ import javax.net.ssl.SSLHandshakeException
 open class IppClient(
         var ippVersion: IppVersion = IppVersion(),
         val httpClient: Http.Client = HttpURLConnectionClient(),
-        val requestingUserName: String? = System.getProperty("user.name")
-
+        var httpBasicAuth: Http.BasicAuth? = null,
+        val requestingUserName: String? = if (httpBasicAuth == null) System.getProperty("user.name") else httpBasicAuth.user
 ) {
     var logDetails: Boolean = false
     var requestCharset: Charset = Charsets.UTF_8
     var requestNaturalLanguage: String = "en"
-    var httpBasicAuth: Http.BasicAuth? = null
     var lastIppRequest: IppRequest? = null
     var lastIppResponse: IppResponse? = null
     private val requestCounter = AtomicInteger(1)
@@ -35,7 +34,7 @@ open class IppClient(
         httpClient.config.sslSocketFactory = SSLHelper.sslSocketFactoryForAnyCertificate()
     }
 
-    fun basicAuth(user: String = requestingUserName!!, password: String) {
+    fun basicAuth(user: String, password: String) {
         httpBasicAuth = Http.BasicAuth(user, password)
     }
 
