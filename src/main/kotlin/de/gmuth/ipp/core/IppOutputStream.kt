@@ -64,7 +64,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
         }
     }
 
-    private fun writeAttribute(attribute: IppAttribute<*>) {
+    internal fun writeAttribute(attribute: IppAttribute<*>) {
         log.trace { "$attribute" }
         with(attribute) {
             if (tag.isOutOfBandTag() || tag == IppTag.EndCollection) {
