@@ -8,6 +8,7 @@ import java.io.ByteArrayOutputStream
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class IppMessageTests {
 
@@ -39,9 +40,8 @@ class IppMessageTests {
             } finally {
                 tmpFile.delete()
             }
-            if (documentInputStreamIsConsumed) {
-                assertFailsWith<IllegalStateException> { write(ByteArrayOutputStream()) }
-            }
+            assertTrue(documentInputStreamIsConsumed)
+            write(ByteArrayOutputStream()) // cover warning
         }
     }
 
