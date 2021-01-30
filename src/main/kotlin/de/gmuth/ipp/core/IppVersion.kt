@@ -14,11 +14,10 @@ data class IppVersion(val major: Int = 1, val minor: Int = 1) {
     )
 
     companion object {
-        private fun matchVersion(version: String) =
-                """^(\d)\.(\d)$""".toRegex().find(version) ?: throw IllegalArgumentException(version)
-
-        private fun matchedGroupIntValue(version: String, group: Int) =
-                matchVersion(version).groups[group]!!.value.toInt()
+        private fun matchedGroupIntValue(version: String, group: Int): Int {
+            val matchedVersion = """^(\d)\.(\d)$""".toRegex().find(version) ?: throw IllegalArgumentException(version)
+            return matchedVersion.groups[group]!!.value.toInt()
+        }
     }
 
 }
