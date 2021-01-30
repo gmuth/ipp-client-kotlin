@@ -59,7 +59,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
         } while (tag != IppTag.End)
     }
 
-    private fun readTag() =
+    internal fun readTag() =
             IppTag.fromByte(readByte()).apply {
                 if (isDelimiterTag()) log.trace { "--- $this ---" }
             }

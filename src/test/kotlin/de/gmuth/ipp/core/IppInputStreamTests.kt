@@ -25,6 +25,16 @@ class IppInputStreamTest {
     }
 
     @Test
+    fun readAttributesCharsetAttribute() {
+        val encoded = "47 00 12 61 74 74 72 69 62 75 74 65 73 2D 63 68 61 72 73 65 74 00 08 75 73 2D 61 73 63 69 69"
+        val ippInputStream = encoded.toIppInputStream()
+        ippInputStream.attributesCharset = null
+        val attributesCharsetAttribute = ippInputStream.readAttribute(ippInputStream.readTag())
+        assertEquals("US-ASCII", attributesCharsetAttribute.value.toString())
+        assertEquals(ippInputStream.attributesCharset, Charsets.US_ASCII)
+    }
+
+    @Test
     fun readAttributeValueBooleanFalse() {
         val encoded = "00 01 00"
         assertEquals(false, encoded.readAttributeValue(IppTag.Boolean))
