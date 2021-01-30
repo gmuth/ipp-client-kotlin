@@ -4,12 +4,21 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertFalse
+import kotlin.test.*
 
 class IppTagTests {
+
+    @Test
+    fun validateTextWithLanguage() {
+        assertFalse(IppTag.TextWithoutLanguage.validateClass(0))
+        assertTrue(IppTag.TextWithoutLanguage.validateClass("string"))
+    }
+
+    @Test
+    fun validateNameWithLanguage() {
+        assertFalse(IppTag.NameWithoutLanguage.validateClass(0))
+        assertTrue(IppTag.NameWithoutLanguage.validateClass("ipp-string".toIppString()))
+    }
 
     @Test
     fun tagClassification() {

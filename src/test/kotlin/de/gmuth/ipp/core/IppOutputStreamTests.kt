@@ -210,6 +210,7 @@ class IppOutputStreamTest {
 
     @Test
     fun writeMessageWriteAttributeFails() {
+        IppAttribute.validateValueClass = false
         with(message) {
             version = IppVersion(2, 1)
             code = IppOperation.GetPrinterAttributes.code
