@@ -23,7 +23,7 @@ ippPrinter.markers.forEach { println(it) }
 println("black: ${ippPrinter.marker(BLACK).levelPercent()} %")
 
 // print file
-val file = File("A4-ten-blank.pdf")
+val file = File("A4-ten-pages.pdf")
 val job = ippPrinter.printJob(
     file,
     jobName(file.name),
@@ -37,10 +37,6 @@ val job = ippPrinter.printJob(
     IppPrintQuality.High,
     IppColorMode.Monochrome,
     IppSides.TwoSidedLongEdge,
-    IppMedia.Collection(
-        type = "stationery",
-        source = "tray-1"
-    )
 )
 job.logDetails()
 
@@ -50,7 +46,7 @@ ippPrinter.printUri(remoteFile)
 
 // create job and send document
 val job = ippPrinter.createJob(jobName(file.name))
-job.sendDocument(file)
+job.sendDocument(FileInputStream(file))
 job.waitForTermination()
 
 // manage jobs
@@ -135,7 +131,7 @@ cupsClient.getPrinter("ColorJet_HP")
 val defaultPrinter = cupsClient.getDefault()
 
 // check capability
-if(defaultPrinter.hasCapability(CupsPrinterCapability.CanPrintInColor)) {
+if(defaultPrinter.hasCapability(Capability.CanPrintInColor)) {
     println("${defaultPrinter.name} can print in color")
 }
 ```
@@ -219,7 +215,7 @@ repositories {
 Add dependency:
 
 ```
-    implementation("de.gmuth.ipp:ipp-client-kotlin:1.9")
-or  implementation("de.gmuth.ipp:ipp-client-kotlin:2.0-SNAPSHOT")
+    implementation("de.gmuth.ipp:ipp-client-kotlin:2.0")
+or  implementation("de.gmuth.ipp:ipp-client-kotlin:2.1-SNAPSHOT")
 ```
 
