@@ -176,7 +176,7 @@ which requires a http transport that implements interface
 
 ## Build
 
-To build `ipp-client.jar` and `ipp-client-fat.jar` into `build/libs` run
+To build the jar into `build/libs` run the default tasks
 
     ./gradlew
 
