@@ -45,8 +45,8 @@ class IppRequest : IppMessage {
             attribute("attributes-natural-language", IppTag.NaturalLanguage, naturalLanguage)
 
             // optional attributes
-            jobId?.let { attribute("job-id", IppTag.Integer, it) }
             printerUri?.let { attribute("printer-uri", IppTag.Uri, it) }
+            jobId?.let { attribute("job-id", IppTag.Integer, it) }
             requestedAttributes?.let { attribute("requested-attributes", IppTag.Keyword, it) }
             requestingUserName?.let { attribute("requesting-user-name", IppTag.NameWithoutLanguage, it) }
         }
