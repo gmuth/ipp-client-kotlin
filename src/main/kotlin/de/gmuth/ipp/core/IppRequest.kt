@@ -32,7 +32,7 @@ class IppRequest : IppMessage {
             version: IppVersion = IppVersion(),
             requestId: Int = 1,
             charset: Charset = Charsets.UTF_8,
-            naturalLanguage: String = "en"
+            naturalLanguage: String = "en-us"
     ) {
         this.version = version
         this.code = operation.code

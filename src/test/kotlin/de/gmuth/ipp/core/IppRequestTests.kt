@@ -5,10 +5,10 @@ package de.gmuth.ipp.core
  */
 
 import de.gmuth.log.Logging
-import java.io.File
 import java.net.URI
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class IppRequestTests {
 
@@ -37,10 +37,10 @@ class IppRequestTests {
         assertEquals(IppVersion("1.1"), request.version)
         assertEquals(IppOperation.StartupPrinter, request.operation)
         assertEquals(Charsets.UTF_8, request.operationGroup.getValue("attributes-charset"))
-        assertEquals("en", request.operationGroup.getValue("attributes-natural-language"))
+        assertEquals("en-us", request.operationGroup.getValue("attributes-natural-language"))
         assertEquals("Startup-Printer", request.codeDescription)
         val requestEncoded = request.encode()
-        assertEquals(72, requestEncoded.size)
+        assertEquals(75, requestEncoded.size)
         IppMessage.saveRawBytes = !IppMessage.saveRawBytes
         IppMessage.log.logLevel = Logging.LogLevel.INFO
     }
@@ -52,11 +52,23 @@ class IppRequestTests {
                 0, listOf("one", "two"), "user"
         )
         request.documentInputStream = "content".byteInputStream()
-        val requestEncoded = request.encode()
         log.info { request.toString() }
         request.logDetails()
-        val printJobRequest = File("src/test/resources/printJob.request").readBytes()
-        assertEquals(printJobRequest.toHex(), requestEncoded.toHex())
+        val requestEncoded = request.encode()
+        val requestDecoded = IppRequest()
+        requestDecoded.decode(requestEncoded)
+        assertEquals("1.1", requestDecoded.version.toString())
+        assertEquals(IppOperation.PrintJob, requestDecoded.operation)
+        assertEquals(1, requestDecoded.requestId)
+        assertNotNull(requestDecoded.operationGroup)
+        with(requestDecoded.operationGroup) {
+            assertEquals(Charsets.UTF_8, getValue("attributes-charset"))
+            assertEquals("en-us", getValue("attributes-natural-language"))
+            assertEquals(URI.create("ipp://printer"), getValue("printer-uri"))
+            assertEquals(0, getValue("job-id"))
+            assertEquals(listOf("one", "two"), getValues("requested-attributes"))
+            assertEquals("user".toIppString(), getValue("requesting-user-name"))
+        }
     }
 
 }
