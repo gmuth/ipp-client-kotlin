@@ -54,6 +54,19 @@ enum class IppOperation(val code: Short) {
     ScheduleJobAfter(0x0031),
     IdentifyPrinter(0x003C),
 
+    // PWG 5100.18
+    AcknowledgeDocument(0x003F),
+    AcknowledgeIdentifyPrinter(0x0040),
+    AcknowledgeJob(0x0041),
+    FetchDocument(0x0042),
+    FetchJob(0x0043),
+    GetOutputDeviceAttributes(0x0044),
+    UpdateActiveJobs(0x0045),
+    DeregisterOutputDevice(0x0046),
+    UpdateDocumentStatus(0x0047),
+    UpdateJobStatus(0x0048),
+    UpdateOutputDeviceAttributes(0x0049),
+
     // CUPS Operations
     CupsGetDefault(0x4001),
     CupsGetPrinters(0x4002),
