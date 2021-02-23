@@ -32,8 +32,6 @@ enum class IppOperation(val code: Short) {
     RenewSubscription(0x001A),
     CancelSubscription(0x001B),
     GetNotifications(0x001C),
-    GetResourceAttributes(0x001E),
-    GetResources(0x0020),
 
     // RFC 3998
     EnablePrinter(0x0022),
@@ -54,7 +52,7 @@ enum class IppOperation(val code: Short) {
     ScheduleJobAfter(0x0031),
     IdentifyPrinter(0x003C),
 
-    // PWG 5100.18
+    // PWG 5100.18 Infra
     AcknowledgeDocument(0x003F),
     AcknowledgeIdentifyPrinter(0x0040),
     AcknowledgeJob(0x0041),
@@ -66,6 +64,38 @@ enum class IppOperation(val code: Short) {
     UpdateDocumentStatus(0x0047),
     UpdateJobStatus(0x0048),
     UpdateOutputDeviceAttributes(0x0049),
+
+    // PWG 5100.22 System Service
+    GetResourceAttributes(0x001E),
+    GetResources(0x0020),
+    AllocatePrinterResources(0x004B),
+    CreatePrinter(0x004C),
+    DeallocatePrinterResources(0x004D),
+    DeletePrinter(0x004E),
+    GetPrinters(0x004F),
+    ShutdownOnePrinter(0x0050),
+    StartupOnePrinter(0x0051),
+    CancelResource(0x0052),
+    CreateResource(0x0053),
+    InstallResource(0x0054),
+    SendResourceData(0x0055),
+    SetResourceAttributes(0x0056),
+    CreateResourceSubscriptions(0x0057),
+    CreateSystemSubscriptions(0x0058),
+    DisableAllPrinters(0x0059),
+    EnableAllPrinters(0x005A),
+    GetSystemAttributes(0x005B),
+    GetSystemSupportedValues(0x005C),
+    PauseAllPrinters(0x005D),
+    PauseAllPrintersAfterCurrentJob(0x005E),
+    RegisterOutputDevice(0x005F),
+    RestartSystem(0x0060),
+    ResumeAllPrinters(0x0061),
+    SetSystemAttributes(0x0062),
+    ShutdownAllPrinters(0x0063),
+    StartupAllPrinters(0x0064),
+    GetPrinterResources(0x0065),
+    RestartOnePrinter(0x0067),
 
     // CUPS Operations
     CupsGetDefault(0x4001),
