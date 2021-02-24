@@ -80,6 +80,7 @@ class IppJob(
             updateAllAttributes()
             log.info {
                 StringBuffer("job-id=$id, job-state=$state").apply {
+                    if (attributes.containsKey("job-state-reasons")) append(", stateReasons=$stateReasons")
                     if (attributes.containsKey("job-impressions-completed")) append(", job-impressions-completed=$impressionsCompleted")
                 }.toString()
             }
