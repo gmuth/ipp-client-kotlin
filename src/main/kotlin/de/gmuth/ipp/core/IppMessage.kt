@@ -66,10 +66,7 @@ abstract class IppMessage {
         } else {
             IppOutputStream(outputStream).writeMessage(this)
         }
-        if (documentInputStreamIsConsumed) log.warn { "documentInputStream is consumed" }
-        documentInputStream?.copyTo(outputStream)
-        log.debug { "consumed documentInputStream" }
-        documentInputStreamIsConsumed = true
+        copyDocument(outputStream)
     }
 
     fun write(file: File) =
@@ -104,6 +101,22 @@ abstract class IppMessage {
 
     fun decode(byteArray: ByteArray) =
             read(ByteArrayInputStream(byteArray))
+
+    // --------
+    // DOCUMENT
+    // --------
+
+    private fun copyDocument(outputStream: OutputStream) {
+        if (documentInputStreamIsConsumed) log.warn { "documentInputStream is consumed" }
+        documentInputStream?.copyTo(outputStream)
+        log.debug { "consumed documentInputStream" }
+        documentInputStreamIsConsumed = true
+    }
+
+    fun saveDocument(file: File) {
+        copyDocument(file.outputStream())
+        log.info { "saved ${file.length()} document bytes to file ${file.path}" }
+    }
 
     // -------
     // LOGGING

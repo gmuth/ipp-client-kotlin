@@ -5,10 +5,7 @@ package de.gmuth.ipp.core
  */
 
 import java.io.ByteArrayOutputStream
-import kotlin.test.Test
-import kotlin.test.assertFailsWith
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class IppMessageTests {
 
@@ -41,7 +38,27 @@ class IppMessageTests {
                 tmpFile.delete()
             }
             assertTrue(documentInputStreamIsConsumed)
+            assertEquals(38, rawBytes!!.size)
             write(ByteArrayOutputStream()) // cover warning
+        }
+    }
+
+    @Test
+    fun saveDocument() {
+        with(message) {
+            getSingleAttributesGroup(IppTag.Operation, true).attribute("attributes-charset", IppTag.Charset, Charsets.UTF_8)
+            version = IppVersion()
+            requestId = 7
+            code = 0
+            documentInputStream = "Lorem ipsum dolor sit amet".byteInputStream()
+            val tmpFile = createTempFile()
+            try {
+                saveDocument(tmpFile)
+                assertEquals(26, tmpFile.length())
+            } finally {
+                tmpFile.delete()
+            }
+            assertTrue(documentInputStreamIsConsumed)
         }
     }
 
