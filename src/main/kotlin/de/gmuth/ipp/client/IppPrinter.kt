@@ -44,7 +44,9 @@ open class IppPrinter(
         val log = Logging.getLogger {}
         var checkIfValueIsSupported: Boolean = true
         var getJobsRequestedAttributes = listOf(
-                "job-id", "job-uri", "job-state", "job-state-reasons", "job-name", "job-originating-user-name"
+                "job-id", "job-uri", "job-printer-uri",
+                "job-state", "job-state-message", "job-state-reasons",
+                "job-name", "job-originating-user-name", "document-format-supplied"
         )
     }
 
