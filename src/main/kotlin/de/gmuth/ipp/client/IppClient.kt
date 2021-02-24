@@ -74,7 +74,7 @@ open class IppClient(
                 if (!isSuccessful()) {
                     val statusMessageString = if (operationGroup.containsKey("status-message")) statusMessage.toString() else ""
                     val message = "operation ${ippRequest.operation} failed: '$status' $statusMessageString"
-                    throw IppExchangeException(ippRequest, this, message).apply { logDetails() }
+                    throw IppExchangeException(ippRequest, this, message)
                 }
                 log.debug { this.toString() }
                 this // successful ippResponse
