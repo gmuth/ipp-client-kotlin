@@ -75,14 +75,14 @@ class IppJob(
     @JvmOverloads
     fun waitForTermination(delayMillis: Long = defaultDelayMillis) {
         log.info { "wait for termination of job #$id" }
+        var lastToString = toString()
         do {
             runBlocking { delay(delayMillis) }
             updateAllAttributes()
-            log.info {
-                StringBuffer("job-id=$id, job-state=$state").apply {
-                    if (attributes.containsKey("job-state-reasons")) append(", stateReasons=$stateReasons")
-                    if (attributes.containsKey("job-impressions-completed")) append(", job-impressions-completed=$impressionsCompleted")
-                }.toString()
+            // state, stateReason or impressionsCompleted changed?
+            if (toString() != lastToString) {
+                lastToString = toString()
+                log.info { lastToString }
             }
         } while (!isTerminated())
     }
@@ -140,12 +140,14 @@ class IppJob(
     // -------
 
     override fun toString(): String =
-            StringBuffer("IppJob: id=$id, uri=$uri").apply {
+            // workaround: operation is used by waitForTermination() to detect changes
+            StringBuffer("id=$id, uri=$uri").apply {
                 // by default Get-Jobs operation only returns job-id and job-uri
-                if (attributes.containsKey("job-state")) append(", state=$state")
-                if (attributes.containsKey("job-state-reasons")) append(", stateReasons=$stateReasons")
                 if (attributes.containsKey("job-originating-user-name")) append(", originatingUserName=$originatingUserName")
                 if (attributes.containsKey("job-name")) append(", name=$name")
+                if (attributes.containsKey("job-state")) append(", state=$state")
+                if (attributes.containsKey("job-state-reasons")) append(", stateReasons=$stateReasons")
+                if (attributes.containsKey("job-impressions-completed")) append(", impressionsCompleted=$impressionsCompleted")
             }.toString()
 
     fun logDetails() =
