@@ -1,10 +1,16 @@
 package de.gmuth.ipp.core
 
+import java.io.File
+
 /**
  * Copyright (c) 2020 Gerhard Muth
  */
 
-class IppResponse : IppMessage() {
+class IppResponse() : IppMessage() {
+
+    constructor(file: File) : this() {
+        read(file)
+    }
 
     override val codeDescription: String
         get() = "$status"
