@@ -27,7 +27,7 @@ class IppAttributesGroup(val tag: IppTag, private val replacementAllowed: Boolea
         } else {
             val replaced = put(attribute.name, attribute)
             if (replaced != null) {
-                log.warn { "replaced '$replaced' with '$attribute' in group $tag" }
+                log.warn { "replaced '$replaced' with '${attribute.values.joinToString(",")}' in group $tag" }
             }
             replaced
         }
