@@ -1,5 +1,7 @@
 package de.gmuth.ipp.core
 
+import de.gmuth.log.Logging
+
 /**
  * Copyright (c) 2020 Gerhard Muth
  */
@@ -114,7 +116,10 @@ enum class IppOperation(val code: Short) {
     CupsAuthenticateJob(0x400E),
     CupsGetPPD(0x400F),
     CupsGetDocument(0x4027),
-    CupsCreateLocalPrinter(0x4028);
+    CupsCreateLocalPrinter(0x4028),
+
+    // placeholder for all unknown codes
+    UnknownOperationCode(-1);
 
     override fun toString(): String = registeredName()
 
@@ -124,9 +129,10 @@ enum class IppOperation(val code: Short) {
             .replace("^-".toRegex(), "")
 
     companion object {
+        val log = Logging.getLogger {}
 
         fun fromShort(code: Short): IppOperation =
-                values().find { it.code == code } ?: throw IllegalArgumentException(String.format("operation code 0x%04X", code))
+                values().find { it.code == code } ?: UnknownOperationCode
 
         fun fromString(name: String): IppOperation =
                 values().find { it.registeredName() == name } ?: throw IllegalArgumentException(name)

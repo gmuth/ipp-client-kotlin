@@ -10,9 +10,14 @@ import kotlin.test.assertFailsWith
 
 class IppOperationsTests {
 
-    @Test
+    //@Test
     fun fromShortFails() {
         assertFailsWith<IllegalArgumentException> { IppOperation.fromShort(0) }
+    }
+
+    @Test
+    fun unknownOperationCode() {
+        assertEquals(IppOperation.UnknownOperationCode, IppOperation.fromShort(0))
     }
 
     @Test
