@@ -58,7 +58,10 @@ enum class IppStatus(val code: Short) {
     ServerErrorMultipleDocumentJobsNotSupported(0x0509),
     ServerErrorPrinterIsDeactivated(0x050A),
     ServerErrorTooManyJobs(0x050B),
-    ServerErrorTooManyDocuments(0x050c);
+    ServerErrorTooManyDocuments(0x050c),
+
+    // placeholder for all unknown codes
+    UnknownStatusCode(-1);
 
     fun isSuccessful() = (0x0000..0x00FF).contains(code)
     fun isClientError() = (0x0400..0x04FF).contains(code)
@@ -71,7 +74,7 @@ enum class IppStatus(val code: Short) {
 
     companion object {
         fun fromShort(code: Short): IppStatus =
-                values().find { it.code == code } ?: throw IllegalArgumentException(String.format("status code '%04X'", code))
+                values().find { it.code == code } ?: UnknownStatusCode
     }
 
 }
