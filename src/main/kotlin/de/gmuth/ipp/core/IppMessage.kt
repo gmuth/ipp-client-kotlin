@@ -29,6 +29,9 @@ abstract class IppMessage {
     val operationGroup: IppAttributesGroup
         get() = getSingleAttributesGroup(IppTag.Operation)
 
+    val jobGroup: IppAttributesGroup
+        get() = getSingleAttributesGroup(IppTag.Job)
+
     fun getAttributesGroups(tag: IppTag) =
             attributesGroups.filter { it.tag == tag }
 

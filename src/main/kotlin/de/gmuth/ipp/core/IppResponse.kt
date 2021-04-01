@@ -27,9 +27,6 @@ class IppResponse() : IppMessage() {
     val printerGroup: IppAttributesGroup
         get() = getSingleAttributesGroup(IppTag.Printer)
 
-    val jobGroup: IppAttributesGroup
-        get() = getSingleAttributesGroup(IppTag.Job)
-
     val unsupportedGroup: IppAttributesGroup
         get() = getSingleAttributesGroup(IppTag.Unsupported)
 
