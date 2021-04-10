@@ -40,25 +40,49 @@ class IppMessageTests {
             assertTrue(documentInputStreamIsConsumed)
             assertEquals(38, rawBytes!!.size)
             write(ByteArrayOutputStream()) // cover warning
+            toString() // cover toString
+            logDetails() // cover logDetails
         }
     }
 
     @Test
-    fun saveDocument() {
+    fun saveDocumentAndIpp() {
         with(message) {
             getSingleAttributesGroup(IppTag.Operation, true).attribute("attributes-charset", IppTag.Charset, Charsets.UTF_8)
             version = IppVersion()
             requestId = 7
             code = 0
             documentInputStream = "Lorem ipsum dolor sit amet".byteInputStream()
-            val tmpFile = createTempFile()
+            val tmpFile1 = createTempFile()
+            val tmpFile2 = createTempFile()
             try {
-                saveDocument(tmpFile)
-                assertEquals(26, tmpFile.length())
+                saveDocument(tmpFile1)
+                assertEquals(26, tmpFile1.length())
+                IppMessage.saveRawBytes = true
+                encode() // save raw bytes
+                saveIpp(tmpFile2)
+                assertEquals(38, tmpFile2.length())
             } finally {
-                tmpFile.delete()
+                tmpFile1.delete()
+                tmpFile2.delete()
             }
             assertTrue(documentInputStreamIsConsumed)
+        }
+    }
+
+    @Test
+    fun withoutRawBytes() {
+        assertEquals("codeDescription []",message.toString())
+        message.logDetails()
+        assertFailsWith<RuntimeException> {
+            // missing raw bytes
+            with(createTempFile()) {
+                try {
+                    message.saveIpp(this)
+                } finally {
+                    this.delete()
+                }
+            }
         }
     }
 

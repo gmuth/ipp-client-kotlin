@@ -105,9 +105,9 @@ abstract class IppMessage {
     fun decode(byteArray: ByteArray) =
             read(ByteArrayInputStream(byteArray))
 
-    // --------
-    // DOCUMENT
-    // --------
+    // ------------------------
+    // DOCUMENT and IPP-MESSAGE
+    // ------------------------
 
     private fun copyDocument(outputStream: OutputStream) {
         if (documentInputStreamIsConsumed) log.warn { "documentInputStream is consumed" }
@@ -119,6 +119,10 @@ abstract class IppMessage {
     fun saveDocument(file: File) {
         copyDocument(file.outputStream())
         log.info { "saved ${file.length()} document bytes to file ${file.path}" }
+    }
+
+    fun saveIpp(file: File) {
+        file.writeBytes(rawBytes ?: throw RuntimeException("missing raw bytes"))
     }
 
     // -------
