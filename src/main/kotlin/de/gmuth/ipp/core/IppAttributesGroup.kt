@@ -47,6 +47,10 @@ class IppAttributesGroup(val tag: IppTag, private val replacementAllowed: Boolea
     fun <T> getValues(name: String) =
             get(name)?.values as T ?: throw NoSuchElementException("'$name' not in group $tag")
 
+    @Suppress("UNCHECKED_CAST")
+    fun <T> getValueOrNull(name: String) =
+            get(name)?.value as T?
+
     override fun toString() = "'$tag' $size attributes"
 
     @JvmOverloads

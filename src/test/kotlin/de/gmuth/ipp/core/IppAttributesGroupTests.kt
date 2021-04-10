@@ -57,6 +57,8 @@ class IppAttributesGroupTests {
     fun getValue() {
         group.attribute("foo", IppTag.Keyword, "bar")
         assertEquals("bar", group.getValue("foo"))
+        assertEquals("bar", group.getValueOrNull("foo"))
+        assertEquals(null, group.getValueOrNull("invalid-name"))
     }
 
     @Test
