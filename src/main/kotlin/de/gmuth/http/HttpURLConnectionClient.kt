@@ -44,7 +44,7 @@ class HttpURLConnectionClient(override val config: Http.Config = Http.Config()) 
             val contentResponseStream = try {
                 inputStream
             } catch (exception: Exception) {
-                log.error { "$exception" }
+                log.error { "http exception: $responseCode $responseMessage" }
                 errorStream
             }
             return Http.Response(

@@ -136,7 +136,7 @@ open class IppClient(
         try {
             with(httpClient.post(uri, ippContentType, writeContent, httpBasicAuth)) {
                 log.debug { "ipp-server: $server" }
-                if (status == 200 && contentType == ippContentType) return contentStream
+                if (status == 200 && contentType!!.startsWith(ippContentType)) return contentStream!!
                 if (server != null && server.toLowerCase().contains("cups")) {
                     when (status) {
                         426 -> {
@@ -151,7 +151,7 @@ open class IppClient(
                     }
                 }
                 val textContent = StringBuffer().apply {
-                    if (contentType.startsWith("text")) {
+                    if (contentStream != null && contentType != null && contentType.startsWith("text")) {
                         append(", content=" + contentStream.bufferedReader().use { it.readText() })
                     }
                 }
