@@ -56,11 +56,11 @@ class IppMessageTests {
             val tmpFile1 = createTempFile()
             val tmpFile2 = createTempFile()
             try {
-                saveDocument(tmpFile1)
+                saveDocumentStream(tmpFile1)
                 assertEquals(26, tmpFile1.length())
                 IppMessage.saveRawBytes = true
                 encode() // save raw bytes
-                saveIpp(tmpFile2)
+                saveRawBytes(tmpFile2)
                 assertEquals(38, tmpFile2.length())
             } finally {
                 tmpFile1.delete()
@@ -78,7 +78,7 @@ class IppMessageTests {
             // missing raw bytes
             with(createTempFile()) {
                 try {
-                    message.saveIpp(this)
+                    message.saveRawBytes(this)
                 } finally {
                     this.delete()
                 }

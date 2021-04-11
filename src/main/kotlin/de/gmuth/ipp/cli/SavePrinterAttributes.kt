@@ -25,7 +25,7 @@ class SavePrinterAttributes {
 
             val binFile = File(printerMakeAndModel.plus(".bin"))
             println("bin file: ${binFile.absolutePath}")
-            ippPrinter.ippClient.writeLastIppResponse(binFile)
+            ippPrinter.ippClient.lastIppResponse!!.saveRawBytes(binFile)
         }
     }
 }

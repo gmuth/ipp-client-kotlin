@@ -332,16 +332,13 @@ open class IppPrinter(
         updateAllAttributes()
         val printerMakeAndModel = makeAndModel.text.replace("\\s+".toRegex(), "_")
         with(File(printerMakeAndModel.plus(".txt"))) {
-            writeText("# ${printerUri}\n")
-            println("txt file: $absolutePath")
-            for (attribute in attributes.values) {
-                appendText("$attribute\n")
-            }
+            writeText("# $printerUri\n")
+            log.info { "txt file: $absolutePath" }
+            attributes.values.forEach { appendText("$it\n") }
         }
-        with(File(printerMakeAndModel.plus(".bin"))) {
-            println("bin file: $absolutePath")
-            ippClient.writeLastIppResponse(this)
-            return this
+        return File(printerMakeAndModel.plus(".bin")).apply {
+            log.info { "bin file: $absolutePath" }
+            ippClient.lastIppResponse!!.saveRawBytes(this)
         }
     }
 

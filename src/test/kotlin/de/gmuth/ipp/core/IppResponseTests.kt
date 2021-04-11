@@ -5,6 +5,7 @@ package de.gmuth.ipp.core
  */
 
 import java.io.File
+import java.net.URI
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -36,6 +37,18 @@ class IppResponseTests {
     fun setStatus() {
         ippResponse.status = IppStatus.ClientErrorDocumentFormatNotSupported
         assertEquals(0x040A, ippResponse.code)
+    }
+
+    @Test
+    fun invalidXeroxMediaColResponse() {
+        ippResponse.read(File("src/test/resources/invalidXeroxMediaCol.response"))
+        ippResponse.logDetails()
+        with(ippResponse.jobGroup) {
+            assertEquals(598, getValue("job-id"))
+            assertEquals(4, getValue("job-state")) // pending-held
+            assertEquals(listOf("job-hold-until-specified"), getValues("job-state-reasons"))
+            assertEquals(URI.create("ipp://xero.local./ipp/print/Job-598"), getValue("job-uri"))
+        }
     }
 
 }

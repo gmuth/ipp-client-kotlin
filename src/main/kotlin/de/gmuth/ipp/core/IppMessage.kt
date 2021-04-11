@@ -69,7 +69,7 @@ abstract class IppMessage {
         } else {
             IppOutputStream(outputStream).writeMessage(this)
         }
-        copyDocument(outputStream)
+        copyDocumentStream(outputStream)
     }
 
     fun write(file: File) =
@@ -109,19 +109,19 @@ abstract class IppMessage {
     // DOCUMENT and IPP-MESSAGE
     // ------------------------
 
-    private fun copyDocument(outputStream: OutputStream) {
+    private fun copyDocumentStream(outputStream: OutputStream) {
         if (documentInputStreamIsConsumed) log.warn { "documentInputStream is consumed" }
         documentInputStream?.copyTo(outputStream)
         log.debug { "consumed documentInputStream" }
         documentInputStreamIsConsumed = true
     }
 
-    fun saveDocument(file: File) {
-        copyDocument(file.outputStream())
+    fun saveDocumentStream(file: File) {
+        copyDocumentStream(file.outputStream())
         log.info { "saved ${file.length()} document bytes to file ${file.path}" }
     }
 
-    fun saveIpp(file: File) {
+    fun saveRawBytes(file: File) {
         file.writeBytes(rawBytes ?: throw RuntimeException("missing raw bytes"))
     }
 

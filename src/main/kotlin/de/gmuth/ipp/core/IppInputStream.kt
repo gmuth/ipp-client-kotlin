@@ -4,14 +4,17 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
+import de.gmuth.io.ByteUtils.Companion.hexdump
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.log.Logging
+import java.io.BufferedInputStream
 import java.io.DataInputStream
+import java.io.EOFException
 import java.io.InputStream
 import java.net.URI
 import java.nio.charset.Charset
 
-class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
+class IppInputStream(inputStream: InputStream) : DataInputStream(BufferedInputStream(inputStream)) {
 
     companion object {
         val log = Logging.getLogger {}
@@ -78,6 +81,11 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
             val value = try {
                 readAttributeValue(tag)
             } catch (exception: Exception) {
+                if (exception !is EOFException) {
+                    val remainingBytes = readAllBytes()
+                    hexdump(remainingBytes) { line -> log.debug { line } }
+                    log.debug { String(remainingBytes) }
+                }
                 throw IppException("failed to read attribute value of '$name' ($tag)", exception)
             }
             // remember attributes-charset for name and text value decoding
@@ -175,8 +183,16 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
                 //  value class IppCollection
                 IppTag.BegCollection -> {
-                    readExpectedValueLength(0)
-                    readCollection()
+                    mark(2)
+                    val length = readShort().toInt()
+                    if (length == 0) { // expected value length
+                        readCollection()
+                    } else {
+                        // Xerox B210: support invalid ipp response ('media-col' has no members)
+                        log.warn { "unexpected value length $length, trying to recover at tag level..." }
+                        reset()
+                        IppCollection()
+                    }
                 }
 
                 else -> throw IllegalArgumentException("tag '$tag'")
