@@ -122,7 +122,8 @@ abstract class IppMessage {
     }
 
     fun saveRawBytes(file: File) {
-        file.writeBytes(rawBytes ?: throw RuntimeException("missing raw bytes"))
+        // precondition: feature flag saveRawBytes is true
+        file.writeBytes(rawBytes ?: throw RuntimeException("missing raw bytes. you must call read/decode or write/encode before."))
     }
 
     // -------
