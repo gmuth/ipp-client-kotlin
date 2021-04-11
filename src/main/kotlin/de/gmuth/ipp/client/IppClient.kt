@@ -105,9 +105,13 @@ open class IppClient(
             ippResponse.read(ippResponseStream)
         } catch (exception: Exception) {
             if (logDetails) ippResponse.logDetails("<< ")
+            if (ippRequest.rawBytes != null) {
+                val requestPath = ippRequest.saveRawBytes(File("ipp_decoding_failed.request"))
+                log.warn { "ipp request  written to file $requestPath" }
+            }
             if (ippResponse.rawBytes != null) {
-                File("ipp_decoding_failed.response").writeBytes(ippResponse.rawBytes!!)
-                log.warn { "ipp response written to file 'ipp_decoding_failed.response'" }
+                val responsePath = ippResponse.saveRawBytes(File("ipp_decoding_failed.response"))
+                log.warn { "ipp response written to file $responsePath" }
             }
             throw IppExchangeException(ippRequest, ippResponse, "failed to decode ipp response", exception)
         } finally {
@@ -166,5 +170,5 @@ open class IppClient(
             if (duration > 5000) log.warn { String.format("http exchange %s: %d ms", uri, duration) }
         }
     }
-    
+
 }
