@@ -149,17 +149,11 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(BufferedInputSt
 
                 IppTag.TextWithLanguage,
                 IppTag.NameWithLanguage -> {
-                    val attributeValueLength = readShort().toInt()
-                    // HP M175nw: PrintJobOperation having a job-name with language & GetJobAttributes
-                    // Testcase: german macOS, print with application, read job attributes
-                    val language = if (attributeValueLength < 6) {
-                        // attribute value length is missing, treat this as value length for language
-                        String(readBytes(attributeValueLength), attributesCharset!!)
-                    } else {
-                        readString(attributesCharset!!)
-                    }
+                    mark(2)
+                    // HP M175nw: support invalid ipp response (nameWithLanguage with missing value length)
+                    if (readShort().toInt() < 6) reset()
                     IppString(
-                            language = language,
+                            language = readString(attributesCharset!!),
                             text = readString(attributesCharset!!)
                     )
                 }
