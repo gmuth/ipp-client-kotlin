@@ -150,8 +150,12 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(BufferedInputSt
                 IppTag.TextWithLanguage,
                 IppTag.NameWithLanguage -> {
                     mark(2)
-                    // HP M175nw: support invalid ipp response (nameWithLanguage with missing value length)
-                    if (readShort().toInt() < 6) reset()
+                    val length = readShort().toInt()
+                    if (length < 6) {
+                        // HP M175nw: support invalid ipp response (nameWithLanguage with missing value length)
+                        log.warn { "value length $length for StringWithLanguage is invalid, trying to recover..." }
+                        reset()
+                    }
                     IppString(
                             language = readString(attributesCharset!!),
                             text = readString(attributesCharset!!)
