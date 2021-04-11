@@ -72,6 +72,7 @@ open class IppClient(
     fun exchangeSuccessful(ippRequest: IppRequest) =
             with(exchange(ippRequest)) {
                 if (!isSuccessful()) {
+                    if(logDetails) logDetails("<< ")
                     val statusMessageString = if (operationGroup.containsKey("status-message")) statusMessage.toString() else ""
                     val message = "operation ${ippRequest.operation} failed: '$status' $statusMessageString"
                     throw IppExchangeException(ippRequest, this, message)
@@ -103,6 +104,7 @@ open class IppClient(
         try {
             ippResponse.read(ippResponseStream)
         } catch (exception: Exception) {
+            if(logDetails) ippResponse.logDetails("<< ")
             if (ippResponse.rawBytes != null) {
                 File("ipp_decoding_failed.response").writeBytes(ippResponse.rawBytes!!)
                 log.warn { "ipp response written to file 'ipp_decoding_failed.response'" }
