@@ -37,6 +37,7 @@ val job = ippPrinter.printJob(
     IppPrintQuality.High,
     IppColorMode.Monochrome,
     IppSides.TwoSidedLongEdge,
+    IppMedia.Collection(source = "tray-1")
 )
 job.logDetails()
 
