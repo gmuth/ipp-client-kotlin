@@ -21,7 +21,7 @@ class IppResponse() : IppMessage() {
             code = ippStatus.code
         }
 
-    val statusMessage: IppString
+    val statusMessage: IppString // RFC 8011 4.1.6.2
         get() = operationGroup.getValue("status-message")
 
     val printerGroup: IppAttributesGroup
