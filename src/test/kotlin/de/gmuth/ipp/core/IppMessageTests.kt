@@ -5,6 +5,7 @@ package de.gmuth.ipp.core
  */
 
 import java.io.ByteArrayOutputStream
+import java.io.File.createTempFile
 import kotlin.test.*
 
 class IppMessageTests {
@@ -31,7 +32,7 @@ class IppMessageTests {
             version = IppVersion()
             requestId = 5
             code = 0
-            val tmpFile = createTempFile()
+            val tmpFile = createTempFile("test", null)
             try {
                 write(tmpFile)
             } finally {
@@ -53,8 +54,8 @@ class IppMessageTests {
             requestId = 7
             code = 0
             documentInputStream = "Lorem ipsum dolor sit amet".byteInputStream()
-            val tmpFile1 = createTempFile()
-            val tmpFile2 = createTempFile()
+            val tmpFile1 = createTempFile("test", null)
+            val tmpFile2 = createTempFile("test", null)
             try {
                 saveDocumentStream(tmpFile1)
                 assertEquals(26, tmpFile1.length())
@@ -76,7 +77,7 @@ class IppMessageTests {
         message.logDetails()
         assertFailsWith<RuntimeException> {
             // missing raw bytes
-            with(createTempFile()) {
+            with(createTempFile("test",null)) {
                 try {
                     message.saveRawBytes(this)
                 } finally {
