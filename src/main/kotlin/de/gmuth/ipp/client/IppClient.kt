@@ -73,8 +73,8 @@ open class IppClient(
             with(exchange(ippRequest)) {
                 if (!isSuccessful()) {
                     if (logDetails) logDetails("<< ")
-                    val statusMessageString = if (operationGroup.containsKey("status-message")) statusMessage.toString() else ""
-                    val message = "operation ${ippRequest.operation} failed: '$status' $statusMessageString"
+                    val statusMessage = operationGroup.getValueOrNull("status-message") ?: ""
+                    val message = "operation ${ippRequest.operation} failed: '$status' $statusMessage"
                     throw IppExchangeException(ippRequest, this, message)
                 }
                 log.debug { this.toString() }
@@ -82,7 +82,7 @@ open class IppClient(
             }
 
     fun exchange(ippRequest: IppRequest): IppResponse {
-        val ippUri: URI = ippRequest.operationGroup.getValue("printer-uri") ?: throw IppException("missing printer-uri")
+        val ippUri: URI = ippRequest.operationGroup.getValueOrNull("printer-uri") ?: throw IppException("missing 'printer-uri'")
         lastIppRequest = ippRequest
 
         // request logging
