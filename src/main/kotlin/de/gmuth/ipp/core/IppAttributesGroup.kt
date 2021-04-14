@@ -41,11 +41,11 @@ class IppAttributesGroup(val tag: IppTag, private val replacementAllowed: Boolea
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getValue(name: String) =
-            get(name)?.value as T ?: throw NoSuchElementException("'$name' not in group $tag")
+            get(name)?.value as T ?: throw IppException("attribute '$name' not found in group $tag")
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getValues(name: String) =
-            get(name)?.values as T ?: throw NoSuchElementException("'$name' not in group $tag")
+            get(name)?.values as T ?: throw IppException("attribute '$name' not found in group $tag")
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getValueOrNull(name: String) =

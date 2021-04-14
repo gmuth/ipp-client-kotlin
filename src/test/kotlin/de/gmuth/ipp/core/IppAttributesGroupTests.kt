@@ -69,12 +69,12 @@ class IppAttributesGroupTests {
 
     @Test
     fun getValueFails() {
-        assertFailsWith<NoSuchElementException> { group.getValue("invalid-name") }
+        assertFailsWith<IppException> { group.getValue("invalid-name") }
     }
 
     @Test
     fun getValuesFails() {
-        assertFailsWith<NoSuchElementException> { group.getValues("invalid-name") }
+        assertFailsWith<IppException> { group.getValues("invalid-name") }
     }
 
     @Test
