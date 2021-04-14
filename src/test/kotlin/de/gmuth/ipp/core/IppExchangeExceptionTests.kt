@@ -4,6 +4,7 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
+import de.gmuth.ipp.client.IppExchangeException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
