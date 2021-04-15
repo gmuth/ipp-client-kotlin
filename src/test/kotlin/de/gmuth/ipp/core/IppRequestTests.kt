@@ -4,6 +4,7 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
+import de.gmuth.io.ByteArraySavingBufferedInputStream
 import de.gmuth.log.Logging
 import java.net.URI
 import kotlin.test.Test
@@ -47,15 +48,22 @@ class IppRequestTests {
 
     @Test
     fun printJobRequest() {
+        ByteArraySavingBufferedInputStream.log.logLevel = Logging.LogLevel.INFO
+        IppInputStream.log.logLevel = Logging.LogLevel.INFO
+        IppOutputStream.log.logLevel = Logging.LogLevel.INFO
+        IppMessage.log.logLevel = Logging.LogLevel.INFO
+
         val request = IppRequest(
                 IppOperation.PrintJob, URI.create("ipp://printer"),
                 0, listOf("one", "two"), "user"
         )
-        request.documentInputStream = "content".byteInputStream()
+        request.documentInputStream = "pdl-content".byteInputStream()
         log.info { request.toString() }
         request.logDetails()
         val requestEncoded = request.encode()
+        log.info { "encoded ${requestEncoded.size} bytes" }
         val requestDecoded = IppRequest()
+        IppMessage.saveRawBytes = true
         requestDecoded.decode(requestEncoded)
         assertEquals("1.1", requestDecoded.version.toString())
         assertEquals(IppOperation.PrintJob, requestDecoded.operation)
@@ -69,6 +77,7 @@ class IppRequestTests {
             assertEquals(listOf("one", "two"), getValues("requested-attributes"))
             assertEquals("user".toIppString(), getValue("requesting-user-name"))
         }
+        assertEquals("pdl-content", String(requestDecoded.documentInputStream!!.readAllBytes()))
     }
 
 }

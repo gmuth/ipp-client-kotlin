@@ -14,7 +14,10 @@ import java.io.InputStream
 import java.net.URI
 import java.nio.charset.Charset
 
-class IppInputStream(inputStream: InputStream) : DataInputStream(BufferedInputStream(inputStream)) {
+// BufferedInputStream: mark() and reset() used to support parsing invalid ipp responses from HP and Xerox
+class IppInputStream(bufferedInputStream: BufferedInputStream) : DataInputStream(bufferedInputStream) {
+
+    constructor(inputStream: InputStream) : this(BufferedInputStream(inputStream))
 
     companion object {
         val log = Logging.getLogger {}
@@ -153,7 +156,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(BufferedInputSt
                     val length = readShort().toInt()
                     if (length < 6) {
                         // HP M175nw: support invalid ipp response (nameWithLanguage with missing value length)
-                        log.warn { "value length $length for StringWithLanguage is invalid, trying to recover..." }
+                        log.warn { "invalid value length $length for StringWithLanguage, trying to recover..." }
                         reset()
                     }
                     IppString(
@@ -186,10 +189,10 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(BufferedInputSt
                     if (length == 0) { // expected value length
                         readCollection()
                     } else {
-                        // Xerox B210: support invalid ipp response ('media-col' has no members)
-                        log.warn { "unexpected value length $length, trying to recover at tag level..." }
+                        // Xerox B210: support invalid ipp response ('media-col' without members)
+                        log.warn { "invalid value length $length for IppCollection, trying to recover..." }
                         reset()
-                        IppCollection()
+                        IppCollection() // empty collection
                     }
                 }
 
@@ -221,12 +224,16 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(BufferedInputSt
     private fun readString(charset: Charset = Charsets.US_ASCII) =
             String(readLengthAndValue(), charset)
 
-    private fun readLengthAndValue() =
-            readBytes(readShort().toInt())
+    private fun readLengthAndValue(): ByteArray {
+        val length = readShort().toInt()
+        return readBytes(length)
+    }
 
     // avoid Java-11-readNBytes(length) for backwards compatibility
-    private fun readBytes(length: Int) =
-            ByteArray(length).apply { readFully(this) }
+    private fun readBytes(length: Int): ByteArray {
+        log.trace { "read $length bytes" }
+        return ByteArray(length).apply { readFully(this) }
+    }
 
     private fun readExpectedValueLength(expected: Int) {
         val length = readShort().toInt()

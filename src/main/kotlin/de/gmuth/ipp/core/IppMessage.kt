@@ -4,7 +4,7 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.io.ByteArraySavingInputStream
+import de.gmuth.io.ByteArraySavingBufferedInputStream
 import de.gmuth.io.ByteArraySavingOutputStream
 import de.gmuth.log.Logging
 import java.io.*
@@ -87,23 +87,30 @@ abstract class IppMessage {
 
     fun read(inputStream: InputStream) {
         if (saveRawBytes) {
-            val byteArraySavingInputStream = ByteArraySavingInputStream(inputStream)
+            val byteArraySavingBufferedInputStream = ByteArraySavingBufferedInputStream(inputStream)
             try {
-                IppInputStream(byteArraySavingInputStream).readMessage(this)
+                IppInputStream(byteArraySavingBufferedInputStream).readMessage(this)
+                documentInputStream = byteArraySavingBufferedInputStream
             } finally {
-                rawBytes = byteArraySavingInputStream.toByteArray()
+                rawBytes = byteArraySavingBufferedInputStream.toByteArray()
+                byteArraySavingBufferedInputStream.saveBytes = false // stop saving bytes (document)
             }
         } else {
-            IppInputStream(inputStream).readMessage(this)
+            val bufferedInputStream = BufferedInputStream(inputStream)
+            IppInputStream(bufferedInputStream).readMessage(this)
+            documentInputStream = bufferedInputStream
         }
-        documentInputStream = inputStream
     }
 
-    fun read(file: File) =
-            read(FileInputStream(file))
+    fun read(file: File) {
+        log.debug { "read file ${file.absolutePath} (${file.length()} bytes)" }
+        read(FileInputStream(file))
+    }
 
-    fun decode(byteArray: ByteArray) =
-            read(ByteArrayInputStream(byteArray))
+    fun decode(byteArray: ByteArray) {
+        log.debug { "decode ${byteArray.size} bytes" }
+        read(ByteArrayInputStream(byteArray))
+    }
 
     // ------------------------
     // DOCUMENT and IPP-MESSAGE
