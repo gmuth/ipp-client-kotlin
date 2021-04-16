@@ -33,10 +33,10 @@ class CupsClient(val cupsUri: URI) : IppClient() {
     fun setDefault(defaultPrinterUri: URI) =
             exchangeSuccessful(ippRequest(IppOperation.CupsSetDefault, defaultPrinterUri))
 
-    fun getDefault(): =
+    fun getDefault() =
             IppPrinter(exchangeSuccessfulIppRequest(IppOperation.CupsGetDefault).printerGroup, this)
 
-    fun getPrinters(): =
+    fun getPrinters() =
             exchangeSuccessfulIppRequest(IppOperation.CupsGetPrinters)
                     .getAttributesGroups(IppTag.Printer)
                     .map { printerAttributes -> IppPrinter(printerAttributes, this) }
