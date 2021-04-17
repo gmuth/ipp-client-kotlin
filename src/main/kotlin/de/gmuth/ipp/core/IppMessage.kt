@@ -128,10 +128,10 @@ abstract class IppMessage {
         log.info { "saved ${file.length()} document bytes to file ${file.path}" }
     }
 
-    fun saveRawBytes(file: File): String {
+    fun saveRawBytes(file: File): File {
         // precondition: feature flag saveRawBytes is true
         file.writeBytes(rawBytes ?: throw RuntimeException("missing raw bytes. you must call read/decode or write/encode before."))
-        return file.absolutePath
+        return file
     }
 
     // -------
