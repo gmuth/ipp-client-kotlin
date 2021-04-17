@@ -9,7 +9,6 @@ import de.gmuth.http.HttpURLConnectionClient
 import de.gmuth.http.SSLHelper
 import de.gmuth.ipp.core.*
 import de.gmuth.log.Logging
-import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI
@@ -105,15 +104,9 @@ open class IppClient(
             ippResponse.read(ippResponseStream)
         } catch (exception: Exception) {
             if (logDetails) ippResponse.logDetails("<< ")
-            if (ippRequest.rawBytes != null) {
-                val requestPath = ippRequest.saveRawBytes(File("ipp_decoding_failed.request"))
-                log.warn { "ipp request  written to file $requestPath" }
+            throw IppExchangeException(ippRequest, ippResponse, "failed to decode ipp response", exception).apply {
+                saveRequestAndResponse("ipp_decoding_failed")
             }
-            if (ippResponse.rawBytes != null) {
-                val responsePath = ippResponse.saveRawBytes(File("ipp_decoding_failed.response"))
-                log.warn { "ipp response written to file $responsePath" }
-            }
-            throw IppExchangeException(ippRequest, ippResponse, "failed to decode ipp response", exception)
         } finally {
             log.info { String.format("%-75s=> %s", ippRequest, ippResponse) }
         }
