@@ -36,7 +36,7 @@ class ByteArraySavingBufferedInputStream(val inputStream: InputStream) : Buffere
             byteCount += n
             val newBytes = byteArray.copyOfRange(offset, offset + n)
             log.trace { "read() @%-3d '%s'".format(byteCount, String(newBytes)) }
-            byteArrayOutputStream.writeBytes(newBytes)
+            byteArrayOutputStream.write(newBytes, 0, n)
         }
         return n
     }
