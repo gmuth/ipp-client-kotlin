@@ -37,15 +37,15 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with gradle wrapper
-        run: gradle build
+        run: gradlew build
 
       - name: Publish GitHub Packages
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-        run: gradle publish
+        run: gradlew publish
 
       - name: Analyse with SonarQube
-        run: gradle test jacocoTestReport sonarqube
+        run: gradlew test jacocoTestReport sonarqube
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
