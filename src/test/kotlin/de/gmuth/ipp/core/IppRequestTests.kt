@@ -77,7 +77,7 @@ class IppRequestTests {
             assertEquals(listOf("one", "two"), getValues("requested-attributes"))
             assertEquals("user".toIppString(), getValue("requesting-user-name"))
         }
-        assertEquals("pdl-content", String(requestDecoded.documentInputStream!!.readAllBytes()))
+        assertEquals("pdl-content", String(requestDecoded.documentInputStream!!.readBytes()))
     }
 
 }
