@@ -96,7 +96,7 @@ abstract class IppMessage {
                 byteArraySavingBufferedInputStream.saveBytes = false // stop saving bytes (document)
             }
         } else {
-            val bufferedInputStream = BufferedInputStream(inputStream)
+            val bufferedInputStream = inputStream.buffered()
             IppInputStream(bufferedInputStream).readMessage(this)
             documentInputStream = bufferedInputStream
         }
