@@ -44,6 +44,7 @@ val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
     languageVersion = "1.4"
     jvmTarget = "1.6"
+    // jdkHome = "path_to_jdk_1.6"
 }
 
 //tasks.withType<KotlinCompile> {
