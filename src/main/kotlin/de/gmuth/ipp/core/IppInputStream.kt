@@ -85,7 +85,7 @@ class IppInputStream(bufferedInputStream: BufferedInputStream) : DataInputStream
                 readAttributeValue(tag)
             } catch (exception: Exception) {
                 if (exception !is EOFException) {
-                    val remainingBytes = readAllBytes()
+                    val remainingBytes = readBytes()
                     hexdump(remainingBytes) { line -> log.debug { line } }
                     log.debug { String(remainingBytes) }
                 }
