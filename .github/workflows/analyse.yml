@@ -1,13 +1,13 @@
-name: Analyse with SonarCloud
+name: sonarCloud
 
 on:
   workflow_dispatch:
-    push:
-      branches:
-        - master
-        - develop
-  #  pull_request:
-  #    branches: [ master ]
+  push:
+    branches:
+      - master
+      - develop
+  pull_request:
+    branches: [ master ]
 
 jobs:
   sonarCloud:
