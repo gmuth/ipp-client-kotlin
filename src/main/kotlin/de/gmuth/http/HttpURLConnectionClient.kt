@@ -5,6 +5,8 @@ package de.gmuth.http
  */
 
 import de.gmuth.log.Logging
+import de.gmuth.log.Logging.LogLevel.DEBUG
+import de.gmuth.log.Logging.LogLevel.ERROR
 import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URI
@@ -39,7 +41,7 @@ class HttpURLConnectionClient(override val config: Http.Config = Http.Config()) 
             //setChunkedStreamingMode(0) // enable chunked transfer
             writeContent(outputStream)
             for ((key, values) in headerFields) {
-                log.debug { "$key = $values" }
+                log.log(if (responseCode < 300) DEBUG else ERROR) { "$key = $values" }
             }
             val contentResponseStream = try {
                 inputStream
