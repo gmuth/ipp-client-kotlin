@@ -72,7 +72,7 @@ open class IppClient(
             with(exchange(ippRequest)) {
                 if (!isSuccessful()) {
                     if (logDetails) logDetails("<< ")
-                    val statusMessage = operationGroup.getValueOrNull("status-message") ?: ""
+                    val statusMessage = operationGroup.getValueOrNull("status-message") ?: IppString("")
                     val message = "operation ${ippRequest.operation} failed: '$status' $statusMessage"
                     throw IppExchangeException(ippRequest, this, message)
                 }
@@ -136,19 +136,7 @@ open class IppClient(
             with(httpClient.post(uri, ippContentType, writeContent, httpBasicAuth)) {
                 log.debug { "ipp-server: $server" }
                 if (status == 200 && contentType!!.startsWith(ippContentType)) return contentStream!!
-                if (server != null && server.toLowerCase().contains("cups")) {
-                    when (status) {
-                        426 -> {
-                            val httpsUri = with(uri) { URI.create("https://$host:$port$path") }
-                            log.warn { "$server says '426 Upgrade Required' -> trying $httpsUri" }
-                            return httpExchange(httpsUri, writeContent)
-                        }
-                        401 -> {
-                            log.warn { "invalid credentials. call basicAuth(\"user\", \"password\") to set valid credentials." }
-                            throw IppException("$server says '401 Unauthorized'")
-                        }
-                    }
-                }
+                if (status == 401) log.warn { "invalid credentials. call basicAuth(\"user\", \"password\") to set valid credentials." }
                 val textContent = StringBuffer().apply {
                     if (contentStream != null && contentType != null && contentType.startsWith("text")) {
                         append(", content=" + contentStream.bufferedReader().use { it.readText() })
