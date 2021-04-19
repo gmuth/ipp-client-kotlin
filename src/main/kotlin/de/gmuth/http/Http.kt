@@ -27,7 +27,7 @@ interface Http {
 
     data class Response(
             val status: Int,
-            val server: String?, // header 'Server' is used to detect CUPS
+            val server: String?,
             val contentType: String?,
             val contentStream: InputStream?
     )
