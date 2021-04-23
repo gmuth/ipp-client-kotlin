@@ -9,7 +9,7 @@ import java.io.OutputStream
  * Copyright (c) 2021 Gerhard Muth
  */
 
-open class DuplicatingBufferedInputStream(val inputStream: InputStream, val outputStream: OutputStream) : BufferedInputStream(inputStream) {
+open class DuplicatingBufferedInputStream(val inputStream: InputStream, private val outputStream: OutputStream) : BufferedInputStream(inputStream) {
 
     var duplicateBytes: Boolean = true
     protected var byteCount = 0
