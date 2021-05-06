@@ -119,9 +119,9 @@ open class IppClient(
         }
 
         // unsupported attributes
-        for (unsupported in ippResponse.getAttributesGroups(IppTag.Unsupported)) {
-            for (attribute in unsupported.values) {
-                log.warn { "unsupported attribute: $attribute" }
+        if (ippResponse.containsGroup(IppTag.Unsupported)) {
+            ippResponse.unsupportedGroup.values.forEach {
+                log.warn { "unsupported attribute: $it" }
             }
         }
 
