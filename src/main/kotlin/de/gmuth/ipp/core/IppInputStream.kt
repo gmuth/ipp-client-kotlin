@@ -199,7 +199,7 @@ class IppInputStream(bufferedInputStream: BufferedInputStream) : DataInputStream
                 else -> throw IllegalArgumentException("tag '$tag'")
             }
 
-    private fun readCollection() =
+    internal fun readCollection() =
             IppCollection().apply {
                 var memberAttribute: IppAttribute<Any>? = null
                 do {
@@ -221,21 +221,21 @@ class IppInputStream(bufferedInputStream: BufferedInputStream) : DataInputStream
             }
 
     // RFC 8011 4.1.4.1 -> use attributes-charset
-    private fun readString(charset: Charset = Charsets.US_ASCII) =
+    internal fun readString(charset: Charset = Charsets.US_ASCII) =
             String(readLengthAndValue(), charset)
 
-    private fun readLengthAndValue(): ByteArray {
+    internal fun readLengthAndValue(): ByteArray {
         val length = readShort().toInt()
         return readBytes(length)
     }
 
     // avoid Java-11-readNBytes(length) for backwards compatibility
-    private fun readBytes(length: Int): ByteArray {
+    internal fun readBytes(length: Int): ByteArray {
         log.trace { "read $length bytes" }
         return ByteArray(length).apply { readFully(this) }
     }
 
-    private fun readExpectedValueLength(expected: Int) {
+    internal fun readExpectedValueLength(expected: Int) {
         val length = readShort().toInt()
         if (length != expected) throw IppException("expected value length of $expected bytes but found $length")
     }

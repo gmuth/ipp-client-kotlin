@@ -52,12 +52,12 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
         }
     }
 
-    private fun writeTag(tag: IppTag) {
+    internal fun writeTag(tag: IppTag) {
         if (tag.isDelimiterTag()) log.trace { "--- $tag ---" }
         writeByte(tag.code.toInt())
     }
 
-    private fun writeString(string: String, charset: Charset = Charsets.US_ASCII) {
+    internal fun writeString(string: String, charset: Charset = Charsets.US_ASCII) {
         with(string.toByteArray(charset)) {
             writeShort(size)
             write(this)
