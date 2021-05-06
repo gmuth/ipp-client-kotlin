@@ -1,9 +1,13 @@
 package de.gmuth.log
 
+/**
+ * Copyright (c) 2021 Gerhard Muth
+ */
+
 import de.gmuth.log.Logging.LogLevel
 import de.gmuth.log.Logging.LogLevel.*
 
-class Slf4jLogging {
+object Slf4jLogging {
 
     class Logger(name: String, logLevel: LogLevel = Logging.defaultLogLevel) : Logging.Logger(name, logLevel) {
 
@@ -32,11 +36,9 @@ class Slf4jLogging {
                 }
     }
 
-    companion object {
-        fun configure() {
-            Logging.useSimpleClassName = false
-            Logging.factory = Logging.Factory { Logger(it) }
-        }
+    fun configure() {
+        Logging.useSimpleClassName = false
+        Logging.factory = Logging.Factory { Logger(it) }
     }
 
 }
