@@ -32,8 +32,13 @@ class IppOutputStreamTest {
 
     @Test
     fun writeVersion() {
-        ippOutputStream.writeVersion(IppVersion("2.1"))
+        ippOutputStream.writeVersion("2.1")
         assertEquals("02 01", byteArrayOutputStream.toHex())
+    }
+
+    @Test
+    fun writeVersionFails() {
+        assertFailsWith<IppException> { ippOutputStream.writeVersion("wrong") }
     }
 
     @Test
@@ -169,7 +174,7 @@ class IppOutputStreamTest {
     @Test
     fun writeMessage() {
         with(message) {
-            version = IppVersion(2, 1)
+            version = "2.1"
             code = IppOperation.GetPrinterAttributes.code
             requestId = 8
             with(createAttributesGroup(IppTag.Job)) {
@@ -195,24 +200,24 @@ class IppOutputStreamTest {
 
     @Test
     fun writeMessageMissingCode() {
-        message.version = IppVersion()
+        message.version = "1.1"
         val exception = assertFailsWith<IppException> { ippOutputStream.writeMessage(message) }
         assertEquals(exception.message, "missing operation or status code")
     }
 
     @Test
     fun writeMessageMissingRequestId() {
-        message.version = IppVersion()
+        message.version = "1.1"
         message.code = 0
         val exception = assertFailsWith<IppException> { ippOutputStream.writeMessage(message) }
-        assertEquals(exception.message, "missing requestId")
+        assertEquals("missing requestId", exception.message)
     }
 
     @Test
     fun writeMessageWriteAttributeFails() {
         IppAttribute.validateValueClass = false
         with(message) {
-            version = IppVersion(2, 1)
+            version = "2.1"
             code = IppOperation.GetPrinterAttributes.code
             requestId = 8
             operationGroup.attribute("foo", IppTag.Integer, "string")

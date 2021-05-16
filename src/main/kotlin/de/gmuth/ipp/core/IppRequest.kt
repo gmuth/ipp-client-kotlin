@@ -16,7 +16,7 @@ class IppRequest : IppMessage {
         get() = IppOperation.fromShort(code!!)
 
     constructor(
-            version: IppVersion = IppVersion(),
+            version: String = "1.1",
             requestId: Int = 1
     ) {
         this.version = version
@@ -29,7 +29,7 @@ class IppRequest : IppMessage {
             jobId: Int? = null,
             requestedAttributes: List<String>? = null,
             requestingUserName: String? = null,
-            version: IppVersion = IppVersion(),
+            version: String = "1.1",
             requestId: Int = 1,
             charset: Charset = Charsets.UTF_8,
             naturalLanguage: String = "en-us"

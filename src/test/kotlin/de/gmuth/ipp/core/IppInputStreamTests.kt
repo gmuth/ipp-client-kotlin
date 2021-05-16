@@ -168,7 +168,7 @@ class IppInputStreamTest {
         encoded.toIppInputStream().readMessage(message)
         IppInputStream.log.logLevel = Logging.LogLevel.TRACE
         with(message) {
-            assertEquals(IppVersion("2.1"), version)
+            assertEquals("2.1", version)
             assertEquals(IppOperation.GetPrinterAttributes.code, code)
             assertEquals(8, requestId)
             with(getSingleAttributesGroup(IppTag.Job)) {

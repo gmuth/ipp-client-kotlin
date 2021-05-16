@@ -25,7 +25,7 @@ class IppRequestTests {
             log.info { toString() }
             logDetails()
             assertEquals(1, requestId)
-            assertEquals(IppVersion("1.1"), version)
+            assertEquals("1.1", version)
             assertEquals(IppOperation.CreateJob, operation)
         }
     }
@@ -36,7 +36,7 @@ class IppRequestTests {
         IppMessage.saveRawBytes = !IppMessage.saveRawBytes
         val request = IppRequest(IppOperation.StartupPrinter)
         assertEquals(1, request.requestId)
-        assertEquals(IppVersion("1.1"), request.version)
+        assertEquals("1.1", request.version)
         assertEquals(IppOperation.StartupPrinter, request.operation)
         assertEquals(Charsets.UTF_8, request.operationGroup.getValue("attributes-charset"))
         assertEquals("en-us", request.operationGroup.getValue("attributes-natural-language"))
@@ -66,7 +66,7 @@ class IppRequestTests {
         val requestDecoded = IppRequest()
         IppMessage.saveRawBytes = true
         requestDecoded.decode(requestEncoded)
-        assertEquals("1.1", requestDecoded.version.toString())
+        assertEquals("1.1", requestDecoded.version)
         assertEquals(IppOperation.PrintJob, requestDecoded.operation)
         assertEquals(1, requestDecoded.requestId)
         assertNotNull(requestDecoded.operationGroup)

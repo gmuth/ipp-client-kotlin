@@ -29,7 +29,7 @@ class IppInputStream(bufferedInputStream: BufferedInputStream) : DataInputStream
 
     fun readMessage(message: IppMessage) {
         with(message) {
-            version = IppVersion(read(), read())
+            version = "${read()}.${read()}"
             log.trace { "version = $version" }
 
             code = readShort()

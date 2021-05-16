@@ -29,7 +29,7 @@ class IppMessageTests {
     fun writeFile() {
         with(message) {
             getSingleAttributesGroup(IppTag.Operation, true).attribute("attributes-charset", IppTag.Charset, Charsets.UTF_8)
-            version = IppVersion()
+            version = "1.1"
             requestId = 5
             code = 0
             val tmpFile = createTempFile("test", null)
@@ -50,7 +50,7 @@ class IppMessageTests {
     fun saveDocumentAndIpp() {
         with(message) {
             getSingleAttributesGroup(IppTag.Operation, true).attribute("attributes-charset", IppTag.Charset, Charsets.UTF_8)
-            version = IppVersion()
+            version =  "1.1"
             requestId = 7
             code = 0
             documentInputStream = "Lorem ipsum dolor sit amet".byteInputStream()

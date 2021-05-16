@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import javax.net.ssl.SSLHandshakeException
 
 open class IppClient(
-        var ippVersion: IppVersion = IppVersion(),
+        var ippVersion: String = "1.1",
         val httpClient: Http.Client = HttpURLConnectionClient(),
         var httpBasicAuth: Http.BasicAuth? = null,
         val requestingUserName: String? = if (httpBasicAuth == null) System.getProperty("user.name") else httpBasicAuth.user

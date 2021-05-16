@@ -13,7 +13,7 @@ abstract class IppMessage {
 
     var code: Short? = null
     var requestId: Int? = null
-    var version: IppVersion? = null
+    var version: String? = null
     val attributesGroups = mutableListOf<IppAttributesGroup>()
     var documentInputStream: InputStream? = null
     var documentInputStreamIsConsumed: Boolean = false

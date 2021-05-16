@@ -45,11 +45,10 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
         }
     }
 
-    internal fun writeVersion(version: IppVersion) {
-        with(version) {
-            writeByte(major)
-            writeByte(minor)
-        }
+    internal fun writeVersion(version: String) {
+        val matchResult = """^(\d)\.(\d)$""".toRegex().find(version) ?: throw IppException("invalid version string: $version")
+        writeByte(matchResult.groups[1]!!.value.toInt())
+        writeByte(matchResult.groups[2]!!.value.toInt())
     }
 
     internal fun writeTag(tag: IppTag) {
