@@ -8,8 +8,8 @@ import de.gmuth.log.Logging
 
 class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*>>() {
 
-    // bugfix for macOS-CUPS-PrintJob-Operation (sends "document-format" multiple times): deny attribute replacement to preserve first one
-    private val denyReplacement: Boolean = tag == IppTag.Operation
+    // for macOS-CUPS-PrintJob-Operation (sends "document-format" multiple times): deny attribute replacement to preserve first one
+    var denyReplacement: Boolean = tag == IppTag.Operation
 
     companion object {
         val log = Logging.getLogger {}
@@ -59,9 +59,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     @JvmOverloads
     fun logDetails(prefix: String = "", title: String = "$tag") {
         log.info { "${prefix}$title" }
-        for (key in keys) {
-            log.info { "$prefix  ${get(key)}" }
-        }
+        keys.forEach { log.info { "$prefix  ${get(it)}" } }
     }
 
 }
