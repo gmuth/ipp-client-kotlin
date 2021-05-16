@@ -74,11 +74,7 @@ class IppInputStream(bufferedInputStream: BufferedInputStream) : DataInputStream
         // RFC 8010 3.8. & RFC 3380 8
         if (tag.isOutOfBandTag() || tag == IppTag.EndCollection) {
             val valueBytes = readLengthAndValue()
-            return if (valueBytes.isEmpty()) {
-                IppAttribute(name, tag) // no value
-            } else {
-                IppAttribute(name, tag, valueBytes)
-            }
+            return IppAttribute(name, tag, valueBytes)
         } else {
             val value = try {
                 readAttributeValue(tag)
