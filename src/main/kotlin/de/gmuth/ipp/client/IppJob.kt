@@ -6,8 +6,6 @@ package de.gmuth.ipp.client
 
 import de.gmuth.ipp.core.*
 import de.gmuth.log.Logging
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 import java.io.InputStream
 import java.net.URI
 
@@ -51,6 +49,9 @@ class IppJob(
     val mediaSheetsCompleted: Int
         get() = attributes.getValue("job-media-sheets-completed")
 
+    val documentFormat: String
+        get() = attributes.getValue("document-format")
+
     fun isTerminated() =
             state.isTerminated()
 
@@ -75,16 +76,16 @@ class IppJob(
     @JvmOverloads
     fun waitForTermination(delayMillis: Long = defaultDelayMillis) {
         log.info { "wait for termination of job #$id" }
-        var lastToString = toString()
-        do {
-            runBlocking { delay(delayMillis) }
+        var lastToString = ""
+        log.info { toString() }
+        while (!isTerminated()) {
+            Thread.sleep(delayMillis)
             updateAllAttributes()
-            // state, stateReason or impressionsCompleted changed?
             if (toString() != lastToString) {
                 lastToString = toString()
                 log.info { lastToString }
             }
-        } while (!isTerminated())
+        }
     }
 
     //-----------
@@ -139,16 +140,15 @@ class IppJob(
     // Logging
     // -------
 
-    override fun toString(): String =
-            // workaround: operation is used by waitForTermination() to detect changes
-            StringBuffer("id=$id, uri=$uri").apply {
-                // by default Get-Jobs operation only returns job-id and job-uri
-                if (attributes.containsKey("job-originating-user-name")) append(", originatingUserName=$originatingUserName")
-                if (attributes.containsKey("job-name")) append(", name=$name")
-                if (attributes.containsKey("job-state")) append(", state=$state")
-                if (attributes.containsKey("job-state-reasons")) append(", stateReasons=$stateReasons")
-                if (attributes.containsKey("job-impressions-completed")) append(", impressionsCompleted=$impressionsCompleted")
-            }.toString()
+    override fun toString(): String = with(attributes) {
+        StringBuffer("id=$id, uri=$uri").apply {
+            if (containsKey("job-state")) append(", state=$state")
+            if (containsKey("job-state-reasons")) append(", stateReasons=$stateReasons")
+            if (containsKey("job-name")) append(", name=$name")
+            if (containsKey("job-originating-user-name")) append(", originatingUserName=$originatingUserName")
+            if (containsKey("job-impressions-completed")) append(", impressionsCompleted=$impressionsCompleted")
+        }.toString()
+    }
 
     fun logDetails() =
             attributes.logDetails("", "JOB-$id")
