@@ -6,7 +6,10 @@ import de.gmuth.log.Logging
  * Copyright (c) 2020 Gerhard Muth
  */
 
-class IppAttributesGroup(val tag: IppTag, private val replacementAllowed: Boolean = true) : LinkedHashMap<String, IppAttribute<*>>() {
+class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*>>() {
+
+    // bugfix for macOS-CUPS-PrintJob-Operation (sends "document-format" multiple times): deny attribute replacement to preserve first one
+    private val denyReplacement: Boolean = tag == IppTag.Operation
 
     companion object {
         val log = Logging.getLogger {}
@@ -21,7 +24,7 @@ class IppAttributesGroup(val tag: IppTag, private val replacementAllowed: Boolea
         if (attribute.values.isEmpty() && !attribute.tag.isOutOfBandTag()) {
             throw IllegalArgumentException("empty value list")
         }
-        return if (containsKey(attribute.name) && !replacementAllowed) {
+        return if (containsKey(attribute.name) && denyReplacement) {
             log.warn { "replacement denied for '$attribute' in group $tag" }
             get(attribute.name)
         } else {

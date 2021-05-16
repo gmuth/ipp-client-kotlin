@@ -26,21 +26,21 @@ class IppAttributesGroupTests {
 
     @Test
     fun putWithReplacementAllowed() {
-        IppAttributesGroup.log.logLevel = Logging.LogLevel.INFO
-        group.attribute("number", IppTag.Integer, 0)
-        group.attribute("number", IppTag.Integer, 1, 2)
-        assertEquals(1, group.size)
-        assertEquals(group["number"]!!.values.size, 2)
+        with(IppAttributesGroup(IppTag.Printer)) {
+            attribute("number", IppTag.Integer, 0)
+            attribute("number", IppTag.Integer, 1, 2)
+            assertEquals(1, size)
+            assertEquals(get("number")!!.values.size, 2)
+        }
     }
 
     @Test
     fun putWithReplacementDenied() {
-        with(IppAttributesGroup(IppTag.Operation, false)) {
-            attribute("number", IppTag.Integer, 0)
-            attribute("number", IppTag.Integer, 1, 2)
-            assertEquals(1, size)
-            assertEquals(get("number")!!.values.size, 1)
-        }
+        IppAttributesGroup.log.logLevel = Logging.LogLevel.INFO
+        group.attribute("number", IppTag.Integer, 0)
+        group.attribute("number", IppTag.Integer, 1, 2)
+        assertEquals(1, group.size)
+        assertEquals(group.get("number")!!.values.size, 1)
     }
 
     @Test

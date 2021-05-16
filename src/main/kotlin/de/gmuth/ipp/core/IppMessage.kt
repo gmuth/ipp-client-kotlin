@@ -51,8 +51,8 @@ abstract class IppMessage {
             attributesGroups.map { it.tag }.contains(tag)
 
     // factory/build method for IppAttributesGroup
-    fun createAttributesGroup(tag: IppTag, replacementAllowed: Boolean = true) =
-            IppAttributesGroup(tag, replacementAllowed).apply { attributesGroups.add(this) }
+    fun createAttributesGroup(tag: IppTag) =
+            IppAttributesGroup(tag).apply { attributesGroups.add(this) }
 
     // --------
     // ENCODING
