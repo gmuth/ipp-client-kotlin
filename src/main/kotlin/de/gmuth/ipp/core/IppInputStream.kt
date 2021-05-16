@@ -71,25 +71,19 @@ class IppInputStream(bufferedInputStream: BufferedInputStream) : DataInputStream
 
     internal fun readAttribute(tag: IppTag): IppAttribute<Any> {
         val name = readString()
-        // RFC 8010 3.8. & RFC 3380 8
-        if (tag.isOutOfBandTag() || tag == IppTag.EndCollection) {
-            val valueBytes = readLengthAndValue()
-            return IppAttribute(name, tag, valueBytes)
-        } else {
-            val value = try {
-                readAttributeValue(tag)
-            } catch (exception: Exception) {
-                if (exception !is EOFException) {
-                    val remainingBytes = readBytes()
-                    hexdump(remainingBytes) { line -> log.debug { line } }
-                    log.debug { String(remainingBytes) }
-                }
-                throw IppException("failed to read attribute value of '$name' ($tag)", exception)
+        val value = try {
+            readAttributeValue(tag)
+        } catch (exception: Exception) {
+            if (exception !is EOFException) {
+                val remainingBytes = readBytes()
+                hexdump(remainingBytes) { line -> log.debug { line } }
+                log.debug { String(remainingBytes) }
             }
-            // remember attributes-charset for name and text value decoding
-            if (name == "attributes-charset") attributesCharset = value as Charset
-            return IppAttribute(name, tag, value)
+            throw IppException("failed to read attribute value of '$name' ($tag)", exception)
         }
+        // remember attributes-charset for name and text value decoding
+        if (name == "attributes-charset") attributesCharset = value as Charset
+        return IppAttribute(name, tag, value)
     }
 
     internal fun readAttributeValue(tag: IppTag): Any =
@@ -191,7 +185,10 @@ class IppInputStream(bufferedInputStream: BufferedInputStream) : DataInputStream
                     }
                 }
 
-                else -> throw IllegalArgumentException("tag '$tag'")
+                // for all other tags (including out-of-bound), read raw bytes (if present at all)
+                else -> { // value class ByteArray - possibly empty
+                    readLengthAndValue()
+                }
             }
 
     internal fun readCollection() =
@@ -219,10 +216,8 @@ class IppInputStream(bufferedInputStream: BufferedInputStream) : DataInputStream
     internal fun readString(charset: Charset = Charsets.US_ASCII) =
             String(readLengthAndValue(), charset)
 
-    internal fun readLengthAndValue(): ByteArray {
-        val length = readShort().toInt()
-        return readBytes(length)
-    }
+    internal fun readLengthAndValue() =
+            readBytes(readShort().toInt())
 
     // avoid Java-11-readNBytes(length) for backwards compatibility
     internal fun readBytes(length: Int): ByteArray {

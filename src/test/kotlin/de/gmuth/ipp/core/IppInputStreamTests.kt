@@ -162,12 +162,6 @@ class IppInputStreamTest {
     }
 
     @Test
-    fun readAttributeValueUnknownFails() {
-        val encoded = "00 00 12"
-        assertFailsWith<IllegalArgumentException> { encoded.readAttributeValue(IppTag.Unknown) }
-    }
-
-    @Test
     fun readMessage() {
         val encoded = "02 01 00 0B 00 00 00 08 01 47 00 12 61 74 74 72 69 62 75 74 65 73 2D 63 68 61 72 73 65 74 00 05 75 74 66 2D 38 02 22 00 01 31 00 01 01 22 00 00 00 01 00 13 00 01 30 00 00 03"
         IppInputStream.log.logLevel = Logging.LogLevel.TRACE
