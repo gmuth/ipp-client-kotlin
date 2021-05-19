@@ -41,12 +41,12 @@ class IppTagTests {
 
     @Test
     fun fromStringFails() {
-        assertFailsWith<IllegalArgumentException> { IppTag.fromString("invalid-tag-name") }
+        assertFailsWith<NoSuchElementException> { IppTag.fromString("invalid-tag-name") }
     }
 
     @Test
     fun fromByteFails() {
-        assertFailsWith<IllegalArgumentException> { IppTag.fromByte(0x00) }
+        assertFailsWith<NoSuchElementException> { IppTag.fromByte(0x00) }
     }
 
 }

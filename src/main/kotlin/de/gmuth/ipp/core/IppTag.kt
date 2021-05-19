@@ -7,7 +7,7 @@ package de.gmuth.ipp.core
 // [RFC 8010] and [RFC 3380]
 enum class IppTag(
         val code: Byte,
-        private val registeredName: String,
+        val registeredName: String,
         val validateClass: (Any) -> kotlin.Boolean = { true }
 ) {
 
@@ -79,9 +79,9 @@ enum class IppTag(
 
     companion object {
         fun fromByte(code: Byte): IppTag =
-                values().find { it.code == code } ?: throw IllegalArgumentException(String.format("code '%02X'", code))
+                values().single { it.code == code }
 
         fun fromString(name: String): IppTag =
-                values().find { it.registeredName == name } ?: throw IllegalArgumentException(name)
+                values().single { it.registeredName == name }
     }
 }
