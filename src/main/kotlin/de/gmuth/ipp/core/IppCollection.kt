@@ -31,9 +31,7 @@ data class IppCollection(val members: MutableList<IppAttribute<*>> = mutableList
         if (string.length < 160) {
             log.info { "$prefix$string" }
         } else {
-            for (member in members) {
-                member.logDetails("$prefix")
-            }
+            members.forEach { it.logDetails(prefix) }
         }
     }
 
