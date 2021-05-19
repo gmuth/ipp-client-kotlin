@@ -11,7 +11,7 @@ data class IppResolution(val x: Int, val y: Int, val unit: Int) {
 
     constructor(xy: Int, unit: Unit = Unit.DPI) : this(xy, xy, unit.code)
 
-    override fun toString() = "${x}${if (x == y) "" else "x${y}"}${Unit.fromInt(unit)}"
+    override fun toString() = "$x${if (x == y) "" else "x$y"}${Unit.fromInt(unit)}"
 
     enum class Unit(val code: Int) {
         DPI(3), DPC(4);
