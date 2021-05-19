@@ -41,7 +41,7 @@ class IppTool {
         val firstArgument = lineItems[1]
         when (command) {
             "OPERATION" -> {
-                val operation = IppOperation.fromString(firstArgument)
+                val operation = IppOperation.values().single { it.registeredName() == firstArgument }
                 request.code = operation.code
             }
             "GROUP" -> {

@@ -6,8 +6,11 @@ import de.gmuth.log.Logging
  * Copyright (c) 2020 Gerhard Muth
  */
 
+// https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-6
+
 enum class IppOperation(val code: Short) {
 
+    // RFC 8011
     PrintJob(0x0002),
     PrintUri(0x0003),
     ValidateJob(0x0004),
@@ -118,13 +121,12 @@ enum class IppOperation(val code: Short) {
     CupsGetDocument(0x4027),
     CupsCreateLocalPrinter(0x4028),
 
-    // placeholder for all unknown codes
+    // placeholder for unknown operation codes
     UnknownOperationCode(-1);
 
     override fun toString(): String = registeredName()
 
-    // https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-6
-    private fun registeredName() = name
+    fun registeredName() = name
             .replace("[A-Z]".toRegex()) { "-" + it.value }
             .replace("^-".toRegex(), "")
 
@@ -133,9 +135,5 @@ enum class IppOperation(val code: Short) {
 
         fun fromShort(code: Short): IppOperation =
                 values().find { it.code == code } ?: UnknownOperationCode
-
-        fun fromString(name: String): IppOperation =
-                values().find { it.registeredName() == name } ?: throw IllegalArgumentException(name)
     }
-
 }
