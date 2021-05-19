@@ -1,19 +1,13 @@
 package de.gmuth.ipp.core
 
-import java.io.File
-
 /**
  * Copyright (c) 2020 Gerhard Muth
  */
 
-class IppResponse() : IppMessage() {
-
-    constructor(file: File) : this() {
-        read(file)
-    }
+class IppResponse : IppMessage() {
 
     override val codeDescription: String
-        get() = "$status"
+        get() = status.toString()
 
     var status: IppStatus
         get() = IppStatus.fromShort(code!!)
@@ -21,7 +15,8 @@ class IppResponse() : IppMessage() {
             code = ippStatus.code
         }
 
-    val statusMessage: IppString // RFC 8011 4.1.6.2
+    // https://datatracker.ietf.org/doc/html/rfc8011#page-42
+    val statusMessage: IppString
         get() = operationGroup.getValue("status-message")
 
     val printerGroup: IppAttributesGroup

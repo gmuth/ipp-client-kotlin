@@ -16,7 +16,8 @@ class IppResponseTests {
 
     @Test
     fun printJobResponse1() {
-        with(IppResponse(File("src/test/resources/printJob.response"))) {
+        with(IppResponse()) {
+            read(File("src/test/resources/printJob.response"))
             assertTrue(isSuccessful())
             assertEquals(0, printerGroup.size)
             assertEquals(0, jobGroup.size)
