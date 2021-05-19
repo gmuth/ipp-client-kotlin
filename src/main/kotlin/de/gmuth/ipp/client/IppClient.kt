@@ -27,7 +27,8 @@ open class IppClient(
     var requestNaturalLanguage: String = "en"
     var lastIppRequest: IppRequest? = null
     var lastIppResponse: IppResponse? = null
-    private val requestCounter = AtomicInteger(1)
+
+    protected val requestCounter = AtomicInteger(1)
 
     fun trustAnyCertificate() {
         httpClient.config.sslSocketFactory = SSLHelper.sslSocketFactoryForAnyCertificate()
