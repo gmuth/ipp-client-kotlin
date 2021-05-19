@@ -1,7 +1,5 @@
 package de.gmuth.ipp.core
 
-import de.gmuth.log.Logging
-
 /**
  * Copyright (c) 2020 Gerhard Muth
  */
@@ -131,9 +129,8 @@ enum class IppOperation(val code: Short) {
             .replace("^-".toRegex(), "")
 
     companion object {
-        val log = Logging.getLogger {}
-
         fun fromShort(code: Short): IppOperation =
                 values().find { it.code == code } ?: UnknownOperationCode
     }
+
 }
