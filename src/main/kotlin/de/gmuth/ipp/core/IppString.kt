@@ -4,7 +4,7 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
-// name or text value with or without language
+// name or text value, optional language
 
 data class IppString(val text: String, val language: String? = null) {
 
