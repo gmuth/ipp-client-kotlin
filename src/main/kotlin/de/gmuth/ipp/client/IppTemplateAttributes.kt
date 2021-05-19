@@ -23,7 +23,7 @@ object IppTemplateAttributes {
 
     @JvmStatic
     fun documentName(value: String) =
-            IppAttribute("document-Name", IppTag.NameWithoutLanguage, value)
+            IppAttribute("document-name", IppTag.NameWithoutLanguage, value)
 
     @JvmStatic
     fun jobName(value: String) =
