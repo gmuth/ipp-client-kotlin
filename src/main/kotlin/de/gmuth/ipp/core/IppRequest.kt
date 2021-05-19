@@ -7,21 +7,13 @@ package de.gmuth.ipp.core
 import java.net.URI
 import java.nio.charset.Charset
 
-class IppRequest : IppMessage {
+class IppRequest() : IppMessage() {
 
     override val codeDescription: String
-        get() = "$operation"
+        get() = operation.toString()
 
     val operation: IppOperation
         get() = IppOperation.fromShort(code!!)
-
-    constructor(
-            version: String = "1.1",
-            requestId: Int = 1
-    ) {
-        this.version = version
-        this.requestId = requestId
-    }
 
     constructor(
             operation: IppOperation,
@@ -32,8 +24,9 @@ class IppRequest : IppMessage {
             version: String = "1.1",
             requestId: Int = 1,
             charset: Charset = Charsets.UTF_8,
-            naturalLanguage: String = "en-us"
-    ) {
+            naturalLanguage: String = "en"
+    ) : this() {
+
         this.version = version
         this.code = operation.code
         this.requestId = requestId
@@ -45,8 +38,8 @@ class IppRequest : IppMessage {
             attribute("attributes-natural-language", IppTag.NaturalLanguage, naturalLanguage)
 
             // optional attributes
-            printerUri?.let { attribute("printer-uri", IppTag.Uri, it) }
             jobId?.let { attribute("job-id", IppTag.Integer, it) }
+            printerUri?.let { attribute("printer-uri", IppTag.Uri, it) }
             requestedAttributes?.let { attribute("requested-attributes", IppTag.Keyword, it) }
             requestingUserName?.let { attribute("requesting-user-name", IppTag.NameWithoutLanguage, it) }
         }

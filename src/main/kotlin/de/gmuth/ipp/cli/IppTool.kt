@@ -8,13 +8,15 @@ import java.io.InputStream
 import java.io.Reader
 import java.net.URI
 import java.nio.charset.Charset
-import java.util.*
 
 class IppTool {
     var verbose: Boolean = false
     var uri: URI? = null
     var filename: String? = null
-    val request = IppRequest()
+    val request = IppRequest().apply {
+        version = "1.1"
+        requestId = 1
+    }
     lateinit var currentGroup: IppAttributesGroup
 
     fun interpretResource(resource: String) = interpret(javaClass.getResourceAsStream(resource))

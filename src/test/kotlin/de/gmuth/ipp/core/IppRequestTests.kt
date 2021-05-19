@@ -24,8 +24,7 @@ class IppRequestTests {
             code = 5
             log.info { toString() }
             logDetails()
-            assertEquals(1, requestId)
-            assertEquals("1.1", version)
+            assertEquals(null, version)
             assertEquals(IppOperation.CreateJob, operation)
         }
     }
@@ -39,10 +38,10 @@ class IppRequestTests {
         assertEquals("1.1", request.version)
         assertEquals(IppOperation.StartupPrinter, request.operation)
         assertEquals(Charsets.UTF_8, request.operationGroup.getValue("attributes-charset"))
-        assertEquals("en-us", request.operationGroup.getValue("attributes-natural-language"))
+        assertEquals("en", request.operationGroup.getValue("attributes-natural-language"))
         assertEquals("Startup-Printer", request.codeDescription)
         val requestEncoded = request.encode()
-        assertEquals(75, requestEncoded.size)
+        assertEquals(72, requestEncoded.size)
         IppMessage.saveRawBytes = !IppMessage.saveRawBytes
         IppMessage.log.logLevel = Logging.LogLevel.INFO
     }
@@ -72,7 +71,7 @@ class IppRequestTests {
         assertNotNull(requestDecoded.operationGroup)
         with(requestDecoded.operationGroup) {
             assertEquals(Charsets.UTF_8, getValue("attributes-charset"))
-            assertEquals("en-us", getValue("attributes-natural-language"))
+            assertEquals("en", getValue("attributes-natural-language"))
             assertEquals(URI.create("ipp://printer"), getValue("printer-uri"))
             assertEquals(0, getValue("job-id"))
             assertEquals(listOf("one", "two"), getValues("requested-attributes"))
