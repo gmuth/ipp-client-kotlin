@@ -70,7 +70,7 @@ enum class IppStatus(val code: Short) {
     fun isServerError() = (0x0500..0x05FF).contains(code)
 
     override fun toString() = name
-            .replace("[A-Z]".toRegex()) { "-" + it.value.lowerCase() }
+            .replace("[A-Z]".toRegex()) { "-" + it.value.toLowerCase() }
             .replace("^-".toRegex(), "")
 
     companion object {

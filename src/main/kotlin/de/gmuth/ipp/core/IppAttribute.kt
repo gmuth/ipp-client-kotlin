@@ -80,7 +80,7 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
 
     private fun valueToString(value: T) = when {
         tag == IppTag.Charset -> with(value as Charset) {
-            name().lowerCase()
+            name().toLowerCase()
         }
         tag == IppTag.RangeOfInteger -> with(value as IntRange) {
             "$start-$endInclusive"
