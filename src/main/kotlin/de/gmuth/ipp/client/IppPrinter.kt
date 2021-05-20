@@ -328,17 +328,21 @@ open class IppPrinter(
         return isAttributeValueSupported
     }
 
-    fun savePrinterAttributes(): File {
-        updateAllAttributes()
-        val printerMakeAndModel = makeAndModel.text.replace("\\s+".toRegex(), "_")
-        with(File(printerMakeAndModel.plus(".txt"))) {
-            writeText("# $printerUri\n")
-            log.info { "txt file: $absolutePath" }
-            attributes.values.forEach { appendText("$it\n") }
+    // -----------------------
+    // Save printer attributes
+    // -----------------------
+
+    fun savePrinterAttributes(printerModel: String = makeAndModel.text.replace("\\s+".toRegex(), "_")) {
+        val ippResponse = getPrinterAttributes()
+        File("$printerModel.bin").apply {
+            log.info { "save bin file: $absolutePath" }
+            ippResponse.saveRawBytes(this)
         }
-        return File(printerMakeAndModel.plus(".bin")).apply {
-            log.info { "bin file: $absolutePath" }
-            ippClient.lastIppResponse!!.saveRawBytes(this)
+        val printerAttributes = ippResponse.printerGroup
+        File("$printerModel.txt").apply {
+            log.info { "save txt file: $absolutePath" }
+            writeText("# $printerUri\n")
+            printerAttributes.values.forEach { appendText("$it\n") }
         }
     }
 
