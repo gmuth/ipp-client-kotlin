@@ -164,9 +164,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
                 writeAttribute(IppAttribute<Unit>("", IppTag.EndCollection))
             }
 
-            else -> {
-                throw IllegalArgumentException(String.format("tag 0x%02X %s", tag.code, tag))
-            }
+            else -> throw IppException("unknown tag 0x%02X %s".format(tag.code, tag))
         }
     }
 }

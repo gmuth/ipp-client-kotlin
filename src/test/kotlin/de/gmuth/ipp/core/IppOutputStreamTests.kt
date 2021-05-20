@@ -168,7 +168,7 @@ class IppOutputStreamTest {
 
     @Test
     fun writeAttributeValueUnknownFails() {
-        assertFailsWith<IllegalArgumentException> { ippOutputStream.writeAttributeValue(IppTag.Unknown, "unknownValue") }
+        assertFailsWith<IppException> { ippOutputStream.writeAttributeValue(IppTag.Unknown, "unknownValue") }
     }
 
     @Test
