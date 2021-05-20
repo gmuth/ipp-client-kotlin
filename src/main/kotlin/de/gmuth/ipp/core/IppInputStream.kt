@@ -4,7 +4,7 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.io.ByteUtils.Companion.hexdump
+import de.gmuth.io.hexdump
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.log.Logging
 import java.io.BufferedInputStream
@@ -75,9 +75,7 @@ class IppInputStream(bufferedInputStream: BufferedInputStream) : DataInputStream
             readAttributeValue(tag)
         } catch (exception: Exception) {
             if (exception !is EOFException) {
-                val remainingBytes = readBytes()
-                hexdump(remainingBytes) { line -> log.debug { line } }
-                log.debug { String(remainingBytes) }
+                readBytes().hexdump { line -> log.debug { line } }
             }
             throw IppException("failed to read attribute value of '$name' ($tag)", exception)
         }
@@ -220,10 +218,11 @@ class IppInputStream(bufferedInputStream: BufferedInputStream) : DataInputStream
             readBytes(readShort().toInt())
 
     // avoid Java-11-readNBytes(length) for backwards compatibility
-    internal fun readBytes(length: Int): ByteArray {
-        log.trace { "read $length bytes" }
-        return ByteArray(length).apply { readFully(this) }
-    }
+    internal fun readBytes(length: Int) =
+            ByteArray(length).apply {
+                log.trace { "read $length bytes" }
+                readFully(this)
+            }
 
     internal fun readExpectedValueLength(expected: Int) {
         val length = readShort().toInt()
