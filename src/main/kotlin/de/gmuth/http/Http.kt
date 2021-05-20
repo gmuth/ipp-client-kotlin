@@ -4,6 +4,7 @@ package de.gmuth.http
  * Copyright (c) 2020 Gerhard Muth
  */
 
+import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI
@@ -30,16 +31,36 @@ interface Http {
             val server: String?,
             val contentType: String?,
             val contentStream: InputStream?
-    )
+    ) {
+        fun isOK() = status == 200
+        fun hasContent() = contentStream != null
+        fun readTextContent() = contentStream!!.bufferedReader().use { it.readText() }
+        fun contentTypeIsText() = contentType != null && contentType.startsWith("text")
+    }
 
-    interface Client {
-        val config: Config
-        fun post(
+    abstract class Client(val config: Config = Config()) {
+
+        // post operation that needs to be implemented
+        abstract fun post(
                 uri: URI,
                 contentType: String,
                 writeContent: (OutputStream) -> Unit,
                 basicAuth: BasicAuth? = null
         ): Response
+
+        fun postSuccessful(
+                uri: URI,
+                contentType: String,
+                writeContent: (OutputStream) -> Unit,
+                basicAuth: BasicAuth? = null
+        ) =
+                post(uri, contentType, writeContent, basicAuth).apply {
+                    if (!isOK()) {
+                        val content = if (hasContent() && contentTypeIsText()) "\n" + readTextContent() else ""
+                        throw IOException("http request to $uri failed: status=$status, content-type=$contentType$content")
+                    }
+                }
+
     }
 
 }

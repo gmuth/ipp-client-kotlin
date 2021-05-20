@@ -9,12 +9,9 @@ import de.gmuth.http.HttpURLConnectionClient
 import de.gmuth.http.SSLHelper
 import de.gmuth.ipp.core.*
 import de.gmuth.log.Logging
-import java.io.InputStream
-import java.io.OutputStream
 import java.net.URI
 import java.nio.charset.Charset
 import java.util.concurrent.atomic.AtomicInteger
-import javax.net.ssl.SSLHandshakeException
 
 open class IppClient(
         var ippVersion: String = "1.1",
@@ -96,8 +93,18 @@ open class IppClient(
             URI.create("$scheme://$host:$port$path")
         }
 
-        // http exchange binary ipp message
-        val ippResponseStream = httpExchange(httpUri) { ippRequestStream -> ippRequest.write(ippRequestStream) }
+        // successful http post binary ipp message or throw exception
+        val httpResponse = httpClient.postSuccessful(
+                httpUri,
+                ippContentType,
+                { httpPostStream -> ippRequest.write(httpPostStream) },
+                httpBasicAuth
+        )
+        with(httpResponse) {
+            log.debug { "ipp-server: $server" }
+            if (!contentType!!.startsWith(ippContentType)) throw IppException("invalid content-type: $contentType")
+        }
+        val ippResponseStream = httpResponse.contentStream!!
 
         // decode ipp response
         val ippResponse = IppResponse()
@@ -129,28 +136,6 @@ open class IppClient(
         // the decoded response
         lastIppResponse = ippResponse
         return ippResponse
-    }
-
-    open fun httpExchange(uri: URI, writeContent: (OutputStream) -> Unit): InputStream {
-        val start = System.currentTimeMillis()
-        try {
-            with(httpClient.post(uri, ippContentType, writeContent, httpBasicAuth)) {
-                log.debug { "ipp-server: $server" }
-                if (status == 200 && contentType!!.startsWith(ippContentType)) return contentStream!!
-                if (status == 401) log.warn { "invalid credentials. call basicAuth(\"user\", \"password\") to set valid credentials." }
-                val textContent = StringBuffer().apply {
-                    if (contentStream != null && contentType != null && contentType.startsWith("text")) {
-                        append(", content=" + contentStream.bufferedReader().use { it.readText() })
-                    }
-                }
-                throw IppException("http request to $uri failed: http-status=$status, content-type=${contentType}$textContent")
-            }
-        } catch (sslException: SSLHandshakeException) {
-            throw IppException("SSL connection error $uri", sslException)
-        } finally {
-            val duration = System.currentTimeMillis() - start
-            if (duration > 5000) log.warn { String.format("http exchange %s: %d ms", uri, duration) }
-        }
     }
 
 }

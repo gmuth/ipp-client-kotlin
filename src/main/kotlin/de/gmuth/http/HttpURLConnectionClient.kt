@@ -14,7 +14,7 @@ import java.util.*
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.HttpsURLConnection
 
-class HttpURLConnectionClient(override val config: Http.Config = Http.Config()) : Http.Client {
+class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client(config) {
 
     companion object {
         val log = Logging.getLogger {}
