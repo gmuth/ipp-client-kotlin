@@ -40,7 +40,7 @@ interface Http {
 
     abstract class Client(val config: Config = Config()) {
 
-        // post operation that needs to be implemented
+        // post operation needs to be implemented
         abstract fun post(
                 uri: URI,
                 contentType: String,
@@ -62,5 +62,4 @@ interface Http {
                 }
 
     }
-
 }
