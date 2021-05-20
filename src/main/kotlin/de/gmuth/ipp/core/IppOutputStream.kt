@@ -19,30 +19,29 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
     // charset for text and name attributes, rfc 8011 4.1.4.1
     internal lateinit var attributesCharset: Charset
 
-    fun writeMessage(message: IppMessage) {
-        attributesCharset = message.operationGroup.getValue("attributes-charset")
-        with(message) {
-            writeVersion(version ?: throw IppException("missing version"))
-            log.trace { "version = $version" }
+    fun writeMessage(message: IppMessage) = with(message) {
+        attributesCharset = operationGroup.getValue("attributes-charset")
 
-            writeShort(code?.toInt() ?: throw IppException("missing operation or status code"))
-            log.trace { "code = $code ($codeDescription)" }
+        writeVersion(version ?: throw IppException("missing version"))
+        log.trace { "version = $version" }
 
-            writeInt(requestId ?: throw IppException("missing requestId"))
-            log.trace { "requestId = $requestId" }
+        writeShort(code?.toInt() ?: throw IppException("missing operation or status code"))
+        log.trace { "code = $code ($codeDescription)" }
 
-            for (group in attributesGroups) {
-                writeTag(group.tag)
-                for (attribute in group.values) {
-                    try {
-                        writeAttribute(attribute)
-                    } catch (exception: Exception) {
-                        throw IppException("failed to write attribute: $attribute", exception)
-                    }
+        writeInt(requestId ?: throw IppException("missing requestId"))
+        log.trace { "requestId = $requestId" }
+
+        for (group in attributesGroups) {
+            writeTag(group.tag)
+            for (attribute in group.values) {
+                try {
+                    writeAttribute(attribute)
+                } catch (exception: Exception) {
+                    throw IppException("failed to write attribute: $attribute", exception)
                 }
             }
-            writeTag(IppTag.End)
         }
+        writeTag(IppTag.End)
     }
 
     internal fun writeVersion(version: String) {
@@ -109,7 +108,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
             }
 
             IppTag.Charset -> with(value as Charset) {
-                writeString(name().lowerCase())
+                writeString(name().toLowerCase())
             }
 
             IppTag.Uri -> with(value as URI) {
@@ -171,6 +170,3 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
         }
     }
 }
-
-// workaround for jacoco coverage issue
-fun String.lowerCase() = toLowerCase()
