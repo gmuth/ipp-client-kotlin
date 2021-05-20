@@ -10,54 +10,39 @@ import java.security.SecureRandom
 import java.security.cert.Certificate
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
-import javax.net.ssl.*
+import javax.net.ssl.SSLContext
+import javax.net.ssl.TrustManager
+import javax.net.ssl.TrustManagerFactory
+import javax.net.ssl.X509TrustManager
 
-class SSLHelper {
+object SSLHelper {
 
-    companion object {
+    fun loadCertificate(inputStream: InputStream, type: String = "X.509") =
+            CertificateFactory.getInstance(type).generateCertificate(inputStream)
 
-        fun loadCertificate(inputStream: InputStream, type: String = "X.509"): Certificate {
-            return CertificateFactory.getInstance(type).generateCertificate(inputStream)
-        }
+    fun loadTrustStore(keyStoreInputStream: InputStream, keyStorePassword: String, keyStoreType: String = KeyStore.getDefaultType()) =
+            KeyStore.getInstance(keyStoreType).apply { load(keyStoreInputStream, keyStorePassword.toCharArray()) }
 
-        fun loadTrustStore(keyStoreInputStream: InputStream, keyStorePassword: String, keyStoreType: String = KeyStore.getDefaultType()): KeyStore {
-            return KeyStore.getInstance(keyStoreType).apply {
-                load(keyStoreInputStream, keyStorePassword.toCharArray())
-            }
-        }
+    fun sslSocketFactory(trustmanagers: Array<TrustManager>, protocol: String = "TLS") =
+            SSLContext.getInstance(protocol).apply { init(null, trustmanagers, SecureRandom()) }.socketFactory
 
-        fun sslSocketFactoryForAnyCertificate(): SSLSocketFactory {
-            val anyCertificateX509TrustManager = object : X509TrustManager {
+    fun sslSocketFactoryForAnyCertificate() = sslSocketFactory(arrayOf(
+            object : X509TrustManager {
                 override fun checkClientTrusted(certificates: Array<out X509Certificate>?, string: String?) = Unit
                 override fun checkServerTrusted(certificates: Array<out X509Certificate>?, string: String?) = Unit
                 override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
             }
-            return sslSocketFactory(arrayOf<TrustManager>(anyCertificateX509TrustManager))
-        }
+    ))
 
-        fun sslSocketFactory(certificate: Certificate): SSLSocketFactory {
-            val keyStore = KeyStore.getInstance(KeyStore.getDefaultType()).apply {
+    fun sslSocketFactory(certificate: Certificate) = sslSocketFactory(
+            KeyStore.getInstance(KeyStore.getDefaultType()).apply {
                 load(null) // initialize keystore
                 setCertificateEntry("alias", certificate)
             }
-            return sslSocketFactory(keyStore)
-        }
+    )
 
-
-        fun sslSocketFactory(keyStore: KeyStore, algorithm: String = TrustManagerFactory.getDefaultAlgorithm()): SSLSocketFactory {
-            val trustManagerFactory = TrustManagerFactory.getInstance(algorithm).apply {
-                init(keyStore)
-            }
-            return sslSocketFactory(trustManagerFactory.trustManagers)
-        }
-
-        private fun sslSocketFactory(trustmanagers: Array<TrustManager>, protocol: String = "TLS"): SSLSocketFactory {
-            val sslContext = SSLContext.getInstance(protocol).apply {
-                init(null, trustmanagers, SecureRandom())
-            }
-            return sslContext.socketFactory
-        }
-
-    }
+    fun sslSocketFactory(keyStore: KeyStore, algorithm: String = TrustManagerFactory.getDefaultAlgorithm()) = sslSocketFactory(
+            TrustManagerFactory.getInstance(algorithm).apply { init(keyStore) }.trustManagers
+    )
 
 }
