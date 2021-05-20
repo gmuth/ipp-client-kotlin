@@ -13,7 +13,7 @@ object Logging {
     var defaultLogLevel = LogLevel.INFO
     var useSimpleClassName = true
     var consoleWriterEnabled = true
-    var consoleWriterFormat: String = "%-25s %-5s %s"
+    var consoleWriterFormat: String = "%-25s %-5s %s" // name, level, message
 
     enum class LogLevel { TRACE, DEBUG, INFO, WARN, ERROR }
 
@@ -43,7 +43,7 @@ object Logging {
 
         open fun dispatch(messageLogLevel: LogLevel, throwable: Throwable?, messageString: String) {
             if (consoleWriterEnabled) {
-                println(String.format(consoleWriterFormat, name, messageLogLevel, messageString))
+                println(consoleWriterFormat.format(name, messageLogLevel, messageString))
                 throwable?.printStackTrace(PrintWriter(System.out, true))
             }
         }
