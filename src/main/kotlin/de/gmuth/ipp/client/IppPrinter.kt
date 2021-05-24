@@ -197,7 +197,9 @@ open class IppPrinter(
                     checkIfValueIsSupported("${attribute.name}-supported", attribute.values)
                     // put attribute in operation or job group?
                     val groupTag = IppRegistrationsSection2.selectGroupForAttribute(attribute.name)
-                    getSingleAttributesGroup(groupTag, createIfMissing = true).put(attribute)
+                    if (getAttributesGroups(groupTag).isEmpty()) createAttributesGroup(groupTag)
+                    log.trace { "$groupTag put $attribute" }
+                    getSingleAttributesGroup(groupTag).put(attribute)
                 }
             }
 

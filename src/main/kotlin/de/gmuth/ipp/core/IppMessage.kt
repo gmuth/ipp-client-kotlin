@@ -23,7 +23,6 @@ abstract class IppMessage {
 
     companion object {
         val log = Logging.getLogger {}
-        var saveRawBytes: Boolean = true
     }
 
     val operationGroup: IppAttributesGroup
@@ -35,22 +34,15 @@ abstract class IppMessage {
     fun getAttributesGroups(tag: IppTag) =
             attributesGroups.filter { it.tag == tag }
 
-    fun getSingleAttributesGroup(tag: IppTag, createIfMissing: Boolean = false): IppAttributesGroup {
-        val groups = getAttributesGroups(tag)
-        if (groups.isEmpty()) {
-            if (createIfMissing) {
-                return createAttributesGroup(tag)
-            } else {
-                throw IppException("no group found with tag '$tag' in $attributesGroups")
-            }
-        }
-        return groups.single()
+    fun getSingleAttributesGroup(tag: IppTag) = with(getAttributesGroups(tag)) {
+        if (isEmpty()) throw IppException("no group found with tag '$tag' in $attributesGroups")
+        single()
     }
 
     fun containsGroup(tag: IppTag) =
             attributesGroups.map { it.tag }.contains(tag)
 
-    // factory/build method for IppAttributesGroup
+    // factory method for IppAttributesGroup
     fun createAttributesGroup(tag: IppTag) =
             IppAttributesGroup(tag).apply { attributesGroups.add(this) }
 
@@ -59,15 +51,11 @@ abstract class IppMessage {
     // --------
 
     fun write(outputStream: OutputStream) {
-        if (saveRawBytes) {
-            val byteArraySavingOutputStream = ByteArraySavingOutputStream(outputStream)
-            try {
-                IppOutputStream(byteArraySavingOutputStream).writeMessage(this)
-            } finally {
-                rawBytes = byteArraySavingOutputStream.toByteArray()
-            }
-        } else {
-            IppOutputStream(outputStream).writeMessage(this)
+        val byteArraySavingOutputStream = ByteArraySavingOutputStream(outputStream)
+        try {
+            IppOutputStream(byteArraySavingOutputStream).writeMessage(this)
+        } finally {
+            rawBytes = byteArraySavingOutputStream.toByteArray()
         }
         copyDocumentStream(outputStream)
     }
@@ -75,30 +63,23 @@ abstract class IppMessage {
     fun write(file: File) =
             write(FileOutputStream(file))
 
-    fun encode(): ByteArray =
-            with(ByteArrayOutputStream()) {
-                write(this)
-                return toByteArray()
-            }
+    fun encode(): ByteArray = with(ByteArrayOutputStream()) {
+        write(this)
+        toByteArray()
+    }
 
     // --------
     // DECODING
     // --------
 
     fun read(inputStream: InputStream) {
-        if (saveRawBytes) {
-            val byteArraySavingBufferedInputStream = ByteArraySavingBufferedInputStream(inputStream)
-            try {
-                IppInputStream(byteArraySavingBufferedInputStream).readMessage(this)
-                documentInputStream = byteArraySavingBufferedInputStream
-            } finally {
-                rawBytes = byteArraySavingBufferedInputStream.toByteArray()
-                byteArraySavingBufferedInputStream.duplicateBytes = false // stop saving bytes (document)
-            }
-        } else {
-            val bufferedInputStream = BufferedInputStream(inputStream)
-            IppInputStream(bufferedInputStream).readMessage(this)
-            documentInputStream = bufferedInputStream
+        val byteArraySavingBufferedInputStream = ByteArraySavingBufferedInputStream(inputStream)
+        try {
+            IppInputStream(byteArraySavingBufferedInputStream).readMessage(this)
+            documentInputStream = byteArraySavingBufferedInputStream
+        } finally {
+            rawBytes = byteArraySavingBufferedInputStream.toByteArray()
+            byteArraySavingBufferedInputStream.duplicateBytes = false // stop saving bytes (document)
         }
     }
 
@@ -128,23 +109,19 @@ abstract class IppMessage {
         log.info { "saved ${file.length()} document bytes to file ${file.path}" }
     }
 
-    fun saveRawBytes(file: File): File {
-        // precondition: feature flag saveRawBytes is true
-        file.writeBytes(rawBytes ?: throw RuntimeException("missing raw bytes. you must call read/decode or write/encode before."))
-        return file
+    fun saveRawBytes(file: File) = file.apply {
+        writeBytes(rawBytes ?: throw RuntimeException("missing raw bytes. you must call read/decode or write/encode before."))
     }
 
     // -------
     // LOGGING
     // -------
 
-    override fun toString(): String =
-            String.format(
-                    "%s %s%s",
-                    codeDescription,
-                    attributesGroups.map { "${it.values.size} ${it.tag}" },
-                    if (rawBytes == null) "" else " (${rawBytes!!.size} bytes)"
-            )
+    override fun toString() = "%s %s%s".format(
+            codeDescription,
+            attributesGroups.map { "${it.values.size} ${it.tag}" },
+            if (rawBytes == null) "" else " (${rawBytes!!.size} bytes)"
+    )
 
     fun logDetails(prefix: String = "") {
         if (rawBytes != null) log.info { "${prefix}${rawBytes!!.size} raw ipp bytes" }

@@ -28,7 +28,7 @@ class IppMessageTests {
     @Test
     fun writeFile() {
         with(message) {
-            getSingleAttributesGroup(IppTag.Operation, true).attribute("attributes-charset", IppTag.Charset, Charsets.UTF_8)
+            createAttributesGroup(IppTag.Operation).attribute("attributes-charset", IppTag.Charset, Charsets.UTF_8)
             version = "1.1"
             requestId = 5
             code = 0
@@ -49,7 +49,7 @@ class IppMessageTests {
     @Test
     fun saveDocumentAndIpp() {
         with(message) {
-            getSingleAttributesGroup(IppTag.Operation, true).attribute("attributes-charset", IppTag.Charset, Charsets.UTF_8)
+            createAttributesGroup(IppTag.Operation).attribute("attributes-charset", IppTag.Charset, Charsets.UTF_8)
             version =  "1.1"
             requestId = 7
             code = 0
@@ -59,7 +59,6 @@ class IppMessageTests {
             try {
                 saveDocumentStream(tmpFile1)
                 assertEquals(26, tmpFile1.length())
-                IppMessage.saveRawBytes = true
                 encode() // save raw bytes
                 saveRawBytes(tmpFile2)
                 assertEquals(38, tmpFile2.length())

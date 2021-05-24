@@ -28,13 +28,6 @@ class IppResponseTests {
     }
 
     @Test
-    fun printJobResponse2() {
-        IppMessage.saveRawBytes = !IppMessage.saveRawBytes
-        ippResponse.decode(File("src/test/resources/printJob.response").readBytes())
-        IppMessage.saveRawBytes = !IppMessage.saveRawBytes
-    }
-
-    @Test
     fun setStatus() {
         ippResponse.status = IppStatus.ClientErrorDocumentFormatNotSupported
         assertEquals(0x040A, ippResponse.code)
