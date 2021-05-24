@@ -9,6 +9,7 @@ import de.gmuth.ipp.core.IppResolution
 import de.gmuth.ipp.core.IppResolution.Unit
 import de.gmuth.ipp.core.IppResolution.Unit.DPI
 import de.gmuth.ipp.core.IppTag
+import de.gmuth.ipp.core.toIppString
 
 /**
  * create common job attributes
@@ -23,11 +24,11 @@ object IppTemplateAttributes {
 
     @JvmStatic
     fun documentName(value: String) =
-            IppAttribute("document-name", IppTag.NameWithoutLanguage, value)
+            IppAttribute("document-name", IppTag.NameWithoutLanguage, value.toIppString())
 
     @JvmStatic
     fun jobName(value: String) =
-            IppAttribute("job-name", IppTag.NameWithoutLanguage, value)
+            IppAttribute("job-name", IppTag.NameWithoutLanguage, value.toIppString())
 
     // for job group
 

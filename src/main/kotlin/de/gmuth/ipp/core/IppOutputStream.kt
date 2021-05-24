@@ -127,14 +127,17 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
             IppTag.TextWithoutLanguage,
             IppTag.NameWithoutLanguage -> when {
                 (value is IppString) -> writeString(value.text, attributesCharset)
-                (value is String) -> writeString(value, attributesCharset) // accept String for convenience
+                (value is String) -> { // accept String for convenience (deprecated)
+                    writeString(value, attributesCharset)
+                    log.warn { "for tag '$tag' value class String support is deprecated and will be removed in future versions, use toIppString()" }
+                }
                 else -> throw IppException("expected value class IppString without language or String")
             }
 
             IppTag.TextWithLanguage,
             IppTag.NameWithLanguage -> with(value as IppString) {
-                expectLanguageOrThrow()
-                writeShort(4 + text.length + language!!.length)
+                if (language == null) throw IppException("expected IppString with language")
+                writeShort(4 + text.length + language.length)
                 writeString(language, attributesCharset)
                 writeString(text, attributesCharset)
             }

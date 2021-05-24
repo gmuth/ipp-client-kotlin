@@ -41,7 +41,7 @@ class IppRequest() : IppMessage() {
             jobId?.let { attribute("job-id", IppTag.Integer, it) }
             printerUri?.let { attribute("printer-uri", IppTag.Uri, it) }
             requestedAttributes?.let { attribute("requested-attributes", IppTag.Keyword, it) }
-            requestingUserName?.let { attribute("requesting-user-name", IppTag.NameWithoutLanguage, it) }
+            requestingUserName?.let { attribute("requesting-user-name", IppTag.NameWithoutLanguage, it.toIppString()) }
         }
     }
 }
