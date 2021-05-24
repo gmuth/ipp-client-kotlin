@@ -12,7 +12,7 @@ import java.io.File
 
 class IppExchangeException(
         val ippRequest: IppRequest,
-        val ippResponse: IppResponse,
+        val ippResponse: IppResponse? = null,
         message: String,
         cause: Exception? = null
 
@@ -24,7 +24,7 @@ class IppExchangeException(
 
     fun logDetails() {
         ippRequest.logDetails(" REQUEST: ")
-        ippResponse.logDetails("RESPONSE: ")
+        ippResponse?.logDetails("RESPONSE: ")
     }
 
     fun saveRequestAndResponse(fileNameWithoutSuffix: String = "ipp_exchange_exception") {
@@ -32,7 +32,7 @@ class IppExchangeException(
             val requestFile = ippRequest.saveRawBytes(File("$fileNameWithoutSuffix.request"))
             log.warn { "ipp request  written to file ${requestFile.absolutePath}" }
         }
-        if (ippResponse.rawBytes != null) {
+        if (ippResponse?.rawBytes != null) {
             val responseFile = ippResponse.saveRawBytes(File("$fileNameWithoutSuffix.response"))
             log.warn { "ipp response written to file ${responseFile.absolutePath}" }
         }
