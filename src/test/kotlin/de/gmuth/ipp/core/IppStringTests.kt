@@ -14,12 +14,6 @@ class IppStringTests {
     private val withLanguage = IppString("string-with-language", "en")
 
     @Test
-    fun expectLanguageOrThrow() {
-        withLanguage.expectLanguageOrThrow()
-        assertFailsWith<IppException> { withoutLanguage.expectLanguageOrThrow() }
-    }
-
-    @Test
     fun toStringWithoutLanguage() {
         assertEquals("string-without-language", withoutLanguage.toString())
     }
