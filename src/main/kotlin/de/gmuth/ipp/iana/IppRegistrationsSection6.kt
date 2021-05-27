@@ -3,6 +3,7 @@ package de.gmuth.ipp.iana
 import de.gmuth.csv.CSVReader
 import de.gmuth.csv.CSVReader.RowMapper
 import de.gmuth.ipp.core.IppOperation
+import de.gmuth.log.Logging
 
 /**
  * https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xhtml#ipp-registrations-6
@@ -34,6 +35,7 @@ class IppRegistrationsSection6 {
     }
 
     companion object {
+        val log = Logging.getLogger { }
 
         // source: https://www.iana.org/assignments/ipp-registrations/ipp-registrations-6.csv
         val allEnumAttributeValues =
@@ -54,18 +56,12 @@ class IppRegistrationsSection6 {
 
         fun getEnumName(attribute: String, value: Any) =
                 if (attribute == "operations-supported" && value is Number) {
-                    getOperationsSupportedValueName(value.toInt())
+                    // lookup the name in IppOperation because CUPS operations are not iana registered
+                    IppOperation.fromShort(value.toShort()).toString()
                 } else {
                     getEnumAttributeValue(aliasMap[attribute] ?: attribute, value)?.name
                 } ?: value
 
-        fun getOperationsSupportedValueName(value: Int): Any? =
-                if (value < 0x4000) {
-                    getEnumAttributeValue("operations-supported", "0x%04X".format(value))?.name
-                } else {
-                    // CUPS operations are not iana registered
-                    IppOperation.fromShort(value.toShort()).toString()
-                }
     }
 
 }
