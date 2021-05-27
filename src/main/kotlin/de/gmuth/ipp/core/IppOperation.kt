@@ -106,7 +106,7 @@ enum class IppOperation(val code: Short) {
     CupsAddModifyPrinter(0x4003),
     CupsDeletePrinter(0x4004),
     CupsGetClasses(0x4005),
-    CuspAddModifyClass(0x4006),
+    CupsAddModifyClass(0x4006),
     CupsDeleteClass(0x4007),
     CupsAcceptJobs(0x4008),
     CupsRejectJobs(0x4009),
@@ -125,8 +125,8 @@ enum class IppOperation(val code: Short) {
     override fun toString(): String = registeredName()
 
     fun registeredName() = name
-            .replace("[A-Z]".toRegex()) { "-" + it.value }
-            .replace("^-".toRegex(), "")
+            .replace(Regex("[A-Z]+")) { "-" + it.value }
+            .replace(Regex("^-"), "")
 
     companion object {
         fun fromShort(code: Short): IppOperation =
