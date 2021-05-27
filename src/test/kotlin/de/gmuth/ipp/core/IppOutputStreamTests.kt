@@ -37,11 +37,6 @@ class IppOutputStreamTest {
     }
 
     @Test
-    fun writeVersionFails() {
-        assertFailsWith<IppException> { ippOutputStream.writeVersion("wrong") }
-    }
-
-    @Test
     fun writeAttributeValueBooleanFalse() {
         ippOutputStream.writeAttributeValue(IppTag.Boolean, false)
         assertEquals("00 01 00", byteArrayOutputStream.toHex())

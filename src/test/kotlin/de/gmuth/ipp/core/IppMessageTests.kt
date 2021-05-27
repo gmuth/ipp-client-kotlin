@@ -16,6 +16,11 @@ class IppMessageTests {
     }
 
     @Test
+    fun setVersionFails() {
+        assertFailsWith<IppException> { message.version = "wrong" }
+    }
+
+    @Test
     fun getSingleAttributesGroupFails() {
         assertFailsWith<IppException> { message.getSingleAttributesGroup(IppTag.Operation) }
     }
@@ -50,7 +55,7 @@ class IppMessageTests {
     fun saveDocumentAndIpp() {
         with(message) {
             createAttributesGroup(IppTag.Operation).attribute("attributes-charset", IppTag.Charset, Charsets.UTF_8)
-            version =  "1.1"
+            version = "1.1"
             requestId = 7
             code = 0
             documentInputStream = "Lorem ipsum dolor sit amet".byteInputStream()
@@ -72,11 +77,11 @@ class IppMessageTests {
 
     @Test
     fun withoutRawBytes() {
-        assertEquals("codeDescription []",message.toString())
+        assertEquals("codeDescription []", message.toString())
         message.logDetails()
         assertFailsWith<RuntimeException> {
             // missing raw bytes
-            with(createTempFile("test",null)) {
+            with(createTempFile("test", null)) {
                 try {
                     message.saveRawBytes(this)
                 } finally {

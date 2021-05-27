@@ -14,6 +14,9 @@ abstract class IppMessage {
     var code: Short? = null
     var requestId: Int? = null
     var version: String? = null
+        set(value) { // validate version
+            if (Regex("""^\d\.\d$""").matches(value!!)) field = value else throw IppException("invalid version string: $value")
+        }
     val attributesGroups = mutableListOf<IppAttributesGroup>()
     var documentInputStream: InputStream? = null
     var documentInputStreamIsConsumed: Boolean = false
