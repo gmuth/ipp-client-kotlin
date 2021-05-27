@@ -133,7 +133,7 @@ enum class IppOperation(val code: Short) {
     CupsGetDocument(0x4027),
     CupsCreateLocalPrinter(0x4028),
 
-    // placeholder for unknown operation codes
+    // improve resilience
     UnknownOperationCode(-1);
 
     override fun toString(): String = registeredName()
@@ -144,7 +144,7 @@ enum class IppOperation(val code: Short) {
 
     companion object {
         fun fromShort(code: Short): IppOperation =
-                values().find { it.code.toShort() == code } ?: UnknownOperationCode
+                values().find { it.code == code } ?: UnknownOperationCode
     }
 
 }
