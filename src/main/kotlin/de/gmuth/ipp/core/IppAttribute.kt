@@ -5,7 +5,7 @@ package de.gmuth.ipp.core
  */
 
 import de.gmuth.ipp.iana.IppRegistrationsSection2
-import de.gmuth.ipp.iana.IppRegistrationsSection6
+import de.gmuth.ipp.iana.IppRegistrationsSection6.Companion.getEnumName
 import de.gmuth.log.Logging
 import java.nio.charset.Charset
 import java.text.SimpleDateFormat
@@ -96,11 +96,7 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
     }
 
     fun enumNameOrValue(value: Any) =
-            if (tag == IppTag.Enum) {
-                IppRegistrationsSection6.getEnumName(name, value)
-            } else {
-                value
-            }
+            if (tag == IppTag.Enum) getEnumName(name, value) else value
 
     fun logDetails(prefix: String = "") {
         val string = toString()
