@@ -11,7 +11,7 @@ class IppTagTests {
     @Test
     fun validateTextWithLanguage() {
         assertFalse(IppTag.TextWithoutLanguage.validateClass(0))
-        assertTrue(IppTag.TextWithoutLanguage.validateClass("string"))
+        assertTrue(IppTag.TextWithoutLanguage.validateClass("string".toIppString()))
     }
 
     @Test

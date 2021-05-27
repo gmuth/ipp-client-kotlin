@@ -122,7 +122,7 @@ class IppOutputStreamTest {
 
     @Test
     fun writeAttributeValueTextWithoutLanguage() {
-        ippOutputStream.writeAttributeValue(IppTag.TextWithoutLanguage, "aTextWithoutLanguage")
+        ippOutputStream.writeAttributeValue(IppTag.TextWithoutLanguage, IppString("aTextWithoutLanguage"))
         assertEquals("00 14 61 54 65 78 74 57 69 74 68 6F 75 74 4C 61 6E 67 75 61 67 65", byteArrayOutputStream.toHex())
     }
 
@@ -134,7 +134,7 @@ class IppOutputStreamTest {
 
     @Test
     fun writeAttributeValueNameWithoutLanguageFails() {
-        assertFailsWith<IppException> { ippOutputStream.writeAttributeValue(IppTag.NameWithoutLanguage, 0) }
+        assertFailsWith<ClassCastException> { ippOutputStream.writeAttributeValue(IppTag.NameWithoutLanguage, 0) }
     }
 
     @Test
