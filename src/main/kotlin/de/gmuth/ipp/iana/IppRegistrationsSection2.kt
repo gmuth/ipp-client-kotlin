@@ -83,8 +83,8 @@ class IppRegistrationsSection2 {
         val log = Logging.getLogger {}
 
         // source: https://www.iana.org/assignments/ipp-registrations/ipp-registrations-2.csv
-        val allAttributes = CSVReader(Attribute.rowMapper)
-                .readResource("/ipp-registrations-2.csv", true)
+        val allAttributes =
+                CSVReader(Attribute.rowMapper).readResource("/ipp-registrations-2.csv")
 
         val attributesMap =
                 allAttributes.associateBy(Attribute::key)

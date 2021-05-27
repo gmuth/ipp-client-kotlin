@@ -39,7 +39,7 @@ class IppRegistrationsSection6 {
 
         // source: https://www.iana.org/assignments/ipp-registrations/ipp-registrations-6.csv
         val allEnumAttributeValues =
-                CSVReader(EnumAttributeValue.rowMapper).readResource("/ipp-registrations-6.csv", true)
+                CSVReader(EnumAttributeValue.rowMapper).readResource("/ipp-registrations-6.csv")
 
         val enumAttributeValuesMap =
                 allEnumAttributeValues.associateBy { "${it.attribute}/${it.value}" }
