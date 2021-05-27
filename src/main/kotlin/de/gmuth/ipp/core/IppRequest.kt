@@ -13,7 +13,7 @@ class IppRequest() : IppMessage() {
         get() = operation.toString()
 
     val operation: IppOperation
-        get() = IppOperation.fromShort(code!!)
+        get() = IppOperation.fromNumber(code!!)
 
     constructor(
             operation: IppOperation,

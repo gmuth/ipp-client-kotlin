@@ -11,7 +11,7 @@ class IppOperationsTests {
 
     @Test
     fun unknownOperationCode() {
-        assertEquals(IppOperation.UnknownOperationCode, IppOperation.fromShort(0))
+        assertEquals(IppOperation.UnknownOperationCode, IppOperation.fromNumber(0))
     }
 
 }

@@ -129,7 +129,7 @@ enum class IppOperation(val code: Short) {
             .replace(Regex("^-"), "")
 
     companion object {
-        fun fromShort(code: Short): IppOperation =
+        fun fromNumber(code: Number): IppOperation =
                 values().find { it.code == code } ?: UnknownOperationCode
     }
 
