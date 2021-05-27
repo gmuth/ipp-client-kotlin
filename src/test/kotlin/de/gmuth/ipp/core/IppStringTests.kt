@@ -6,7 +6,6 @@ package de.gmuth.ipp.core
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 
 class IppStringTests {
 
@@ -26,6 +25,11 @@ class IppStringTests {
     @Test
     fun toIppStringExtension() {
         assertEquals("some-text", "some-text".toIppString().text)
+    }
+
+    @Test
+    fun toIppStringExtensionWithLanguage() {
+        assertEquals(withLanguage, "string-with-language".toIppString("en"))
     }
 
 }
