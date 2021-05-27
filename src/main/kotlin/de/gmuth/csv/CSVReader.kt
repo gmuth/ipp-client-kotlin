@@ -18,11 +18,11 @@ class CSVReader<T>(private val rowMapper: RowMapper<T>) {
         fun mapRow(columns: List<String>, rowNum: Int): T
     }
 
-    fun readResource(resource: String, skipHeader: Boolean): List<T> {
+    fun readResource(resource: String, skipHeader: Boolean = true): List<T> {
         return read(javaClass.getResourceAsStream(resource), skipHeader)
     }
 
-    fun read(inputStream: InputStream, skipHeader: Boolean): List<T> {
+    fun read(inputStream: InputStream, skipHeader: Boolean = true): List<T> {
         val mappedRows = mutableListOf<T>()
         if (skipHeader) parseRow(inputStream)
         var rowNum = 0
