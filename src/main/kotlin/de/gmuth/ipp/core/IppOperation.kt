@@ -10,11 +10,11 @@ enum class IppOperation(val code: Short) {
 
     // RFC 8011
     PrintJob(0x0002),
-    PrintUri(0x0003),
+    PrintURI(0x0003),
     ValidateJob(0x0004),
     CreateJob(0x0005),
     SendDocument(0x0006),
-    SendUri(0x0007),
+    SendURI(0x0007),
     CancelJob(0x0008),
     GetJobAttributes(0x0009),
     GetJobs(0x000A),
@@ -28,13 +28,15 @@ enum class IppOperation(val code: Short) {
     SetPrinterAttributes(0x0013),
     SetJobAttributes(0x0014),
     GetPrinterSupportedValues(0x0015),
-    CreatePrinterSubscription(0x0016),
-    CreateJobSubscription(0x0017),
+    CreatePrinterSubscriptions(0x0016),
+    CreateJobSubscriptions(0x0017),
     GetSubscriptionAttributes(0x0018),
     GetSubscriptions(0x0019),
     RenewSubscription(0x001A),
     CancelSubscription(0x001B),
     GetNotifications(0x001C),
+    GetResourceAttributes(0x001E),
+    GetResources(0x0020),
 
     // RFC 3998
     EnablePrinter(0x0022),
@@ -53,7 +55,19 @@ enum class IppOperation(val code: Short) {
     ResumeJob(0x002F),
     PromoteJob(0x0030),
     ScheduleJobAfter(0x0031),
+
+    CancelDocument(0x0033),
+    GetDocumentAttributes(0x0034),
+    GetDocuments(0x0035),
+    DeleteDocument(0x0036),
+    SetDocumentAttributes(0x0037),
+    CancelJobs(0x0038),
+    CancelMyJobs(0x0039),
+    CloseJob(0x003A),
+    ResubmitJob(0x003B),
     IdentifyPrinter(0x003C),
+    ValidateDocument(0x003D),
+    AddDocumentImages(0x003E),
 
     // PWG 5100.18 Infra
     AcknowledgeDocument(0x003F),
@@ -69,8 +83,7 @@ enum class IppOperation(val code: Short) {
     UpdateOutputDeviceAttributes(0x0049),
 
     // PWG 5100.22 System Service
-    GetResourceAttributes(0x001E),
-    GetResources(0x0020),
+    GetNextDocumentData(0x004A),
     AllocatePrinterResources(0x004B),
     CreatePrinter(0x004C),
     DeallocatePrinterResources(0x004D),
@@ -98,6 +111,7 @@ enum class IppOperation(val code: Short) {
     ShutdownAllPrinters(0x0063),
     StartupAllPrinters(0x0064),
     GetPrinterResources(0x0065),
+    GetUserPrinterAttributes(0x0066),
     RestartOnePrinter(0x0067),
 
     // CUPS Operations
@@ -129,8 +143,8 @@ enum class IppOperation(val code: Short) {
             .replace(Regex("^-"), "")
 
     companion object {
-        fun fromNumber(code: Number): IppOperation =
-                values().find { it.code == code } ?: UnknownOperationCode
+        fun fromShort(code: Short): IppOperation =
+                values().find { it.code.toShort() == code } ?: UnknownOperationCode
     }
 
 }

@@ -75,6 +75,9 @@ open class IppPrinter(
     val documentFormatSupported: List<String>
         get() = attributes.getValues("document-format-supported")
 
+    val operationsSupported: List<IppOperation>
+        get() = attributes.getValues<List<Int>>("operations-supported").map { IppOperation.fromShort(it.toShort()) }
+
     // ---------------
     // CUPS Extensions
     // ---------------
@@ -169,11 +172,11 @@ open class IppPrinter(
     }
 
     //----------
-    // Print-Uri
+    // Print-URI
     //----------
 
     fun printUri(documentUri: URI, vararg attributeBuilders: IppAttributeBuilder): IppJob {
-        val request = attributeBuildersRequest(IppOperation.PrintUri, attributeBuilders).apply {
+        val request = attributeBuildersRequest(IppOperation.PrintURI, attributeBuilders).apply {
             operationGroup.attribute("document-uri", IppTag.Uri, documentUri)
         }
         return exchangeSuccessfulForIppJob(request)

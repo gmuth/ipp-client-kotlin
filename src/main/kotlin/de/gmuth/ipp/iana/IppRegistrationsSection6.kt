@@ -57,7 +57,7 @@ class IppRegistrationsSection6 {
         fun getEnumName(attribute: String, value: Any) =
                 if (attribute == "operations-supported" && value is Number) {
                     // lookup the name in IppOperation because CUPS operations are not iana registered
-                    IppOperation.fromNumber(value).toString()
+                    IppOperation.fromShort(value.toShort()).toString()
                 } else {
                     getEnumAttributeValue(aliasMap[attribute] ?: attribute, value)?.name
                 } ?: value
