@@ -63,17 +63,15 @@ class IppRegistrationsSection2 {
         }
 
         // key for map (name is not unique)
-        fun key(): String {
-            val key = StringBuffer(name)
-            if (memberAttribute.isNotBlank()) key.append("/$memberAttribute")
-            if (subMemberAttribute.isNotBlank()) key.append("/$subMemberAttribute")
-            return key.toString()
-        }
+        fun key() = StringBuffer(name).apply {
+            if (memberAttribute.isNotBlank()) append("/$memberAttribute")
+            if (subMemberAttribute.isNotBlank()) append("/$subMemberAttribute")
+        }.toString()
 
         fun collectionGroupTag() = when (collection) {
             "Operation" -> IppTag.Operation
             "Job Template" -> IppTag.Job
-            else -> IppTag.Job
+            else -> throw IllegalArgumentException("no IppTag defined for $collection")
         }
 
     }
