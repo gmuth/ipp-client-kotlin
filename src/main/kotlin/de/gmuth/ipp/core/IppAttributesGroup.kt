@@ -20,18 +20,16 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     }
 
     fun put(attribute: IppAttribute<*>): IppAttribute<*>? {
-        attribute.checkSyntax()
-        if (attribute.values.isEmpty() && !attribute.tag.isOutOfBandTag()) {
-            throw IllegalArgumentException("empty value list")
+        with(attribute) {
+            checkSyntax()
+            if (!tag.isOutOfBandTag() && values.isEmpty()) log.warn { "'$name' ($tag) has no values" }
         }
         return if (containsKey(attribute.name) && denyReplacement) {
             log.warn { "replacement denied for '$attribute' in group $tag" }
             get(attribute.name)
         } else {
             val replaced = put(attribute.name, attribute)
-            if (replaced != null) {
-                log.warn { "replaced '$replaced' with '${attribute.values.joinToString(",")}' in group $tag" }
-            }
+            if (replaced != null) log.warn { "replaced '$replaced' with '${attribute.values.joinToString(",")}' in group $tag" }
             replaced
         }
     }
@@ -43,16 +41,16 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
             put(IppAttribute(name, tag, values.toMutableList()))
 
     @Suppress("UNCHECKED_CAST")
+    fun <T> getValueOrNull(name: String) =
+            get(name)?.value as T?
+
+    @Suppress("UNCHECKED_CAST")
     fun <T> getValue(name: String) =
             get(name)?.value as T ?: throw IppException("attribute '$name' not found in group $tag")
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getValues(name: String) =
             get(name)?.values as T ?: throw IppException("attribute '$name' not found in group $tag")
-
-    @Suppress("UNCHECKED_CAST")
-    fun <T> getValueOrNull(name: String) =
-            get(name)?.value as T?
 
     override fun toString() = "'$tag' $size attributes"
 

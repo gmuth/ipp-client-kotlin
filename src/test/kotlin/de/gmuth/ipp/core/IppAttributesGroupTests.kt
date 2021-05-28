@@ -44,8 +44,9 @@ class IppAttributesGroupTests {
     }
 
     @Test
-    fun putFails() {
-        assertFailsWith<IllegalArgumentException> { group.attribute("empty", IppTag.Integer, listOf()) }
+    fun putEmptyValues() {
+        group.attribute("empty", IppTag.Integer, listOf())
+        assertEquals(1, group.size)
     }
 
     @Test
