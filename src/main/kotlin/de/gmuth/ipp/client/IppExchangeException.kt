@@ -28,12 +28,10 @@ class IppExchangeException(
     }
 
     fun saveRequestAndResponse(fileNameWithoutSuffix: String = "ipp_exchange_exception") {
-        if (ippRequest.rawBytes != null) {
-            val requestFile = ippRequest.saveRawBytes(File("$fileNameWithoutSuffix.request"))
-            log.warn { "ipp request  written to file ${requestFile.absolutePath}" }
-        }
-        if (ippResponse?.rawBytes != null) {
-            val responseFile = ippResponse.saveRawBytes(File("$fileNameWithoutSuffix.response"))
+        val requestFile = ippRequest.saveRawBytes(File("$fileNameWithoutSuffix.request"))
+        log.warn { "ipp request  written to file ${requestFile.absolutePath}" }
+        ippResponse?.let {
+            val responseFile = it.saveRawBytes(File("$fileNameWithoutSuffix.response"))
             log.warn { "ipp response written to file ${responseFile.absolutePath}" }
         }
     }
