@@ -47,9 +47,9 @@ class IppMedia {
                 IppAttribute("media-col", IppTag.BegCollection, IppCollection().apply {
                     if (source != null) {
                         checkIfSourceIsSupported(printerAttributes)
-                        add(IppAttribute("media-source", IppTag.Keyword, source))
+                        attribute("media-source", IppTag.Keyword, source!!)
                     }
-                    type?.let { add(IppAttribute("media-type", IppTag.Keyword, it)) }
+                    type?.let { attribute("media-type", IppTag.Keyword, it) }
                     size?.let { add(it.buildIppAttribute(printerAttributes)) }
                     margins?.let { addAll(it) }
                 })

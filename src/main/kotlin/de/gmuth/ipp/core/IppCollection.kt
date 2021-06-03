@@ -15,6 +15,9 @@ data class IppCollection(val members: MutableList<IppAttribute<*>> = mutableList
 
     constructor(vararg attributes: IppAttribute<*>) : this(attributes.toMutableList())
 
+    fun attribute(name: String, tag: IppTag, vararg values: Any) =
+            add(IppAttribute(name, tag, values.toMutableList()))
+
     fun add(attribute: IppAttribute<*>) =
             members.add(attribute)
 
