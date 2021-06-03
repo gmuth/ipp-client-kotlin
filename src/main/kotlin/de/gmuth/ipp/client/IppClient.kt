@@ -95,7 +95,9 @@ open class IppClient(
                     val badRequestFile = ippRequest.saveRawBytes(File("bad_ipp_request_${ippRequest.requestId}.bin"))
                     log.warn { "bad ipp request written to file ${badRequestFile.absolutePath}" }
                 }
-                throw IppExchangeException(ippRequest, null, "http request to $httpUri failed: status=$status, content-type=$contentType${textContent()}")
+                throw IppExchangeException(
+                        ippRequest, null, "http request to $httpUri failed: status=$status, content-type=$contentType${textContent()}"
+                )
             }
             if (!contentType!!.startsWith(ippContentType)) {
                 throw IppException("invalid content-type: $contentType")
