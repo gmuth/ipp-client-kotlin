@@ -150,6 +150,11 @@ class IppOutputStreamTest {
     }
 
     @Test
+    fun writeAttributeValueNameWithLanguageFails() {
+        assertFailsWith<IppException> { ippOutputStream.writeAttributeValue(IppTag.NameWithLanguage, "text-without-language".toIppString()) }
+    }
+
+    @Test
     fun writeAttributeValueDateTime() {
         ippOutputStream.writeAttributeValue(IppTag.DateTime, IppDateTime(2007, 3, 15, 2, 15, 37, 0, '+', 1, 0))
         assertEquals("00 0B 07 D7 03 0F 02 0F 25 00 2B 01 00", byteArrayOutputStream.toHex())
