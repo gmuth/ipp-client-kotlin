@@ -121,7 +121,7 @@ data class IppDateTime(
             minutesFromUTC = offsetMinutes.absoluteValue % 60
     )
 
-    private fun getOffsetMinutes() =
+    internal fun getOffsetMinutes() =
             (if (directionFromUTC == '-') -1 else 1) * (hoursFromUTC * 60 + minutesFromUTC)
 
     internal fun getTimeZoneId() =
