@@ -4,7 +4,7 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.ipp.iana.IppRegistrationsSection2
+import de.gmuth.ipp.iana.IppRegistrationsSection2.Companion.attributeIs1setOf
 import de.gmuth.ipp.iana.IppRegistrationsSection6.Companion.getEnumName
 import de.gmuth.log.Logging
 import java.nio.charset.Charset
@@ -33,7 +33,7 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
 
     val value: T
         get() = values.single().apply {
-            if (IppRegistrationsSection2.attributeIs1setOf(name) == true) log.warn { "'$name' is registered as '1setOf', use 'values' instead" }
+            if (attributeIs1setOf(name) == true) log.warn { "'$name' is registered as '1setOf', use 'values' instead" }
         }
 
     @Suppress("UNCHECKED_CAST")
@@ -45,7 +45,7 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
     }
 
     fun is1setOf() =
-            values.size > 1 || IppRegistrationsSection2.attributeIs1setOf(name) == true
+            values.size > 1 || attributeIs1setOf(name) == true
 
     override fun buildIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<*> = this
 
