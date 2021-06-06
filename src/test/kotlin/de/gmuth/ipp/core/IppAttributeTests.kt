@@ -20,13 +20,11 @@ class IppAttributeTests {
 
     @Test
     fun constructorFailsDueToDelimiterTag() {
-        IppAttribute.validateValueClass = true
         assertFailsWith<IllegalArgumentException> { IppAttribute<Unit>("some-attribute-name", IppTag.Operation) }
     }
 
     @Test
     fun constructorFailsDueToIllegalValueClass() {
-        IppAttribute.validateValueClass = true
         assertFailsWith<IllegalArgumentException> { IppAttribute("some-attribute-name", IppTag.TextWithLanguage, 1) }
     }
 
@@ -44,8 +42,7 @@ class IppAttributeTests {
 
     @Test
     fun additionalValueFails1() {
-        IppAttribute.validateValueClass = false
-        assertFailsWith<IppException> { ippAttribute.additionalValue(IppAttribute("", IppTag.Integer, "incompatible-tag")) }
+        assertFailsWith<IppException> { ippAttribute.additionalValue(IppAttribute("", IppTag.Integer, 2.1)) }
     }
 
     @Test
@@ -56,13 +53,6 @@ class IppAttributeTests {
     @Test
     fun additionalValueFails3() {
         assertFailsWith<IppException> { ippAttribute.additionalValue(IppAttribute("invalid-name", IppTag.Keyword, "wtf")) }
-    }
-
-    @Test
-    fun checkSyntaxDisabled() {
-        IppAttribute.checkSyntax = false
-        ippAttribute.checkSyntax()
-        IppAttribute.checkSyntax = true
     }
 
     @Test

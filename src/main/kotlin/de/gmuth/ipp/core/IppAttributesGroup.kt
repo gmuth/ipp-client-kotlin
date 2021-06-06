@@ -3,13 +3,10 @@ package de.gmuth.ipp.core
 import de.gmuth.log.Logging
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2021 Gerhard Muth
  */
 
 class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*>>() {
-
-    // for macOS-CUPS-PrintJob-Operation (sends "document-format" multiple times): deny attribute replacement to preserve first one
-    var denyReplacement: Boolean = tag == IppTag.Operation
 
     companion object {
         val log = Logging.getLogger {}
@@ -19,20 +16,10 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
         if (!tag.isGroupTag()) throw IppException("'$tag' is not a valid group tag")
     }
 
-    fun put(attribute: IppAttribute<*>): IppAttribute<*>? {
-        with(attribute) {
-            checkSyntax()
-            if (!tag.isOutOfBandTag() && values.isEmpty()) log.warn { "'$name' ($tag) has no values" }
-        }
-        return if (containsKey(attribute.name) && denyReplacement) {
-            log.warn { "replacement denied for '$attribute' in group $tag" }
-            get(attribute.name)
-        } else {
-            val replaced = put(attribute.name, attribute)
-            if (replaced != null) log.warn { "replaced '$replaced' with '${attribute.values.joinToString(",")}' in group $tag" }
-            replaced
-        }
-    }
+    fun put(attribute: IppAttribute<*>) =
+            put(attribute.name, attribute).apply {
+                if (this != null) log.warn { "replaced '$this' with '${attribute.values.joinToString(",")}' in group $tag" }
+            }
 
     fun attribute(name: String, tag: IppTag, vararg values: Any) =
             put(IppAttribute(name, tag, values.toMutableList()))
