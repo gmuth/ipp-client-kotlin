@@ -20,7 +20,6 @@ class CupsClient(val cupsUri: URI) : IppClient() {
     constructor(host: String) : this(host, 631)
 
     init {
-        IppAttribute.checkSyntax = false // avoid syntax warnings
         if (cupsUri.scheme == "ipps") trustAnyCertificate()
     }
 
