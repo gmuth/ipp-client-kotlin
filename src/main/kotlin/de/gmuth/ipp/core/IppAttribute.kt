@@ -70,11 +70,8 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
     override fun toString(): String {
         val tagString = "${if (is1setOf()) "1setOf " else ""}$tag"
         val valuesString =
-                if (values.isEmpty()) {
-                    "no-value"
-                } else {
-                    values.joinToString(",") { valueToString(it) }
-                }
+                if (values.isEmpty()) "no-value"
+                else values.joinToString(",") { valueToString(it) }
         return "$name ($tagString) = $valuesString"
     }
 
@@ -91,7 +88,8 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
             "$value (${iso8601DateFormat.format(Date(epochSeconds * 1000))})"
         }
         else -> with(value as Any) {
-            enumNameOrValue(this).toString()
+            if (value is ByteArray && (value as ByteArray).isEmpty()) "no-value"
+            else enumNameOrValue(this).toString()
         }
     }
 
