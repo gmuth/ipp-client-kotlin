@@ -8,6 +8,7 @@ import java.io.File
 import java.net.URI
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class IppResponseTests {
@@ -35,13 +36,15 @@ class IppResponseTests {
 
     @Test
     fun invalidXeroxMediaColResponse() {
-        ippResponse.read(File("src/test/resources/invalidXeroxMediaCol.response"))
-        ippResponse.logDetails()
-        with(ippResponse.jobGroup) {
-            assertEquals(598, getValue("job-id"))
-            assertEquals(4, getValue("job-state")) // pending-held
-            assertEquals(listOf("job-hold-until-specified"), getValues("job-state-reasons"))
-            assertEquals(URI.create("ipp://xero.local./ipp/print/Job-598"), getValue("job-uri"))
+        assertFailsWith<IppException> {
+            ippResponse.read(File("src/test/resources/invalidXeroxMediaCol.response"))
+            ippResponse.logDetails()
+            with(ippResponse.jobGroup) {
+                assertEquals(598, getValue("job-id"))
+                assertEquals(4, getValue("job-state")) // pending-held
+                assertEquals(listOf("job-hold-until-specified"), getValues("job-state-reasons"))
+                assertEquals(URI.create("ipp://xero.local./ipp/print/Job-598"), getValue("job-uri"))
+            }
         }
     }
 

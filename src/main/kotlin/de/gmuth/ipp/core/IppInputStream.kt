@@ -7,17 +7,13 @@ package de.gmuth.ipp.core
 import de.gmuth.io.hexdump
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.log.Logging
-import java.io.BufferedInputStream
 import java.io.DataInputStream
 import java.io.EOFException
 import java.io.InputStream
 import java.net.URI
 import java.nio.charset.Charset
 
-// BufferedInputStream: mark() and reset() used to support parsing invalid ipp responses from HP and Xerox
-class IppInputStream(bufferedInputStream: BufferedInputStream) : DataInputStream(bufferedInputStream) {
-
-    constructor(inputStream: InputStream) : this(BufferedInputStream(inputStream))
+class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
     companion object {
         val log = Logging.getLogger {}
@@ -72,6 +68,7 @@ class IppInputStream(bufferedInputStream: BufferedInputStream) : DataInputStream
     internal fun readAttribute(tag: IppTag): IppAttribute<Any> {
         val name = readString()
         val value = try {
+            if (markSupported()) mark(2)
             readAttributeValue(tag)
         } catch (exception: Exception) {
             if (exception !is EOFException) {
@@ -139,13 +136,7 @@ class IppInputStream(bufferedInputStream: BufferedInputStream) : DataInputStream
 
                 IppTag.TextWithLanguage,
                 IppTag.NameWithLanguage -> {
-                    mark(2)
-                    val length = readShort().toInt()
-                    if (length < 6) {
-                        // HP M175nw: support invalid ipp response (nameWithLanguage with missing value length)
-                        log.warn { "invalid value length $length for StringWithLanguage, trying to recover..." }
-                        reset()
-                    }
+                    readShort().let { if (markSupported() && it < 6) reset() } // HP M175nw: support invalid ipp response
                     IppString(
                             language = readString(attributesCharset!!),
                             text = readString(attributesCharset!!)
@@ -171,16 +162,8 @@ class IppInputStream(bufferedInputStream: BufferedInputStream) : DataInputStream
 
                 //  value class IppCollection
                 IppTag.BegCollection -> {
-                    mark(2)
-                    val length = readShort().toInt()
-                    if (length == 0) { // expected value length
-                        readCollection()
-                    } else {
-                        // Xerox B210: support invalid ipp response ('media-col' without members)
-                        log.warn { "invalid value length $length for IppCollection, trying to recover..." }
-                        reset()
-                        IppCollection() // empty collection
-                    }
+                    readExpectedValueLength(0)
+                    readCollection()
                 }
 
                 // for all other tags (including out-of-bound), read raw bytes (if present at all)
