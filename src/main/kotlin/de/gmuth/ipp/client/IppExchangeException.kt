@@ -13,6 +13,7 @@ import java.io.File
 class IppExchangeException(
         val ippRequest: IppRequest,
         val ippResponse: IppResponse? = null,
+        val httpStatus: Int? = null,
         message: String,
         cause: Exception? = null
 
@@ -23,6 +24,7 @@ class IppExchangeException(
     }
 
     fun logDetails() {
+        if (httpStatus != null) log.info { "HTTP-STATUS: $httpStatus" }
         ippRequest.logDetails(" REQUEST: ")
         ippResponse?.logDetails("RESPONSE: ")
     }

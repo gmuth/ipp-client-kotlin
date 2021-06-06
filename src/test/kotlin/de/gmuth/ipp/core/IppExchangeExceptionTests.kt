@@ -15,11 +15,13 @@ class IppExchangeExceptionTests {
         with(IppExchangeException(
                 IppRequest(IppOperation.GetPrinterAttributes),
                 IppResponse().apply { code = IppStatus.SuccessfulOk.code },
+                400,
                 "ipp-exchange-failed"
         )) {
             logDetails()
             assertEquals(11, ippRequest.code)
             assertEquals(0, ippResponse?.code)
+            assertEquals(400, httpStatus)
             assertEquals(message, "ipp-exchange-failed")
         }
     }
