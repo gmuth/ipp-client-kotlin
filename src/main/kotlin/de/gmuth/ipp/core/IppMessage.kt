@@ -6,6 +6,7 @@ package de.gmuth.ipp.core
 
 import de.gmuth.io.ByteArraySavingBufferedInputStream
 import de.gmuth.io.ByteArraySavingOutputStream
+import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.log.Logging
 import java.io.*
 
@@ -133,6 +134,19 @@ abstract class IppMessage {
         log.info { "${prefix}request-id = $requestId" }
         for (group in attributesGroups) {
             group.logDetails(prefix)
+        }
+    }
+
+    fun validate() {
+        for (group in attributesGroups) {
+            if (group.tag in listOf(IppTag.Operation, IppTag.Job, IppTag.Printer)) {
+                for (attribute in group.values) {
+                    with(attribute) {
+                        IppRegistrationsSection2.checkSyntaxOfAttribute(name, tag)
+                        if (!tag.isOutOfBandTag() && values.isEmpty()) log.warn { "'$name' ($tag) has no values" }
+                    }
+                }
+            }
         }
     }
 
