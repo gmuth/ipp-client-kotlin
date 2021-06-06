@@ -38,7 +38,7 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
             setRequestProperty("User-Agent", config.userAgent)
             setRequestProperty("Content-Type", contentType)
             // chunked streaming mode can cause: "HttpRetryException: cannot retry due to server authentication, in streaming mode"
-            //setChunkedStreamingMode(0) // enable chunked transfer
+            setChunkedStreamingMode(0) // enable chunked transfer
             writeContent(outputStream)
             for ((key, values) in headerFields) {
                 log.log(if (responseCode < 300) DEBUG else ERROR) { "$key = $values" }
