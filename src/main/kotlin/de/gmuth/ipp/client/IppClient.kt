@@ -89,11 +89,11 @@ open class IppClient(
             log.trace { "ipp-server: $server" }
             when {
                 !isOK() -> "http request to $httpUri failed: status=$status, content-type=$contentType${textContent()}"
-                contentType == null -> "missing content-type in http response"
-                !contentType.startsWith(ippContentType) -> "invalid content-type: $contentType"
+                !hasContentType() -> "missing content-type in http response"
+                !contentType!!.startsWith(ippContentType) -> "invalid content-type: $contentType"
                 else -> ""
             }.let {
-                if (it.isNotEmpty()) throw IppExchangeException(ippRequest, null, status, it)
+                if (it.isNotEmpty()) throw IppExchangeException(ippRequest, null, status, message = it)
             }
             contentStream!!
         }

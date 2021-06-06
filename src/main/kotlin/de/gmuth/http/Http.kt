@@ -33,8 +33,9 @@ interface Http {
     ) {
         fun isOK() = status == 200
         fun hasContent() = contentStream != null
+        fun hasContentType() = contentType != null
         fun readTextContent() = contentStream!!.bufferedReader().use { it.readText() }
-        fun contentTypeIsText() = contentType != null && contentType.startsWith("text")
+        fun contentTypeIsText() = hasContentType() && contentType!!.startsWith("text")
         fun textContent() = if (hasContent() && contentTypeIsText()) "\n" + readTextContent() else ""
     }
 
