@@ -131,6 +131,4 @@ data class IppDateTime(
 
 // Calendar extension
 fun Calendar.dstSavingsOffsetMillis() =
-        with(timeZone) {
-            rawOffset + if (useDaylightTime() && inDaylightTime(time)) dstSavings else 0
-        }
+        with(timeZone) { rawOffset + if (useDaylightTime() && inDaylightTime(time)) dstSavings else 0 }
