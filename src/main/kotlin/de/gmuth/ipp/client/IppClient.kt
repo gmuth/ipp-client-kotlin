@@ -74,9 +74,9 @@ open class IppClient(
     fun exchange(ippRequest: IppRequest): IppResponse {
         val ippUri: URI = ippRequest.operationGroup.getValueOrNull("printer-uri") ?: throw IppException("missing 'printer-uri'")
         log.trace { "send '${ippRequest.operation}' request to $ippUri" }
+        val httpUri = httpUri(ippUri)
 
         // http post binary ipp request
-        val httpUri = httpUri(ippUri)
         val httpResponseStream = with(httpClient.post(
                 httpUri,
                 ippContentType,
@@ -98,28 +98,20 @@ open class IppClient(
             else contentStream!!
         }
 
-        // decode ipp response
-        val ippResponse = IppResponse()
-        try {
-            ippResponse.read(httpResponseStream)
-        } catch (exception: Exception) {
-            throw IppExchangeException(ippRequest, ippResponse, "failed to decode ipp response", exception).apply {
-                saveRequestAndResponse("decoding_ipp_response_${ippRequest.requestId}_failed")
+        return IppResponse().apply {
+            // decode ipp response
+            try {
+                read(httpResponseStream)
+                log.debug { "$ippUri: $ippRequest => $this" }
+            } catch (exception: Exception) {
+                throw IppExchangeException(ippRequest, this, "failed to decode ipp response", exception).apply {
+                    saveRequestAndResponse("decoding_ipp_response_${ippRequest.requestId}_failed")
+                }
             }
+            // response logging
+            if (operationGroup.containsKey("status-message")) log.debug { "status-message: $statusMessage" }
+            if (containsGroup(IppTag.Unsupported)) unsupportedGroup.values.forEach { log.warn { "unsupported attribute: $it" } }
         }
-
-        // response logging
-        log.debug { "$ippUri: $ippRequest => $ippResponse" }
-        with(ippResponse) {
-            if (operationGroup.containsKey("status-message")) {
-                log.debug { "status-message: ${ippResponse.statusMessage}" }
-            }
-            if (containsGroup(IppTag.Unsupported)) {
-                unsupportedGroup.values.forEach { log.warn { "unsupported attribute: $it" } }
-            }
-        }
-
-        return ippResponse
     }
 
     // convert ipp uri to http uri
