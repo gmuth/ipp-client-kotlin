@@ -99,10 +99,9 @@ open class IppClient(
                         ippRequest, null, "http request to $httpUri failed: status=$status, content-type=$contentType${textContent()}"
                 )
             }
-            if (!contentType!!.startsWith(ippContentType)) {
-                throw IppException("invalid content-type: $contentType")
-            }
-            contentStream!!
+            if (contentType == null) throw IppExchangeException(ippRequest, null, "missing content-type in http response")
+            else if (!contentType.startsWith(ippContentType)) throw IppExchangeException(ippRequest, null, "invalid content-type: $contentType")
+            else contentStream!!
         }
 
         // decode ipp response
