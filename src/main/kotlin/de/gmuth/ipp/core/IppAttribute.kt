@@ -88,8 +88,11 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
             "$value (${iso8601DateFormat.format(Date(epochSeconds * 1000))})"
         }
         else -> with(value as Any) {
-            if (value is ByteArray && (value as ByteArray).isEmpty()) "no-value"
-            else enumNameOrValue(this).toString()
+            if (value is ByteArray) with(value as ByteArray) {
+                if (isEmpty()) "no-value" else "$size bytes"
+            } else {
+                enumNameOrValue(this).toString()
+            }
         }
     }
 
