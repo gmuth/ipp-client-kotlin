@@ -185,7 +185,9 @@ class IppInputStream(bufferedInputStream: BufferedInputStream) : DataInputStream
 
                 // for all other tags (including out-of-bound), read raw bytes (if present at all)
                 else -> { // value class ByteArray - possibly empty
-                    readLengthAndValue()
+                    readLengthAndValue().apply {
+                        if (size > 0) log.warn { "ignoring $size bytes ($tag)" }
+                    }
                 }
             }
 
