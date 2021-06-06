@@ -9,7 +9,6 @@ import de.gmuth.http.HttpURLConnectionClient
 import de.gmuth.http.SSLHelper
 import de.gmuth.ipp.core.*
 import de.gmuth.log.Logging
-import java.io.File
 import java.net.URI
 import java.nio.charset.Charset
 import java.util.concurrent.atomic.AtomicInteger
@@ -67,14 +66,18 @@ open class IppClient(
             exchange(ippRequest).apply {
                 if (!isSuccessful()) {
                     val statusMessage = operationGroup.getValueOrNull("status-message") ?: IppString("")
-                    throw IppExchangeException(ippRequest, this, "${ippRequest.operation} failed: '$status' $statusMessage")
+                    throw IppExchangeException(ippRequest, this, message = "${ippRequest.operation} failed: '$status' $statusMessage")
                 }
             }
 
     fun exchange(ippRequest: IppRequest): IppResponse {
         val ippUri: URI = ippRequest.operationGroup.getValueOrNull("printer-uri") ?: throw IppException("missing 'printer-uri'")
         log.trace { "send '${ippRequest.operation}' request to $ippUri" }
-        val httpUri = httpUri(ippUri)
+        val httpUri = with(ippUri) {
+            val scheme = scheme.replace("ipp", "http")
+            val port = if (port == -1) 631 else port
+            URI.create("$scheme://$host:$port$path")
+        }
 
         // http post binary ipp request
         val httpResponseStream = with(httpClient.post(
@@ -84,27 +87,23 @@ open class IppClient(
                 httpBasicAuth
         )) {
             log.trace { "ipp-server: $server" }
-            if (!isOK()) {
-                if (status == 400) { // bad request
-                    val badRequestFile = ippRequest.saveRawBytes(File("bad_ipp_request_${ippRequest.requestId}.bin"))
-                    log.warn { "bad ipp request written to file ${badRequestFile.absolutePath}" }
-                }
-                throw IppExchangeException(
-                        ippRequest, null, "http request to $httpUri failed: status=$status, content-type=$contentType${textContent()}"
-                )
+            when {
+                !isOK() -> "http request to $httpUri failed: status=$status, content-type=$contentType${textContent()}"
+                contentType == null -> "missing content-type in http response"
+                !contentType.startsWith(ippContentType) -> "invalid content-type: $contentType"
+                else -> ""
+            }.let {
+                if (it.isNotEmpty()) throw IppExchangeException(ippRequest, null, status, it)
             }
-            if (contentType == null) throw IppExchangeException(ippRequest, null, "missing content-type in http response")
-            else if (!contentType.startsWith(ippContentType)) throw IppExchangeException(ippRequest, null, "invalid content-type: $contentType")
-            else contentStream!!
+            contentStream!!
         }
 
         return IppResponse().apply {
-            // decode ipp response
-            try {
+            try { // decode ipp response
                 read(httpResponseStream)
                 log.debug { "$ippUri: $ippRequest => $this" }
             } catch (exception: Exception) {
-                throw IppExchangeException(ippRequest, this, "failed to decode ipp response", exception).apply {
+                throw IppExchangeException(ippRequest, this, message = "failed to decode ipp response", cause = exception).apply {
                     saveRequestAndResponse("decoding_ipp_response_${ippRequest.requestId}_failed")
                 }
             }
@@ -113,12 +112,4 @@ open class IppClient(
             if (containsGroup(IppTag.Unsupported)) unsupportedGroup.values.forEach { log.warn { "unsupported attribute: $it" } }
         }
     }
-
-    // convert ipp uri to http uri
-    internal fun httpUri(ippUri: URI): URI = with(ippUri) {
-        val scheme = scheme.replace("ipp", "http")
-        val port = if (port == -1) 631 else port
-        URI.create("$scheme://$host:$port$path")
-    }
-
 }
