@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2021 Gerhard Muth
  */
 
 import de.gmuth.http.Http
@@ -75,14 +75,8 @@ open class IppClient(
         val ippUri: URI = ippRequest.operationGroup.getValueOrNull("printer-uri") ?: throw IppException("missing 'printer-uri'")
         log.trace { "send '${ippRequest.operation}' request to $ippUri" }
 
-        // convert ipp uri to http uri
-        val httpUri = with(ippUri) {
-            val scheme = scheme.replace("ipp", "http")
-            val port = if (port == -1) 631 else port
-            URI.create("$scheme://$host:$port$path")
-        }
-
         // http post binary ipp request
+        val httpUri = httpUri(ippUri)
         val httpResponseStream = with(httpClient.post(
                 httpUri,
                 ippContentType,
@@ -91,7 +85,7 @@ open class IppClient(
         )) {
             log.trace { "ipp-server: $server" }
             if (!isOK()) {
-                if (status == 400 && ippRequest.rawBytes != null) { // bad request
+                if (status == 400) { // bad request
                     val badRequestFile = ippRequest.saveRawBytes(File("bad_ipp_request_${ippRequest.requestId}.bin"))
                     log.warn { "bad ipp request written to file ${badRequestFile.absolutePath}" }
                 }
@@ -126,6 +120,13 @@ open class IppClient(
         }
 
         return ippResponse
+    }
+
+    // convert ipp uri to http uri
+    internal fun httpUri(ippUri: URI): URI = with(ippUri) {
+        val scheme = scheme.replace("ipp", "http")
+        val port = if (port == -1) 631 else port
+        URI.create("$scheme://$host:$port$path")
     }
 
 }
