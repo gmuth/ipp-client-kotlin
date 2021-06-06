@@ -15,8 +15,6 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
 
     companion object {
         val log = Logging.getLogger {}
-        var validateValueClass = true
-        var checkSyntax: Boolean = true
         val iso8601DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     }
 
@@ -30,7 +28,7 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
     }
 
     constructor(name: String, tag: IppTag, values: Collection<T>) : this(name, tag) {
-        if (validateValueClass && values.isNotEmpty()) {
+        if (values.isNotEmpty()) {
             val firstValue = values.first() as Any
             if (!tag.validateClass(firstValue)) throw IllegalArgumentException("${firstValue::class.java} illegal for tag $tag")
         }
@@ -58,12 +56,6 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
 
     fun is1setOf() =
             values.size > 1 || IppRegistrationsSection2.attributeIs1setOf(name) == true
-
-    fun checkSyntax() {
-        if (checkSyntax) {
-            IppRegistrationsSection2.checkSyntaxOfAttribute(name, tag)
-        }
-    }
 
     override fun buildIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<*> = this
 
