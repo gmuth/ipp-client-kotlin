@@ -87,12 +87,11 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
             val epochSeconds = if (seconds < 60 * 60 * 24 * 365) Date().time / 1000 - seconds else seconds
             "$value (${iso8601DateFormat.format(Date(epochSeconds * 1000))})"
         }
-        else -> with(value as Any) {
-            if (value is ByteArray) with(value as ByteArray) {
-                if (isEmpty()) "no-value" else "$size bytes"
-            } else {
-                enumNameOrValue(this).toString()
-            }
+        value is ByteArray -> with(value as ByteArray) {
+            if (isEmpty()) "no-value" else "$size bytes"
+        }
+        else -> {
+            enumNameOrValue(value as Any).toString()
         }
     }
 
