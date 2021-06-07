@@ -13,7 +13,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     }
 
     init {
-        if (!tag.isGroupTag()) throw IppException("'$tag' is not a valid group tag")
+        if (!tag.isGroupTag()) throw IppException("'$tag' is not a group tag")
     }
 
     fun put(attribute: IppAttribute<*>) =
@@ -22,10 +22,10 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
             }
 
     fun attribute(name: String, tag: IppTag, vararg values: Any) =
-            put(IppAttribute(name, tag, values.toMutableList()))
+            put(IppAttribute(name, tag, values.toList()))
 
     fun attribute(name: String, tag: IppTag, values: List<Any>) =
-            put(IppAttribute(name, tag, values.toMutableList()))
+            put(IppAttribute(name, tag, values))
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getValueOrNull(name: String) =
