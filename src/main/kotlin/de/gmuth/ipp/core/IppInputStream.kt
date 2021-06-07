@@ -17,7 +17,6 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
     companion object {
         val log = Logging.getLogger {}
-        var check1setOfRegistration: Boolean = false
     }
 
     // encoding for text and name attributes, RFC 8011 4.1.4.1
@@ -51,9 +50,6 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                         currentAttribute = attribute
                     } else { // name.isEmpty() -> 1setOf
                         currentAttribute.additionalValue(attribute)
-                        if (check1setOfRegistration && IppRegistrationsSection2.attributeIs1setOf(currentAttribute.name) == false) {
-                            log.warn { "'${currentAttribute.name}' is not registered as '1setOf'" }
-                        }
                     }
                 }
             }
