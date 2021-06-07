@@ -12,12 +12,12 @@ class IppResolutionTests {
 
     @Test
     fun toStringTestDpc() {
-        assertEquals("600dpc", IppResolution(600, 600, DPC).toString())
+        assertEquals("600 dpc", IppResolution(600, 600, DPC).toString())
     }
 
     @Test
     fun toStringTestXdpi() {
-        assertEquals("1200x600dpi", IppResolution(1200, 600).toString())
+        assertEquals("1200x600 dpi", IppResolution(1200, 600).toString())
     }
 
 }
