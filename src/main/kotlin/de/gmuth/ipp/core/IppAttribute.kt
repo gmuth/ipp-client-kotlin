@@ -5,6 +5,7 @@ package de.gmuth.ipp.core
  */
 
 import de.gmuth.ipp.iana.IppRegistrationsSection2.Companion.attributeIs1setOf
+import de.gmuth.ipp.iana.IppRegistrationsSection2.Companion.checkSyntaxOfAttribute
 import de.gmuth.ipp.iana.IppRegistrationsSection6.Companion.getEnumName
 import de.gmuth.log.Logging
 import java.nio.charset.Charset
@@ -83,6 +84,12 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
                 }
             }
         }
+    }
+
+    fun validate() {
+        checkSyntaxOfAttribute(name, tag)
+        if (!tag.isOutOfBandTag() && values.isEmpty()) log.warn { "'$name' ($tag) has no values" }
+        if (values.size > 1 && attributeIs1setOf(name) == false) log.warn { "'$name' is not registered as '1setOf'" }
     }
 
 }
