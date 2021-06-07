@@ -6,7 +6,8 @@ package de.gmuth.ipp.core
 
 import de.gmuth.io.ByteArraySavingBufferedInputStream
 import de.gmuth.io.ByteArraySavingOutputStream
-import de.gmuth.ipp.iana.IppRegistrationsSection2
+import de.gmuth.ipp.iana.IppRegistrationsSection2.Companion.attributeIs1setOf
+import de.gmuth.ipp.iana.IppRegistrationsSection2.Companion.checkSyntaxOfAttribute
 import de.gmuth.log.Logging
 import java.io.*
 
@@ -137,15 +138,12 @@ abstract class IppMessage {
         }
     }
 
-    fun validate() {
-        for (group in attributesGroups) {
-            if (group.tag in listOf(IppTag.Operation, IppTag.Job, IppTag.Printer)) {
-                for (attribute in group.values) {
-                    with(attribute) {
-                        IppRegistrationsSection2.checkSyntaxOfAttribute(name, tag)
-                        if (!tag.isOutOfBandTag() && values.isEmpty()) log.warn { "'$name' ($tag) has no values" }
-                    }
-                }
+    fun validate() = attributesGroups.forEach {
+        it.values.forEach {
+            with(it) {
+                checkSyntaxOfAttribute(name, tag)
+                if (!tag.isOutOfBandTag() && values.isEmpty()) log.warn { "'$name' ($tag) has no values" }
+                if (values.size > 1 && attributeIs1setOf(name) == false) log.warn { "'$name' is not registered as '1setOf'" }
             }
         }
     }
