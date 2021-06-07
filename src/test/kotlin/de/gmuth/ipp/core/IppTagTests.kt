@@ -10,14 +10,14 @@ class IppTagTests {
 
     @Test
     fun validateTextWithLanguage() {
-        assertFalse(IppTag.TextWithoutLanguage.validateClass(0))
-        assertTrue(IppTag.TextWithoutLanguage.validateClass("string".toIppString()))
+        assertFalse(IppTag.TextWithoutLanguage.valueHasValidClass(0))
+        assertTrue(IppTag.TextWithoutLanguage.valueHasValidClass("ipp-string".toIppString()))
     }
 
     @Test
     fun validateNameWithLanguage() {
-        assertFalse(IppTag.NameWithoutLanguage.validateClass(0))
-        assertTrue(IppTag.NameWithoutLanguage.validateClass("ipp-string".toIppString()))
+        assertFalse(IppTag.NameWithoutLanguage.valueHasValidClass(0))
+        assertTrue(IppTag.NameWithoutLanguage.valueHasValidClass("ipp-string".toIppString()))
     }
 
     @Test

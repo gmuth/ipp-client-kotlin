@@ -8,7 +8,7 @@ package de.gmuth.ipp.core
 enum class IppTag(
         val code: Byte,
         val registeredName: String,
-        val validateClass: (Any) -> kotlin.Boolean = { true }
+        val valueHasValidClass: (Any) -> kotlin.Boolean = { true }
 ) {
 
     // delimiter tags

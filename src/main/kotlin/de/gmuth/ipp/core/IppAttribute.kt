@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2021 Gerhard Muth
  */
 
 import de.gmuth.ipp.iana.IppRegistrationsSection2.Companion.attributeIs1setOf
@@ -18,15 +18,12 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
     val values = mutableListOf<T>()
 
     init {
-        if (tag.isDelimiterTag()) throw IllegalArgumentException("$tag")
+        if (tag.isDelimiterTag()) throw IppException("'$tag' is not a value tag")
     }
 
     constructor(name: String, tag: IppTag, values: Collection<T>) : this(name, tag) {
-        if (values.isNotEmpty()) {
-            val firstValue = values.first() as Any
-            if (!tag.validateClass(firstValue)) throw IllegalArgumentException("${firstValue::class.java} illegal for tag $tag")
-        }
-        this.values.addAll(values)
+        if (values.isNotEmpty()) validateValueClass(values.first() as Any)
+        this.values.addAll(values.toList())
     }
 
     constructor(name: String, tag: IppTag, vararg values: T) : this(name, tag, values.toList())
@@ -41,7 +38,14 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
         attribute.tag != tag -> throw IppException("expected additional value with tag '$tag' but found $attribute")
         attribute.values.size != 1 -> throw IppException("expected 1 additional value, not ${attribute.values.size}")
         attribute.name.isNotEmpty() -> throw IppException("for additional '$name' values attribute name must be empty")
-        else -> values.add(attribute.value as T)
+        else -> {
+            validateValueClass(attribute.value as Any)
+            values.add(attribute.value as T)
+        }
+    }
+
+    internal fun validateValueClass(value: Any) {
+        if (!tag.valueHasValidClass(value)) throw IppException("value class ${value::class.java} not valid for tag $tag")
     }
 
     fun is1setOf() =
