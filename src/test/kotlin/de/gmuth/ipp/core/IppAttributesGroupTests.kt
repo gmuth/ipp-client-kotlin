@@ -83,6 +83,11 @@ class IppAttributesGroupTests {
         group.logDetails("|", "title")
     }
 
+    @Test
+    fun validate() {
+        group.validate()
+    }
+
     // ------------- interface Map methods ------------
 
     @Test
