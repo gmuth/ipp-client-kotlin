@@ -246,7 +246,7 @@ open class IppPrinter(
     fun exchangeSuccessful(request: IppRequest): IppResponse {
         checkIfValueIsSupported("ipp-versions-supported", request.version!!)
         checkIfValueIsSupported("operations-supported", request.code!!.toInt())
-        checkIfValueIsSupported("charset-supported", request.operationGroup.getValue("attributes-charset") as Charset)
+        checkIfValueIsSupported("charset-supported", request.operationGroup.getValue<Charset>("attributes-charset"))
         return ippClient.exchangeSuccessful(request)
     }
 
