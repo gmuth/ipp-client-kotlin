@@ -42,7 +42,6 @@ open class IppPrinter(
 
     companion object {
         val log = Logging.getLogger {}
-        var checkIfValueIsSupported: Boolean = true
         var getJobsRequestedAttributes = listOf(
                 "job-id", "job-uri", "job-printer-uri",
                 "job-state", "job-state-message", "job-state-reasons",
@@ -273,8 +272,7 @@ open class IppPrinter(
     // ------------------------------------------------------
 
     private fun checkIfValueIsSupported(supportedAttributeName: String, value: Any) {
-        if (attributes.size == 0 || !checkIfValueIsSupported)
-            return
+        if (attributes.size == 0) return
 
         if (!supportedAttributeName.endsWith("-supported"))
             throw IppException("attribute name not ending with '-supported'")
@@ -291,24 +289,20 @@ open class IppPrinter(
     private fun isAttributeValueSupported(supportedAttributeName: String, value: Any): Boolean? {
 
         val supportedAttribute = attributes[supportedAttributeName] ?: return null
-        val isAttributeValueSupported = when (supportedAttribute.tag) {
+        val attributeValueIsSupported = when (supportedAttribute.tag) {
             IppTag.Boolean -> supportedAttribute.value as Boolean // e.g. 'page-ranges-supported'
             IppTag.Charset,
             IppTag.NaturalLanguage,
             IppTag.MimeMediaType,
-            IppTag.Keyword,
+            IppTag.Keyword, // e.g. media-col-supported (1setOf keyword)
             IppTag.Enum,
             IppTag.Resolution -> when (supportedAttributeName) {
-                "media-col-supported" -> {
-                    (value as IppCollection).members
-                            .filter { !supportedAttribute.values.contains(it.name) }
+                "media-col-supported" -> with(value as IppCollection) {
+                    members.filter { !supportedAttribute.values.contains(it.name) }
                             .forEach { log.warn { "member unsupported: $it" } }
                     // all member names must be supported
-                    supportedAttribute.values.containsAll(
-                            value.members.map { it.name }
-                    )
+                    supportedAttribute.values.containsAll(members.map { it.name })
                 }
-                "ipp-versions-supported" -> supportedAttribute.values.contains(value.toString())
                 else -> supportedAttribute.values.contains(value)
             }
             IppTag.Integer -> {
@@ -320,17 +314,15 @@ open class IppPrinter(
             }
             else -> null
         }
-        when (isAttributeValueSupported) {
-            true -> {
-                log.debug { "$supportedAttributeName: $value" }
-            }
+        when (attributeValueIsSupported) {
+            null -> log.warn { "unable to check if value '$value' is supported by $supportedAttribute" }
+            true -> log.debug { "$supportedAttributeName: $value" }
             false -> {
                 log.warn { "according to printer attributes value '${supportedAttribute.enumNameOrValue(value)}' is not supported." }
                 log.warn { "$supportedAttribute" }
             }
-            null -> log.warn { "unable to check if value '$value' is supported by $supportedAttribute" }
         }
-        return isAttributeValueSupported
+        return attributeValueIsSupported
     }
 
     // -----------------------
@@ -338,16 +330,16 @@ open class IppPrinter(
     // -----------------------
 
     fun savePrinterAttributes(printerModel: String = makeAndModel.text.replace("\\s+".toRegex(), "_")) {
-        val ippResponse = getPrinterAttributes()
-        File("$printerModel.bin").apply {
-            log.info { "save bin file: $absolutePath" }
-            ippResponse.saveRawBytes(this)
-        }
-        val printerAttributes = ippResponse.printerGroup
-        File("$printerModel.txt").apply {
-            log.info { "save txt file: $absolutePath" }
-            writeText("# $printerUri\n")
-            printerAttributes.values.forEach { appendText("$it\n") }
+        with(getPrinterAttributes()) {
+            File("$printerModel.bin").apply {
+                saveRawBytes(this)
+                log.info { "bin file: $absolutePath" }
+            }
+            File("$printerModel.txt").apply {
+                writeText("# $printerUri\n")
+                printerGroup.values.forEach { appendText("$it\n") }
+                log.info { "txt file: $absolutePath" }
+            }
         }
     }
 
