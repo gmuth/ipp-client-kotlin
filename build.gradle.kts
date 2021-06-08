@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "de.gmuth.ipp"
-version = "2.1"
+version = "2.2-SNAPSHOT"
 
 repositories {
     mavenCentral()
