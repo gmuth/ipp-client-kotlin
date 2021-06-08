@@ -4,9 +4,9 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020-2021 Gerhard Muth
  */
 
-import de.gmuth.ipp.iana.IppRegistrationsSection2.Companion.attributeIs1setOf
-import de.gmuth.ipp.iana.IppRegistrationsSection2.Companion.checkSyntaxOfAttribute
-import de.gmuth.ipp.iana.IppRegistrationsSection6.Companion.getEnumName
+import de.gmuth.ipp.iana.IppRegistrationsSection2.attributeIs1setOf
+import de.gmuth.ipp.iana.IppRegistrationsSection2.checkSyntaxOfAttribute
+import de.gmuth.ipp.iana.IppRegistrationsSection6.getEnumName
 import de.gmuth.log.Logging
 import java.nio.charset.Charset
 

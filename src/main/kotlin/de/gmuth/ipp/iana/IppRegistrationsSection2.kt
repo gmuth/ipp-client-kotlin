@@ -12,7 +12,7 @@ import de.gmuth.log.Logging
 /**
  * https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-2
  */
-class IppRegistrationsSection2 {
+object IppRegistrationsSection2 {
 
     data class Attribute(
             val collection: String,
@@ -22,20 +22,6 @@ class IppRegistrationsSection2 {
             val syntax: String,
             val reference: String
     ) {
-        companion object {
-            val rowMapper = object : RowMapper<Attribute> {
-                override fun mapRow(columns: List<String>, rowNum: Int) =
-                        Attribute(
-                                collection = columns[0],
-                                name = columns[1],
-                                memberAttribute = columns[2],
-                                subMemberAttribute = columns[3],
-                                syntax = columns[4],
-                                reference = columns[5]
-                        )
-            }
-        }
-
         override fun toString() = String.format("%-30s%-70s%s", collection, key(), syntax)
 
         fun is1setOf() = syntax.contains("1setOf")
@@ -76,34 +62,42 @@ class IppRegistrationsSection2 {
 
     }
 
-    companion object {
+    val log = Logging.getLogger {}
 
-        val log = Logging.getLogger {}
-
-        // source: https://www.iana.org/assignments/ipp-registrations/ipp-registrations-2.csv
-        val allAttributes =
-                CSVReader(Attribute.rowMapper).readResource("/ipp-registrations-2.csv")
-
-        val attributesMap =
-                allAttributes.associateBy(Attribute::key)
-
-        fun tagForAttribute(name: String) =
-                attributesMap[name]?.tag()
-
-        fun attributeIs1setOf(name: String) =
-                attributesMap[name]?.is1setOf()
-
-        fun checkSyntaxOfAttribute(name: String, tag: IppTag) {
-            if (tag.isOutOfBandTag()) return
-            val syntax = attributesMap[name]?.syntax
-            if (syntax != null && syntax.isNotEmpty() && !syntax.contains(tag.registeredSyntax())) {
-                log.warn { "$name ($tag) does not match syntax '$syntax'" }
-            }
-        }
-
-        fun selectGroupForAttribute(name: String) =
-                attributesMap[name]?.collectionGroupTag() ?: IppTag.Job
-
+    val rowMapper = object : RowMapper<Attribute> {
+        override fun mapRow(columns: List<String>, rowNum: Int) =
+                Attribute(
+                        collection = columns[0],
+                        name = columns[1],
+                        memberAttribute = columns[2],
+                        subMemberAttribute = columns[3],
+                        syntax = columns[4],
+                        reference = columns[5]
+                )
     }
+
+    // source: https://www.iana.org/assignments/ipp-registrations/ipp-registrations-2.csv
+    val allAttributes =
+            CSVReader(rowMapper).readResource("/ipp-registrations-2.csv")
+
+    val attributesMap =
+            allAttributes.associateBy(Attribute::key)
+
+    fun tagForAttribute(name: String) =
+            attributesMap[name]?.tag()
+
+    fun attributeIs1setOf(name: String) =
+            attributesMap[name]?.is1setOf()
+
+    fun checkSyntaxOfAttribute(name: String, tag: IppTag) {
+        if (tag.isOutOfBandTag()) return
+        val syntax = attributesMap[name]?.syntax
+        if (syntax != null && syntax.isNotEmpty() && !syntax.contains(tag.registeredSyntax())) {
+            log.warn { "$name ($tag) does not match syntax '$syntax'" }
+        }
+    }
+
+    fun selectGroupForAttribute(name: String) =
+            attributesMap[name]?.collectionGroupTag() ?: IppTag.Job
 
 }

@@ -8,7 +8,7 @@ import de.gmuth.log.Logging
 /**
  * https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xhtml#ipp-registrations-6
  */
-class IppRegistrationsSection6 {
+object IppRegistrationsSection6 {
 
     data class EnumAttributeValue(
             val attribute: String,
@@ -17,51 +17,45 @@ class IppRegistrationsSection6 {
             val syntax: String,
             val reference: String
     ) {
-
-        companion object {
-            val rowMapper = object : RowMapper<EnumAttributeValue> {
-                override fun mapRow(columns: List<String>, rowNum: Int) =
-                        EnumAttributeValue(
-                                attribute = columns[0],
-                                value = columns[1],
-                                name = columns[2],
-                                syntax = columns[3],
-                                reference = columns[4]
-                        )
-            }
-        }
-
         override fun toString() = "$attribute/$value ($syntax) = $name $reference "
     }
 
-    companion object {
-        val log = Logging.getLogger { }
+    val log = Logging.getLogger { }
 
-        // source: https://www.iana.org/assignments/ipp-registrations/ipp-registrations-6.csv
-        val allEnumAttributeValues =
-                CSVReader(EnumAttributeValue.rowMapper).readResource("/ipp-registrations-6.csv")
-
-        val enumAttributeValuesMap =
-                allEnumAttributeValues.associateBy { "${it.attribute}/${it.value}" }
-
-        // alias example: finishings-default, <Any "finishings" value>
-        val aliasMap = mutableMapOf<String, String>().apply {
-            allEnumAttributeValues
-                    .filter { it.value.toLowerCase().contains("any") }
-                    .forEach { put(it.attribute, it.value.replace("^.*\"(.+)\".*$".toRegex(), "$1")) }
-        }
-
-        fun getEnumAttributeValue(attribute: String, value: Any) =
-                enumAttributeValuesMap.get("$attribute/$value")
-
-        fun getEnumName(attribute: String, value: Any) =
-                if (attribute == "operations-supported" && value is Number) {
-                    // lookup the name in IppOperation because CUPS operations are not iana registered
-                    IppOperation.fromShort(value.toShort()).toString()
-                } else {
-                    getEnumAttributeValue(aliasMap[attribute] ?: attribute, value)?.name
-                } ?: value
-
+    val rowMapper = object : RowMapper<EnumAttributeValue> {
+        override fun mapRow(columns: List<String>, rowNum: Int) =
+                EnumAttributeValue(
+                        attribute = columns[0],
+                        value = columns[1],
+                        name = columns[2],
+                        syntax = columns[3],
+                        reference = columns[4]
+                )
     }
+
+    // source: https://www.iana.org/assignments/ipp-registrations/ipp-registrations-6.csv
+    val allEnumAttributeValues =
+            CSVReader(rowMapper).readResource("/ipp-registrations-6.csv")
+
+    val enumAttributeValuesMap =
+            allEnumAttributeValues.associateBy { "${it.attribute}/${it.value}" }
+
+    // alias example: finishings-default, <Any "finishings" value>
+    val aliasMap = mutableMapOf<String, String>().apply {
+        allEnumAttributeValues
+                .filter { it.value.toLowerCase().contains("any") }
+                .forEach { put(it.attribute, it.value.replace("^.*\"(.+)\".*$".toRegex(), "$1")) }
+    }
+
+    fun getEnumAttributeValue(attribute: String, value: Any) =
+            enumAttributeValuesMap.get("$attribute/$value")
+
+    fun getEnumName(attribute: String, value: Any) =
+            if (attribute == "operations-supported" && value is Number) {
+                // lookup the name in IppOperation because CUPS operations are not iana registered
+                IppOperation.fromShort(value.toShort()).toString()
+            } else {
+                getEnumAttributeValue(aliasMap[attribute] ?: attribute, value)?.name
+            } ?: value
 
 }
