@@ -34,7 +34,6 @@ open class IppClient(
 
     companion object {
         val log = Logging.getLogger {}
-        val ippContentType = "application/ipp"
     }
 
     //------------------------------------
@@ -73,6 +72,8 @@ open class IppClient(
     fun exchange(ippRequest: IppRequest): IppResponse {
         val ippUri: URI = ippRequest.operationGroup.getValueOrNull("printer-uri") ?: throw IppException("missing 'printer-uri'")
         log.trace { "send '${ippRequest.operation}' request to $ippUri" }
+
+        // convert ipp uri to http uri
         val httpUri = with(ippUri) {
             val scheme = scheme.replace("ipp", "http")
             val port = if (port == -1) 631 else port
@@ -80,34 +81,32 @@ open class IppClient(
         }
 
         // http post binary ipp request
-        val httpResponseStream = with(httpClient.post(
-                httpUri,
-                ippContentType,
+        val httpResponse = httpClient.post(
+                httpUri, "application/ipp",
                 { httpPostStream -> ippRequest.write(httpPostStream) },
                 httpBasicAuth
-        )) {
+        ).apply {
             log.trace { "ipp-server: $server" }
             when {
                 !isOK() -> "http request to $httpUri failed: status=$status, content-type=$contentType${textContent()}"
-                !hasContentType() -> "missing content-type in http response"
-                !contentType!!.startsWith(ippContentType) -> "invalid content-type: $contentType"
+                !hasContentType() -> "missing content-type in http response (application/ipp required)"
+                !contentType!!.startsWith("application/ipp") -> "invalid content-type: $contentType"
                 else -> ""
             }.let {
                 if (it.isNotEmpty()) throw IppExchangeException(ippRequest, null, status, message = it)
             }
-            contentStream!!
         }
 
+        // decode ipp response
         return IppResponse().apply {
-            try { // decode ipp response
-                read(httpResponseStream)
+            try {
+                read(httpResponse.contentStream!!)
                 log.debug { "$ippUri: $ippRequest => $this" }
             } catch (exception: Exception) {
-                throw IppExchangeException(ippRequest, this, message = "failed to decode ipp response", cause = exception).apply {
+                throw IppExchangeException(ippRequest, this, httpResponse.status, "failed to decode ipp response", exception).apply {
                     saveRequestAndResponse("decoding_ipp_response_${ippRequest.requestId}_failed")
                 }
             }
-            // response logging
             if (operationGroup.containsKey("status-message")) log.debug { "status-message: $statusMessage" }
             if (containsGroup(IppTag.Unsupported)) unsupportedGroup.values.forEach { log.warn { "unsupported attribute: $it" } }
         }
