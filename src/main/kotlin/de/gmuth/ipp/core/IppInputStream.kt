@@ -19,8 +19,8 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
         val log = Logging.getLogger {}
     }
 
-    // encoding for text and name attributes, RFC 8011 4.1.4.1
-    internal var attributesCharset: Charset? = null
+    // character encoding for text and name attributes, RFC 8011 4.1.4.1
+    internal lateinit var attributesCharset: Charset
 
     fun readMessage(message: IppMessage) {
         with(message) {
@@ -128,14 +128,14 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
                 // value class IppString
                 IppTag.TextWithoutLanguage,
-                IppTag.NameWithoutLanguage -> IppString(text = readString(attributesCharset!!))
+                IppTag.NameWithoutLanguage -> IppString(text = readString(attributesCharset))
 
                 IppTag.TextWithLanguage,
                 IppTag.NameWithLanguage -> {
                     readShort().let { if (markSupported() && it < 6) reset() } // HP M175nw: support invalid ipp response
                     IppString(
-                            language = readString(attributesCharset!!),
-                            text = readString(attributesCharset!!)
+                            language = readString(attributesCharset),
+                            text = readString(attributesCharset)
                     )
                 }
 
