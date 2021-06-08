@@ -6,7 +6,6 @@ package de.gmuth.ipp.cups
 
 import de.gmuth.ipp.client.IppClient
 import de.gmuth.ipp.client.IppPrinter
-import de.gmuth.ipp.core.IppAttribute
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppTag
 import java.net.URI
