@@ -33,7 +33,7 @@ class IppTool {
             val lineItems = line.trim().split("\\s+".toRegex())
             if (lineItems.size > 1) interpretLine(lineItems)
         }
-        executeIppRequest()
+        executeIppRequest().logDetails()
     }
 
     private fun interpretLine(lineItems: List<String>) {
@@ -78,12 +78,10 @@ class IppTool {
         return IppAttribute(name, tag, value)
     }
 
-    private fun executeIppRequest() {
-        with(IppClient()) {
-            verbose = true
-            if (uri == null) throw IppException("uri missing")
-            exchangeSuccessful(request)
-        }
+    private fun executeIppRequest() = with(IppClient()) {
+        verbose = true
+        if (uri == null) throw IppException("uri missing")
+        exchangeSuccessful(request)
     }
 
 }
