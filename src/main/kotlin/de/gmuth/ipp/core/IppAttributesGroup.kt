@@ -6,7 +6,7 @@ import de.gmuth.log.Logging
  * Copyright (c) 2020-2021 Gerhard Muth
  */
 
-class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*>>() {
+open class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*>>() {
 
     companion object {
         val log = Logging.getLogger {}
@@ -16,7 +16,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
         if (!tag.isGroupTag()) throw IppException("'$tag' is not a group tag")
     }
 
-    fun put(attribute: IppAttribute<*>) =
+    open fun put(attribute: IppAttribute<*>) =
             put(attribute.name, attribute).apply {
                 if (this != null) log.warn { "replaced '$this' with '${attribute.values.joinToString(",")}' in group $tag" }
             }
