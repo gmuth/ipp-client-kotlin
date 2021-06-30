@@ -80,20 +80,17 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
     internal fun readAttributeValue(tag: IppTag): Any =
             when (tag) {
 
-                // value class Boolean
                 IppTag.Boolean -> {
                     readExpectedValueLength(1)
                     readBoolean()
                 }
 
-                // value class Int
                 IppTag.Integer,
                 IppTag.Enum -> {
                     readExpectedValueLength(4)
                     readInt()
                 }
 
-                // value class IntRange
                 IppTag.RangeOfInteger -> {
                     readExpectedValueLength(8)
                     IntRange(
@@ -102,7 +99,6 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                     )
                 }
 
-                // value class IppResolution
                 IppTag.Resolution -> {
                     readExpectedValueLength(9)
                     IppResolution(
@@ -112,13 +108,11 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                     )
                 }
 
-                // value class Charset
                 IppTag.Charset -> Charset.forName(readString())
 
-                // value class URI
                 IppTag.Uri -> URI.create(readString())
 
-                // value class String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
+                // String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
                 IppTag.Keyword,
                 IppTag.UriScheme,
                 IppTag.OctetString,
@@ -126,7 +120,6 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                 IppTag.MemberAttrName,
                 IppTag.NaturalLanguage -> readString()
 
-                // value class IppString
                 IppTag.TextWithoutLanguage,
                 IppTag.NameWithoutLanguage -> IppString(text = readString(attributesCharset))
 
@@ -139,7 +132,6 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                     )
                 }
 
-                // value class IppDateTime
                 IppTag.DateTime -> {
                     readExpectedValueLength(11)
                     IppDateTime(
@@ -156,14 +148,13 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                     )
                 }
 
-                //  value class IppCollection
                 IppTag.BegCollection -> {
                     readExpectedValueLength(0)
                     readCollection()
                 }
 
                 // for all other tags (including out-of-bound), read raw bytes (if present at all)
-                else -> { // value class ByteArray - possibly empty
+                else -> { // ByteArray - possibly empty
                     readLengthAndValue().apply {
                         if (size > 0) log.warn { "ignoring $size bytes ($tag)" }
                     }
