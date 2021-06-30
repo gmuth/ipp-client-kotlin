@@ -26,7 +26,7 @@ object SSLHelper {
     fun sslSocketFactory(trustmanagers: Array<TrustManager>, protocol: String = "TLS") =
             SSLContext.getInstance(protocol).apply { init(null, trustmanagers, SecureRandom()) }.socketFactory
 
-    @SuppressWarnings('kotlin:S4830')
+    @SuppressWarnings("kotlin:S4830")
     fun sslSocketFactoryForAnyCertificate() = sslSocketFactory(arrayOf(
             object : X509TrustManager {
                 override fun checkClientTrusted(certificates: Array<out X509Certificate>?, string: String?) = Unit
