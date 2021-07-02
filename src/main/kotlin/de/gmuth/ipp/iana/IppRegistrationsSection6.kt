@@ -1,6 +1,5 @@
 package de.gmuth.ipp.iana
 
-import de.gmuth.csv.CSVReader
 import de.gmuth.csv.CSVTable
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.log.Logging
@@ -28,8 +27,7 @@ object IppRegistrationsSection6 {
         override fun toString() = "$attribute/$value ($syntax) = $name $reference "
     }
 
-    val log = Logging.getLogger { }
-
+    val log = Logging.getLogger {}
 
     // source: https://www.iana.org/assignments/ipp-registrations/ipp-registrations-6.csv
     val allEnumAttributeValues = CSVTable("/ipp-registrations-6.csv", ::EnumAttributeValue).rows
