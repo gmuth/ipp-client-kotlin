@@ -14,10 +14,11 @@ interface Http {
     data class Config(
             var timeout: Int = 30000, // milli seconds
             var userAgent: String = "ipp-client-kotlin/2.0",
-            var sslSocketFactory: SSLSocketFactory? = null
+            var sslSocketFactory: SSLSocketFactory? = null,
             // trust any certificate: sslSocketFactoryForAnyCertificate()
             // use individual certificate: sslSocketFactory(loadCertificate(FileInputStream("printer.pem")))
             // use truststore: sslSocketFactory(loadTrustStore(FileInputStream("printer.jks"), "changeit"))
+            var verifySSLHostnames: Boolean = true
     )
 
     data class BasicAuth(
