@@ -5,7 +5,6 @@ package de.gmuth.ipp.core
  */
 
 import de.gmuth.io.hexdump
-import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.log.Logging
 import java.io.DataInputStream
 import java.io.EOFException
