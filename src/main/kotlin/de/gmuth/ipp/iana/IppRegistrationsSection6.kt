@@ -1,7 +1,7 @@
 package de.gmuth.ipp.iana
 
 import de.gmuth.csv.CSVReader
-import de.gmuth.csv.CSVReader.RowMapper
+import de.gmuth.csv.CSVTable
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.log.Logging
 
@@ -17,28 +17,24 @@ object IppRegistrationsSection6 {
             val syntax: String,
             val reference: String
     ) {
+        constructor(columns: List<String>) : this(
+                attribute = columns[0],
+                value = columns[1],
+                name = columns[2],
+                syntax = columns[3],
+                reference = columns[4]
+        )
+
         override fun toString() = "$attribute/$value ($syntax) = $name $reference "
     }
 
     val log = Logging.getLogger { }
 
-    val rowMapper = object : RowMapper<EnumAttributeValue> {
-        override fun mapRow(columns: List<String>, rowNum: Int) =
-                EnumAttributeValue(
-                        attribute = columns[0],
-                        value = columns[1],
-                        name = columns[2],
-                        syntax = columns[3],
-                        reference = columns[4]
-                )
-    }
 
     // source: https://www.iana.org/assignments/ipp-registrations/ipp-registrations-6.csv
-    val allEnumAttributeValues =
-            CSVReader(rowMapper).readResource("/ipp-registrations-6.csv")
+    val allEnumAttributeValues = CSVTable("/ipp-registrations-6.csv", ::EnumAttributeValue).rows
 
-    val enumAttributeValuesMap =
-            allEnumAttributeValues.associateBy { "${it.attribute}/${it.value}" }
+    val enumAttributeValuesMap = allEnumAttributeValues.associateBy { "${it.attribute}/${it.value}" }
 
     // alias example: finishings-default, <Any "finishings" value>
     val aliasMap = mutableMapOf<String, String>().apply {
@@ -47,8 +43,7 @@ object IppRegistrationsSection6 {
                 .forEach { put(it.attribute, it.value.replace("^.*\"(.+)\".*$".toRegex(), "$1")) }
     }
 
-    fun getEnumAttributeValue(attribute: String, value: Any) =
-            enumAttributeValuesMap.get("$attribute/$value")
+    fun getEnumAttributeValue(attribute: String, value: Any) = enumAttributeValuesMap.get("$attribute/$value")
 
     fun getEnumName(attribute: String, value: Any) =
             if (attribute == "operations-supported" && value is Number) {

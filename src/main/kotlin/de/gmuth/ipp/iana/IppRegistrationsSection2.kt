@@ -4,8 +4,7 @@ package de.gmuth.ipp.iana
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.csv.CSVReader
-import de.gmuth.csv.CSVReader.RowMapper
+import de.gmuth.csv.CSVTable
 import de.gmuth.ipp.core.IppTag
 import de.gmuth.log.Logging
 
@@ -22,6 +21,15 @@ object IppRegistrationsSection2 {
             val syntax: String,
             val reference: String
     ) {
+        constructor(columns: List<String>) : this(
+                collection = columns[0],
+                name = columns[1],
+                memberAttribute = columns[2],
+                subMemberAttribute = columns[3],
+                syntax = columns[4],
+                reference = columns[5]
+        )
+
         override fun toString() = String.format("%-30s%-70s%s", collection, key(), syntax)
 
         fun is1setOf() = syntax.contains("1setOf")
@@ -64,30 +72,14 @@ object IppRegistrationsSection2 {
 
     val log = Logging.getLogger {}
 
-    val rowMapper = object : RowMapper<Attribute> {
-        override fun mapRow(columns: List<String>, rowNum: Int) =
-                Attribute(
-                        collection = columns[0],
-                        name = columns[1],
-                        memberAttribute = columns[2],
-                        subMemberAttribute = columns[3],
-                        syntax = columns[4],
-                        reference = columns[5]
-                )
-    }
-
     // source: https://www.iana.org/assignments/ipp-registrations/ipp-registrations-2.csv
-    val allAttributes =
-            CSVReader(rowMapper).readResource("/ipp-registrations-2.csv")
+    val allAttributes = CSVTable("/ipp-registrations-2.csv", ::Attribute).rows
 
-    val attributesMap =
-            allAttributes.associateBy(Attribute::key)
+    val attributesMap = allAttributes.associateBy(Attribute::key)
 
-    fun tagForAttribute(name: String) =
-            attributesMap[name]?.tag()
+    fun tagForAttribute(name: String) = attributesMap[name]?.tag()
 
-    fun attributeIs1setOf(name: String) =
-            attributesMap[name]?.is1setOf()
+    fun attributeIs1setOf(name: String) = attributesMap[name]?.is1setOf()
 
     fun checkSyntaxOfAttribute(name: String, tag: IppTag) {
         if (tag.isOutOfBandTag()) return
@@ -97,7 +89,6 @@ object IppRegistrationsSection2 {
         }
     }
 
-    fun selectGroupForAttribute(name: String) =
-            attributesMap[name]?.collectionGroupTag() ?: IppTag.Job
+    fun selectGroupForAttribute(name: String) = attributesMap[name]?.collectionGroupTag() ?: IppTag.Job
 
 }
