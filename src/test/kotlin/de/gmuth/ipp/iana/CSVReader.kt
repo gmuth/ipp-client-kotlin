@@ -1,4 +1,4 @@
-package de.gmuth.csv
+package de.gmuth.ipp.iana
 
 /**
  * Copyright (c) 2020 Gerhard Muth
