@@ -139,9 +139,9 @@ object IppRegistrationsSection2 {
     @Suppress("UNCHECKED_CAST")
     fun validate(name: String, ippCollections: List<IppCollection>) {
         log.trace { "validate collection '$name'" }
+        val resolvedName = resolveAlias(name)
         for (ippCollection in ippCollections) {
             log.trace { "         ${ippCollection.members.size} members" }
-            val resolvedName = resolveAlias(name)
             for (member in ippCollection.members) {
                 if (member.isCollection()) {
                     validate("$resolvedName/${member.name}", member.values as List<IppCollection>)
