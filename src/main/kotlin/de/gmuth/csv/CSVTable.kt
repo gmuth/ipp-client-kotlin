@@ -22,7 +22,7 @@ class CSVTable<T>(
     }
 
     constructor(resourcePath: String, rowFactory: (columns: List<String>) -> T, skipHeader: Boolean = true) :
-            this(CSVTable.javaClass.getResourceAsStream(resourcePath), rowFactory, skipHeader)
+            this(CSVTable::class.java.getResourceAsStream(resourcePath), rowFactory, skipHeader)
 
     fun updateMaxLengthMap(columnIndex: Int, columnLength: Int) =
             with(maxLengthMap[columnIndex]) { if (this == null || this < columnLength) maxLengthMap[columnIndex] = columnLength }
@@ -90,7 +90,8 @@ class CSVTable<T>(
                     }
                 }
 
-        fun print(resourcePath: String, delimiter: String = "|") = print(javaClass.getResourceAsStream(resourcePath), delimiter)
+        fun print(resourcePath: String, delimiter: String = "|") =
+                print(CSVTable::class.java.getResourceAsStream(resourcePath), delimiter)
 
     }
 }
