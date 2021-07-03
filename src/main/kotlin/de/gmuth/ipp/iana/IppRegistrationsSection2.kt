@@ -112,12 +112,11 @@ object IppRegistrationsSection2 {
     fun checkSyntaxOfAttribute(name: String, tag: IppTag) {
         if (tag.isOutOfBandTag()) return
         val syntax = syntaxForAttribute(name, true)
-        if (syntax != null && !syntax.contains(tag.registeredSyntax())) {
-            log.warn { "$name ($tag) does not match syntax '$syntax'" }
-        }
         if (syntax == null) {
             log.trace { "no syntax found for '$name'" }
             unknownAttributes.add(name)
+        } else if (!syntax.contains(tag.registeredSyntax())) {
+            log.warn { "$name ($tag) does not match syntax '$syntax'" }
         }
     }
 
