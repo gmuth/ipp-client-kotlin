@@ -91,9 +91,4 @@ class IppMessageTests {
         }
     }
 
-    @Test
-    fun validate() {
-        message.validate()
-    }
-
 }

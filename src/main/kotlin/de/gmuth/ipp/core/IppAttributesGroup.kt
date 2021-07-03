@@ -47,6 +47,4 @@ open class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttrib
         keys.forEach { log.info { "$prefix  ${get(it)}" } }
     }
 
-    fun validate() = values.forEach { it.validate() }
-
 }

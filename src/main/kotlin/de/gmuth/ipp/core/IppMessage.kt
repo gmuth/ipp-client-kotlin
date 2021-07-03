@@ -136,6 +136,4 @@ abstract class IppMessage {
         }
     }
 
-    fun validate() = attributesGroups.forEach { it.validate() }
-
 }
