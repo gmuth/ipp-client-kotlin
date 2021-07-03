@@ -98,9 +98,4 @@ class IppAttributeTests {
         IppAttribute("media-col".padEnd(160, '-'), IppTag.BegCollection, IppCollection()).logDetails()
     }
 
-    @Test
-    fun validate() {
-        ippAttribute.validate()
-    }
-
 }
