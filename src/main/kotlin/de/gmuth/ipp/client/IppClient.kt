@@ -8,6 +8,7 @@ import de.gmuth.http.Http
 import de.gmuth.http.HttpURLConnectionClient
 import de.gmuth.http.SSLHelper
 import de.gmuth.ipp.core.*
+import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.log.Logging
 import java.net.URI
 import java.nio.charset.Charset
@@ -64,6 +65,7 @@ open class IppClient(
     fun exchangeSuccessful(ippRequest: IppRequest) =
             exchange(ippRequest).apply {
                 if (!isSuccessful()) {
+                    IppRegistrationsSection2.validate(ippRequest)
                     val statusMessage = operationGroup.getValueOrNull("status-message") ?: IppString("")
                     throw IppExchangeException(ippRequest, this, message = "${ippRequest.operation} failed: '$status' $statusMessage")
                 }
