@@ -10,24 +10,23 @@ import java.io.InputStream
 
 class CSVTable<T>(
         inputStream: InputStream? = null,
-        val buildRow: (columns: List<String>) -> T,
-        val skipHeader: Boolean = true,
+        val buildRow: (columns: List<String>) -> T
 ) {
 
     val rows: MutableList<T> = mutableListOf()
     val maxLengthMap = mutableMapOf<Int, Int>()
 
     init {
-        inputStream?.let { read(it) }
+        inputStream?.let { read(it, true) }
     }
 
-    constructor(resourcePath: String, rowFactory: (columns: List<String>) -> T, skipHeader: Boolean = true) :
-            this(CSVTable::class.java.getResourceAsStream(resourcePath), rowFactory, skipHeader)
+    constructor(resourcePath: String, rowFactory: (columns: List<String>) -> T) :
+            this(CSVTable::class.java.getResourceAsStream(resourcePath), rowFactory)
 
     fun updateMaxLengthMap(columnIndex: Int, columnLength: Int) =
             with(maxLengthMap[columnIndex]) { if (this == null || this < columnLength) maxLengthMap[columnIndex] = columnLength }
 
-    fun read(inputStream: InputStream) {
+    fun read(inputStream: InputStream, skipHeader: Boolean) {
         if (skipHeader) parseRow(inputStream)
         lineLoop@ while (true) {
             val columns = parseRow(inputStream) ?: break@lineLoop
