@@ -105,7 +105,7 @@ object IppRegistrationsSection2 {
 
     fun attributeIs1setOf(name: String) = getAttribute(name, false)?.is1setOf()
 
-    fun selectGroupForAttribute(name: String) = attributesMap[name]?.collectionGroupTag() ?: IppTag.Job
+    fun selectGroupForAttribute(name: String) = getAttribute(name, false)!!.collectionGroupTag()
 
     val unknownAttributes = mutableSetOf<String>()
 
