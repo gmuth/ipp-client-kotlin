@@ -52,19 +52,15 @@ class IppJob(
     val documentFormat: String
         get() = attributes.getValue("document-format")
 
-    fun isTerminated() =
-            state.isTerminated()
+    fun isTerminated() = state.isTerminated()
 
     //-------------------
     // Get-Job-Attributes
     //-------------------
 
     @JvmOverloads
-    fun getJobAttributes(requestedAttributes: List<String>? = null): IppResponse {
-        //val request = ippRequest(IppOperation.GetJobAttributes, requestedAttributes)
-        //return exchangeSuccessful(request)
-        return exchangeSuccessfulIppRequest(IppOperation.GetJobAttributes, requestedAttributes)
-    }
+    fun getJobAttributes(requestedAttributes: List<String>? = null) =
+        exchangeSuccessfulIppRequest(IppOperation.GetJobAttributes, requestedAttributes)
 
     fun updateAllAttributes() {
         attributes = getJobAttributes().jobGroup
@@ -89,26 +85,13 @@ class IppJob(
         }
     }
 
-    //-----------
-    // Cancel-Job
-    //-----------
+    //-------------------
+    // Job administration
+    //-------------------
 
-    fun cancel() =
-            exchangeSuccessfulIppRequest(IppOperation.CancelJob)
-
-    //---------
-    // Hold-Job
-    //---------
-
-    fun hold() =
-            exchangeSuccessfulIppRequest(IppOperation.HoldJob)
-
-    //------------
-    // Release-Job
-    //-------------
-
-    fun release() =
-            exchangeSuccessfulIppRequest(IppOperation.ReleaseJob)
+    fun hold() = exchangeSuccessfulIppRequest(IppOperation.HoldJob)
+    fun cancel() = exchangeSuccessfulIppRequest(IppOperation.CancelJob)
+    fun release() = exchangeSuccessfulIppRequest(IppOperation.ReleaseJob)
 
     //--------------
     // Send-Document
@@ -120,8 +103,7 @@ class IppJob(
             operationGroup.attribute("last-document", IppTag.Boolean, lastDocument)
             documentInputStream = inputStream
         }
-        val response = exchangeSuccessful(request)
-        attributes = response.jobGroup
+        attributes = exchangeSuccessful(request).jobGroup
     }
 
     //-----------------------
@@ -151,7 +133,6 @@ class IppJob(
         }.toString()
     }
 
-    fun logDetails() =
-            attributes.logDetails("", "JOB-$id")
+    fun logDetails() = attributes.logDetails("", "JOB-$id")
 
 }
