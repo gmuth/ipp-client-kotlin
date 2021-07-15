@@ -63,7 +63,7 @@ class IppJob(
     fun getJobAttributes(requestedAttributes: List<String>? = null): IppResponse {
         //val request = ippRequest(IppOperation.GetJobAttributes, requestedAttributes)
         //return exchangeSuccessful(request)
-        return exchangeSuccessfulIppRequest(IppOperation.GetAttributes, requestedAttributes)
+        return exchangeSuccessfulIppRequest(IppOperation.GetJobAttributes, requestedAttributes)
     }
 
     fun updateAllAttributes() {
