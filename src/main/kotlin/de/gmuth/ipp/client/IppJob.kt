@@ -61,8 +61,9 @@ class IppJob(
 
     @JvmOverloads
     fun getJobAttributes(requestedAttributes: List<String>? = null): IppResponse {
-        val request = ippRequest(IppOperation.GetJobAttributes, requestedAttributes)
-        return exchangeSuccessful(request)
+        //val request = ippRequest(IppOperation.GetJobAttributes, requestedAttributes)
+        //return exchangeSuccessful(request)
+        return exchangeSuccessfulIppRequest(IppOperation.GetAttributes, requestedAttributes)
     }
 
     fun updateAllAttributes() {
@@ -130,8 +131,8 @@ class IppJob(
     fun ippRequest(operation: IppOperation, requestedAttributes: List<String>? = null) =
             printer.ippRequest(operation, id, requestedAttributes)
 
-    fun exchangeSuccessfulIppRequest(operation: IppOperation) =
-            printer.exchangeSuccessfulIppRequest(operation, id)
+    fun exchangeSuccessfulIppRequest(operation: IppOperation, requestedAttributes: List<String>? = null) =
+            printer.exchangeSuccessfulIppRequest(operation, id, requestedAttributes)
 
     fun exchangeSuccessful(request: IppRequest) =
             printer.exchangeSuccessful(request)

@@ -249,8 +249,8 @@ open class IppPrinter(
         return ippClient.exchangeSuccessful(request)
     }
 
-    fun exchangeSuccessfulIppRequest(operation: IppOperation, jobId: Int? = null) =
-            exchangeSuccessful(ippRequest(operation, jobId))
+    fun exchangeSuccessfulIppRequest(operation: IppOperation, jobId: Int? = null, requestedAttributes: List<String>? = null) =
+            exchangeSuccessful(ippRequest(operation, jobId, requestedAttributes))
 
     fun exchangeSuccessfulForIppJob(request: IppRequest): IppJob {
         val response = exchangeSuccessful(request)
