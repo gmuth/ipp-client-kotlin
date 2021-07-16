@@ -4,7 +4,11 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.ipp.core.*
+import de.gmuth.ipp.core.IppAttribute
+import de.gmuth.ipp.core.IppAttributeBuilder
+import de.gmuth.ipp.core.IppAttributesGroup
+import de.gmuth.ipp.core.IppCollection
+import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.log.Logging
 
 class IppMedia {
@@ -17,9 +21,9 @@ class IppMedia {
     class Size(val xDimension: Int, val yDimension: Int) : IppAttributeBuilder {
 
         override fun buildIppAttribute(printerAttributes: IppAttributesGroup) =
-                IppAttribute("media-size", IppTag.BegCollection, IppCollection(
-                        IppAttribute("x-dimension", IppTag.Integer, xDimension),
-                        IppAttribute("y-dimension", IppTag.Integer, yDimension)
+                IppAttribute("media-size", BegCollection, IppCollection(
+                        IppAttribute("x-dimension", Integer, xDimension),
+                        IppAttribute("y-dimension", Integer, yDimension)
                 ))
     }
 
@@ -27,10 +31,10 @@ class IppMedia {
         constructor(margin: Int) : this(margin, margin, margin, margin)
 
         init {
-            if (top != null) add(IppAttribute("media-top-margin", IppTag.Integer, top))
-            if (left != null) add(IppAttribute("media-left-margin", IppTag.Integer, left))
-            if (right != null) add(IppAttribute("media-right-margin", IppTag.Integer, right))
-            if (bottom != null) add(IppAttribute("media-bottom-margin", IppTag.Integer, bottom))
+            if (top != null) add(IppAttribute("media-top-margin", Integer, top))
+            if (left != null) add(IppAttribute("media-left-margin", Integer, left))
+            if (right != null) add(IppAttribute("media-right-margin", Integer, right))
+            if (bottom != null) add(IppAttribute("media-bottom-margin", Integer, bottom))
         }
     }
 
@@ -44,12 +48,12 @@ class IppMedia {
     ) : IppAttributeBuilder {
 
         override fun buildIppAttribute(printerAttributes: IppAttributesGroup) =
-                IppAttribute("media-col", IppTag.BegCollection, IppCollection().apply {
+                IppAttribute("media-col", BegCollection, IppCollection().apply {
                     if (source != null) {
                         checkIfSourceIsSupported(printerAttributes)
-                        attribute("media-source", IppTag.Keyword, source!!)
+                        attribute("media-source", Keyword, source!!)
                     }
-                    type?.let { attribute("media-type", IppTag.Keyword, it) }
+                    type?.let { attribute("media-type", Keyword, it) }
                     size?.let { add(it.buildIppAttribute(printerAttributes)) }
                     margins?.let { addAll(it) }
                 })

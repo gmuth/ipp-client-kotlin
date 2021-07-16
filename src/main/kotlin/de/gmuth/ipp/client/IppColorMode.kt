@@ -4,7 +4,11 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.ipp.core.*
+import de.gmuth.ipp.core.IppAttribute
+import de.gmuth.ipp.core.IppAttributeBuilder
+import de.gmuth.ipp.core.IppAttributesGroup
+import de.gmuth.ipp.core.IppException
+import de.gmuth.ipp.core.IppTag.Keyword
 
 enum class IppColorMode(private val keyword: String) : IppAttributeBuilder {
 
@@ -19,7 +23,7 @@ enum class IppColorMode(private val keyword: String) : IppAttributeBuilder {
             printerAttributes.containsKey("output-mode-supported") -> "output-mode" // cups extension
             else -> throw IppException("printer does not support 'output-mode' or 'print-color-mode'")
         }
-        return IppAttribute(modeAttributeName, IppTag.Keyword, keyword)
+        return IppAttribute(modeAttributeName, Keyword, keyword)
     }
 
 }

@@ -7,7 +7,7 @@ package de.gmuth.ipp.client
 import de.gmuth.ipp.core.IppAttribute
 import de.gmuth.ipp.core.IppAttributeBuilder
 import de.gmuth.ipp.core.IppAttributesGroup
-import de.gmuth.ipp.core.IppTag
+import de.gmuth.ipp.core.IppTag.Keyword
 
 enum class IppSides(private val keyword: String) : IppAttributeBuilder {
 
@@ -16,6 +16,6 @@ enum class IppSides(private val keyword: String) : IppAttributeBuilder {
     TwoSidedShortEdge("two-sided-short-edge");
 
     override fun buildIppAttribute(printerAttributes: IppAttributesGroup) =
-            IppAttribute("sides", IppTag.Keyword, keyword)
+            IppAttribute("sides", Keyword, keyword)
 
 }
