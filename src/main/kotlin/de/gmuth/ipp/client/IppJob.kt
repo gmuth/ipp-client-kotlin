@@ -1,10 +1,11 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2021 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.*
+import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.log.Logging
 import java.io.InputStream
 import java.net.URI
@@ -40,17 +41,14 @@ class IppJob(
     val originatingUserName: IppString
         get() = attributes.getValue("job-originating-user-name")
 
-    val kOctets: Int
-        get() = attributes.getValue("job-k-octets")
-
     val impressionsCompleted: Int
         get() = attributes.getValue("job-impressions-completed")
 
     val mediaSheetsCompleted: Int
         get() = attributes.getValue("job-media-sheets-completed")
 
-    val documentFormat: String
-        get() = attributes.getValue("document-format")
+    val kOctets: Int
+        get() = attributes.getValue("job-k-octets")
 
     fun isTerminated() = state.isTerminated()
 
@@ -60,7 +58,7 @@ class IppJob(
 
     @JvmOverloads
     fun getJobAttributes(requestedAttributes: List<String>? = null) =
-        exchangeSuccessfulIppRequest(IppOperation.GetJobAttributes, requestedAttributes)
+            exchangeSuccessfulIppRequest(GetJobAttributes, requestedAttributes)
 
     fun updateAllAttributes() {
         attributes = getJobAttributes().jobGroup
@@ -89,9 +87,9 @@ class IppJob(
     // Job administration
     //-------------------
 
-    fun hold() = exchangeSuccessfulIppRequest(IppOperation.HoldJob)
-    fun cancel() = exchangeSuccessfulIppRequest(IppOperation.CancelJob)
-    fun release() = exchangeSuccessfulIppRequest(IppOperation.ReleaseJob)
+    fun hold() = exchangeSuccessfulIppRequest(HoldJob)
+    fun cancel() = exchangeSuccessfulIppRequest(CancelJob)
+    fun release() = exchangeSuccessfulIppRequest(ReleaseJob)
 
     //--------------
     // Send-Document
@@ -99,7 +97,7 @@ class IppJob(
 
     @JvmOverloads
     fun sendDocument(inputStream: InputStream, lastDocument: Boolean = true) {
-        val request = ippRequest(IppOperation.SendDocument).apply {
+        val request = ippRequest(SendDocument).apply {
             operationGroup.attribute("last-document", IppTag.Boolean, lastDocument)
             documentInputStream = inputStream
         }
@@ -113,11 +111,11 @@ class IppJob(
     fun ippRequest(operation: IppOperation, requestedAttributes: List<String>? = null) =
             printer.ippRequest(operation, id, requestedAttributes)
 
-    fun exchangeSuccessfulIppRequest(operation: IppOperation, requestedAttributes: List<String>? = null) =
-            printer.exchangeSuccessfulIppRequest(operation, id, requestedAttributes)
-
     fun exchangeSuccessful(request: IppRequest) =
             printer.exchangeSuccessful(request)
+
+    fun exchangeSuccessfulIppRequest(operation: IppOperation, requestedAttributes: List<String>? = null) =
+            printer.exchangeSuccessfulIppRequest(operation, id, requestedAttributes)
 
     // -------
     // Logging
@@ -133,6 +131,6 @@ class IppJob(
         }.toString()
     }
 
-    fun logDetails() = attributes.logDetails("", "JOB-$id")
+    fun logDetails() = attributes.logDetails(title = "JOB-$id")
 
 }
