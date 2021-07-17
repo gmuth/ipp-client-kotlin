@@ -19,8 +19,8 @@ class IppExchangeExceptionTests {
                 "ipp-exchange-failed"
         )) {
             logDetails()
-            assertEquals(11, ippRequest.code)
-            assertEquals(0, ippResponse?.code)
+            assertEquals(11, request.code)
+            assertEquals(0, response?.code)
             assertEquals(400, httpStatus)
             assertEquals(message, "ipp-exchange-failed")
         }
