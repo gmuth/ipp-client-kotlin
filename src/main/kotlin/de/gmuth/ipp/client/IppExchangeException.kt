@@ -11,8 +11,8 @@ import java.io.File
  */
 
 class IppExchangeException(
-        val ippRequest: IppRequest,
-        val ippResponse: IppResponse? = null,
+        val request: IppRequest,
+        val response: IppResponse? = null,
         val httpStatus: Int? = null,
         message: String,
         cause: Exception? = null
@@ -25,14 +25,14 @@ class IppExchangeException(
 
     fun logDetails() {
         if (httpStatus != null) log.info { "HTTP-STATUS: $httpStatus" }
-        ippRequest.logDetails(" REQUEST: ")
-        ippResponse?.logDetails("RESPONSE: ")
+        request.logDetails(" REQUEST: ")
+        response?.logDetails("RESPONSE: ")
     }
 
     fun saveRequestAndResponse(fileNameWithoutSuffix: String = "ipp_exchange_exception") {
-        val requestFile = ippRequest.saveRawBytes(File("$fileNameWithoutSuffix.request"))
+        val requestFile = request.saveRawBytes(File("$fileNameWithoutSuffix.request"))
         log.warn { "ipp request  written to file ${requestFile.absolutePath}" }
-        ippResponse?.let {
+        response?.let {
             val responseFile = it.saveRawBytes(File("$fileNameWithoutSuffix.response"))
             log.warn { "ipp response written to file ${responseFile.absolutePath}" }
         }
