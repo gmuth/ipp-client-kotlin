@@ -150,7 +150,7 @@ open class IppPrinter(
     fun printJob(file: File, vararg attributeBuilders: IppAttributeBuilder) =
             printInputStream(FileInputStream(file), attributeBuilders)
 
-    private fun printInputStream(inputStream: InputStream, attributeBuilders: Array<out IppAttributeBuilder>): IppJob {
+    protected fun printInputStream(inputStream: InputStream, attributeBuilders: Array<out IppAttributeBuilder>): IppJob {
         val request = attributeBuildersRequest(PrintJob, attributeBuilders).apply {
             documentInputStream = inputStream
         }
@@ -179,7 +179,7 @@ open class IppPrinter(
 
     // ---- factory method for operations Validate-Job, Print-Job, Print-Uri, Create-Job
 
-    private fun attributeBuildersRequest(operation: IppOperation, attributeBuilders: Array<out IppAttributeBuilder>) =
+    protected fun attributeBuildersRequest(operation: IppOperation, attributeBuilders: Array<out IppAttributeBuilder>) =
             ippRequest(operation).apply {
                 for (attributeBuilder in attributeBuilders) {
                     val attribute = attributeBuilder.buildIppAttribute(attributes)
