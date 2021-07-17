@@ -20,7 +20,7 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
         val log = Logging.getLogger {}
     }
 
-    override fun post(uri: URI, contentType: String, writeContent: (OutputStream) -> Unit, basicAuth: Http.BasicAuth?): Http.Response {
+    override fun post(uri: URI, contentType: String, writeContent: (OutputStream) -> Unit, basicAuth: Http.BasicAuth?) =
         with(uri.toURL().openConnection() as HttpURLConnection) {
             if (this is HttpsURLConnection && config.sslSocketFactory != null) {
                 sslSocketFactory = config.sslSocketFactory
@@ -56,5 +56,4 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
                     contentResponseStream
             )
         }
-    }
 }
