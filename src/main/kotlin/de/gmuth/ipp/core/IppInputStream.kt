@@ -120,7 +120,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                 IppTag.NaturalLanguage -> readString()
 
                 IppTag.TextWithoutLanguage,
-                IppTag.NameWithoutLanguage -> IppString(text = readString(attributesCharset))
+                IppTag.NameWithoutLanguage -> IppString(readString(attributesCharset))
 
                 IppTag.TextWithLanguage,
                 IppTag.NameWithLanguage -> {
