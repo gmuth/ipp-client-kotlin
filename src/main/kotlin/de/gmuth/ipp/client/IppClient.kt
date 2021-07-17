@@ -65,7 +65,7 @@ open class IppClient(
     fun exchangeSuccessful(request: IppRequest) =
             exchange(request).apply {
                 if (!isSuccessful()) {
-                    IppRegistrationsSection2.validate(ippRequest)
+                    IppRegistrationsSection2.validate(request)
                     val statusMessage = operationGroup.getValueOrNull("status-message") ?: IppString("")
                     throw IppExchangeException(request, this, message = "${request.operation} failed: '$status' $statusMessage")
                 }
