@@ -1,10 +1,10 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2021 Gerhard Muth
  */
 
-import de.gmuth.io.ByteArraySavingBufferedInputStream
+import de.gmuth.io.ByteArraySavingInputStream
 import de.gmuth.io.ByteArraySavingOutputStream
 import de.gmuth.log.Logging
 import java.io.*
@@ -76,13 +76,13 @@ abstract class IppMessage {
     // --------
 
     fun read(inputStream: InputStream) {
-        val byteArraySavingBufferedInputStream = ByteArraySavingBufferedInputStream(inputStream)
+        val byteArraySavingInputStream = ByteArraySavingInputStream(inputStream)
         try {
-            IppInputStream(byteArraySavingBufferedInputStream).readMessage(this)
-            documentInputStream = byteArraySavingBufferedInputStream
+            IppInputStream(byteArraySavingInputStream).readMessage(this)
+            documentInputStream = byteArraySavingInputStream
         } finally {
-            rawBytes = byteArraySavingBufferedInputStream.toByteArray()
-            byteArraySavingBufferedInputStream.duplicateBytes = false // stop saving bytes (document)
+            rawBytes = byteArraySavingInputStream.toByteArray()
+            byteArraySavingInputStream.saveBytes = false // stop saving document bytes
         }
     }
 

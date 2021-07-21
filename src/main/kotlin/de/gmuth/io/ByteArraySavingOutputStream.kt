@@ -4,16 +4,17 @@ import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2021 Gerhard Muth
  */
 
 class ByteArraySavingOutputStream(val outputStream: OutputStream) : OutputStream() {
 
+    var saveBytes: Boolean = true
     private val byteArrayOutputStream = ByteArrayOutputStream()
 
     override fun write(byte: Int) {
         outputStream.write(byte)
-        byteArrayOutputStream.write(byte)
+        if (saveBytes) byteArrayOutputStream.write(byte)
     }
 
     override fun close() {
