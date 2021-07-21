@@ -70,7 +70,7 @@ object Logging {
         return getLogger(loggerName, logLevel)
     }
 
-    fun configureSlf4j() {
+    fun useSlf4j() {
         useSimpleClassName = false
         factory = Factory { Slf4jLoggerAdapter(it) }
     }
