@@ -4,7 +4,7 @@ import de.gmuth.log.Logging.Factory
 import java.io.PrintWriter
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2021 Gerhard Muth
  */
 
 object Logging {
@@ -66,6 +66,11 @@ object Logging {
             if (useSimpleClassName) substringAfterLast(".") else this
         }
         return getLogger(loggerName, logLevel)
+    }
+
+    fun configureSlf4j() {
+        useSimpleClassName = false
+        factory = Factory { Slf4jLoggerAdapter(it) }
     }
 
 }
