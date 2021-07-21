@@ -1,11 +1,9 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2021 Gerhard Muth
  */
 
-import de.gmuth.io.ByteArraySavingBufferedInputStream
-import de.gmuth.io.DuplicatingBufferedInputStream
 import de.gmuth.log.Logging
 import java.net.URI
 import kotlin.test.Test
@@ -46,7 +44,6 @@ class IppRequestTests {
 
     @Test
     fun printJobRequest() {
-        DuplicatingBufferedInputStream.log.logLevel = Logging.LogLevel.INFO
         IppInputStream.log.logLevel = Logging.LogLevel.INFO
         IppOutputStream.log.logLevel = Logging.LogLevel.INFO
         IppMessage.log.logLevel = Logging.LogLevel.INFO

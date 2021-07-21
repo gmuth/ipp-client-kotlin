@@ -11,7 +11,7 @@ import java.io.OutputStream
 
 open class DuplicatingBufferedInputStream(val inputStream: InputStream, private val outputStream: OutputStream) : BufferedInputStream(inputStream) {
 
-    var duplicateBytes: Boolean = true
+    var saveBytes: Boolean = true
     protected var byteCount = 0
 
     companion object {
@@ -23,7 +23,7 @@ open class DuplicatingBufferedInputStream(val inputStream: InputStream, private 
         if (byte != -1) { // End of stream
             byteCount++
             log.trace { "read() @%-3d 0x%02X '%c'".format(byteCount, byte, byte.toChar()) }
-            if (duplicateBytes) outputStream.write(byte)
+            if (saveBytes) outputStream.write(byte)
         }
         return byte
     }
@@ -34,7 +34,7 @@ open class DuplicatingBufferedInputStream(val inputStream: InputStream, private 
             byteCount += n
             val newBytes = byteArray.copyOfRange(offset, offset + n)
             log.trace { "read() @%-3d '%s'".format(byteCount, String(newBytes)) }
-            outputStream.write(newBytes, 0, n)
+            if (saveBytes) outputStream.write(newBytes, 0, n)
         }
         return n
     }
