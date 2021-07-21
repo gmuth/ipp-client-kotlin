@@ -7,6 +7,7 @@ package de.gmuth.ipp.cups
 import de.gmuth.ipp.client.IppClient
 import de.gmuth.ipp.client.IppPrinter
 import de.gmuth.ipp.core.IppOperation
+import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppTag
 import java.net.URI
 
@@ -29,13 +30,13 @@ class CupsClient(val cupsUri: URI) : IppClient() {
             exchangeSuccessful(ippRequest(operation))
 
     fun setDefault(defaultPrinterUri: URI) =
-            exchangeSuccessful(ippRequest(IppOperation.CupsSetDefault, defaultPrinterUri))
+            exchangeSuccessful(ippRequest(CupsSetDefault, defaultPrinterUri))
 
     fun getDefault() =
-            IppPrinter(exchangeSuccessfulIppRequest(IppOperation.CupsGetDefault).printerGroup, this)
+            IppPrinter(exchangeSuccessfulIppRequest(CupsGetDefault).printerGroup, this)
 
     fun getPrinters() =
-            exchangeSuccessfulIppRequest(IppOperation.CupsGetPrinters)
+            exchangeSuccessfulIppRequest(CupsGetPrinters)
                     .getAttributesGroups(IppTag.Printer)
                     .map { printerAttributes -> IppPrinter(printerAttributes, this) }
 
