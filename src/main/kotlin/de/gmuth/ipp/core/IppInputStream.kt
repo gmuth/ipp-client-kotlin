@@ -1,10 +1,11 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2021 Gerhard Muth
  */
 
 import de.gmuth.io.hexdump
+import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.log.Logging
 import java.io.DataInputStream
 import java.io.EOFException
@@ -52,7 +53,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                     }
                 }
             }
-        } while (tag != IppTag.End)
+        } while (tag != End)
     }
 
     internal fun readTag() =
@@ -84,13 +85,13 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                     readBoolean()
                 }
 
-                IppTag.Integer,
+                Integer,
                 IppTag.Enum -> {
                     readExpectedValueLength(4)
                     readInt()
                 }
 
-                IppTag.RangeOfInteger -> {
+                RangeOfInteger -> {
                     readExpectedValueLength(8)
                     IntRange(
                             start = readInt(),
@@ -98,7 +99,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                     )
                 }
 
-                IppTag.Resolution -> {
+                Resolution -> {
                     readExpectedValueLength(9)
                     IppResolution(
                             x = readInt(),
@@ -109,21 +110,21 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
                 IppTag.Charset -> Charset.forName(readString())
 
-                IppTag.Uri -> URI.create(readString())
+                Uri -> URI.create(readString())
 
                 // String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
-                IppTag.Keyword,
-                IppTag.UriScheme,
-                IppTag.OctetString,
-                IppTag.MimeMediaType,
-                IppTag.MemberAttrName,
-                IppTag.NaturalLanguage -> readString()
+                Keyword,
+                UriScheme,
+                OctetString,
+                MimeMediaType,
+                MemberAttrName,
+                NaturalLanguage -> readString()
 
-                IppTag.TextWithoutLanguage,
-                IppTag.NameWithoutLanguage -> IppString(text = readString(attributesCharset))
+                TextWithoutLanguage,
+                NameWithoutLanguage -> IppString(text = readString(attributesCharset))
 
-                IppTag.TextWithLanguage,
-                IppTag.NameWithLanguage -> {
+                TextWithLanguage,
+                NameWithLanguage -> {
                     readShort().let { if (markSupported() && it < 6) reset() } // HP M175nw: support invalid ipp response
                     IppString(
                             language = readString(attributesCharset),
@@ -131,7 +132,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                     )
                 }
 
-                IppTag.DateTime -> {
+                DateTime -> {
                     readExpectedValueLength(11)
                     IppDateTime(
                             year = readShort().toInt(),
@@ -147,7 +148,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                     )
                 }
 
-                IppTag.BegCollection -> {
+                BegCollection -> {
                     readExpectedValueLength(0)
                     readCollection()
                 }
@@ -165,7 +166,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                 var memberAttribute: IppAttribute<Any>? = null
                 do {
                     val attribute = readAttribute(readTag())
-                    if (memberAttribute != null && attribute.tag in listOf(IppTag.EndCollection, IppTag.MemberAttrName)) {
+                    if (memberAttribute != null && attribute.tag in listOf(EndCollection, MemberAttrName)) {
                         add(memberAttribute)
                     }
                     when {
@@ -178,7 +179,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                             memberAttribute!!.additionalValue(attribute)
                         }
                     }
-                } while (attribute.tag != IppTag.EndCollection)
+                } while (attribute.tag != EndCollection)
             }
 
     // RFC 8011 4.1.4.1 -> use attributes-charset

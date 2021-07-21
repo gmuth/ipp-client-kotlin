@@ -1,10 +1,11 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2021 Gerhard Muth
  */
 
 import de.gmuth.log.Logging
+import de.gmuth.ipp.core.IppTag.*
 import java.io.DataOutputStream
 import java.io.OutputStream
 import java.net.URI
@@ -41,7 +42,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
                 }
             }
         }
-        writeTag(IppTag.End)
+        writeTag(End)
     }
 
     internal fun writeVersion(version: String) {
@@ -66,7 +67,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
     internal fun writeAttribute(attribute: IppAttribute<*>) {
         log.trace { "$attribute" }
         with(attribute) {
-            if (tag.isOutOfBandTag() || tag == IppTag.EndCollection) {
+            if (tag.isOutOfBandTag() || tag == EndCollection) {
                 writeTag(tag)
                 writeString(name)
                 writeShort(0) // no value
@@ -89,56 +90,56 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
                 writeBoolean(value)
             }
 
-            IppTag.Integer,
+            Integer,
             IppTag.Enum -> with(value as Number) { // Int or Short expected
                 writeShort(4)
                 writeInt(value.toInt())
             }
 
-            IppTag.RangeOfInteger -> with(value as IntRange) {
+            RangeOfInteger -> with(value as IntRange) {
                 writeShort(8)
                 writeInt(start)
                 writeInt(endInclusive)
             }
 
-            IppTag.Resolution -> with(value as IppResolution) {
+            Resolution -> with(value as IppResolution) {
                 writeShort(9)
                 writeInt(x)
                 writeInt(y)
                 writeByte(unit)
             }
 
-            IppTag.Charset -> with(value as Charset) {
+            Charset -> with(value as Charset) {
                 writeString(name().toLowerCase())
             }
 
-            IppTag.Uri -> with(value as URI) {
+            Uri -> with(value as URI) {
                 writeString(value.toString())
             }
 
-            IppTag.Keyword,
-            IppTag.UriScheme,
-            IppTag.OctetString,
-            IppTag.MimeMediaType,
-            IppTag.MemberAttrName,
-            IppTag.NaturalLanguage -> with(value as String) {
+            Keyword,
+            UriScheme,
+            OctetString,
+            MimeMediaType,
+            MemberAttrName,
+            NaturalLanguage -> with(value as String) {
                 writeString(value)
             }
 
-            IppTag.TextWithoutLanguage,
-            IppTag.NameWithoutLanguage -> with(value as IppString) {
+            TextWithoutLanguage,
+            NameWithoutLanguage -> with(value as IppString) {
                 writeString(value.text, attributesCharset)
             }
 
-            IppTag.TextWithLanguage,
-            IppTag.NameWithLanguage -> with(value as IppString) {
+            TextWithLanguage,
+            NameWithLanguage -> with(value as IppString) {
                 if (language == null) throw IppException("expected IppString with language")
                 writeShort(4 + text.length + language.length)
                 writeString(language, attributesCharset)
                 writeString(text, attributesCharset)
             }
 
-            IppTag.DateTime -> with(value as IppDateTime) {
+            DateTime -> with(value as IppDateTime) {
                 writeShort(11)
                 writeShort(year)
                 writeByte(month)
@@ -152,15 +153,15 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
                 writeByte(minutesFromUTC)
             }
 
-            IppTag.BegCollection -> with(value as IppCollection) {
+            BegCollection -> with(value as IppCollection) {
                 writeShort(0)
                 for (member in members) {
-                    writeAttribute(IppAttribute("", IppTag.MemberAttrName, member.name))
+                    writeAttribute(IppAttribute("", MemberAttrName, member.name))
                     for (memberValue in member.values) {
                         writeAttribute(IppAttribute("", member.tag, memberValue))
                     }
                 }
-                writeAttribute(IppAttribute<Unit>("", IppTag.EndCollection))
+                writeAttribute(IppAttribute<Unit>("", EndCollection))
             }
 
             else -> throw IppException("unknown tag 0x%02X %s".format(tag.code, tag))
