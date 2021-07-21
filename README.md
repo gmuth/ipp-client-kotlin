@@ -154,7 +154,32 @@ printer.printJob(
     )
 )
 ```
-                
+
+## Logging
+
+Log levels can by changed globally or individually.
+The `defaultLogLevel` must be changed before any constructor of a logger is called.
+
+```kotlin
+Logging.defaultLogLevel = Logging.LogLevel.ERROR
+IppInputStream.log.logLevel = Logging.LogLevel.DEBUG
+IppOutputStream.log.logLevel = Logging.LogLevel.TRACE
+```
+
+A simple stdout console writer is enabled by default and can be disabled.
+
+```kotlin
+Logging.consoleWriterEnabled = false
+```
+
+You can configure the library to use [Slf4j](http://www.slf4j.org).
+Then the log levels must be configured according to the underlaying implementation 
+(e.g. via [logback](http://logback.qos.ch/manual/configuration.html)).
+
+```kotlin
+Logging.useSlf4j()
+```
+    
 ## Source packages
 
 Package
