@@ -64,11 +64,10 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
     internal fun readAttribute(tag: IppTag): IppAttribute<Any> {
         val name = readString()
         val value = try {
-            if (markSupported()) mark(2)
             readAttributeValue(tag)
         } catch (exception: Exception) {
             if (exception !is EOFException) {
-                readBytes().hexdump { line -> log.debug { line } }
+                readBytes().hexdump { log.debug { it } }
             }
             throw IppException("failed to read attribute value of '$name' ($tag)", exception)
         }
@@ -125,7 +124,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
                 TextWithLanguage,
                 NameWithLanguage -> {
-                    readShort().let { if (markSupported() && it < 6) reset() } // HP M175nw: support invalid ipp response
+                    readShort()
                     IppString(
                             language = readString(attributesCharset),
                             text = readString(attributesCharset)
@@ -161,26 +160,25 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                 }
             }
 
-    internal fun readCollection() =
-            IppCollection().apply {
-                var memberAttribute: IppAttribute<Any>? = null
-                do {
-                    val attribute = readAttribute(readTag())
-                    if (memberAttribute != null && attribute.tag in listOf(EndCollection, MemberAttrName)) {
-                        add(memberAttribute)
-                    }
-                    when {
-                        attribute.tag.isMemberAttrName() -> {
-                            val memberName = attribute.value as String
-                            val firstValue = readAttribute(readTag())
-                            memberAttribute = IppAttribute(memberName, firstValue.tag, firstValue.value)
-                        }
-                        attribute.tag.isMemberAttrValue() -> {
-                            memberAttribute!!.additionalValue(attribute)
-                        }
-                    }
-                } while (attribute.tag != EndCollection)
+    internal fun readCollection() = IppCollection().apply {
+        var memberAttribute: IppAttribute<Any>? = null
+        do {
+            val attribute = readAttribute(readTag())
+            if (memberAttribute != null && attribute.tag in listOf(EndCollection, MemberAttrName)) {
+                add(memberAttribute)
             }
+            when {
+                attribute.tag.isMemberAttrName() -> {
+                    val memberName = attribute.value as String
+                    val firstValue = readAttribute(readTag())
+                    memberAttribute = IppAttribute(memberName, firstValue.tag, firstValue.value)
+                }
+                attribute.tag.isMemberAttrValue() -> {
+                    memberAttribute!!.additionalValue(attribute)
+                }
+            }
+        } while (attribute.tag != EndCollection)
+    }
 
     // RFC 8011 4.1.4.1 -> use attributes-charset
     internal fun readString(charset: Charset = Charsets.US_ASCII) =

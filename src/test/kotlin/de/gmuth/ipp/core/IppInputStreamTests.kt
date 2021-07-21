@@ -7,6 +7,7 @@ package de.gmuth.ipp.core
 import de.gmuth.ipp.core.IppResolution.Unit.DPI
 import de.gmuth.log.Logging
 import java.io.ByteArrayInputStream
+import java.io.EOFException
 import java.net.URI
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -144,8 +145,10 @@ class IppInputStreamTest {
     @Test
     fun readAttributeValueNameWithLanguage_HP_BugWorkaround() {
         // value length 0x0017 is missing
-        val encoded = "00 02 64 65 00 11 65 69 6E 4E 61 6D 65 4D 69 74 53 70 72 61 63 68 65"
-        assertEquals(IppString("einNameMitSprache", "de"), encoded.readAttributeValue(IppTag.NameWithLanguage))
+        assertFailsWith<EOFException> { // removed support for invalid response, but left test here for documentation
+            val encoded = "00 02 64 65 00 11 65 69 6E 4E 61 6D 65 4D 69 74 53 70 72 61 63 68 65"
+            assertEquals(IppString("einNameMitSprache", "de"), encoded.readAttributeValue(IppTag.NameWithLanguage))
+        }
     }
 
     @Test

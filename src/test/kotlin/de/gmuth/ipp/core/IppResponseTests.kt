@@ -50,14 +50,18 @@ class IppResponseTests {
 
     @Test
     fun invalidHpNameWithLanguageResponse() {
-        ippResponse.read(File("src/test/resources/invalidHpNameWithLanguage.response"))
-        ippResponse.logDetails()
-        with(ippResponse.jobGroup) {
-            assertEquals(IppString("A4-blank.pdf", "de"), getValue("job-name"))
-            assertEquals(993, getValue("job-id"))
-            assertEquals(7, getValue("job-state")) // canceled
-            assertEquals(listOf("none"), getValues("job-state-reasons"))
-            assertEquals(URI.create("ipp://ColorJet.local/ipp/printer/0993"), getValue("job-uri"))
+        // IppInputStream solution: NameWithLanguage -> readShort().let { if (markSupported() && it < 6) reset() }
+        assertFailsWith<IppException> {
+            ippResponse.read(File("src/test/resources/invalidHpNameWithLanguage.response"))
+            ippResponse.logDetails()
+            with(ippResponse.jobGroup) {
+                assertEquals(IppString("A4-blank.pdf", "de"), getValue("job-name"))
+                assertEquals(993, getValue("job-id"))
+                assertEquals(7, getValue("job-state")) // canceled
+                assertEquals(listOf("none"), getValues("job-state-reasons"))
+                assertEquals(URI.create("ipp://ColorJet.local/ipp/printer/0993"), getValue("job-uri"))
+            }
+
         }
     }
 
