@@ -8,7 +8,7 @@ import de.gmuth.ipp.client.IppClient
 import de.gmuth.ipp.client.IppPrinter
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppOperation.*
-import de.gmuth.ipp.core.IppTag
+import de.gmuth.ipp.core.IppTag.Printer
 import java.net.URI
 
 class CupsClient(val cupsUri: URI) : IppClient() {
@@ -37,8 +37,8 @@ class CupsClient(val cupsUri: URI) : IppClient() {
 
     fun getPrinters() =
             exchangeSuccessfulIppRequest(CupsGetPrinters)
-                    .getAttributesGroups(IppTag.Printer)
-                    .map { printerAttributes -> IppPrinter(printerAttributes, this) }
+                    .getAttributesGroups(Printer)
+                    .map { IppPrinter(it, this) }
 
     fun getPrinter(name: String) =
             getPrinters().find { it.name.text == name } ?: throw NoSuchElementException(name)
