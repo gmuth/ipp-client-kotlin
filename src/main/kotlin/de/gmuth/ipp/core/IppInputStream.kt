@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2021 Gerhard Muth
+ * Copyright (c) 2020 Gerhard Muth
  */
 
 import de.gmuth.io.hexdump
@@ -108,7 +108,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                     )
                 }
 
-                IppTag.Charset -> Charset.forName(readString())
+                Charset -> Charset.forName(readString())
 
                 Uri -> URI.create(readString())
 
@@ -121,7 +121,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                 NaturalLanguage -> readString()
 
                 TextWithoutLanguage,
-                NameWithoutLanguage -> IppString(text = readString(attributesCharset))
+                NameWithoutLanguage -> IppString(readString(attributesCharset))
 
                 TextWithLanguage,
                 NameWithLanguage -> {

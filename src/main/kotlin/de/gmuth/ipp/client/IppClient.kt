@@ -62,18 +62,18 @@ open class IppClient(
     // exchange IppRequest for IppResponse
     //------------------------------------
 
-    fun exchangeSuccessful(ippRequest: IppRequest) =
-            exchange(ippRequest).apply {
+    fun exchangeSuccessful(request: IppRequest) =
+            exchange(request).apply {
                 if (!isSuccessful()) {
-                    IppRegistrationsSection2.validate(ippRequest)
+                    IppRegistrationsSection2.validate(request)
                     val statusMessage = operationGroup.getValueOrNull("status-message") ?: IppString("")
-                    throw IppExchangeException(ippRequest, this, message = "${ippRequest.operation} failed: '$status' $statusMessage")
+                    throw IppExchangeException(request, this, message = "${request.operation} failed: '$status' $statusMessage")
                 }
             }
 
-    fun exchange(ippRequest: IppRequest): IppResponse {
-        val ippUri: URI = ippRequest.operationGroup.getValueOrNull("printer-uri") ?: throw IppException("missing 'printer-uri'")
-        log.trace { "send '${ippRequest.operation}' request to $ippUri" }
+    fun exchange(request: IppRequest): IppResponse {
+        val ippUri: URI = request.operationGroup.getValueOrNull("printer-uri") ?: throw IppException("missing 'printer-uri'")
+        log.trace { "send '${request.operation}' request to $ippUri" }
 
         // convert ipp uri to http uri
         val httpUri = with(ippUri) {
@@ -85,7 +85,7 @@ open class IppClient(
         // http post binary ipp request
         val httpResponse = httpClient.post(
                 httpUri, "application/ipp",
-                { httpPostStream -> ippRequest.write(httpPostStream) },
+                { httpPostStream -> request.write(httpPostStream) },
                 httpBasicAuth
         ).apply {
             log.trace { "ipp-server: $server" }
@@ -95,7 +95,7 @@ open class IppClient(
                 !contentType!!.startsWith("application/ipp") -> "invalid content-type: $contentType"
                 else -> ""
             }.let {
-                if (it.isNotEmpty()) throw IppExchangeException(ippRequest, null, status, message = it)
+                if (it.isNotEmpty()) throw IppExchangeException(request, null, status, message = it)
             }
         }
 
@@ -103,10 +103,10 @@ open class IppClient(
         return IppResponse().apply {
             try {
                 read(httpResponse.contentStream!!)
-                log.debug { "$ippUri: $ippRequest => $this" }
+                log.debug { "$ippUri: $request => $this" }
             } catch (exception: Exception) {
-                throw IppExchangeException(ippRequest, this, httpResponse.status, "failed to decode ipp response", exception).apply {
-                    saveRequestAndResponse("decoding_ipp_response_${ippRequest.requestId}_failed")
+                throw IppExchangeException(request, this, httpResponse.status, "failed to decode ipp response", exception).apply {
+                    saveRequestAndResponse("decoding_ipp_response_${request.requestId}_failed")
                 }
             }
             if (operationGroup.containsKey("status-message")) log.debug { "status-message: $statusMessage" }
