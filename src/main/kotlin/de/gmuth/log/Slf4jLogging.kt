@@ -23,7 +23,7 @@ object Slf4jLogging {
             }
         }
 
-        override fun dispatch(messageLogLevel: LogLevel, throwable: Throwable?, messageString: String) = with(slf4jLogger) {
+        override fun dispatch(messageLogLevel: LogLevel, throwable: Throwable?, messageString: String?) = with(slf4jLogger) {
             when (messageLogLevel) {
                 TRACE -> trace(messageString, throwable)
                 DEBUG -> debug(messageString, throwable)
