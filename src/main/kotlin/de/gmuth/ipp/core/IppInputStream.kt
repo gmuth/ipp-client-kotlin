@@ -25,13 +25,13 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
     fun readMessage(message: IppMessage) {
         with(message) {
             version = "${read()}.${read()}"
-            log.trace { "version = $version" }
+            log.debug { "version = $version" }
 
             code = readShort()
-            log.trace { "code = $code ($codeDescription)" }
+            log.debug { "code = $code ($codeDescription)" }
 
             requestId = readInt()
-            log.trace { "requestId = $requestId" }
+            log.debug { "requestId = $requestId" }
         }
 
         lateinit var currentGroup: IppAttributesGroup
@@ -44,7 +44,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                 }
                 tag.isValueTag() -> {
                     val attribute = readAttribute(tag)
-                    log.trace { "$attribute" }
+                    log.debug { "$attribute" }
                     if (attribute.name.isNotEmpty()) {
                         currentGroup.put(attribute)
                         currentAttribute = attribute
@@ -58,7 +58,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
     internal fun readTag() =
             IppTag.fromByte(readByte()).apply {
-                if (isDelimiterTag()) log.trace { "--- $this ---" }
+                if (isDelimiterTag()) log.debug { "--- $this ---" }
             }
 
     internal fun readAttribute(tag: IppTag): IppAttribute<Any> {
