@@ -59,15 +59,16 @@ abstract class IppMessage {
             IppOutputStream(byteArraySavingOutputStream).writeMessage(this)
         } finally {
             rawBytes = byteArraySavingOutputStream.toByteArray()
+            log.debug { "wrote ${rawBytes!!.size} raw bytes" }
         }
-        copyDocumentStream(outputStream)
+        copyDocumentStream(byteArraySavingOutputStream)
     }
 
-    fun write(file: File) =
-            write(FileOutputStream(file))
+    fun write(file: File) = write(FileOutputStream(file))
 
     fun encode(): ByteArray = with(ByteArrayOutputStream()) {
         write(this)
+        log.debug { "ByteArrayOutputStream size = ${this.size()}" }
         toByteArray()
     }
 
@@ -76,7 +77,7 @@ abstract class IppMessage {
     // --------
 
     fun read(inputStream: InputStream) {
-        val byteArraySavingInputStream = ByteArraySavingInputStream(inputStream)
+        val byteArraySavingInputStream = ByteArraySavingInputStream(inputStream.buffered())
         try {
             IppInputStream(byteArraySavingInputStream).readMessage(this)
             documentInputStream = byteArraySavingInputStream
