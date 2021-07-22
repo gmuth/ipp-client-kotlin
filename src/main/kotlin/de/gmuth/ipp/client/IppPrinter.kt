@@ -78,6 +78,14 @@ open class IppPrinter(
     val operationsSupported: List<IppOperation>
         get() = attributes.getValues<List<Int>>("operations-supported").map { IppOperation.fromShort(it.toShort()) }
 
+    val colorSupported: Boolean
+        get() = attributes.getValue("color-supported")
+
+    val sidesSupported: List<String>
+        get() = attributes.getValues("sides-supported")
+
+    val duplexSupported = sidesSupported.any { it.contains("two-sided") }
+
     // ---------------
     // CUPS Extensions
     // ---------------
@@ -318,7 +326,7 @@ open class IppPrinter(
                 log.info { "bin file: $absolutePath" }
             }
             File("$printerModel.txt").apply {
-                writeText("# $printerUri\n")
+                writeText("# printerUri: $printerUri\n")
                 printerGroup.values.forEach { appendText("$it\n") }
                 log.info { "txt file: $absolutePath" }
             }
