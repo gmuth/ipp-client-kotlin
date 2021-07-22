@@ -4,6 +4,7 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020-2021 Gerhard Muth
  */
 
+import de.gmuth.ipp.client.IppJobState.*
 import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.log.Logging
@@ -50,7 +51,9 @@ class IppJob(
     val kOctets: Int
         get() = attributes.getValue("job-k-octets")
 
-    fun isTerminated() = state.isTerminated()
+    fun isProcessing() = state == Processing
+    fun isProcessingStoped() = state == ProcessingStopped
+    fun isTerminated() = state in listOf(Canceled, Aborted, Completed)
 
     //-------------------
     // Get-Job-Attributes
@@ -71,15 +74,24 @@ class IppJob(
     @JvmOverloads
     fun waitForTermination(delayMillis: Long = defaultDelayMillis) {
         log.info { "wait for termination of job #$id" }
-        var lastToString = ""
+        var lastJobString = ""
+        var lastPrinterString = ""
         log.info { toString() }
         while (!isTerminated()) {
             Thread.sleep(delayMillis)
             updateAllAttributes()
-            if (toString() != lastToString) {
-                lastToString = toString()
-                log.info { lastToString }
+            if (toString() != lastJobString) {
+                lastJobString = toString()
+                log.info { lastJobString }
             }
+            if (isProcessingStoped() || lastPrinterString.isNotEmpty()) {
+                printer.updateAllAttributes()
+                if (printer.toString() != lastPrinterString) {
+                    lastPrinterString = printer.toString()
+                    log.info { lastPrinterString }
+                }
+            }
+            if (isProcessing() && lastPrinterString.isNotEmpty()) lastPrinterString = ""
         }
     }
 
