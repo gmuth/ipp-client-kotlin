@@ -1,4 +1,4 @@
-package de.gmuth.ipp.cli
+package de.gmuth.ipp.tool
 
 import java.net.URI
 

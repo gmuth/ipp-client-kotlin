@@ -93,26 +93,12 @@ if (response.isSuccessful()) {
 } else {
     println(response.status)
 }
-```    
-### IppTool
-
-has very limited tag support (only charset, language and uri). If you like this API let me know.
-```kotlin
-with(IppTool()) {
-    uri = URI.create("ipp://colorjet.local/ipp/printer")
-    filename = "A4-blank.pdf"
-    interpret(
-        "OPERATION Print-Job",
-        "GROUP operation-attributes-tag",
-        "ATTR charset attributes-charset utf-8",
-        "ATTR language attributes-natural-language en",
-        "ATTR uri printer-uri \$uri",
-        "FILE \$filename"
-    )
-}
 ```
 
-### CupsClient
+### [CupsClient](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/CupsClient.kt)
+
+Use the `CupsClient` to connect to a CUPS server.
+If you want to access a cups queue you can construct an `IppPrinter` from it's uri.
 
 ```kotlin
 // connect to default ipp://localhost:631
