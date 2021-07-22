@@ -4,12 +4,13 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
+import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.log.Logging
 import kotlin.test.*
 
 class IppAttributeTests {
 
-    private val ippAttribute = IppAttribute("printer-state-reasons", IppTag.Keyword, "none")
+    private val ippAttribute = IppAttribute("printer-state-reasons", Keyword, "none")
 
     companion object {
         val log = Logging.getLogger(Logging.LogLevel.INFO) {}
@@ -17,12 +18,12 @@ class IppAttributeTests {
 
     @Test
     fun constructorFailsDueToDelimiterTag() {
-        assertFailsWith<IppException> { IppAttribute<Unit>("some-attribute-name", IppTag.Operation) }
+        assertFailsWith<IppException> { IppAttribute<Unit>("some-attribute-name", Operation) }
     }
 
     @Test
     fun constructorFailsDueToIllegalValueClass() {
-        assertFailsWith<IppException> { IppAttribute("some-attribute-name", IppTag.TextWithLanguage, 1) }
+        assertFailsWith<IppException> { IppAttribute("some-attribute-name", TextWithLanguage, 1) }
     }
 
     @Test
@@ -33,28 +34,28 @@ class IppAttributeTests {
 
     @Test
     fun additionalValue() {
-        ippAttribute.additionalValue(IppAttribute("", IppTag.Keyword, "media-empty"))
+        ippAttribute.additionalValue(IppAttribute("", Keyword, "media-empty"))
         assertEquals(2, ippAttribute.values.size)
     }
 
     @Test
     fun additionalValueFails1() {
-        assertFailsWith<IppException> { ippAttribute.additionalValue(IppAttribute("", IppTag.Integer, 2.1)) }
+        assertFailsWith<IppException> { ippAttribute.additionalValue(IppAttribute("", Integer, 2.1)) }
     }
 
     @Test
     fun additionalValueFails2() {
-        assertFailsWith<IppException> { ippAttribute.additionalValue(IppAttribute<Unit>("", IppTag.Keyword)) }
+        assertFailsWith<IppException> { ippAttribute.additionalValue(IppAttribute<Unit>("", Keyword)) }
     }
 
     @Test
     fun additionalValueFails3() {
-        assertFailsWith<IppException> { ippAttribute.additionalValue(IppAttribute("invalid-name", IppTag.Keyword, "wtf")) }
+        assertFailsWith<IppException> { ippAttribute.additionalValue(IppAttribute("invalid-name", Keyword, "wtf")) }
     }
 
     @Test
     fun buildAttribute() {
-        assertEquals(ippAttribute, ippAttribute.buildIppAttribute(IppAttributesGroup(IppTag.Printer)))
+        assertEquals(ippAttribute, ippAttribute.buildIppAttribute(IppAttributesGroup(Printer)))
     }
 
     @Test
@@ -65,22 +66,22 @@ class IppAttributeTests {
 
     @Test
     fun toStringIntRange() {
-        assertTrue(IppAttribute("int-range", IppTag.RangeOfInteger, 1..2).toString().endsWith("1-2"))
+        assertTrue(IppAttribute("int-range", RangeOfInteger, 1..2).toString().endsWith("1-2"))
     }
 
     @Test
     fun toStringTime1() {
-        IppAttribute("some-time", IppTag.Integer, 1000).toString()
+        IppAttribute("some-time", Integer, 1000).toString()
     }
 
     @Test
     fun toStringTime2() {
-        IppAttribute("christmas-time", IppTag.Integer, 1608160102).toString()
+        IppAttribute("christmas-time", Integer, 1608160102).toString()
     }
 
     @Test
     fun toStringTimeOut() {
-        IppAttribute("some-time-out", IppTag.Integer, 1000).toString()
+        IppAttribute("some-time-out", Integer, 1000).toString()
     }
 
 
@@ -92,17 +93,17 @@ class IppAttributeTests {
     @Test
     fun logDetails() {
         // cover an output with more than 160 characters and a collection value
-        IppAttribute("media-col".padEnd(160, '-'), IppTag.BegCollection, IppCollection()).logDetails()
+        IppAttribute("media-col".padEnd(160, '-'), BegCollection, IppCollection()).logDetails()
     }
 
     @Test
     fun isCollection() {
-        assertTrue(IppAttribute("some-collection", IppTag.BegCollection, IppCollection()).isCollection())
+        assertTrue(IppAttribute("some-collection", BegCollection, IppCollection()).isCollection())
     }
 
     @Test
     fun isNotCollection() {
-        assertFalse(IppAttribute("some-integer", IppTag.Integer, 0).isCollection())
+        assertFalse(IppAttribute("some-integer", Integer, 0).isCollection())
     }
 
 }
