@@ -83,8 +83,6 @@ open class IppPrinter(
     val sidesSupported: List<String>
         get() = attributes.getValues("sides-supported")
 
-    val duplexSupported = sidesSupported.any { it.startsWith("two-sided") }
-
     // ----------------------------------------------
     // extensions supported by cups and some printers
     // https://www.cups.org/doc/spec-ipp.html
@@ -129,6 +127,7 @@ open class IppPrinter(
     fun isStopped() = state == Stopped
     fun isProcessing() = state == Processing
     fun isMediaNeeded() = stateReasons.contains("media-needed")
+    fun isDuplexSupported() = sidesSupported.any { it.startsWith("two-sided") }
 
     //-----------------
     // Identify-Printer
