@@ -60,6 +60,7 @@ abstract class IppMessage {
         } finally {
             rawBytes = byteArraySavingOutputStream.toByteArray()
             log.debug { "wrote ${rawBytes!!.size} raw bytes" }
+            byteArraySavingOutputStream.saveBytes = false // stop saving document bytes
         }
         copyDocumentStream(byteArraySavingOutputStream)
     }
@@ -83,6 +84,7 @@ abstract class IppMessage {
             documentInputStream = byteArraySavingInputStream
         } finally {
             rawBytes = byteArraySavingInputStream.toByteArray()
+            log.debug { "read ${rawBytes!!.size} raw bytes" }
             byteArraySavingInputStream.saveBytes = false // stop saving document bytes
         }
     }
