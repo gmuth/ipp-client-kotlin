@@ -5,10 +5,7 @@ package de.gmuth.ipp.core
  */
 
 import de.gmuth.log.Logging
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class IppAttributeTests {
 
@@ -96,6 +93,16 @@ class IppAttributeTests {
     fun logDetails() {
         // cover an output with more than 160 characters and a collection value
         IppAttribute("media-col".padEnd(160, '-'), IppTag.BegCollection, IppCollection()).logDetails()
+    }
+
+    @Test
+    fun isCollection() {
+        assertTrue(IppAttribute("some-collection", IppTag.BegCollection, IppCollection()).isCollection())
+    }
+
+    @Test
+    fun isNotCollection() {
+        assertFalse(IppAttribute("some-integer", IppTag.Integer, 0).isCollection())
     }
 
 }
