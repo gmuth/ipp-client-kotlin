@@ -1,17 +1,16 @@
-package de.gmuth.ipp.cups
+package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2021 Gerhard Muth
  */
 
-import de.gmuth.ipp.client.IppClient
-import de.gmuth.ipp.client.IppPrinter
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppTag.Printer
 import java.net.URI
 
-class CupsClient(val cupsUri: URI) : IppClient() {
+// https://www.cups.org/doc/spec-ipp.html
+open class CupsClient(val cupsUri: URI) : IppClient() {
 
     constructor(host: String = "localhost", port: Int = 631) :
             this(URI.create(String.format("ipp://%s:%d", host, port)))
@@ -23,10 +22,10 @@ class CupsClient(val cupsUri: URI) : IppClient() {
         if (cupsUri.scheme == "ipps") trustAnyCertificate()
     }
 
-    private fun ippRequest(operation: IppOperation) =
+    protected fun ippRequest(operation: IppOperation) =
             ippRequest(operation, cupsUri)
 
-    private fun exchangeSuccessfulIppRequest(operation: IppOperation) =
+    protected fun exchangeSuccessfulIppRequest(operation: IppOperation) =
             exchangeSuccessful(ippRequest(operation))
 
     fun setDefault(defaultPrinterUri: URI) =

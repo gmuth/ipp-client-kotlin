@@ -1,15 +1,18 @@
-package de.gmuth.ipp.cups
-
-import de.gmuth.log.Logging
-import de.gmuth.log.Logging.LogLevel
+package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2021 Gerhard Muth
  */
 
+import de.gmuth.log.Logging
+
+// https://www.cups.org/doc/spec-ipp.html
 class CupsPrinterType(val value: Int) {
 
-    // https://www.cups.org/doc/spec-ipp.html
+    companion object {
+        val log = Logging.getLogger {}
+    }
+
     enum class Capability(val bit: Int, val description: String) {
         IsAPrinterClass(0, "Is a printer class."),
         IsARemoteDestination(1, "Is a remote destination."),
@@ -46,16 +49,14 @@ class CupsPrinterType(val value: Int) {
             .filter { (value shr it.bit) and 1 == 1 }
             .toSet()
 
-    fun contains(capability: Capability) =
-            toSet().contains(capability)
+    fun contains(capability: Capability) = toSet().contains(capability)
 
-    override fun toString() =
-            "$value (${toSet().joinToString(",")})"
+    override fun toString() = "$value (${toSet().joinToString(",")})"
 
-    fun logDetails(logger: Logging.Logger, logLevel: LogLevel = logger.logLevel) {
-        logger.log(logLevel) { String.format("PRINTER-TYPE 0x%08X capabilities:", value) }
+    fun logDetails() {
+        log.info { "PRINTER-TYPE 0x%08X capabilities:".format(value) }
         for (capability in toSet()) {
-            logger.log(logLevel) { " - ${capability.description}" }
+            log.info { "* ${capability.description}" }
         }
     }
 

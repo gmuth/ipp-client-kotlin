@@ -8,8 +8,6 @@ import de.gmuth.http.Http
 import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppTag.*
-import de.gmuth.ipp.cups.CupsMarker
-import de.gmuth.ipp.cups.CupsPrinterType
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.log.Logging
 import java.io.File
@@ -20,7 +18,7 @@ import java.nio.charset.Charset
 
 open class IppPrinter(
         val printerUri: URI,
-        var attributes: IppAttributesGroup = IppAttributesGroup(Printer), // empty group
+        var attributes: IppAttributesGroup = IppAttributesGroup(Printer),
         trustAnyCertificate: Boolean = true,
         httpBasicAuth: Http.BasicAuth? = null,
         val ippClient: IppClient = IppClient(httpBasicAuth = httpBasicAuth)
@@ -50,9 +48,9 @@ open class IppPrinter(
             "job-state-message", "job-state-reasons", "job-originating-user-name"
     )
 
-    //--------------
-    // IppAttributes
-    //--------------
+    //---------------
+    // ipp attributes
+    //---------------
 
     val name: IppString
         get() = attributes.getValue("printer-name")
@@ -84,11 +82,12 @@ open class IppPrinter(
     val sidesSupported: List<String>
         get() = attributes.getValues("sides-supported")
 
-    val duplexSupported = sidesSupported.any { it.contains("two-sided") }
+    val duplexSupported = sidesSupported.any { it.startsWith("two-sided") }
 
-    // ---------------
-    // CUPS Extensions
-    // ---------------
+    // ----------------------------------------------
+    // extensions supported by cups and some printers
+    // https://www.cups.org/doc/spec-ipp.html
+    // ----------------------------------------------
 
     val deviceUri: URI
         get() = attributes.getValue("device-uri")
@@ -99,11 +98,29 @@ open class IppPrinter(
     fun hasCapability(capability: CupsPrinterType.Capability) =
             printerType.contains(capability)
 
-    val markers: CupsMarker.List
-        get() = CupsMarker.List(attributes)
+    val markers: List<CupsMarker>
+        get() = mutableListOf<CupsMarker>().apply {
+            with(attributes) {
+                val levels = getValues<List<Int>>("marker-levels")
+                val lowLevels = getValues<List<Int>>("marker-low-levels")
+                val highLevels = getValues<List<Int>>("marker-high-levels")
+                val types = getValues<List<String>>("marker-types")
+                val names = getValues<List<IppString>>("marker-names")
+                val colors = getValues<List<IppString>>("marker-colors")
+                for ((index, type) in types.withIndex()) {
+                    add(CupsMarker(
+                            type,
+                            names[index].text,
+                            levels[index],
+                            lowLevels[index],
+                            highLevels[index],
+                            colors[index].text
+                    ))
+                }
+            }
+        }
 
-    fun marker(color: CupsMarker.Color) =
-            markers.single { it.color == color }
+    fun marker(color: CupsMarker.Color) = markers.single { it.color == color }
 
     //-----------------
     // Identify-Printer
