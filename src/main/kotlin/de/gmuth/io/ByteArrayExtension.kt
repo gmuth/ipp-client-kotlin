@@ -1,15 +1,14 @@
 package de.gmuth.io
 
-fun ByteArray.hexdump(maxRows: Int = 32, dumpString: (String) -> Unit) {
-    val line = StringBuilder()
+fun ByteArray.hexdump(maxRows: Int = 32, dump: (String) -> Unit) = with(StringBuilder()) {
     for ((index, b) in withIndex()) {
-        line.append("%02X ".format(b))
+        append("%02X ".format(b))
         if ((index + 1) % maxRows == 0) {
-            dumpString(line.toString())
-            line.clear()
+            dump(toString())
+            clear()
         }
     }
-    if (line.isNotEmpty()) {
-        dumpString(line.toString())
+    if (isNotEmpty()) {
+        dump(toString())
     }
 }
