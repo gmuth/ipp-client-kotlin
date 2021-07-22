@@ -5,6 +5,7 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.http.Http
+import de.gmuth.ipp.client.IppPrinterState.*
 import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppTag.*
@@ -121,6 +122,13 @@ open class IppPrinter(
         }
 
     fun marker(color: CupsMarker.Color) = markers.single { it.color == color }
+
+    //-----------------
+
+    fun isIdle() = state == Idle
+    fun isStopped() = state == Stopped
+    fun isProcessing() = state == Processing
+    fun isMediaNeeded() = stateReasons.contains("media-needed")
 
     //-----------------
     // Identify-Printer
