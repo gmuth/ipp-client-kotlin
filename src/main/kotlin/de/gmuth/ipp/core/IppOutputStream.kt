@@ -4,8 +4,8 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020-2021 Gerhard Muth
  */
 
-import de.gmuth.log.Logging
 import de.gmuth.ipp.core.IppTag.*
+import de.gmuth.log.Logging
 import java.io.DataOutputStream
 import java.io.OutputStream
 import java.net.URI
@@ -24,13 +24,13 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
         attributesCharset = operationGroup.getValue("attributes-charset")
 
         writeVersion(version ?: throw IppException("missing version"))
-        log.trace { "version = $version" }
+        log.debug { "version = $version" }
 
         writeShort(code?.toInt() ?: throw IppException("missing operation or status code"))
-        log.trace { "code = $code ($codeDescription)" }
+        log.debug { "code = $code ($codeDescription)" }
 
         writeInt(requestId ?: throw IppException("missing requestId"))
-        log.trace { "requestId = $requestId" }
+        log.debug { "requestId = $requestId" }
 
         for (group in attributesGroups) {
             writeTag(group.tag)
@@ -53,7 +53,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
     }
 
     internal fun writeTag(tag: IppTag) {
-        if (tag.isDelimiterTag()) log.trace { "--- $tag ---" }
+        if (tag.isDelimiterTag()) log.debug { "--- $tag ---" }
         writeByte(tag.code.toInt())
     }
 
@@ -65,7 +65,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
     }
 
     internal fun writeAttribute(attribute: IppAttribute<*>) {
-        log.trace { "$attribute" }
+        log.debug { "$attribute" }
         with(attribute) {
             if (tag.isOutOfBandTag() || tag == EndCollection) {
                 writeTag(tag)
