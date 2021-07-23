@@ -66,9 +66,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
         val value = try {
             readAttributeValue(tag)
         } catch (exception: Exception) {
-            if (exception !is EOFException) {
-                readBytes().hexdump { log.debug { it } }
-            }
+            if (exception !is EOFException) readBytes().hexdump { log.debug { it } }
             throw IppException("failed to read attribute value of '$name' ($tag)", exception)
         }
         // remember attributes-charset for name and text value decoding
