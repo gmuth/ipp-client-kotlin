@@ -26,8 +26,8 @@ fun main() {
             } catch (exception: Exception) {
                 errorStream
             }
-            val contentByte = contentResponseStream.readAllBytes()
-            log.info { "content: ${contentByte.size} bytes of type '$contentType'" }
+            val contentBytes = contentResponseStream.readBytes()
+            log.info { "content: ${contentBytes.size} bytes of type '$contentType'" }
         }
     } catch (exception: Exception) {
         log.error(exception) { "http connection failed to $printerUrl" }
