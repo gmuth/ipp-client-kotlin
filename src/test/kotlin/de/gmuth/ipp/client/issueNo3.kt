@@ -12,8 +12,8 @@ fun main() {
     var ippPrinter: IppPrinter? = null
     var httpConnection: HttpURLConnection? = null
 
-    var printerUri = URI.create("http://xero.local:631/ipp/print")
-    printerUri = URI.create("http://BRWD812655BA041.local:631/ipp/print")
+    var printerUri = URI.create("ipp://xero.local:631/ipp/print")
+    printerUri = URI.create("ipp://BRWD812655BA041.local:631/ipp/print")
 
     val printerUrl = URI("http://${printerUri.host}:${printerUri.port}").toURL()
     try {
