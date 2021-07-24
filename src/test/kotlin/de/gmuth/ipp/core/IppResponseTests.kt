@@ -50,7 +50,8 @@ class IppResponseTests {
 
     @Test
     fun invalidHpNameWithLanguageResponse() {
-        // IppInputStream solution: NameWithLanguage -> readShort().let { if (markSupported() && it < 6) reset() }
+        // IppInputStream solution: first mark(2) then NameWithLanguage -> readShort().let { if (markSupported() && it < 6) reset() }
+        // ippClient.requestNaturalLanguage = "de" // triggers HP name with language bug
         assertFailsWith<IppException> {
             ippResponse.read(File("src/test/resources/invalidHpNameWithLanguage.response"))
             ippResponse.logDetails()
