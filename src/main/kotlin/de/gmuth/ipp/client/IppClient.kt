@@ -14,6 +14,8 @@ import java.net.URI
 import java.nio.charset.Charset
 import java.util.concurrent.atomic.AtomicInteger
 
+typealias IppResponseInterceptor = (request: IppRequest, response: IppResponse) -> Unit
+
 open class IppClient(
         var ippVersion: String = "1.1",
         val httpClient: Http.Client = HttpURLConnectionClient(),
@@ -22,6 +24,7 @@ open class IppClient(
 ) {
     var requestCharset: Charset = Charsets.UTF_8
     var requestNaturalLanguage: String = "en"
+    var responseInterceptor: IppResponseInterceptor? = null
 
     protected val requestCounter = AtomicInteger(1)
 
@@ -111,6 +114,7 @@ open class IppClient(
             }
             if (operationGroup.containsKey("status-message")) log.debug { "status-message: $statusMessage" }
             if (containsGroup(IppTag.Unsupported)) unsupportedGroup.values.forEach { log.warn { "unsupported attribute: $it" } }
+            responseInterceptor?.invoke(request, this)
         }
     }
 }
