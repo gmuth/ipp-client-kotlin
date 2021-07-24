@@ -1,6 +1,7 @@
 package de.gmuth.ipp.core
 
 import de.gmuth.log.Logging
+import java.io.File
 
 /**
  * Copyright (c) 2020-2021 Gerhard Muth
@@ -45,6 +46,16 @@ open class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttrib
     fun logDetails(prefix: String = "", title: String = "$tag") {
         log.info { "${prefix}$title" }
         keys.forEach { log.info { "$prefix  ${get(it)}" } }
+    }
+
+    fun saveText(file: File) = file.apply {
+        bufferedWriter().use {
+            values.forEach { value ->
+                it.write(value.toString())
+                it.newLine()
+            }
+        }
+        log.info { "saved: $path" }
     }
 
 }
