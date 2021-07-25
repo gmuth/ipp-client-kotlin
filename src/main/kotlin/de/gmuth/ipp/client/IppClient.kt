@@ -21,7 +21,7 @@ open class IppClient(
         val httpClient: Http.Client = HttpURLConnectionClient(),
         var httpBasicAuth: Http.BasicAuth? = null,
         val requestingUserName: String? = if (httpBasicAuth != null) httpBasicAuth.user else System.getProperty("user.name")
-) {
+) : IppExchange {
     var requestCharset: Charset = Charsets.UTF_8
     var requestNaturalLanguage: String = "en"
     var responseInterceptor: IppResponseInterceptor? = null
@@ -65,7 +65,7 @@ open class IppClient(
     // exchange IppRequest for IppResponse
     //------------------------------------
 
-    fun exchangeSuccessful(request: IppRequest) =
+    open fun exchangeSuccessful(request: IppRequest) =
             exchange(request).apply {
                 if (!isSuccessful()) {
                     IppRegistrationsSection2.validate(request)
@@ -74,7 +74,7 @@ open class IppClient(
                 }
             }
 
-    fun exchange(request: IppRequest): IppResponse {
+    override fun exchange(request: IppRequest): IppResponse {
         val ippUri: URI = request.operationGroup.getValueOrNull("printer-uri") ?: throw IppException("missing 'printer-uri'")
         log.trace { "send '${request.operation}' request to $ippUri" }
 
