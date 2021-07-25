@@ -83,6 +83,15 @@ open class IppPrinter(
     val sidesSupported: List<String>
         get() = attributes.getValues("sides-supported")
 
+    val mediaSupported: List<String>
+        get() = attributes.getValues("media-supported")
+
+    val mediaReady: List<String>
+        get() = attributes.getValues("media-ready")
+
+    val mediaDefault: String
+        get() = attributes.getValue("media-default")
+
     // ----------------------------------------------
     // extensions supported by cups and some printers
     // https://www.cups.org/doc/spec-ipp.html
