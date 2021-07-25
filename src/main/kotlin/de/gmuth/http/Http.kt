@@ -18,7 +18,7 @@ interface Http {
             // trust any certificate: sslSocketFactoryForAnyCertificate()
             // use individual certificate: sslSocketFactory(loadCertificate(FileInputStream("printer.pem")))
             // use truststore: sslSocketFactory(loadTrustStore(FileInputStream("printer.jks"), "changeit"))
-            var verifySSLHostnames: Boolean = true
+            var verifySSLHostname: Boolean = true
     )
 
     data class BasicAuth(

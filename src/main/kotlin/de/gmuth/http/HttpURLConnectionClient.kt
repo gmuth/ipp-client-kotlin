@@ -24,7 +24,7 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
         with(uri.toURL().openConnection() as HttpURLConnection) {
             if (this is HttpsURLConnection && config.sslSocketFactory != null) {
                 sslSocketFactory = config.sslSocketFactory
-                if (!config.verifySSLHostnames) hostnameVerifier = HostnameVerifier { _, _ -> true }
+                if (!config.verifySSLHostname) hostnameVerifier = HostnameVerifier { _, _ -> true }
             }
             connectTimeout = config.timeout
             readTimeout = config.timeout

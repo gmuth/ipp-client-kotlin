@@ -21,14 +21,14 @@ open class IppPrinter(
         val printerUri: URI,
         var attributes: IppAttributesGroup = IppAttributesGroup(Printer),
         trustAnyCertificate: Boolean = true,
-        verifySSLHostnames: Boolean = true,
+        verifySSLHostname: Boolean = true,
         httpBasicAuth: Http.BasicAuth? = null,
         val ippClient: IppClient = IppClient(httpBasicAuth = httpBasicAuth)
 ) {
 
     init {
         if (trustAnyCertificate) ippClient.trustAnyCertificate()
-        ippClient.httpClient.config.verifySSLHostnames = verifySSLHostnames
+        ippClient.httpClient.config.verifySSLHostname = verifySSLHostname
         if (attributes.size == 0) updateAllAttributes()
     }
 
