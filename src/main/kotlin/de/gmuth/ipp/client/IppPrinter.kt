@@ -138,7 +138,7 @@ open class IppPrinter(
     fun isMediaNeeded() = stateReasons.contains("media-needed")
     fun isDuplexSupported() = sidesSupported.any { it.startsWith("two-sided") }
     fun supportsOperations(vararg operations: IppOperation) = operationsSupported.containsAll(operations.toList())
-    fun isCupsPrinter() = attributes.containsKey("cups-version")
+    fun isCups() = attributes.containsKey("cups-version")
 
     //-----------------
     // Identify-Printer
