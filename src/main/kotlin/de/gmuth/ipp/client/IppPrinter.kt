@@ -22,7 +22,7 @@ open class IppPrinter(
         val printerUri: URI,
         var attributes: IppAttributesGroup = IppAttributesGroup(Printer),
         trustAnyCertificate: Boolean = true,
-        verifySSLHostname: Boolean = true,
+        verifySSLHostname: Boolean = false,
         httpBasicAuth: Http.BasicAuth? = null,
         val ippClient: IppClient = IppClient(httpBasicAuth = httpBasicAuth)
 ) {
