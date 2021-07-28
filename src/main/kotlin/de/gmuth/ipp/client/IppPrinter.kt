@@ -11,6 +11,7 @@ import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.log.Logging
+import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
@@ -191,6 +192,9 @@ open class IppPrinter(
 
     fun printJob(inputStream: InputStream, vararg attributeBuilders: IppAttributeBuilder) =
             printInputStream(inputStream, attributeBuilders)
+
+    fun printJob(byteArray: ByteArray, vararg attributeBuilders: IppAttributeBuilder) =
+            printInputStream(ByteArrayInputStream(byteArray), attributeBuilders)
 
     fun printJob(file: File, vararg attributeBuilders: IppAttributeBuilder) =
             printInputStream(FileInputStream(file), attributeBuilders)
