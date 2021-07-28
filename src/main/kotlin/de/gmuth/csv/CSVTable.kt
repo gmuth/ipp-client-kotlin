@@ -10,14 +10,16 @@ import java.io.InputStream
 
 class CSVTable<T>(
         inputStream: InputStream? = null,
-        val buildRow: (columns: List<String>) -> T
+        val buildRow: (columns: List<String>) -> T,
+        skipHeader: Boolean = true,
+        val buildMaxLengthMap: Boolean = false
 ) {
 
     val rows: MutableList<T> = mutableListOf()
     val maxLengthMap = mutableMapOf<Int, Int>()
 
     init {
-        inputStream?.let { read(it, true) }
+        inputStream?.let { read(it.buffered(), skipHeader) }
     }
 
     constructor(resourcePath: String, rowFactory: (columns: List<String>) -> T) :
@@ -29,17 +31,19 @@ class CSVTable<T>(
     fun read(inputStream: InputStream, skipHeader: Boolean) {
         if (skipHeader) parseRow(inputStream)
         lineLoop@ while (true) {
-            val columns = parseRow(inputStream) ?: break@lineLoop
-            rows.add(buildRow(columns))
+            val rawRow = parseRow(inputStream) ?: break@lineLoop
+            rows.add(buildRow(rawRow))
         }
     }
 
     fun parseRow(inputStream: InputStream): List<String>? {
         val fields = mutableListOf<String>()
-        var currentField = StringBuffer()
+        val currentField = StringBuilder()
         var inQuote = false
         var lastCharacterWasQuote = false
-        fun updateMaxLengthMap() = updateMaxLengthMap(fields.size - 1, fields.last().length)
+        fun updateMaxLengthMap() {
+            if (buildMaxLengthMap) updateMaxLengthMap(fields.size - 1, fields.last().length)
+        }
         columnLoop@ while (true) {
             val i = inputStream.read()
             if (i == -1) break@columnLoop
@@ -52,7 +56,7 @@ class CSVTable<T>(
                     ',' -> {
                         fields.add(currentField.toString())
                         updateMaxLengthMap()
-                        currentField = StringBuffer()
+                        currentField.clear()
                     }
                     '\n' -> {
                         fields.add(currentField.toString())
@@ -80,9 +84,9 @@ class CSVTable<T>(
     companion object {
 
         fun print(inputStream: InputStream, delimiter: String = "|") =
-                with(CSVTable(inputStream, buildRow = { columns: List<String> -> columns })) {
-                    for (columns in rows) with(StringBuffer(delimiter)) {
-                        for ((columnIndex, column) in columns.withIndex()) {
+                with(CSVTable(inputStream, { it }, buildMaxLengthMap = true)) {
+                    for (row in rows) with(StringBuffer(delimiter)) {
+                        for ((columnIndex, column) in row.withIndex()) {
                             append("%-${maxLengthMap[columnIndex]}s%s".format(column, delimiter))
                         }
                         println(toString())
