@@ -33,12 +33,10 @@ class IppRequest() : IppMessage() {
         this.requestId = requestId
 
         with(createAttributesGroup(Operation)) {
-
             // required attributes
             attribute("attributes-charset", Charset, charset)
             attribute("attributes-natural-language", NaturalLanguage, naturalLanguage)
-
-            // optional attributes
+            // useful attributes
             jobId?.let { attribute("job-id", Integer, it) }
             printerUri?.let { attribute("printer-uri", Uri, it) }
             requestedAttributes?.let { attribute("requested-attributes", Keyword, it) }
