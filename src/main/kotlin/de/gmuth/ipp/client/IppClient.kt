@@ -20,7 +20,7 @@ open class IppClient(
         var ippVersion: String = "1.1",
         val httpClient: Http.Client = HttpURLConnectionClient(),
         var httpBasicAuth: Http.BasicAuth? = null,
-        val requestingUserName: String? = if (httpBasicAuth != null) httpBasicAuth.user else System.getProperty("user.name")
+        var requestingUserName: String? = if (httpBasicAuth != null) httpBasicAuth.user else System.getProperty("user.name")
 ) : IppExchange {
     var requestCharset: Charset = Charsets.UTF_8
     var requestNaturalLanguage: String = "en"
