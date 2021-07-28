@@ -11,8 +11,7 @@ import java.io.InputStream
 class CSVTable<T>(
         inputStream: InputStream? = null,
         val buildRow: (columns: List<String>) -> T,
-        skipHeader: Boolean = true,
-        val buildMaxLengthMap: Boolean = false
+        skipHeader: Boolean = true
 ) {
 
     val rows: MutableList<T> = mutableListOf()
@@ -41,9 +40,7 @@ class CSVTable<T>(
         val currentField = StringBuilder()
         var inQuote = false
         var lastCharacterWasQuote = false
-        fun updateMaxLengthMap() {
-            if (buildMaxLengthMap) updateMaxLengthMap(fields.size - 1, fields.last().length)
-        }
+        fun updateMaxLengthMap() = updateMaxLengthMap(fields.size - 1, fields.last().length)
         columnLoop@ while (true) {
             val i = inputStream.read()
             if (i == -1) break@columnLoop
@@ -84,7 +81,7 @@ class CSVTable<T>(
     companion object {
 
         fun print(inputStream: InputStream, delimiter: String = "|") =
-                with(CSVTable(inputStream, { it }, buildMaxLengthMap = true)) {
+                CSVTable(inputStream, { it }).run {
                     for (row in rows) with(StringBuffer(delimiter)) {
                         for ((columnIndex, column) in row.withIndex()) {
                             append("%-${maxLengthMap[columnIndex]}s%s".format(column, delimiter))
