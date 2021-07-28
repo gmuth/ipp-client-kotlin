@@ -4,6 +4,9 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
+import de.gmuth.ipp.core.IppTag.Printer
+import de.gmuth.ipp.core.IppTag.Unsupported
+
 class IppResponse : IppMessage() {
 
     override val codeDescription: String
@@ -20,12 +23,11 @@ class IppResponse : IppMessage() {
         get() = operationGroup.getValue("status-message")
 
     val printerGroup: IppAttributesGroup
-        get() = getSingleAttributesGroup(IppTag.Printer)
+        get() = getSingleAttributesGroup(Printer)
 
     val unsupportedGroup: IppAttributesGroup
-        get() = getSingleAttributesGroup(IppTag.Unsupported)
+        get() = getSingleAttributesGroup(Unsupported)
 
-    fun isSuccessful() =
-            status.isSuccessful()
+    fun isSuccessful() = status.isSuccessful()
 
 }

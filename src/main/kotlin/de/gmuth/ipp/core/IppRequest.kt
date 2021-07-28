@@ -4,6 +4,7 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
+import de.gmuth.ipp.core.IppTag.*
 import java.net.URI
 import java.nio.charset.Charset
 
@@ -31,17 +32,17 @@ class IppRequest() : IppMessage() {
         this.code = operation.code
         this.requestId = requestId
 
-        with(createAttributesGroup(IppTag.Operation)) {
+        with(createAttributesGroup(Operation)) {
 
             // required attributes
-            attribute("attributes-charset", IppTag.Charset, charset)
-            attribute("attributes-natural-language", IppTag.NaturalLanguage, naturalLanguage)
+            attribute("attributes-charset", Charset, charset)
+            attribute("attributes-natural-language", NaturalLanguage, naturalLanguage)
 
             // optional attributes
-            jobId?.let { attribute("job-id", IppTag.Integer, it) }
-            printerUri?.let { attribute("printer-uri", IppTag.Uri, it) }
-            requestedAttributes?.let { attribute("requested-attributes", IppTag.Keyword, it) }
-            requestingUserName?.let { attribute("requesting-user-name", IppTag.NameWithoutLanguage, it.toIppString()) }
+            jobId?.let { attribute("job-id", Integer, it) }
+            printerUri?.let { attribute("printer-uri", Uri, it) }
+            requestedAttributes?.let { attribute("requested-attributes", Keyword, it) }
+            requestingUserName?.let { attribute("requesting-user-name", NameWithoutLanguage, it.toIppString()) }
         }
     }
 }
