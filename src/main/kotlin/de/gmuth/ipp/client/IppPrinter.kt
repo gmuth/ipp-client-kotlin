@@ -190,14 +190,14 @@ open class IppPrinter(
     // Print-Job
     //----------
 
-    fun printJob(inputStream: InputStream, vararg attributeBuilders: IppAttributeBuilder) =
-            printInputStream(inputStream, attributeBuilders)
+    fun printJob(inputStream: InputStream, vararg attributeBuilder: IppAttributeBuilder) =
+            printInputStream(inputStream, attributeBuilder)
 
-    fun printJob(byteArray: ByteArray, vararg attributeBuilders: IppAttributeBuilder) =
-            printInputStream(ByteArrayInputStream(byteArray), attributeBuilders)
+    fun printJob(byteArray: ByteArray, vararg attributeBuilder: IppAttributeBuilder) =
+            printInputStream(ByteArrayInputStream(byteArray), attributeBuilder)
 
-    fun printJob(file: File, vararg attributeBuilders: IppAttributeBuilder) =
-            printInputStream(FileInputStream(file), attributeBuilders)
+    fun printJob(file: File, vararg attributeBuilder: IppAttributeBuilder) =
+            printInputStream(FileInputStream(file), attributeBuilder)
 
     protected fun printInputStream(inputStream: InputStream, attributeBuilders: Array<out IppAttributeBuilder>): IppJob {
         val request = attributeBuildersRequest(PrintJob, attributeBuilders).apply {
