@@ -1,7 +1,7 @@
 package de.gmuth.http
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2021 Gerhard Muth
  */
 
 import java.io.InputStream
@@ -11,9 +11,9 @@ import javax.net.ssl.SSLSocketFactory
 
 interface Http {
 
-    data class Config(
+    open class Config(
             var timeout: Int = 30000, // milli seconds
-            var userAgent: String = "ipp-client-kotlin/2.0",
+            var userAgent: String = "ipp-client-kotlin/2.1",
             var sslSocketFactory: SSLSocketFactory? = null,
             // trust any certificate: sslSocketFactoryForAnyCertificate()
             // use individual certificate: sslSocketFactory(loadCertificate(FileInputStream("printer.pem")))
@@ -21,12 +21,12 @@ interface Http {
             var verifySSLHostname: Boolean = true
     )
 
-    data class BasicAuth(
+    class BasicAuth(
             val user: String,
             val password: String
     )
 
-    data class Response(
+    class Response(
             val status: Int,
             val server: String?,
             val contentType: String?,
