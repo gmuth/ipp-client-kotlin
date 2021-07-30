@@ -22,14 +22,12 @@ open class IppPrinter(
         val printerUri: URI,
         var attributes: IppAttributesGroup = IppAttributesGroup(Printer),
         trustAnyCertificate: Boolean = true,
-        verifySSLHostname: Boolean = false,
-        httpBasicAuth: Http.BasicAuth? = null,
-        val ippClient: IppClient = IppClient(httpBasicAuth = httpBasicAuth)
+        val config: IppConfig = IppConfig(),
+        val ippClient: IppClient = IppClient(config)
 ) {
 
     init {
         if (trustAnyCertificate) ippClient.trustAnyCertificate()
-        ippClient.httpClient.config.verifySSLHostname = verifySSLHostname
         if (attributes.size == 0) updateAllAttributes()
     }
 

@@ -11,19 +11,14 @@ import de.gmuth.ipp.core.*
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.log.Logging
 import java.net.URI
-import java.nio.charset.Charset
 import java.util.concurrent.atomic.AtomicInteger
 
 typealias IppResponseInterceptor = (request: IppRequest, response: IppResponse) -> Unit
 
 open class IppClient(
-        var ippVersion: String = "1.1",
-        val httpClient: Http.Client = HttpURLConnectionClient(),
-        var httpBasicAuth: Http.BasicAuth? = null,
-        var requestingUserName: String? = if (httpBasicAuth != null) httpBasicAuth.user else System.getProperty("user.name")
-) : IppExchange {
-    var requestCharset: Charset = Charsets.UTF_8
-    var requestNaturalLanguage: String = "en"
+        val config: IppConfig = IppConfig(),
+        val httpClient: Http.Client = HttpURLConnectionClient(config)
+) {
     var responseInterceptor: IppResponseInterceptor? = null
 
     protected val requestCounter = AtomicInteger(1)
@@ -33,7 +28,7 @@ open class IppClient(
     }
 
     fun basicAuth(user: String, password: String) {
-        httpBasicAuth = Http.BasicAuth(user, password)
+        config.httpBasicAuth = Http.BasicAuth(user, password)
     }
 
     companion object {
@@ -54,11 +49,11 @@ open class IppClient(
             printerUri,
             jobId,
             requestedAttributes,
-            requestingUserName,
-            ippVersion,
+            config.userName,
+            config.ippVersion,
             requestCounter.getAndIncrement(),
-            requestCharset,
-            requestNaturalLanguage
+            config.charset,
+            config.naturalLanguage
     )
 
     //------------------------------------
@@ -74,7 +69,7 @@ open class IppClient(
                 }
             }
 
-    override fun exchange(request: IppRequest): IppResponse {
+    open fun exchange(request: IppRequest): IppResponse {
         val ippUri: URI = request.operationGroup.getValueOrNull("printer-uri") ?: throw IppException("missing 'printer-uri'")
         log.trace { "send '${request.operation}' request to $ippUri" }
 
@@ -89,16 +84,16 @@ open class IppClient(
         val httpResponse = httpClient.post(
                 httpUri, "application/ipp",
                 { httpPostStream -> request.write(httpPostStream) },
-                httpBasicAuth
+                config.httpBasicAuth
         ).apply {
             log.trace { "ipp-server: $server" }
             when {
                 !isOK() -> "http request to $httpUri failed: status=$status, content-type=$contentType${textContent()}"
                 !hasContentType() -> "missing content-type in http response (application/ipp required)"
                 !contentType!!.startsWith("application/ipp") -> "invalid content-type: $contentType"
-                else -> ""
-            }.let {
-                if (it.isNotEmpty()) throw IppExchangeException(request, null, status, message = it)
+                else -> null
+            }?.let {
+                throw IppExchangeException(request, null, status, message = it)
             }
         }
 
@@ -108,12 +103,16 @@ open class IppClient(
                 read(httpResponse.contentStream!!)
                 log.debug { "$ippUri: $request => $this" }
             } catch (exception: Exception) {
-                throw IppExchangeException(request, this, httpResponse.status, "failed to decode ipp response", exception).apply {
+                throw IppExchangeException(
+                        request, this, httpResponse.status, "failed to decode ipp response", exception
+                ).apply {
                     saveRequestAndResponse("decoding_ipp_response_${request.requestId}_failed")
                 }
             }
             if (operationGroup.containsKey("status-message")) log.debug { "status-message: $statusMessage" }
-            if (containsGroup(IppTag.Unsupported)) unsupportedGroup.values.forEach { log.warn { "unsupported attribute: $it" } }
+            if (containsGroup(IppTag.Unsupported)) unsupportedGroup.values.forEach {
+                log.warn { "unsupported attribute: $it" }
+            }
             responseInterceptor?.invoke(request, this)
         }
     }
