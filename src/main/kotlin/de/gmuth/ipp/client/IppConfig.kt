@@ -11,7 +11,7 @@ class IppConfig(
         sslSocketFactory: SSLSocketFactory? = null,
         verifySSLHostname: Boolean = false,
         var httpBasicAuth: Http.BasicAuth? = null,
-        var userName: String? = if (httpBasicAuth != null) httpBasicAuth.user else System.getProperty("user.name"),
+        var userName: String? = httpBasicAuth?.user ?: System.getProperty("user.name"),
         var ippVersion: String = "1.1",
         var charset: Charset = Charsets.UTF_8,
         var naturalLanguage: String = "en"
