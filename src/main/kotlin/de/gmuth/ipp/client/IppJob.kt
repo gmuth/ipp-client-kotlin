@@ -52,7 +52,7 @@ class IppJob(
         get() = attributes.getValue("job-k-octets")
 
     fun isProcessing() = state == Processing
-    fun isProcessingStoped() = state == ProcessingStopped
+    fun isProcessingStopped() = state == ProcessingStopped
     fun isTerminated() = state in listOf(Canceled, Aborted, Completed)
 
     //-------------------
@@ -84,7 +84,7 @@ class IppJob(
                 lastJobString = toString()
                 log.info { lastJobString }
             }
-            if (isProcessingStoped() || lastPrinterString.isNotEmpty()) {
+            if (isProcessingStopped() || lastPrinterString.isNotEmpty()) {
                 printer.updateAllAttributes()
                 if (printer.toString() != lastPrinterString) {
                     lastPrinterString = printer.toString()
