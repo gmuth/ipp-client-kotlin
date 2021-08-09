@@ -4,7 +4,9 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
+import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.log.Logging
+import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -12,23 +14,23 @@ import kotlin.test.assertTrue
 
 class IppAttributesGroupTests {
 
-    private val group = IppAttributesGroup(IppTag.Operation)
+    private val group = IppAttributesGroup(Operation)
 
     @Test
     fun constructorFails1() {
-        assertFailsWith<IppException> { IppAttributesGroup(IppTag.End) }
+        assertFailsWith<IppException> { IppAttributesGroup(End) }
     }
 
     @Test
     fun constructorFails2() {
-        assertFailsWith<IppException> { IppAttributesGroup(IppTag.Integer) }
+        assertFailsWith<IppException> { IppAttributesGroup(Integer) }
     }
 
     @Test
     fun putWithReplacementAllowed() {
-        with(IppAttributesGroup(IppTag.Printer)) {
-            attribute("number", IppTag.Integer, 0)
-            attribute("number", IppTag.Integer, 1, 2)
+        with(IppAttributesGroup(Printer)) {
+            attribute("number", Integer, 0)
+            attribute("number", Integer, 1, 2)
             assertEquals(1, size)
             assertEquals(get("number")!!.values.size, 2)
         }
@@ -37,15 +39,15 @@ class IppAttributesGroupTests {
     //@Test
     fun putWithReplacementDenied() {
         IppAttributesGroup.log.logLevel = Logging.LogLevel.INFO
-        group.attribute("number", IppTag.Integer, 0)
-        group.attribute("number", IppTag.Integer, 1, 2)
+        group.attribute("number", Integer, 0)
+        group.attribute("number", Integer, 1, 2)
         assertEquals(1, group.size)
         assertEquals(group.get("number")!!.values.size, 1)
     }
 
     @Test
     fun putEmptyValues() {
-        group.attribute("empty", IppTag.Integer, listOf())
+        group.attribute("empty", Integer, listOf())
         assertEquals(1, group.size)
     }
 
@@ -56,7 +58,7 @@ class IppAttributesGroupTests {
 
     @Test
     fun getValue() {
-        group.attribute("foo", IppTag.Keyword, "bar")
+        group.attribute("foo", Keyword, "bar")
         assertEquals("bar", group.getValue("foo") as String)
         assertEquals("bar", group.getValueOrNull("foo") ?: throw NullPointerException())
         assertEquals(null, group.getValueOrNull("invalid-name"))
@@ -64,7 +66,7 @@ class IppAttributesGroupTests {
 
     @Test
     fun getValues() {
-        group.attribute("multiple", IppTag.Integer, 1, 2)
+        group.attribute("multiple", Integer, 1, 2)
         assertEquals(listOf(1, 2), group.getValues("multiple"))
     }
 
@@ -80,7 +82,14 @@ class IppAttributesGroupTests {
 
     @Test
     fun logDetails() {
+        group.attribute("Commodore PET", Integer, 2001)
         group.logDetails("|", "title")
+    }
+
+    @Test
+    fun saveAttributes() {
+        group.attribute("Commodore C", Integer, 64)
+        group.saveText(File.createTempFile("tempfiles", ".tmp"))
     }
 
     // ------------- interface Map methods ------------
@@ -89,14 +98,14 @@ class IppAttributesGroupTests {
     fun mapInterfaceMethods() {
         group.remove("a")
 
-        group.attribute("b", IppTag.Unknown)
+        group.attribute("b", Unknown)
         assertTrue(group.containsKey("b"))
 
-        val c = IppAttribute<Unit>("c", IppTag.Unknown)
+        val c = IppAttribute<Unit>("c", Unknown)
         group.put(c)
         assertTrue(group.containsValue(c))
 
-        group.getOrDefault("d", IppAttribute<Unit>("default", IppTag.Unknown))
+        group.getOrDefault("d", IppAttribute<Unit>("default", Unknown))
 
         group.remove("b")
         group.remove("c", c)
