@@ -35,9 +35,9 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
 
     @Suppress("UNCHECKED_CAST")
     fun additionalValue(attribute: IppAttribute<*>) = when {
-        attribute.tag != tag -> log.warn { "additional attribute does not have same value tag ($tag): $attribute" }
-        attribute.values.size != 1 -> throw IppException("expected 1 additional value, not ${attribute.values.size}")
         attribute.name.isNotEmpty() -> throw IppException("for additional '$name' values attribute name must be empty")
+        attribute.values.size != 1 -> throw IppException("expected 1 additional value, not ${attribute.values.size}")
+        attribute.tag != tag -> log.warn { "$name: ignore additional value \"$attribute\" - tag is not '$tag'" }
         else -> {
             validateValueClass(attribute.value as Any)
             values.add(attribute.value as T)
@@ -45,7 +45,7 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
     }
 
     internal fun validateValueClass(value: Any) {
-        if (!tag.valueHasValidClass(value)) throw IppException("value class ${value::class.java} not valid for tag $tag")
+        if (!tag.valueHasValidClass(value)) throw IppException("value class ${value::class.java.name} not valid for tag $tag")
     }
 
     fun is1setOf() = values.size > 1 || attributeIs1setOf(name) == true
