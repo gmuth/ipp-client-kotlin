@@ -36,24 +36,30 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
         lateinit var currentGroup: IppAttributesGroup
         lateinit var currentAttribute: IppAttribute<*>
-        do {
-            val tag = readTag()
-            when {
-                tag.isGroupTag() -> {
-                    currentGroup = message.createAttributesGroup(tag)
-                }
-                tag.isValueTag() -> {
-                    val attribute = readAttribute(tag)
-                    log.debug { "$attribute" }
-                    if (attribute.name.isNotEmpty()) {
-                        currentGroup.put(attribute)
-                        currentAttribute = attribute
-                    } else { // name.isEmpty() -> 1setOf
-                        currentAttribute.additionalValue(attribute)
+        try {
+            do {
+                val tag = readTag()
+                when {
+                    tag.isGroupTag() -> {
+                        currentGroup = message.createAttributesGroup(tag)
+                    }
+                    tag.isValueTag() -> {
+                        val attribute = readAttribute(tag)
+                        log.debug { "$attribute" }
+                        if (attribute.name.isNotEmpty()) {
+                            currentGroup.put(attribute)
+                            currentAttribute = attribute
+                        } else { // name.isEmpty() -> 1setOf
+                            currentAttribute.additionalValue(attribute)
+                        }
                     }
                 }
-            }
-        } while (tag != End)
+            } while (tag != End)
+        } catch (exception: Exception) {
+            val bytes = readBytes()
+            log.warn { "${bytes.size} unparsed bytes" }
+            throw exception
+        }
     }
 
     internal fun readTag() =
