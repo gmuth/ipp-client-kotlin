@@ -4,7 +4,6 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020-2021 Gerhard Muth
  */
 
-import de.gmuth.http.Http
 import de.gmuth.ipp.client.IppPrinterState.*
 import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppOperation.*
@@ -21,6 +20,7 @@ import java.nio.charset.Charset
 open class IppPrinter(
         val printerUri: URI,
         var attributes: IppAttributesGroup = IppAttributesGroup(Printer),
+        getPrinterAttributesOnInit: Boolean = true,
         trustAnyCertificate: Boolean = true,
         val config: IppConfig = IppConfig(),
         val ippClient: IppClient = IppClient(config)
@@ -28,7 +28,14 @@ open class IppPrinter(
 
     init {
         if (trustAnyCertificate) ippClient.trustAnyCertificate()
-        if (attributes.size == 0) updateAllAttributes()
+        if (!getPrinterAttributesOnInit) log.warn { "no printer attributes fetched from printer $printerUri" }
+        else if (attributes.size == 0) {
+            try {
+                updateAllAttributes()
+            } catch (ippException: IppException) {
+                log.error(ippException) { "failed to get printer attributes" }
+            }
+        }
     }
 
     constructor(printerAttributes: IppAttributesGroup, ippClient: IppClient = IppClient()) : this(
