@@ -40,11 +40,11 @@ class IppAttributeTests {
 
     @Test
     fun additionalValueFails1() {
-        assertFailsWith<IppException> { ippAttribute.additionalValue(IppAttribute("", Integer, 2.1)) }
+        ippAttribute.additionalValue(IppAttribute("", Integer, 2.1))
     }
 
     @Test
-    fun additionalValueFails2() {
+    fun additionalValueWarning() {
         assertFailsWith<IppException> { ippAttribute.additionalValue(IppAttribute<Unit>("", Keyword)) }
     }
 
