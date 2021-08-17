@@ -6,6 +6,7 @@ package de.gmuth.ipp.core
 
 import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.log.Logging
+import java.io.File
 import kotlin.test.*
 
 class IppAttributeTests {
@@ -39,18 +40,26 @@ class IppAttributeTests {
     }
 
     @Test
-    fun additionalValueFails1() {
+    fun additionalValueIgnore1() {
         ippAttribute.additionalValue(IppAttribute("", Integer, 2.1))
     }
 
     @Test
-    fun additionalValueWarning() {
-        assertFailsWith<IppException> { ippAttribute.additionalValue(IppAttribute<Unit>("", Keyword)) }
+    fun additionalValueFails2() {
+        assertFailsWith<IppException> {ippAttribute.additionalValue(IppAttribute<Unit>("", Keyword)) }
     }
 
     @Test
     fun additionalValueFails3() {
         assertFailsWith<IppException> { ippAttribute.additionalValue(IppAttribute("invalid-name", Keyword, "wtf")) }
+    }
+
+    @Test
+    fun additionalValueIgnore2() {
+        IppResponse().run {
+            read(File("src/test/resources/invalidBrotherMediaTypeSupported.response"))
+            assertEquals(1, printerGroup.getValues<List<String>>("media-type-supported").size)
+        }
     }
 
     @Test
