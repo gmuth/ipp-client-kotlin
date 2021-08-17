@@ -143,7 +143,7 @@ class IppInputStreamTest {
     }
 
     @Test
-    fun readAttributeValueNameWithLanguage_HP_BugWorkaround() {
+    fun readAttributeValueNameWithLanguageFailsForHP() {
         // value length 0x0017 is missing
         assertFailsWith<EOFException> { // removed support for invalid response, but left test here for documentation
             val encoded = "00 02 64 65 00 11 65 69 6E 4E 61 6D 65 4D 69 74 53 70 72 61 63 68 65"
