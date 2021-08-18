@@ -7,7 +7,7 @@ import de.gmuth.log.Logging
 import java.io.File
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2021 Gerhard Muth
  */
 
 class IppExchangeException(
@@ -29,13 +29,9 @@ class IppExchangeException(
         response?.logDetails("RESPONSE: ")
     }
 
-    fun saveRequestAndResponse(fileNameWithoutSuffix: String = "ipp_exchange_exception") {
-        val requestFile = request.saveRawBytes(File("$fileNameWithoutSuffix.request"))
-        log.info { "saved ipp request  file ${requestFile.absolutePath}" }
-        response?.let {
-            val responseFile = it.saveRawBytes(File("$fileNameWithoutSuffix.response"))
-            log.info { "saved ipp response file ${responseFile.absolutePath}" }
-        }
+    fun saveMessages(fileNameWithoutSuffix: String = "ipp_exchange_exception") {
+        request.saveRawBytes(File("$fileNameWithoutSuffix.request"))
+        response?.saveRawBytes(File("$fileNameWithoutSuffix.response"))
     }
 
 }

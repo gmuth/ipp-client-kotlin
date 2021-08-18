@@ -106,7 +106,7 @@ open class IppClient(
                 throw IppExchangeException(
                         request, this, httpResponse.status, "failed to decode ipp response", exception
                 ).apply {
-                    saveRequestAndResponse("decoding_ipp_response_${request.requestId}_failed")
+                    saveMessages("decoding_ipp_response_${request.requestId}_failed")
                 }
             }
             if (operationGroup.containsKey("status-message")) log.debug { "status-message: $statusMessage" }
