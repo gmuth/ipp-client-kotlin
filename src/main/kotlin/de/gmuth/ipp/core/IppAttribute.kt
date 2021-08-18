@@ -4,6 +4,7 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020-2021 Gerhard Muth
  */
 
+import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.ipp.iana.IppRegistrationsSection2.attributeIs1setOf
 import de.gmuth.ipp.iana.IppRegistrationsSection6.getEnumName
 import de.gmuth.log.Logging
@@ -50,7 +51,7 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
 
     fun is1setOf() = values.size > 1 || attributeIs1setOf(name) == true
 
-    fun isCollection() = tag == IppTag.BegCollection
+    fun isCollection() = tag == BegCollection
 
     override fun buildIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<*> = this
 
@@ -61,8 +62,8 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
     }
 
     internal fun valueToString(value: T) = when {
-        tag == IppTag.Charset -> with(value as Charset) { name().toLowerCase() }
-        tag == IppTag.RangeOfInteger -> with(value as IntRange) { "$start-$endInclusive" }
+        tag == Charset -> with(value as Charset) { name().toLowerCase() }
+        tag == RangeOfInteger -> with(value as IntRange) { "$start-$endInclusive" }
         value is ByteArray -> with(value as ByteArray) { if (isEmpty()) "no-value" else "$size bytes" }
         else -> enumNameOrValue(value as Any).toString()
     }
