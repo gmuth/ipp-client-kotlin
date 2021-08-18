@@ -38,12 +38,12 @@ object Logging {
 
         @JvmOverloads
         fun log(messageLogLevel: LogLevel, throwable: Throwable? = null, produceMessage: MessageProducer) {
-            if (isEnabled(messageLogLevel)) dispatch(messageLogLevel, throwable, produceMessage()?.toString())
+            if (isEnabled(messageLogLevel)) publish(messageLogLevel, throwable, produceMessage()?.toString())
         }
 
         open fun isEnabled(level: LogLevel) = logLevel <= level
 
-        open fun dispatch(messageLogLevel: LogLevel, throwable: Throwable?, messageString: String?) {
+        open fun publish(messageLogLevel: LogLevel, throwable: Throwable?, messageString: String?) {
             if (consoleWriterEnabled) {
                 println(consoleWriterFormat.format(name, messageLogLevel, messageString))
                 throwable?.printStackTrace(PrintWriter(System.out, true))

@@ -21,7 +21,7 @@ class Slf4jLoggerAdapter(name: String) : Logging.Logger(name) {
         }
     }
 
-    override fun dispatch(messageLogLevel: LogLevel, throwable: Throwable?, messageString: String?) = with(slf4jLogger) {
+    override fun publish(messageLogLevel: LogLevel, throwable: Throwable?, messageString: String?) = with(slf4jLogger) {
         when (messageLogLevel) {
             TRACE -> trace(messageString, throwable)
             DEBUG -> debug(messageString, throwable)
