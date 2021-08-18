@@ -160,7 +160,8 @@ Logging.consoleWriterEnabled = false
 
 You can configure the library to use [Slf4j](http://www.slf4j.org).
 Then the log levels must be configured according to the underlaying implementation 
-(e.g. via [logback](http://logback.qos.ch/manual/configuration.html)).
+(e.g. [logback](http://logback.qos.ch/manual/configuration.html)
+or [Slf4j-Android](http://www.slf4j.org/android/)).
 
 ```kotlin
 Logging.useSlf4j()
