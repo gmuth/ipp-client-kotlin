@@ -5,7 +5,8 @@ package de.gmuth.http
  */
 
 import de.gmuth.log.Logging
-import de.gmuth.log.Logging.LogLevel.*
+import de.gmuth.log.Logging.LogLevel.ERROR
+import de.gmuth.log.Logging.LogLevel.TRACE
 import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URI
@@ -37,7 +38,6 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
             setRequestProperty("Content-Type", contentType)
             config.userAgent?.let { setRequestProperty("User-Agent", it) }
             if (config.chunkedStreamingMode) setChunkedStreamingMode(0)
-            else log.debug { "http post not chunked" }
             writeContent(outputStream)
             for ((key, values) in headerFields) {
                 log.log(if (responseCode < 300) TRACE else ERROR) { "$key = $values" }

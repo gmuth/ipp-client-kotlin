@@ -19,7 +19,7 @@ interface Http {
             // use individual certificate: sslSocketFactory(loadCertificate(FileInputStream("printer.pem")))
             // use truststore: sslSocketFactory(loadTrustStore(FileInputStream("printer.jks"), "changeit"))
             var verifySSLHostname: Boolean = true,
-            var chunkedStreamingMode: Boolean = true
+            var chunkedStreamingMode: Boolean = false
     ) {
         fun trustAnyCertificate() {
             sslSocketFactory = SSLHelper.sslSocketFactoryForAnyCertificate()
