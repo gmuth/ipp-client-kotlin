@@ -67,7 +67,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
     internal fun writeAttribute(attribute: IppAttribute<*>) {
         log.debug { "$attribute" }
         with(attribute) {
-            if (tag.isOutOfBandTag() || tag == EndCollection || values.isEmpty()) {
+            if (values.isEmpty() || tag.isOutOfBandTag()) {
                 writeTag(tag)
                 writeString(name)
                 writeShort(0) // no value
