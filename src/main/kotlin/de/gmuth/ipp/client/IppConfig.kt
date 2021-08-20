@@ -11,8 +11,8 @@ class IppConfig(
         sslSocketFactory: SSLSocketFactory? = null,
         verifySSLHostname: Boolean = false,
         chunkedStreamingMode: Boolean = false,
-        var httpBasicAuth: Http.BasicAuth? = null,
-        var userName: String? = httpBasicAuth?.user ?: System.getProperty("user.name"),
+        basicAuth: Http.BasicAuth? = null,
+        var userName: String? = basicAuth?.user ?: System.getProperty("user.name"),
         var ippVersion: String = "1.1",
         var charset: Charset = Charsets.UTF_8,
         var naturalLanguage: String = "en",
@@ -21,6 +21,7 @@ class IppConfig(
 ) : Http.Config(
         timeout,
         userAgent,
+        basicAuth,
         sslSocketFactory,
         verifySSLHostname,
         chunkedStreamingMode

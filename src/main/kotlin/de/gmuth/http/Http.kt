@@ -14,6 +14,7 @@ interface Http {
     open class Config(
             var timeout: Int = 30000, // milli seconds
             var userAgent: String? = null,
+            var basicAuth: BasicAuth? = null,
             var sslSocketFactory: SSLSocketFactory? = null,
             // trust any certificate: sslSocketFactoryForAnyCertificate()
             // use individual certificate: sslSocketFactory(loadCertificate(FileInputStream("printer.pem")))
@@ -46,12 +47,7 @@ interface Http {
     }
 
     abstract class Client(val config: Config = Config()) {
-        abstract fun post(
-                uri: URI,
-                contentType: String,
-                writeContent: (OutputStream) -> Unit,
-                basicAuth: BasicAuth? = null
-        ): Response
+        abstract fun post(uri: URI, contentType: String, writeContent: (OutputStream) -> Unit): Response
     }
 
 }
