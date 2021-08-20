@@ -10,7 +10,7 @@ import de.gmuth.log.Logging.LogLevel.TRACE
 import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URI
-import java.util.*
+import java.util.Base64.getEncoder
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.HttpsURLConnection
 
@@ -20,7 +20,7 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
         val log = Logging.getLogger {}
     }
 
-    override fun post(uri: URI, contentType: String, writeContent: (OutputStream) -> Unit, basicAuth: Http.BasicAuth?): Http.Response {
+    override fun post(uri: URI, contentType: String, writeContent: (OutputStream) -> Unit): Http.Response {
         with(uri.toURL().openConnection() as HttpURLConnection) {
             if (this is HttpsURLConnection && config.sslSocketFactory != null) {
                 sslSocketFactory = config.sslSocketFactory
@@ -29,10 +29,8 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
             connectTimeout = config.timeout
             readTimeout = config.timeout
             doOutput = true // trigger POST method
-            basicAuth?.let {
-                val basicAuthEncoded = with(basicAuth) {
-                    Base64.getEncoder().encodeToString("$user:$password".toByteArray())
-                }
+            config.basicAuth?.let {
+                val basicAuthEncoded = getEncoder().encodeToString("${it.user}:${it.password}".toByteArray())
                 setRequestProperty("Authorization", "Basic $basicAuthEncoded")
             }
             setRequestProperty("Content-Type", contentType)

@@ -23,7 +23,7 @@ open class IppClient(
     protected val requestCounter = AtomicInteger(1)
 
     fun basicAuth(user: String, password: String) {
-        config.httpBasicAuth = Http.BasicAuth(user, password)
+        config.basicAuth = Http.BasicAuth(user, password)
     }
 
     companion object {
@@ -78,8 +78,7 @@ open class IppClient(
         // http post binary ipp request
         val httpResponse = httpClient.post(
                 httpUri, "application/ipp",
-                { httpPostStream -> request.write(httpPostStream) },
-                config.httpBasicAuth
+                { httpPostStream -> request.write(httpPostStream) }
         ).apply {
             when {
                 !isOK() -> "http request to $httpUri failed: status=$status, content-type=$contentType${textContent()}"
