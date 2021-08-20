@@ -10,7 +10,7 @@ class IppConfig(
         userAgent: String? = "ipp-client-kotlin/2.1",
         sslSocketFactory: SSLSocketFactory? = null,
         verifySSLHostname: Boolean = false,
-        chunkedStreamingMode: Boolean = true,
+        chunkedStreamingMode: Boolean = false,
         var httpBasicAuth: Http.BasicAuth? = null,
         var userName: String? = httpBasicAuth?.user ?: System.getProperty("user.name"),
         var ippVersion: String = "1.1",
