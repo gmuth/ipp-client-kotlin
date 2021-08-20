@@ -67,12 +67,12 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
     internal fun writeAttribute(attribute: IppAttribute<*>) {
         log.debug { "$attribute" }
         with(attribute) {
-            if (tag.isOutOfBandTag() || tag == EndCollection) {
+            if (tag.isOutOfBandTag() || tag == EndCollection || values.isEmpty()) {
                 writeTag(tag)
                 writeString(name)
                 writeShort(0) // no value
             } else {
-                // single value or iterate 1setOf
+                // single value or 1setOf values
                 for ((index, value) in values.withIndex()) {
                     writeTag(tag)
                     writeString(if (index == 0) name else "")
