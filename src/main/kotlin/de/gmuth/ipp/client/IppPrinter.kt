@@ -20,7 +20,6 @@ import java.nio.charset.Charset
 open class IppPrinter(
         val printerUri: URI,
         var attributes: IppAttributesGroup = IppAttributesGroup(Printer),
-        getPrinterAttributesOnInit: Boolean = true,
         trustAnyCertificate: Boolean = true,
         val config: IppConfig = IppConfig(),
         val ippClient: IppClient = IppClient(config)
@@ -28,8 +27,9 @@ open class IppPrinter(
 
     init {
         if (trustAnyCertificate) ippClient.trustAnyCertificate()
-        if (!getPrinterAttributesOnInit) log.warn { "no printer attributes fetched from printer $printerUri" }
-        else if (attributes.size == 0) {
+        if (!config.getPrinterAttributesOnInit) {
+            log.warn { "no printer attributes fetched from printer $printerUri" }
+        } else if (attributes.size == 0) {
             try {
                 updateAllAttributes()
             } catch (ippException: IppException) {
