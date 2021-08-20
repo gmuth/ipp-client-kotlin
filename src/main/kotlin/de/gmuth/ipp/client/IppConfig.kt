@@ -10,17 +10,20 @@ class IppConfig(
         userAgent: String? = "ipp-client-kotlin/2.1",
         sslSocketFactory: SSLSocketFactory? = null,
         verifySSLHostname: Boolean = false,
+        chunkedStreamingMode: Boolean = true,
         var httpBasicAuth: Http.BasicAuth? = null,
         var userName: String? = httpBasicAuth?.user ?: System.getProperty("user.name"),
         var ippVersion: String = "1.1",
         var charset: Charset = Charsets.UTF_8,
-        var naturalLanguage: String = "en"
+        var naturalLanguage: String = "en",
+        var getPrinterAttributesOnInit: Boolean = true
 
 ) : Http.Config(
         timeout,
         userAgent,
         sslSocketFactory,
-        verifySSLHostname
+        verifySSLHostname,
+        chunkedStreamingMode
 ) {
     companion object {
         val log = Logging.getLogger {}
@@ -30,9 +33,11 @@ class IppConfig(
         log.info { "timeout: $timeout" }
         log.info { "userAgent: $userAgent" }
         log.info { "verifySSLHostname: $verifySSLHostname" }
+        log.info { "chunkedStreamingMode: $chunkedStreamingMode" }
         log.info { "userName: $userName" }
         log.info { "ippVersion: $ippVersion" }
         log.info { "charset: $charset" }
         log.info { "naturalLanguage: $naturalLanguage" }
+        log.info { "getPrinterAttributesOnInit: $getPrinterAttributesOnInit" }
     }
 }
