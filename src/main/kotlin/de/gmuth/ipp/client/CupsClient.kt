@@ -19,7 +19,7 @@ open class CupsClient(val cupsUri: URI) : IppClient() {
     constructor(host: String) : this(host, 631)
 
     init {
-        if (cupsUri.scheme == "ipps") trustAnyCertificate()
+        if (cupsUri.scheme == "ipps") config.trustAnyCertificate()
     }
 
     protected fun ippRequest(operation: IppOperation) =
