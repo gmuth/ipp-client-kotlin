@@ -46,8 +46,6 @@ open class IppPrinter(
     constructor(printerUri: String) : this(URI.create(printerUri))
     constructor(printerUri: String, config: IppConfig) : this(URI.create(printerUri), config = config)
 
-    fun basicAuth(user: String, password: String) = ippClient.basicAuth(user, password)
-
     companion object {
         val log = Logging.getLogger {}
     }
