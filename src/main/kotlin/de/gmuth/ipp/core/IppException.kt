@@ -1,9 +1,8 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2021 Gerhard Muth
  */
 
-import java.io.IOException
-
-open class IppException(message: String, cause: Throwable? = null) : IOException(message, cause)
+open class IppException(message: String, cause: Throwable? = null) :
+        RuntimeException(message, cause)
