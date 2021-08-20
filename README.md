@@ -59,8 +59,7 @@ job.hold()
 job.release()
 job.cancel()
 
-// admin operations
-ippPrinter.basicAuth("admin", "secret")
+// print operator
 ippPrinter.pause()
 ippPrinter.resume()
 ippPrinter.identify("sound")
@@ -103,6 +102,9 @@ If you want to access a cups queue you can construct an `IppPrinter` from it's u
 ```kotlin
 // connect to default ipp://localhost:631
 val cupsClient = CupsClient()
+
+// credentials (e.g. for remote connections)
+cupsClient.basicAuth("admin", "secret")
 
 // list all queues
 cupsClient.getPrinters().forEach { 
