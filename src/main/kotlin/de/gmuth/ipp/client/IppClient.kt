@@ -81,13 +81,15 @@ open class IppClient(
                 { httpPostStream -> request.write(httpPostStream) },
                 config.httpBasicAuth
         ).apply {
-            log.trace { "ipp-server: $server" }
             when {
                 !isOK() -> "http request to $httpUri failed: status=$status, content-type=$contentType${textContent()}"
                 !hasContentType() -> "missing content-type in http response (application/ipp required)"
                 !contentType!!.startsWith("application/ipp") -> "invalid content-type: $contentType"
                 else -> null
             }?.let {
+                log.info { "ipp-server: $server" }
+                config.logDetails()
+                request.logDetails()
                 throw IppExchangeException(request, null, status, message = it)
             }
         }
