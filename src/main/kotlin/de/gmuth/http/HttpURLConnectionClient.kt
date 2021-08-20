@@ -1,7 +1,7 @@
 package de.gmuth.http
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2021 Gerhard Muth
  */
 
 import de.gmuth.log.Logging
@@ -20,7 +20,7 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
         val log = Logging.getLogger {}
     }
 
-    override fun post(uri: URI, contentType: String, writeContent: (OutputStream) -> Unit, basicAuth: Http.BasicAuth?) : Http.Response {
+    override fun post(uri: URI, contentType: String, writeContent: (OutputStream) -> Unit, basicAuth: Http.BasicAuth?): Http.Response {
         with(uri.toURL().openConnection() as HttpURLConnection) {
             if (this is HttpsURLConnection && config.sslSocketFactory != null) {
                 sslSocketFactory = config.sslSocketFactory
@@ -35,10 +35,9 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
                 }
                 setRequestProperty("Authorization", "Basic $basicAuthEncoded")
             }
-            setRequestProperty("User-Agent", config.userAgent)
             setRequestProperty("Content-Type", contentType)
-            // chunked streaming mode can cause: "HttpRetryException: cannot retry due to server authentication, in streaming mode"
-            setChunkedStreamingMode(0) // enable chunked transfer
+            config.userAgent?.let { setRequestProperty("User-Agent", it) }
+            if (config.chunkedStreamingMode) setChunkedStreamingMode(0)
             writeContent(outputStream)
             for ((key, values) in headerFields) {
                 log.log(if (responseCode < 300) DEBUG else ERROR) { "$key = $values" }
