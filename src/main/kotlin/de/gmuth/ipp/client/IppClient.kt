@@ -6,7 +6,6 @@ package de.gmuth.ipp.client
 
 import de.gmuth.http.Http
 import de.gmuth.http.HttpURLConnectionClient
-import de.gmuth.http.SSLHelper
 import de.gmuth.ipp.core.*
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.log.Logging
@@ -22,10 +21,6 @@ open class IppClient(
     var responseInterceptor: IppResponseInterceptor? = null
 
     protected val requestCounter = AtomicInteger(1)
-
-    fun trustAnyCertificate() {
-        httpClient.config.sslSocketFactory = SSLHelper.sslSocketFactoryForAnyCertificate()
-    }
 
     fun basicAuth(user: String, password: String) {
         config.httpBasicAuth = Http.BasicAuth(user, password)
