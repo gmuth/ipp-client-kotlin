@@ -1,7 +1,7 @@
 package de.gmuth.ipp.iana
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2021 Gerhard Muth
  */
 
 import de.gmuth.csv.CSVTable
@@ -9,6 +9,7 @@ import de.gmuth.ipp.core.IppAttribute
 import de.gmuth.ipp.core.IppCollection
 import de.gmuth.ipp.core.IppMessage
 import de.gmuth.ipp.core.IppTag
+import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.log.Logging
 
 /**
@@ -38,23 +39,23 @@ object IppRegistrationsSection2 {
         fun is1setOf() = syntax.contains("1setOf")
 
         fun tag() = when {
-            syntax.contains("naturalLanguage") -> IppTag.NaturalLanguage
-            syntax.contains("mimeMediaType") -> IppTag.MimeMediaType
-            syntax.contains("charset") -> IppTag.Charset
-            syntax.contains("uri") -> IppTag.Uri
-            syntax.contains("uriScheme") -> IppTag.UriScheme
-            syntax.contains("octetString") -> IppTag.OctetString
-            syntax.contains("keyword") -> IppTag.Keyword
-            syntax.contains("name") -> IppTag.NameWithoutLanguage
-            syntax.contains("text") -> IppTag.TextWithoutLanguage
-            syntax.contains("memberAttrName") -> IppTag.MemberAttrName
-            syntax.contains("integer") -> IppTag.Integer
+            syntax.contains("naturalLanguage") -> NaturalLanguage
+            syntax.contains("mimeMediaType") -> MimeMediaType
+            syntax.contains("charset") -> Charset
+            syntax.contains("uri") -> Uri
+            syntax.contains("uriScheme") -> UriScheme
+            syntax.contains("octetString") -> OctetString
+            syntax.contains("keyword") -> Keyword
+            syntax.contains("name") -> NameWithoutLanguage
+            syntax.contains("text") -> TextWithoutLanguage
+            syntax.contains("memberAttrName") -> MemberAttrName
+            syntax.contains("integer") -> Integer
             syntax.contains("enum") -> IppTag.Enum
             syntax.contains("boolean") -> IppTag.Boolean
-            syntax.contains("rangeOfInteger") -> IppTag.RangeOfInteger
-            syntax.contains("dateTime") -> IppTag.DateTime
-            syntax.contains("resolution") -> IppTag.Resolution
-            syntax.contains("collection") -> IppTag.BegCollection
+            syntax.contains("rangeOfInteger") -> RangeOfInteger
+            syntax.contains("dateTime") -> DateTime
+            syntax.contains("resolution") -> Resolution
+            syntax.contains("collection") -> BegCollection
             syntax.isEmpty() -> null
             else -> throw IllegalStateException("'$name' has unknown syntax '$syntax'")
         }
@@ -66,8 +67,8 @@ object IppRegistrationsSection2 {
         }.toString()
 
         fun collectionGroupTag() = when (collection) {
-            "Operation" -> IppTag.Operation
-            "Job Template" -> IppTag.Job
+            "Operation" -> Operation
+            "Job Template" -> Job
             else -> throw IllegalArgumentException("no IppTag defined for $collection")
         }
 
@@ -97,15 +98,19 @@ object IppRegistrationsSection2 {
         if (aliasMap.containsKey(name)) log.trace { "'$name' resolves to '$it'" }
     }
 
-    fun getAttribute(name: String, resolveAlias: Boolean = true) = attributesMap[if (resolveAlias) resolveAlias(name) else name]
+    fun getAttribute(name: String, resolveAlias: Boolean = true) =
+            attributesMap[if (resolveAlias) resolveAlias(name) else name]
 
-    fun syntaxForAttribute(name: String, resolveAlias: Boolean) = getAttribute(name, resolveAlias)?.syntax
+    fun syntaxForAttribute(name: String, resolveAlias: Boolean) =
+            getAttribute(name, resolveAlias)?.syntax
 
-    fun tagForAttribute(name: String) = getAttribute(name)?.tag()
+    fun tagForAttribute(name: String) =  getAttribute(name)?.tag()
 
-    fun attributeIs1setOf(name: String) = getAttribute(name, false)?.is1setOf()
+    fun attributeIs1setOf(name: String) =
+            getAttribute(name, false)?.is1setOf()
 
-    fun selectGroupForAttribute(name: String) = getAttribute(name, false)!!.collectionGroupTag()
+    fun selectGroupForAttribute(name: String) =
+            getAttribute(name, false)!!.collectionGroupTag()
 
     val unknownAttributes = mutableSetOf<String>()
 
