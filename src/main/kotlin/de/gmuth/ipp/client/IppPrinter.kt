@@ -20,15 +20,13 @@ import java.nio.charset.Charset
 open class IppPrinter(
         val printerUri: URI,
         var attributes: IppAttributesGroup = IppAttributesGroup(Printer),
-        trustAnyCertificate: Boolean = true,
         val config: IppConfig = IppConfig(),
         val ippClient: IppClient = IppClient(config)
 ) {
 
     init {
-        if (trustAnyCertificate) ippClient.trustAnyCertificate()
         if (!config.getPrinterAttributesOnInit) {
-            log.warn { "no printer attributes fetched from printer $printerUri" }
+            log.warn { "disabled: getPrinterAttributesOnInit" }
         } else if (attributes.size == 0) {
             try {
                 updateAllAttributes()
@@ -44,7 +42,9 @@ open class IppPrinter(
             ippClient = ippClient
     )
 
+    // constructors for java usage
     constructor(printerUri: String) : this(URI.create(printerUri))
+    constructor(printerUri: String, config: IppConfig) : this(URI.create(printerUri), config = config)
 
     fun basicAuth(user: String, password: String) = ippClient.basicAuth(user, password)
 
