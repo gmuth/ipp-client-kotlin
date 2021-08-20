@@ -7,6 +7,7 @@ package de.gmuth.http
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI
+import java.util.*
 import javax.net.ssl.SSLSocketFactory
 
 interface Http {
@@ -18,7 +19,8 @@ interface Http {
             // trust any certificate: sslSocketFactoryForAnyCertificate()
             // use individual certificate: sslSocketFactory(loadCertificate(FileInputStream("printer.pem")))
             // use truststore: sslSocketFactory(loadTrustStore(FileInputStream("printer.jks"), "changeit"))
-            var verifySSLHostname: Boolean = true
+            var verifySSLHostname: Boolean = true,
+            var chunkedStreamingMode: Boolean = true
     )
 
     class BasicAuth(
