@@ -34,7 +34,7 @@ class IppConfig(
         log.info { "timeout: $timeout" }
         log.info { "userAgent: $userAgent" }
         log.info { "verifySSLHostname: $verifySSLHostname" }
-        log.info { "chunkedStreamingMode: $chunkedStreamingMode" }
+        log.info { "chunkedTransferEncoding: $chunkedTransferEncoding" }
         log.info { "userName: $userName" }
         log.info { "ippVersion: $ippVersion" }
         log.info { "charset: $charset" }

@@ -35,7 +35,7 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
             }
             setRequestProperty("Content-Type", contentType)
             config.userAgent?.let { setRequestProperty("User-Agent", it) }
-            if (config.chunkedStreamingMode) setChunkedStreamingMode(0)
+            if (config.chunkedTransferEncoding) setChunkedStreamingMode(0)
             writeContent(outputStream)
             for ((key, values) in headerFields) {
                 log.log(if (responseCode < 300) TRACE else ERROR) { "$key = $values" }
