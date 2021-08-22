@@ -29,7 +29,7 @@ interface Http {
     }
 
     class BasicAuth(val user: String, val password: String) {
-        fun encodeBase64() = Base64.getEncoder().encodeToString("$user:$password".toByteArray())
+        fun encodeBase64(): String = Base64.getEncoder().encodeToString("$user:$password".toByteArray())
     }
 
     class Response(
