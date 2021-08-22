@@ -7,6 +7,7 @@ package de.gmuth.http
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI
+import java.util.*
 import javax.net.ssl.SSLSocketFactory
 
 interface Http {
@@ -27,10 +28,9 @@ interface Http {
         }
     }
 
-    class BasicAuth(
-            val user: String,
-            val password: String
-    )
+    class BasicAuth(val user: String, val password: String) {
+        fun encodeBase64() = Base64.getEncoder().encodeToString("$user:$password".toByteArray())
+    }
 
     class Response(
             val status: Int,

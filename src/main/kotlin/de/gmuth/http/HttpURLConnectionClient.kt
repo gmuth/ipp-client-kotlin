@@ -10,7 +10,6 @@ import de.gmuth.log.Logging.LogLevel.TRACE
 import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URI
-import java.util.Base64.getEncoder
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.HttpsURLConnection
 
@@ -29,10 +28,7 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
             connectTimeout = config.timeout
             readTimeout = config.timeout
             doOutput = true // trigger POST method
-            config.basicAuth?.let {
-                val basicAuthEncoded = getEncoder().encodeToString("${it.user}:${it.password}".toByteArray())
-                setRequestProperty("Authorization", "Basic $basicAuthEncoded")
-            }
+            config.basicAuth?.let { setRequestProperty("Authorization", "Basic ${it.encodeBase64()}") }
             setRequestProperty("Content-Type", contentType)
             config.userAgent?.let { setRequestProperty("User-Agent", it) }
             if (config.chunkedTransferEncoding) setChunkedStreamingMode(0)
