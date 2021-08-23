@@ -7,7 +7,7 @@ import javax.net.ssl.SSLSocketFactory
 
 class IppConfig(
         timeout: Int = 30000, // milli seconds
-        userAgent: String? = "ipp-client-kotlin/2.1",
+        userAgent: String? = "ipp-client-kotlin/2.2",
         sslSocketFactory: SSLSocketFactory? = null,
         verifySSLHostname: Boolean = false,
         chunkedStreamingMode: Boolean = false,
@@ -37,7 +37,7 @@ class IppConfig(
         log.info { "chunkedTransferEncoding: $chunkedTransferEncoding" }
         log.info { "userName: $userName" }
         log.info { "ippVersion: $ippVersion" }
-        log.info { "charset: $charset" }
+        log.info { "charset: ${charset.name().toLowerCase()}" }
         log.info { "naturalLanguage: $naturalLanguage" }
         log.info { "getPrinterAttributesOnInit: $getPrinterAttributesOnInit" }
     }
