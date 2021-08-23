@@ -98,6 +98,9 @@ open class IppPrinter(
     val mediaDefault: String
         get() = attributes.getValue("media-default")
 
+    val versionsSupported: List<String>
+        get() = attributes.getValues("ipp-versions-supported")
+
     // ----------------------------------------------
     // extensions supported by cups and some printers
     // https://www.cups.org/doc/spec-ipp.html
@@ -144,6 +147,7 @@ open class IppPrinter(
     fun isMediaNeeded() = stateReasons.contains("media-needed")
     fun isDuplexSupported() = sidesSupported.any { it.startsWith("two-sided") }
     fun supportsOperations(vararg operations: IppOperation) = operationsSupported.containsAll(operations.toList())
+    fun supportsVersion(version: String) = versionsSupported.contains(version)
     fun isCups() = attributes.containsKey("cups-version")
 
     //-----------------
