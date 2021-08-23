@@ -26,13 +26,9 @@ open class IppPrinter(
 
     init {
         if (!config.getPrinterAttributesOnInit) {
-            log.warn { "disabled: getPrinterAttributesOnInit" }
+            log.warn { "getPrinterAttributesOnInit disabled => no printer attributes available" }
         } else if (attributes.size == 0) {
-            try {
-                updateAllAttributes()
-            } catch (ippException: IppException) {
-                log.error(ippException) { "failed to get printer attributes" }
-            }
+            updateAllAttributes()
         }
     }
 
