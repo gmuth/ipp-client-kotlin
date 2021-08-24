@@ -4,6 +4,8 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020-2021 Gerhard Muth
  */
 
+import de.gmuth.http.Http
+import de.gmuth.http.HttpURLConnectionClient
 import de.gmuth.ipp.client.IppPrinterState.*
 import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppOperation.*
@@ -21,7 +23,8 @@ open class IppPrinter(
         val printerUri: URI,
         var attributes: IppAttributesGroup = IppAttributesGroup(Printer),
         val config: IppConfig = IppConfig(),
-        val ippClient: IppClient = IppClient(config)
+        httpClient: Http.Client = HttpURLConnectionClient(config),
+        val ippClient: IppClient = IppClient(config, httpClient)
 ) {
 
     init {
