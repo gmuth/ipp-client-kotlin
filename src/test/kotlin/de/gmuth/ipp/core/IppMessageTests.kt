@@ -31,6 +31,11 @@ class IppMessageTests {
     }
 
     @Test
+    fun hasNoDocument() {
+        assertFalse(message.hasDocument())
+    }
+
+    @Test
     fun writeFile() {
         with(message) {
             createAttributesGroup(IppTag.Operation).attribute("attributes-charset", IppTag.Charset, Charsets.UTF_8)
@@ -62,6 +67,7 @@ class IppMessageTests {
             val tmpFile1 = createTempFile("test", null)
             val tmpFile2 = createTempFile("test", null)
             try {
+                assertTrue(hasDocument())
                 saveDocumentStream(tmpFile1)
                 assertEquals(26, tmpFile1.length())
                 encode() // save raw bytes
