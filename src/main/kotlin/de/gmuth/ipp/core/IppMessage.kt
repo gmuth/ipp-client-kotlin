@@ -49,6 +49,8 @@ abstract class IppMessage {
     fun createAttributesGroup(tag: IppTag) =
             IppAttributesGroup(tag).apply { attributesGroups.add(this) }
 
+    fun hasDocument() = documentInputStream != null
+
     // --------
     // ENCODING
     // --------
