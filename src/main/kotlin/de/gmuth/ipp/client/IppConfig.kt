@@ -12,7 +12,7 @@ class IppConfig(
         verifySSLHostname: Boolean = false,
         chunkedTransferEncoding: Boolean? = null,
         basicAuth: Http.BasicAuth? = null,
-        acceptEncoding: String? = "identity", // solves Xerox VeraLink 406 response
+        acceptEncoding: String? = "identity", // solves Xerox VeraLink's 406 http issue
         var userName: String? = basicAuth?.user ?: System.getProperty("user.name"),
         var ippVersion: String = "1.1",
         var charset: Charset = Charsets.UTF_8,
