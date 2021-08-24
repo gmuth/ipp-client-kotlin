@@ -19,7 +19,7 @@ interface Http {
             var sslSocketFactory: SSLSocketFactory? = null,
             // trust any certificate: sslSocketFactoryForAnyCertificate()
             // use individual certificate: sslSocketFactory(loadCertificate(FileInputStream("printer.pem")))
-            // use truststore: sslSocketFactory(loadTrustStore(FileInputStream("printer.jks"), "changeit"))
+            // use truststore: sslSocketFactory(loadKeyStore(FileInputStream("printer.jks"), "changeit"))
             var verifySSLHostname: Boolean = true,
             var chunkedTransferEncoding: Boolean? = false,
             var acceptEncoding: String? = null

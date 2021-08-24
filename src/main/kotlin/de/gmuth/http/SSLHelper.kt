@@ -20,7 +20,7 @@ object SSLHelper {
     fun loadCertificate(inputStream: InputStream, type: String = "X.509") =
             CertificateFactory.getInstance(type).generateCertificate(inputStream)
 
-    fun loadTrustStore(keyStoreInputStream: InputStream, keyStorePassword: String, keyStoreType: String = KeyStore.getDefaultType()) =
+    fun loadKeyStore(keyStoreInputStream: InputStream, keyStorePassword: String, keyStoreType: String = KeyStore.getDefaultType()) =
             KeyStore.getInstance(keyStoreType).apply { load(keyStoreInputStream, keyStorePassword.toCharArray()) }
 
     fun sslSocketFactory(trustmanagers: Array<TrustManager>, protocol: String = "TLS") =
