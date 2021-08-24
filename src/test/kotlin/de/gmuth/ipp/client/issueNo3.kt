@@ -23,6 +23,7 @@ fun main() {
         ippVersion = "1.1"
         chunkedTransferEncoding = false
         getPrinterAttributesOnInit = true
+        acceptEncoding = "identity" // overwrite android's default 'gzip'
         logDetails()
     }
     try {
