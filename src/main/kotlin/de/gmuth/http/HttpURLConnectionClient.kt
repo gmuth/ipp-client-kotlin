@@ -29,7 +29,7 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
             readTimeout = config.timeout
             doOutput = true // trigger POST method
             config.basicAuth?.let { setRequestProperty("Authorization", "Basic ${it.encodeBase64()}") }
-            config.acceptEncoding?.let { setRequestProperty("Accept-Encoding", it) }
+            setRequestProperty("Accept-Encoding", config.acceptEncoding)
             setRequestProperty("Content-Type", contentType)
             config.userAgent?.let { setRequestProperty("User-Agent", it) }
             if (chunked) setChunkedStreamingMode(0)
