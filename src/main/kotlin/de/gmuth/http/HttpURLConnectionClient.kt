@@ -30,6 +30,7 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
             doOutput = true // trigger POST method
             config.basicAuth?.let { setRequestProperty("Authorization", "Basic ${it.encodeBase64()}") }
             setRequestProperty("Content-Type", contentType)
+            setRequestProperty("Accept-Encoding", "identity") // overwrite android default 'gzip'
             config.userAgent?.let { setRequestProperty("User-Agent", it) }
             if (config.chunkedTransferEncoding) setChunkedStreamingMode(0)
             writeContent(outputStream)
