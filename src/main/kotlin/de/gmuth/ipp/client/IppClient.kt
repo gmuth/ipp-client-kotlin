@@ -78,7 +78,8 @@ open class IppClient(
         // http post binary ipp request
         val httpResponse = httpClient.post(
                 httpUri, "application/ipp",
-                { httpPostStream -> request.write(httpPostStream) }
+                { httpPostStream -> request.write(httpPostStream) },
+                chunked = request.hasDocument()
         ).apply {
             when {
                 !isOK() -> "http request to $httpUri failed: status=$status, content-type=$contentType${textContent()}"

@@ -10,8 +10,9 @@ class IppConfig(
         userAgent: String? = "ipp-client-kotlin/2.2",
         sslSocketFactory: SSLSocketFactory? = null,
         verifySSLHostname: Boolean = false,
-        chunkedStreamingMode: Boolean = false,
+        chunkedStreamingMode: Boolean? = null,
         basicAuth: Http.BasicAuth? = null,
+        acceptEncoding: String? = null,
         var userName: String? = basicAuth?.user ?: System.getProperty("user.name"),
         var ippVersion: String = "1.1",
         var charset: Charset = Charsets.UTF_8,
@@ -24,7 +25,8 @@ class IppConfig(
         basicAuth,
         sslSocketFactory,
         verifySSLHostname,
-        chunkedStreamingMode
+        chunkedStreamingMode,
+        acceptEncoding
 ) {
     companion object {
         val log = Logging.getLogger {}
@@ -34,7 +36,8 @@ class IppConfig(
         log.info { "timeout: $timeout" }
         log.info { "userAgent: $userAgent" }
         log.info { "verifySSLHostname: $verifySSLHostname" }
-        log.info { "chunkedTransferEncoding: $chunkedTransferEncoding" }
+        log.info { "chunkedTransferEncoding: ${chunkedTransferEncoding ?: "auto"}" }
+        log.info { "acceptEncoding: $acceptEncoding" }
         log.info { "userName: $userName" }
         log.info { "ippVersion: $ippVersion" }
         log.info { "charset: ${charset.name().toLowerCase()}" }

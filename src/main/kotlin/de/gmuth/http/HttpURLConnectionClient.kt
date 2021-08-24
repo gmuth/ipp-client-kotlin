@@ -19,7 +19,7 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
         val log = Logging.getLogger {}
     }
 
-    override fun post(uri: URI, contentType: String, writeContent: (OutputStream) -> Unit): Http.Response {
+    override fun post(uri: URI, contentType: String, writeContent: (OutputStream) -> Unit, chunked: Boolean): Http.Response {
         with(uri.toURL().openConnection() as HttpURLConnection) {
             if (this is HttpsURLConnection && config.sslSocketFactory != null) {
                 sslSocketFactory = config.sslSocketFactory
@@ -29,10 +29,10 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
             readTimeout = config.timeout
             doOutput = true // trigger POST method
             config.basicAuth?.let { setRequestProperty("Authorization", "Basic ${it.encodeBase64()}") }
+            config.acceptEncoding?.let { setRequestProperty("Accept-Encoding", it) }
             setRequestProperty("Content-Type", contentType)
-            setRequestProperty("Accept-Encoding", "identity") // overwrite android default 'gzip'
             config.userAgent?.let { setRequestProperty("User-Agent", it) }
-            if (config.chunkedTransferEncoding) setChunkedStreamingMode(0)
+            if (chunked) setChunkedStreamingMode(0)
             writeContent(outputStream)
             for ((key, values) in headerFields) {
                 log.log(if (responseCode < 300) TRACE else ERROR) { "$key = $values" }

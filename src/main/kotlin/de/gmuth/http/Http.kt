@@ -21,7 +21,9 @@ interface Http {
             // use individual certificate: sslSocketFactory(loadCertificate(FileInputStream("printer.pem")))
             // use truststore: sslSocketFactory(loadTrustStore(FileInputStream("printer.jks"), "changeit"))
             var verifySSLHostname: Boolean = true,
-            var chunkedTransferEncoding: Boolean = false
+            var chunkedTransferEncoding: Boolean? = false,
+            var acceptEncoding: String? = null
+
     ) {
         fun trustAnyCertificate() {
             sslSocketFactory = SSLHelper.sslSocketFactoryForAnyCertificate()
@@ -47,7 +49,11 @@ interface Http {
     }
 
     abstract class Client(val config: Config = Config()) {
-        abstract fun post(uri: URI, contentType: String, writeContent: (OutputStream) -> Unit): Response
+        abstract fun post(
+                uri: URI,
+                contentType: String, writeContent: (OutputStream) -> Unit,
+                chunked: Boolean = config.chunkedTransferEncoding ?: false
+        ): Response
     }
 
 }
