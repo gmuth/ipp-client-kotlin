@@ -10,7 +10,7 @@ class IppConfig(
         userAgent: String? = "ipp-client-kotlin/2.2",
         sslSocketFactory: SSLSocketFactory? = null,
         verifySSLHostname: Boolean = false,
-        chunkedStreamingMode: Boolean? = null,
+        chunkedTransferEncoding: Boolean? = null,
         basicAuth: Http.BasicAuth? = null,
         acceptEncoding: String? = null,
         var userName: String? = basicAuth?.user ?: System.getProperty("user.name"),
@@ -25,7 +25,7 @@ class IppConfig(
         basicAuth,
         sslSocketFactory,
         verifySSLHostname,
-        chunkedStreamingMode,
+        chunkedTransferEncoding,
         acceptEncoding
 ) {
     companion object {
