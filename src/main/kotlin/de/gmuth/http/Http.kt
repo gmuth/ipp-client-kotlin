@@ -22,7 +22,7 @@ interface Http {
             // use truststore: sslSocketFactory(loadTrustStore(FileInputStream("printer.jks"), "changeit"))
             var verifySSLHostname: Boolean = true,
             var chunkedTransferEncoding: Boolean? = false,
-            var acceptEncoding: String? = null // xerox returns 406 for 'gzip'
+            var acceptEncoding: String? = null
     ) {
         fun trustAnyCertificate() {
             sslSocketFactory = SSLHelper.sslSocketFactoryForAnyCertificate()
