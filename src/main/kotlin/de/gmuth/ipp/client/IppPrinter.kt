@@ -163,6 +163,9 @@ open class IppPrinter(
         return exchangeSuccessful(request)
     }
 
+    fun flash() = identify("flash")
+    fun sound() = identify("sound")
+
     //-----------------------
     // Printer administration
     //-----------------------
