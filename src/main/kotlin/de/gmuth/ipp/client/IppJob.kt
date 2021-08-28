@@ -128,7 +128,7 @@ class IppJob(
     fun cupsGetDocument(documentNumber: Int = 1): IppDocument {
         if (!printer.isCups()) log.warn { "printer is not CUPS: ${printer.printerUri}" }
         if (attributes.containsKey("number-of-documents") && documentNumber > numberOfDocuments) {
-            log.warn { "job has only $numberOfDocuments document(s)" }
+            log.error { "job has only $numberOfDocuments document(s)" }
         }
         val request = ippRequest(CupsGetDocument).apply {
             operationGroup.attribute("document-number", Integer, documentNumber)
