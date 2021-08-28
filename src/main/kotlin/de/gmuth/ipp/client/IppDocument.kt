@@ -35,10 +35,10 @@ class IppDocument(val job: IppJob, cupsGetDocumentResponse: IppResponse) {
 
     fun hasName() = attributes.contains("document-name")
 
-    override fun toString() = StringBuilder().apply {
-        append("document #$number ($format)")
-        if (hasName()) append(" '$name'")
-    }.toString()
+    override fun toString() =
+            StringBuilder("document #$number ($format)").apply {
+                if (hasName()) append(" '$name'")
+            }.toString()
 
     fun readDocument() = inputStream.readBytes().also {
         log.debug { "read ${it.size} bytes of $this" }
