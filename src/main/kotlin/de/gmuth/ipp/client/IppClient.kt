@@ -87,10 +87,12 @@ open class IppClient(
                 !contentType!!.startsWith("application/ipp") -> "invalid content-type: $contentType"
                 else -> null
             }?.let {
-                log.info { "ipp-server: $server" }
+                server?.run { log.info { "ipp-server: $server" } }
                 config.logDetails()
                 request.logDetails()
-                throw IppExchangeException(request, null, status, message = it)
+                throw IppExchangeException(request, null, status, message = it).apply {
+                    if (status == 400) saveMessages("http_400") // bad request
+                }
             }
         }
 
