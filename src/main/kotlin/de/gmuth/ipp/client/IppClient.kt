@@ -11,6 +11,7 @@ import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.log.Logging
 import java.net.URI
 import java.util.concurrent.atomic.AtomicInteger
+import de.gmuth.ipp.core.IppStatus.ClientErrorBadRequest
 
 typealias IppResponseInterceptor = (request: IppRequest, response: IppResponse) -> Unit
 
@@ -108,6 +109,7 @@ open class IppClient(
                     saveMessages("decoding_ipp_response_${request.requestId}_failed")
                 }
             }
+            if(status == ClientErrorBadRequest) logDetails("BAD-REQUEST: ")
             if (operationGroup.containsKey("status-message")) log.debug { "status-message: $statusMessage" }
             if (containsGroup(IppTag.Unsupported)) unsupportedGroup.values.forEach {
                 log.warn { "unsupported attribute: $it" }
