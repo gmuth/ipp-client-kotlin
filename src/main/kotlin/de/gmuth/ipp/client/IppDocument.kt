@@ -51,7 +51,7 @@ class IppDocument(val job: IppJob, cupsGetDocumentResponse: IppResponse) {
             job.attributes.containsKey("document-name-supplied") -> {
                 append(job.attributes.getValue<IppString>("document-name-supplied").text)
             }
-            else -> append("job-${job.id}-document-$number.$suffix")
+            else -> append("job-${job.id}-doc-$number.$suffix")
         }
     }.toString()
 
