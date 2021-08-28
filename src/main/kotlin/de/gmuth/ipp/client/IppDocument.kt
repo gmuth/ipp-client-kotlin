@@ -40,7 +40,7 @@ class IppDocument(val job: IppJob, cupsGetDocumentResponse: IppResponse) {
                 if (hasName()) append(" '$name'")
             }.toString()
 
-    fun readDocument() = inputStream.readBytes().also {
+    fun readBytes() = inputStream.readBytes().also {
         log.debug { "read ${it.size} bytes of $this" }
     }
 
