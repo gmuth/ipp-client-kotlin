@@ -7,11 +7,11 @@ package de.gmuth.ipp.client
 import de.gmuth.http.Http
 import de.gmuth.http.HttpURLConnectionClient
 import de.gmuth.ipp.core.*
+import de.gmuth.ipp.core.IppStatus.ClientErrorBadRequest
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.log.Logging
 import java.net.URI
 import java.util.concurrent.atomic.AtomicInteger
-import de.gmuth.ipp.core.IppStatus.ClientErrorBadRequest
 
 typealias IppResponseInterceptor = (request: IppRequest, response: IppResponse) -> Unit
 
@@ -91,9 +91,7 @@ open class IppClient(
                 server?.run { log.info { "ipp-server: $server" } }
                 config.logDetails()
                 request.logDetails()
-                throw IppExchangeException(request, null, status, message = it).apply {
-                    if (status == 400) saveMessages("http_400") // bad request
-                }
+                throw IppExchangeException(request, null, status, message = it)
             }
         }
 
@@ -109,7 +107,7 @@ open class IppClient(
                     saveMessages("decoding_ipp_response_${request.requestId}_failed")
                 }
             }
-            if(status == ClientErrorBadRequest) logDetails("BAD-REQUEST: ")
+            if (status == ClientErrorBadRequest) logDetails("BAD-REQUEST: ")
             if (operationGroup.containsKey("status-message")) log.debug { "status-message: $statusMessage" }
             if (containsGroup(IppTag.Unsupported)) unsupportedGroup.values.forEach {
                 log.warn { "unsupported attribute: $it" }

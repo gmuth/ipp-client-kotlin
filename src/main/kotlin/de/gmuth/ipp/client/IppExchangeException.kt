@@ -23,6 +23,16 @@ class IppExchangeException(
         val log = Logging.getLogger {}
     }
 
+    init {
+        if (httpStatus == 400) { // bad request
+            try {
+                saveMessages("http_400")
+            } catch (throwable: Throwable) {
+                log.error { "failed to save messages on http-400-error" }
+            }
+        }
+    }
+
     fun logDetails() {
         if (httpStatus != null) log.info { "HTTP-STATUS: $httpStatus" }
         request.logDetails(" REQUEST: ")
