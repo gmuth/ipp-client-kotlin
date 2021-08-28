@@ -7,6 +7,7 @@ package de.gmuth.ipp.client
 import de.gmuth.ipp.client.IppJobState.*
 import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppOperation.*
+import de.gmuth.ipp.core.IppTag.Integer
 import de.gmuth.log.Logging
 import java.io.InputStream
 import java.net.URI
@@ -50,6 +51,9 @@ class IppJob(
 
     val kOctets: Int
         get() = attributes.getValue("job-k-octets")
+
+    val numberOfDocuments: Int
+        get() = attributes.getValue("number-of-documents")
 
     fun isProcessing() = state == Processing
     fun isProcessingStopped() = state == ProcessingStopped
@@ -114,6 +118,21 @@ class IppJob(
             documentInputStream = inputStream
         }
         attributes = exchangeSuccessful(request).jobGroup
+    }
+
+    //------------------
+    // Cups-Get-Document
+    //------------------
+
+    fun cupsGetDocument(documentNumber: Int = 1): IppDocument {
+        if (!printer.isCups()) log.warn { "printer is not CUPS: ${printer.printerUri}" }
+        if (attributes.containsKey("number-of-documents") && documentNumber > numberOfDocuments) {
+            log.warn { "job has only $numberOfDocuments document(s)" }
+        }
+        val request = ippRequest(CupsGetDocument).apply {
+            operationGroup.attribute("document-number", Integer, documentNumber)
+        }
+        return IppDocument(this, exchangeSuccessful(request))
     }
 
     //-----------------------
