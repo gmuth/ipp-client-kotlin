@@ -120,9 +120,10 @@ class IppJob(
         attributes = exchangeSuccessful(request).jobGroup
     }
 
-    //------------------
+    //---------------------------------------------------------
     // Cups-Get-Document
-    //------------------
+    // https://www.cups.org/doc/spec-ipp.html#CUPS_GET_DOCUMENT
+    //---------------------------------------------------------
 
     fun cupsGetDocument(documentNumber: Int = 1): IppDocument {
         if (!printer.isCups()) log.warn { "printer is not CUPS: ${printer.printerUri}" }
