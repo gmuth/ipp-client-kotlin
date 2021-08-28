@@ -267,7 +267,6 @@ open class IppPrinter(
     fun getJobs(
             whichJobs: String? = null,
             requestedAttributes: List<String> = getJobsRequestedAttributes
-
     ): List<IppJob> {
         val request = ippRequest(GetJobs, requestedAttributes = requestedAttributes)
         if (whichJobs != null) {
@@ -279,6 +278,11 @@ open class IppPrinter(
                 .getAttributesGroups(Job)
                 .map { IppJob(this, it) }
     }
+
+    fun getJobs(
+            whichJob: IppWhichJobs,
+            requestedAttributes: List<String> = getJobsRequestedAttributes
+    ) = getJobs(whichJob.keyword, requestedAttributes)
 
     //----------------------
     // delegate to IppClient
