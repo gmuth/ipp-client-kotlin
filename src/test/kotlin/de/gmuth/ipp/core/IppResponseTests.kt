@@ -24,6 +24,7 @@ class IppResponseTests {
             assertEquals(0, jobGroup.size)
             assertEquals(0, unsupportedGroup.size)
             assertEquals("successful-ok", codeDescription)
+            assertTrue(hasStatusMessage())
             assertEquals("not-infected", statusMessage.toString())
         }
     }
