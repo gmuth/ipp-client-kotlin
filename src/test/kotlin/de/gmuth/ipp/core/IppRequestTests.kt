@@ -8,7 +8,7 @@ import de.gmuth.log.Logging
 import java.net.URI
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFails
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 
 class IppRequestTests {
@@ -19,13 +19,14 @@ class IppRequestTests {
 
     @Test
     fun requestConstructor1() {
-        with(IppRequest()) {
+        IppRequest().run {
             code = 5
             log.info { toString() }
             logDetails()
             assertEquals(null, version)
             assertEquals(IppOperation.CreateJob, operation)
-            assertFails { printerUri }
+            createAttributesGroup(IppTag.Operation)
+            assertFailsWith<IppException> { printerUri }
         }
     }
 
