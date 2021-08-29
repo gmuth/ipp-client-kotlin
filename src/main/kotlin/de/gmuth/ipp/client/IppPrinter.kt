@@ -80,7 +80,9 @@ open class IppPrinter(
         get() = attributes.getValues("document-format-supported")
 
     val operationsSupported: List<IppOperation>
-        get() = attributes.getValues<List<Int>>("operations-supported").map { IppOperation.fromShort(it.toShort()) }
+        get() = attributes.getValues<List<Int>>("operations-supported").map {
+            IppOperation.fromShort(it.toShort())
+        }
 
     val colorSupported: Boolean
         get() = attributes.getValue("color-supported")
@@ -263,8 +265,7 @@ open class IppPrinter(
     // Get-Jobs (as List<IppJob>)
     //---------------------------
 
-    @JvmOverloads
-    fun getJobs(
+    fun xgetJobs(
             whichJobs: String? = null,
             requestedAttributes: List<String> = getJobsRequestedAttributes
     ): List<IppJob> {
@@ -279,10 +280,21 @@ open class IppPrinter(
                 .map { IppJob(this, it) }
     }
 
+    @JvmOverloads
     fun getJobs(
-            whichJob: IppWhichJobs,
+            whichJobs: IppWhichJobs? = null,
             requestedAttributes: List<String> = getJobsRequestedAttributes
-    ) = getJobs(whichJob.keyword, requestedAttributes)
+    ): List<IppJob> {
+        val request = ippRequest(GetJobs, requestedAttributes = requestedAttributes).apply {
+            whichJobs?.keyword?.let {
+                checkIfValueIsSupported("which-jobs-supported", it)
+                operationGroup.attribute("which-jobs", Keyword, it)
+            }
+        }
+        return exchangeSuccessful(request)
+                .getAttributesGroups(Job)
+                .map { IppJob(this, it) }
+    }
 
     //----------------------
     // delegate to IppClient

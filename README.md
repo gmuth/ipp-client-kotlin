@@ -52,9 +52,9 @@ job.waitForTermination()
 
 // manage jobs
 ippPrinter.getJobs().forEach { println(it) }
-ippPrinter.getJobs("completed") // which-jobs
+ippPrinter.getJobs(IppWhichJobs.Completed)
 
-val job = ippPrinter.getJob(42)
+val job = ippPrinter.getJob(4)
 job.hold()
 job.release()
 job.cancel()
@@ -62,7 +62,7 @@ job.cancel()
 // print operator
 ippPrinter.pause()
 ippPrinter.resume()
-ippPrinter.identify("sound")
+ippPrinter.sound() // identify printer
 ```
 ### Printer Capabilities
 
