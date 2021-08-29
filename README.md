@@ -87,11 +87,7 @@ val request = IppRequest(IppOperation.PrintJob, uri).apply {
   documentInputStream  = FileInputStream(file)
 }
 val response = ippClient.exchange(request)
-if (response.isSuccessful()) {
-    println(response.jobGroup["job-id"])
-} else {
-    println(response.status)
-}
+println(response.jobGroup["job-id"])
 ```
 
 ### [CupsClient](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/CupsClient.kt)
