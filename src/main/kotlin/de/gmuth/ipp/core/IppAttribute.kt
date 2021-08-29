@@ -35,7 +35,7 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
         }
 
     @Suppress("UNCHECKED_CAST")
-    fun additionalValue(attribute: IppAttribute<*>) = when {
+    fun additionalValue(attribute: IppAttribute<*>): Any = when {
         attribute.name.isNotEmpty() -> throw IppException("for additional '$name' values attribute name must be empty")
         attribute.values.size != 1 -> throw IppException("expected 1 additional value, not ${attribute.values.size}")
         attribute.tag != tag -> log.warn { "$name: ignore additional value \"$attribute\" - tag is not '$tag'" }
