@@ -91,7 +91,7 @@ class CSVTable<T>(
                 }
 
         fun print(resourcePath: String, delimiter: String = "|") =
-                print(javaClass.getResourceAsStream(resourcePath), delimiter)
+                print(CSVTable::class.java.getResourceAsStream(resourcePath), delimiter)
 
     }
 }
