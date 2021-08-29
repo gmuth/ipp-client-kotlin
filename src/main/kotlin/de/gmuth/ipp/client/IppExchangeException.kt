@@ -14,23 +14,24 @@ class IppExchangeException(
         val request: IppRequest,
         val response: IppResponse? = null,
         val httpStatus: Int? = null,
-        message: String,
+        message: String = defaultMessage(request, response),
         cause: Exception? = null
 
 ) : IppException(message, cause) {
 
     companion object {
         val log = Logging.getLogger {}
+        fun defaultMessage(request: IppRequest, response: IppResponse?) = StringBuilder().apply {
+            append("${request.operation} failed")
+            response?.run {
+                append(": '$status'")
+                if (hasStatusMessage()) append(", $statusMessage")
+            }
+        }.toString()
     }
 
     init {
-        if (httpStatus == 400) { // bad request
-            try {
-                saveMessages("http_400")
-            } catch (throwable: Throwable) {
-                log.error { "failed to save messages on http-400-error" }
-            }
-        }
+        if (httpStatus == 400) saveMessages("http_400")
     }
 
     fun logDetails() {
