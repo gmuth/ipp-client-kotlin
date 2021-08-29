@@ -109,7 +109,7 @@ cupsClient.getPrinters().forEach {
 
 // list all completed jobs for queue
 cupsClient.getPrinter("ColorJet_HP")
-          .getJobs("completed")
+          .getJobs(IppWhichJobs.Completed)
           .forEach { println(it) }
 
 // default printer
