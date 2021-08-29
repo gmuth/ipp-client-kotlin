@@ -162,7 +162,7 @@ open class IppPrinter(
         val request = ippRequest(IdentifyPrinter).apply {
             operationGroup.attribute("identify-actions", Keyword, actions)
         }
-        return exchangeSuccessful(request)
+        return exchange(request)
     }
 
     fun flash() = identify("flash")
@@ -172,8 +172,8 @@ open class IppPrinter(
     // Printer administration
     //-----------------------
 
-    fun pause() = exchangeSuccessfulIppRequest(PausePrinter)
-    fun resume() = exchangeSuccessfulIppRequest(ResumePrinter)
+    fun pause() = exchangeIppRequest(PausePrinter)
+    fun resume() = exchangeIppRequest(ResumePrinter)
 
     //-----------------------
     // Get-Printer-Attributes
@@ -181,7 +181,7 @@ open class IppPrinter(
 
     @JvmOverloads
     fun getPrinterAttributes(requestedAttributes: List<String>? = null) =
-            exchangeSuccessfulIppRequest(GetPrinterAttributes, requestedAttributes = requestedAttributes)
+            exchangeIppRequest(GetPrinterAttributes, requestedAttributes = requestedAttributes)
 
     fun updateAllAttributes() {
         attributes = getPrinterAttributes().printerGroup
@@ -194,7 +194,7 @@ open class IppPrinter(
     @Throws(IppExchangeException::class)
     fun validateJob(vararg attributeBuilders: IppAttributeBuilder): IppResponse {
         val request = attributeBuildersRequest(ValidateJob, attributeBuilders)
-        return exchangeSuccessful(request)
+        return exchange(request)
     }
 
     //----------
@@ -214,7 +214,7 @@ open class IppPrinter(
         val request = attributeBuildersRequest(PrintJob, attributeBuilders).apply {
             documentInputStream = inputStream
         }
-        return exchangeSuccessfulForIppJob(request)
+        return exchangeForIppJob(request)
     }
 
     //----------
@@ -225,7 +225,7 @@ open class IppPrinter(
         val request = attributeBuildersRequest(PrintURI, attributeBuilders).apply {
             operationGroup.attribute("document-uri", Uri, documentUri)
         }
-        return exchangeSuccessfulForIppJob(request)
+        return exchangeForIppJob(request)
     }
 
     //-----------
@@ -234,7 +234,7 @@ open class IppPrinter(
 
     fun createJob(vararg attributeBuilders: IppAttributeBuilder): IppJob {
         val request = attributeBuildersRequest(CreateJob, attributeBuilders)
-        return exchangeSuccessfulForIppJob(request)
+        return exchangeForIppJob(request)
     }
 
     // ---- factory method for operations Validate-Job, Print-Job, Print-Uri, Create-Job
@@ -258,7 +258,7 @@ open class IppPrinter(
 
     fun getJob(jobId: Int): IppJob {
         val request = ippRequest(GetJobAttributes, jobId)
-        return exchangeSuccessfulForIppJob(request)
+        return exchangeForIppJob(request)
     }
 
     //---------------------------
@@ -276,7 +276,7 @@ open class IppPrinter(
                 operationGroup.attribute("which-jobs", Keyword, it)
             }
         }
-        return exchangeSuccessful(request)
+        return exchange(request)
                 .getAttributesGroups(Job)
                 .map { IppJob(this, it) }
     }
@@ -288,18 +288,18 @@ open class IppPrinter(
     fun ippRequest(operation: IppOperation, jobId: Int? = null, requestedAttributes: List<String>? = null) =
             ippClient.ippRequest(operation, printerUri, jobId, requestedAttributes)
 
-    fun exchangeSuccessful(request: IppRequest): IppResponse {
+    fun exchange(request: IppRequest): IppResponse {
         checkIfValueIsSupported("ipp-versions-supported", request.version!!)
         checkIfValueIsSupported("operations-supported", request.code!!.toInt())
         checkIfValueIsSupported("charset-supported", request.operationGroup.getValue<Charset>("attributes-charset"))
-        return ippClient.exchangeSuccessful(request)
+        return ippClient.exchange(request)
     }
 
-    fun exchangeSuccessfulIppRequest(operation: IppOperation, jobId: Int? = null, requestedAttributes: List<String>? = null) =
-            exchangeSuccessful(ippRequest(operation, jobId, requestedAttributes))
+    fun exchangeIppRequest(operation: IppOperation, jobId: Int? = null, requestedAttributes: List<String>? = null) =
+            exchange(ippRequest(operation, jobId, requestedAttributes))
 
-    fun exchangeSuccessfulForIppJob(request: IppRequest) =
-            IppJob(this, exchangeSuccessful(request).jobGroup)
+    fun exchangeForIppJob(request: IppRequest) =
+            IppJob(this, exchange(request).jobGroup)
 
     // -------
     // Logging

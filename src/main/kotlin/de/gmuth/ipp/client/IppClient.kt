@@ -6,8 +6,11 @@ package de.gmuth.ipp.client
 
 import de.gmuth.http.Http
 import de.gmuth.http.HttpURLConnectionClient
-import de.gmuth.ipp.core.*
+import de.gmuth.ipp.core.IppOperation
+import de.gmuth.ipp.core.IppRequest
+import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppStatus.ClientErrorBadRequest
+import de.gmuth.ipp.core.IppTag.Unsupported
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.log.Logging
 import java.net.URI
@@ -31,9 +34,9 @@ open class IppClient(
         val log = Logging.getLogger {}
     }
 
-    //------------------------------------
-    // factory/build method for IppRequest
-    //------------------------------------
+    //-----------------
+    // build IppRequest
+    //-----------------
 
     fun ippRequest(
             operation: IppOperation,
@@ -56,63 +59,63 @@ open class IppClient(
     // exchange IppRequest for IppResponse
     //------------------------------------
 
-    open fun exchangeSuccessful(request: IppRequest) =
-            exchange(request).apply {
-                if (!isSuccessful()) {
-                    IppRegistrationsSection2.validate(request)
-                    val statusMessage = operationGroup.getValueOrNull("status-message") ?: IppString("")
-                    throw IppExchangeException(request, this, message = "${request.operation} failed: '$status' $statusMessage")
-                }
-            }
-
     open fun exchange(request: IppRequest): IppResponse {
-        val ippUri: URI = request.operationGroup.getValueOrNull("printer-uri") ?: throw IppException("missing 'printer-uri'")
+        val ippUri: URI = request.printerUri
+        val httpUri = toHttpUri(ippUri)
         log.trace { "send '${request.operation}' request to $ippUri" }
 
-        // convert ipp uri to http uri
-        val httpUri = with(ippUri) {
-            val scheme = scheme.replace("ipp", "http")
-            val port = if (port == -1) 631 else port
-            URI.create("$scheme://$host:$port$path")
-        }
+        val httpResponse = httpPostRequest(httpUri, request)
+        val response = decodeIppResponse(request, httpResponse)
+        log.debug { "$ippUri: $request => $response" }
 
-        // http post binary ipp request
-        val httpResponse = httpClient.post(
-                httpUri, "application/ipp",
-                { httpPostStream -> request.write(httpPostStream) },
-                chunked = config.chunkedTransferEncoding ?: request.hasDocument()
-        ).apply {
-            when {
-                !isOK() -> "http request to $httpUri failed: status=$status, content-type=$contentType${textContent()}"
-                !hasContentType() -> "missing content-type in http response (application/ipp required)"
-                !contentType!!.startsWith("application/ipp") -> "invalid content-type: $contentType"
-                else -> null
-            }?.let {
-                server?.run { log.info { "ipp-server: $server" } }
-                config.logDetails()
-                request.logDetails()
-                throw IppExchangeException(request, null, status, message = it)
+        responseInterceptor?.invoke(request, response)
+
+        return response.apply {
+            if (!isSuccessful()) {
+                IppRegistrationsSection2.validate(request)
+                throw IppExchangeException(request, response)
             }
         }
+    }
 
-        // decode ipp response
-        return IppResponse().apply {
-            try {
-                read(httpResponse.contentStream!!)
-                log.debug { "$ippUri: $request => $this" }
-            } catch (exception: Exception) {
-                throw IppExchangeException(
-                        request, this, httpResponse.status, "failed to decode ipp response", exception
-                ).apply {
-                    saveMessages("decoding_ipp_response_${request.requestId}_failed")
-                }
+    fun toHttpUri(ippUri: URI) = with(ippUri) {
+        val scheme = scheme.replace("ipp", "http")
+        val port = if (port == -1) 631 else port
+        URI.create("$scheme://$host:$port$path")
+    }
+
+    fun httpPostRequest(httpUri: URI, request: IppRequest) = httpClient.post(
+            httpUri, "application/ipp",
+            { httpPostStream -> request.write(httpPostStream) },
+            chunked = config.chunkedTransferEncoding ?: request.hasDocument()
+    ).apply {
+        when { // http response is not successful
+            !isOK() -> "http request to $httpUri failed: status=$status, content-type=$contentType${textContent()}"
+            !hasContentType() -> "missing content-type in http response (application/ipp required)"
+            !contentType!!.startsWith("application/ipp") -> "invalid content-type: $contentType"
+            else -> null
+        }?.let {
+            server?.run { log.info { "ipp-server: $server" } }
+            config.logDetails()
+            request.logDetails()
+            throw IppExchangeException(request, null, status, message = it)
+        }
+    }
+
+    fun decodeIppResponse(request: IppRequest, httpResponse: Http.Response) = IppResponse().apply {
+        try {
+            read(httpResponse.contentStream!!)
+        } catch (exception: Exception) {
+            throw IppExchangeException(
+                    request, this, httpResponse.status, "failed to decode ipp response", exception
+            ).apply {
+                saveMessages("decoding_ipp_response_${request.requestId}_failed")
             }
-            if (status == ClientErrorBadRequest) logDetails("BAD-REQUEST: ")
-            if (operationGroup.containsKey("status-message")) log.debug { "status-message: $statusMessage" }
-            if (containsGroup(IppTag.Unsupported)) unsupportedGroup.values.forEach {
-                log.warn { "unsupported attribute: $it" }
-            }
-            responseInterceptor?.invoke(request, this)
+        }
+        if (status == ClientErrorBadRequest) request.logDetails("BAD-REQUEST: ")
+        if (hasStatusMessage()) log.debug { "status-message: $statusMessage" }
+        if (containsGroup(Unsupported)) unsupportedGroup.values.forEach {
+            log.warn { "unsupported attribute: $it" }
         }
     }
 }

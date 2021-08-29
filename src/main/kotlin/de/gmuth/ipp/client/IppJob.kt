@@ -144,10 +144,10 @@ class IppJob(
             printer.ippRequest(operation, id, requestedAttributes)
 
     fun exchangeSuccessful(request: IppRequest) =
-            printer.exchangeSuccessful(request)
+            printer.exchange(request)
 
     fun exchangeSuccessfulIppRequest(operation: IppOperation, requestedAttributes: List<String>? = null) =
-            printer.exchangeSuccessfulIppRequest(operation, id, requestedAttributes)
+            printer.exchangeIppRequest(operation, id, requestedAttributes)
 
     // -------
     // Logging

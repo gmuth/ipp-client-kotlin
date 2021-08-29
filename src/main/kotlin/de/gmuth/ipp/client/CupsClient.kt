@@ -28,7 +28,7 @@ open class CupsClient(val cupsUri: URI) : IppClient() {
     }
 
     val printerMap: Map<String, IppPrinter> by lazy {
-        exchangeSuccessfulIppRequest(CupsGetPrinters)
+        exchangeIppRequest(CupsGetPrinters)
                 .getAttributesGroups(Printer)
                 .map { IppPrinter(it, this) }
                 .associateBy { it.name.text }
@@ -44,13 +44,13 @@ open class CupsClient(val cupsUri: URI) : IppClient() {
     protected fun ippRequest(operation: IppOperation) =
             ippRequest(operation, cupsUri)
 
-    protected fun exchangeSuccessfulIppRequest(operation: IppOperation) =
-            exchangeSuccessful(ippRequest(operation))
+    protected fun exchangeIppRequest(operation: IppOperation) =
+            exchange(ippRequest(operation))
 
     fun setDefault(defaultPrinterUri: URI) =
-            exchangeSuccessful(ippRequest(CupsSetDefault, defaultPrinterUri))
+            exchange(ippRequest(CupsSetDefault, defaultPrinterUri))
 
     fun getDefault() =
-            IppPrinter(exchangeSuccessfulIppRequest(CupsGetDefault).printerGroup, this)
+            IppPrinter(exchangeIppRequest(CupsGetDefault).printerGroup, this)
 
 }

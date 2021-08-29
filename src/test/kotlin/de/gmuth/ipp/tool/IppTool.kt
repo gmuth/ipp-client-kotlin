@@ -81,7 +81,7 @@ class IppTool {
     private fun executeIppRequest() = with(IppClient()) {
         verbose = true
         if (uri == null) throw IppException("uri missing")
-        exchangeSuccessful(request)
+        exchange(request)
     }
 
 }
