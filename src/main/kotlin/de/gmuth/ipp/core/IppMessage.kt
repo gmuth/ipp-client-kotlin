@@ -83,11 +83,11 @@ abstract class IppMessage {
         val byteArraySavingInputStream = ByteArraySavingInputStream(inputStream.buffered())
         try {
             IppInputStream(byteArraySavingInputStream).readMessage(this)
+            byteArraySavingInputStream.saveBytes = false // don't save document bytes
             documentInputStream = byteArraySavingInputStream
         } finally {
             rawBytes = byteArraySavingInputStream.toByteArray()
             log.debug { "read ${rawBytes!!.size} raw bytes" }
-            byteArraySavingInputStream.saveBytes = false // stop saving document bytes
         }
     }
 
