@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2021 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppTag.*
@@ -9,6 +9,9 @@ import java.net.URI
 import java.nio.charset.Charset
 
 class IppRequest() : IppMessage() {
+
+    val printerUri: URI
+        get() = operationGroup.getValueOrNull("printer-uri") ?: throw IppException("missing 'printer-uri'")
 
     override val codeDescription: String
         get() = operation.toString()
