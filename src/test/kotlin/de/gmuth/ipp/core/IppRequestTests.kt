@@ -8,6 +8,7 @@ import de.gmuth.log.Logging
 import java.net.URI
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFails
 import kotlin.test.assertNotNull
 
 class IppRequestTests {
@@ -24,21 +25,23 @@ class IppRequestTests {
             logDetails()
             assertEquals(null, version)
             assertEquals(IppOperation.CreateJob, operation)
+            assertFails { printerUri }
         }
     }
 
     @Test
     fun requestConstructor2() {
         IppMessage.log.logLevel = Logging.LogLevel.DEBUG
-        val request = IppRequest(IppOperation.StartupPrinter)
+        val request = IppRequest(IppOperation.StartupPrinter, URI.create("ipp://foo"))
         assertEquals(1, request.requestId)
         assertEquals("1.1", request.version)
         assertEquals(IppOperation.StartupPrinter, request.operation)
         assertEquals(Charsets.UTF_8, request.operationGroup.getValue("attributes-charset"))
         assertEquals("en", request.operationGroup.getValue("attributes-natural-language"))
+        assertEquals("ipp://foo", request.printerUri.toString())
         assertEquals("Startup-Printer", request.codeDescription)
         val requestEncoded = request.encode()
-        assertEquals(72, requestEncoded.size)
+        assertEquals(97, requestEncoded.size)
         IppMessage.log.logLevel = Logging.LogLevel.INFO
     }
 
