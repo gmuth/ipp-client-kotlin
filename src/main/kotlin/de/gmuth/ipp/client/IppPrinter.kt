@@ -279,12 +279,18 @@ open class IppPrinter(
     @JvmOverloads
     fun getJobs(
             whichJobs: IppWhichJobs? = null,
+            myJobs: Boolean? = null,
+            limit: Int? = null,
             requestedAttributes: List<String> = getJobsRequestedAttributes
     ): List<IppJob> {
         val request = ippRequest(GetJobs, requestedAttributes = requestedAttributes).apply {
-            whichJobs?.keyword?.let {
-                checkIfValueIsSupported("which-jobs-supported", it)
-                operationGroup.attribute("which-jobs", Keyword, it)
+            operationGroup.run {
+                whichJobs?.keyword?.let {
+                    checkIfValueIsSupported("which-jobs-supported", it)
+                    attribute("which-jobs", Keyword, it)
+                }
+                myJobs?.let { attribute("my-jobs", IppTag.Boolean, it) }
+                limit?.let { attribute("limit", Integer, it) }
             }
         }
         return exchange(request)
