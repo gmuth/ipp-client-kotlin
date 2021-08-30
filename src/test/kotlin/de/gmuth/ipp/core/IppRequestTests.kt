@@ -37,7 +37,7 @@ class IppRequestTests {
         assertEquals(1, request.requestId)
         assertEquals("1.1", request.version)
         assertEquals(IppOperation.StartupPrinter, request.operation)
-        assertEquals(Charsets.UTF_8, request.operationGroup.getValue("attributes-charset"))
+        assertEquals(Charsets.UTF_8, request.attributesCharset)
         assertEquals("en", request.operationGroup.getValue("attributes-natural-language"))
         assertEquals("ipp://foo", request.printerUri.toString())
         assertEquals("Startup-Printer", request.codeDescription)
