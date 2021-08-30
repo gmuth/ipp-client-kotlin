@@ -102,6 +102,21 @@ open class IppPrinter(
     val versionsSupported: List<String>
         get() = attributes.getValues("ipp-versions-supported")
 
+    val communicationChannelsSupported: List<IppCommunicationChannel>
+        get() = mutableListOf<IppCommunicationChannel>().apply {
+            with(attributes) {
+                val printerUriSupportedList = getValues<List<URI>>("printer-uri-supported")
+                val uriSecuritySupportedList = getValues<List<String>>("uri-security-supported")
+                val uriAuthenticationSupportedList = getValues<List<String>>("uri-authentication-supported")
+                for ((index, printerUriSupported) in printerUriSupportedList.withIndex())
+                    add(IppCommunicationChannel(
+                            printerUriSupported,
+                            uriSecuritySupportedList[index],
+                            uriAuthenticationSupportedList[index]
+                    ))
+            }
+        }
+
     // ----------------------------------------------
     // extensions supported by cups and some printers
     // https://www.cups.org/doc/spec-ipp.html
@@ -125,7 +140,7 @@ open class IppPrinter(
                 val types = getValues<List<String>>("marker-types")
                 val names = getValues<List<IppString>>("marker-names")
                 val colors = getValues<List<IppString>>("marker-colors")
-                for ((index, type) in types.withIndex()) {
+                for ((index, type) in types.withIndex())
                     add(CupsMarker(
                             type,
                             names[index].text,
@@ -134,7 +149,6 @@ open class IppPrinter(
                             highLevels[index],
                             colors[index].text
                     ))
-                }
             }
         }
 
