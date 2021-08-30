@@ -73,9 +73,6 @@ open class IppPrinter(
     val stateReasons: List<String>
         get() = attributes.getValues("printer-state-reasons")
 
-    val uriSupported: List<URI>
-        get() = attributes.getValues("printer-uri-supported")
-
     val documentFormatSupported: List<String>
         get() = attributes.getValues("document-format-supported")
 
