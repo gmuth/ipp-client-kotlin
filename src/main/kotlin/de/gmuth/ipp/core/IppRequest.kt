@@ -19,6 +19,9 @@ class IppRequest() : IppMessage() {
     val operation: IppOperation
         get() = IppOperation.fromShort(code!!)
 
+    val attributesCharset: Charset
+        get() = operationGroup.getValue("attributes-charset")
+
     constructor(
             operation: IppOperation,
             printerUri: URI? = null,
@@ -35,7 +38,7 @@ class IppRequest() : IppMessage() {
         this.code = operation.code
         this.requestId = requestId
 
-        with(createAttributesGroup(Operation)) {
+        createAttributesGroup(Operation).run {
             // required attributes
             attribute("attributes-charset", Charset, charset)
             attribute("attributes-natural-language", NaturalLanguage, naturalLanguage)
