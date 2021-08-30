@@ -183,9 +183,9 @@ open class IppPrinter(
     // Printer administration
     //-----------------------
 
-    fun pause() = exchangeIppRequest(PausePrinter)
-    fun resume() = exchangeIppRequest(ResumePrinter)
-    fun purgeJobs() = exchangeIppRequest(PurgeJobs)
+    fun pause() = exchange(ippRequest(PausePrinter))
+    fun resume() = exchange(ippRequest(ResumePrinter))
+    fun purgeJobs() = exchange(ippRequest(PurgeJobs))
 
     //-----------------------
     // Get-Printer-Attributes
@@ -193,7 +193,7 @@ open class IppPrinter(
 
     @JvmOverloads
     fun getPrinterAttributes(requestedAttributes: List<String>? = null) =
-            exchangeIppRequest(GetPrinterAttributes, requestedAttributes = requestedAttributes)
+            exchange(ippRequest(GetPrinterAttributes, requestedAttributes = requestedAttributes))
 
     fun updateAllAttributes() {
         attributes = getPrinterAttributes().printerGroup
@@ -307,14 +307,12 @@ open class IppPrinter(
             ippClient.ippRequest(operation, printerUri, jobId, requestedAttributes)
 
     fun exchange(request: IppRequest): IppResponse {
-        checkIfValueIsSupported("ipp-versions-supported", request.version!!)
-        checkIfValueIsSupported("operations-supported", request.code!!.toInt())
-        checkIfValueIsSupported("charset-supported", request.operationGroup.getValue<Charset>("attributes-charset"))
-        return ippClient.exchange(request)
+        return ippClient.exchange(request.apply {
+            checkIfValueIsSupported("ipp-versions-supported", version!!)
+            checkIfValueIsSupported("operations-supported", code!!.toInt())
+            checkIfValueIsSupported("charset-supported", operationGroup.getValue<Charset>("attributes-charset"))
+        })
     }
-
-    fun exchangeIppRequest(operation: IppOperation, jobId: Int? = null, requestedAttributes: List<String>? = null) =
-            exchange(ippRequest(operation, jobId, requestedAttributes))
 
     fun exchangeForIppJob(request: IppRequest) =
             IppJob(this, exchange(request).jobGroup)
