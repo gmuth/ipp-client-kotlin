@@ -8,18 +8,18 @@ package de.gmuth.ipp.client
 enum class IppWhichJobs(val keyword: String) {
     // RFC 8011
     Completed("completed"),
+    NotCompleted("not-completed"),
 
     // PWG5100.7
-    Aborted("aborted"),
     All("all"),
+    Aborted("aborted"),
     Canceled("canceled"),
     Pending("pending"),
-    PendingHeld("pending-held"),
     Processing("processing"),
+    PendingHeld("pending-held"),
     ProcessingStopped("processing-stopped"),
 
     // PWG5100.11
-    NotCompleted("not-completed"),
     ProofPrint("proof-print"),
     Saved("saved"),
 
