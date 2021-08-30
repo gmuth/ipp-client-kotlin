@@ -310,7 +310,7 @@ open class IppPrinter(
         return ippClient.exchange(request.apply {
             checkIfValueIsSupported("ipp-versions-supported", version!!)
             checkIfValueIsSupported("operations-supported", code!!.toInt())
-            checkIfValueIsSupported("charset-supported", operationGroup.getValue<Charset>("attributes-charset"))
+            checkIfValueIsSupported("charset-supported", attributesCharset)
         })
     }
 
