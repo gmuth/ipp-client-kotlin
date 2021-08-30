@@ -118,8 +118,9 @@ class IppJob(
             documentName: String? = null,
             documentNaturalLanguage: String? = null
     ) {
-        val request = ippRequest(SendDocument).apply {
-            addDocumentAttributes(operationGroup, lastDocument, documentName, documentNaturalLanguage)
+        val request = documentRequest(
+                SendDocument, lastDocument, documentName, documentNaturalLanguage
+        ).apply {
             documentInputStream = inputStream
         }
         attributes = exchangeSuccessful(request).jobGroup
@@ -136,22 +137,25 @@ class IppJob(
             documentName: String? = null,
             documentNaturalLanguage: String? = null
     ) {
-        val request = ippRequest(SendURI).apply {
+        val request = documentRequest(
+                SendURI, lastDocument, documentName, documentNaturalLanguage
+        ).apply {
             operationGroup.attribute("document-uri", Uri, documentUri)
-            addDocumentAttributes(operationGroup, lastDocument, documentName, documentNaturalLanguage)
         }
         attributes = exchangeSuccessful(request).jobGroup
     }
 
-    protected fun addDocumentAttributes(
-            group: IppAttributesGroup,
+    protected fun documentRequest(
+            operation: IppOperation,
             lastDocument: Boolean,
             documentName: String?,
             documentNaturalLanguage: String?
-    ) = group.run {
-        attribute("last-document", IppTag.Boolean, lastDocument)
-        documentName?.let { attribute("document-name", NameWithoutLanguage, it.toIppString()) }
-        documentNaturalLanguage?.let { attribute("document-natural-language", NaturalLanguage, it) }
+    ) = ippRequest(operation).apply {
+        operationGroup.run {
+            attribute("last-document", IppTag.Boolean, lastDocument)
+            documentName?.let { attribute("document-name", NameWithoutLanguage, it.toIppString()) }
+            documentNaturalLanguage?.let { attribute("document-natural-language", NaturalLanguage, it) }
+        }
     }
 
     //---------------------------------------------------------
