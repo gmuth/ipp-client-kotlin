@@ -20,7 +20,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
     // charset for text and name attributes, rfc 8011 4.1.4.1
     internal lateinit var attributesCharset: Charset
 
-    fun writeMessage(message: IppMessage) = with(message) {
+    fun writeMessage(message: IppMessage) = message.run {
         attributesCharset = operationGroup.getValue("attributes-charset")
 
         writeVersion(version ?: throw IppException("missing version"))
