@@ -23,10 +23,6 @@ object IppTemplateAttributes {
             IppAttribute("document-format", MimeMediaType, value)
 
     @JvmStatic
-    fun documentName(value: String) =
-            IppAttribute("document-name", NameWithoutLanguage, value.toIppString())
-
-    @JvmStatic
     fun jobName(value: String) =
             IppAttribute("job-name", NameWithoutLanguage, value.toIppString())
 

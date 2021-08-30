@@ -7,7 +7,7 @@ package de.gmuth.ipp.client
 import de.gmuth.ipp.client.IppJobState.*
 import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppOperation.*
-import de.gmuth.ipp.core.IppTag.Integer
+import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.log.Logging
 import java.io.InputStream
 import java.net.URI
@@ -112,9 +112,18 @@ class IppJob(
     //--------------
 
     @JvmOverloads
-    fun sendDocument(inputStream: InputStream, lastDocument: Boolean = true) {
+    fun sendDocument(
+            inputStream: InputStream,
+            lastDocument: Boolean = true,
+            documentName: String? = null,
+            documentNaturalLanguage: String? = null
+    ) {
         val request = ippRequest(SendDocument).apply {
-            operationGroup.attribute("last-document", IppTag.Boolean, lastDocument)
+            operationGroup.run {
+                attribute("last-document", IppTag.Boolean, lastDocument)
+                documentName?.let { attribute("document-name", NameWithoutLanguage, it.toIppString()) }
+                documentNaturalLanguage?.let { attribute("document-natural-language", NaturalLanguage, it) }
+            }
             documentInputStream = inputStream
         }
         attributes = exchangeSuccessful(request).jobGroup
