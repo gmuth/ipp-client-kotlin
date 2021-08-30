@@ -65,7 +65,7 @@ class IppJob(
 
     @JvmOverloads
     fun getJobAttributes(requestedAttributes: List<String>? = null) =
-            exchangeIppRequest(GetJobAttributes, requestedAttributes)
+            exchange(ippRequest(GetJobAttributes, requestedAttributes))
 
     fun updateAllAttributes() {
         attributes = getJobAttributes().jobGroup
@@ -103,9 +103,9 @@ class IppJob(
     // Job administration
     //-------------------
 
-    fun hold() = exchangeIppRequest(HoldJob)
-    fun cancel() = exchangeIppRequest(CancelJob)
-    fun release() = exchangeIppRequest(ReleaseJob)
+    fun hold() = exchange(ippRequest(HoldJob))
+    fun cancel() = exchange(ippRequest(CancelJob))
+    fun release() = exchange(ippRequest(ReleaseJob))
 
     //--------------
     // Send-Document
@@ -183,9 +183,6 @@ class IppJob(
 
     fun exchange(request: IppRequest) =
             printer.exchange(request)
-
-    fun exchangeIppRequest(operation: IppOperation, requestedAttributes: List<String>? = null) =
-            printer.exchangeIppRequest(operation, id, requestedAttributes)
 
     // -------
     // Logging
