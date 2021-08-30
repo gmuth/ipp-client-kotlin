@@ -6,6 +6,7 @@ package de.gmuth.ipp.client
 
 import java.net.URI
 
+// RFC 8011, page 26
 class IppCommunicationChannel(
         val uri: URI,
         val security: String,
