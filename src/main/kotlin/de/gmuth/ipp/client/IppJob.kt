@@ -65,7 +65,7 @@ class IppJob(
 
     @JvmOverloads
     fun getJobAttributes(requestedAttributes: List<String>? = null) =
-            exchangeSuccessfulIppRequest(GetJobAttributes, requestedAttributes)
+            exchangeIppRequest(GetJobAttributes, requestedAttributes)
 
     fun updateAllAttributes() {
         attributes = getJobAttributes().jobGroup
@@ -103,9 +103,9 @@ class IppJob(
     // Job administration
     //-------------------
 
-    fun hold() = exchangeSuccessfulIppRequest(HoldJob)
-    fun cancel() = exchangeSuccessfulIppRequest(CancelJob)
-    fun release() = exchangeSuccessfulIppRequest(ReleaseJob)
+    fun hold() = exchangeIppRequest(HoldJob)
+    fun cancel() = exchangeIppRequest(CancelJob)
+    fun release() = exchangeIppRequest(ReleaseJob)
 
     //--------------
     // Send-Document
@@ -123,7 +123,7 @@ class IppJob(
         ).apply {
             documentInputStream = inputStream
         }
-        attributes = exchangeSuccessful(request).jobGroup
+        attributes = exchange(request).jobGroup
     }
 
     //---------
@@ -142,7 +142,7 @@ class IppJob(
         ).apply {
             operationGroup.attribute("document-uri", Uri, documentUri)
         }
-        attributes = exchangeSuccessful(request).jobGroup
+        attributes = exchange(request).jobGroup
     }
 
     protected fun documentRequest(
@@ -171,7 +171,7 @@ class IppJob(
         val request = ippRequest(CupsGetDocument).apply {
             operationGroup.attribute("document-number", Integer, documentNumber)
         }
-        return IppDocument(this, exchangeSuccessful(request))
+        return IppDocument(this, exchange(request))
     }
 
     //-----------------------
@@ -181,10 +181,10 @@ class IppJob(
     fun ippRequest(operation: IppOperation, requestedAttributes: List<String>? = null) =
             printer.ippRequest(operation, id, requestedAttributes)
 
-    fun exchangeSuccessful(request: IppRequest) =
+    fun exchange(request: IppRequest) =
             printer.exchange(request)
 
-    fun exchangeSuccessfulIppRequest(operation: IppOperation, requestedAttributes: List<String>? = null) =
+    fun exchangeIppRequest(operation: IppOperation, requestedAttributes: List<String>? = null) =
             printer.exchangeIppRequest(operation, id, requestedAttributes)
 
     // -------
