@@ -185,6 +185,7 @@ open class IppPrinter(
 
     fun pause() = exchangeIppRequest(PausePrinter)
     fun resume() = exchangeIppRequest(ResumePrinter)
+    fun purgeJobs() = exchangeIppRequest(PurgeJobs)
 
     //-----------------------
     // Get-Printer-Attributes
