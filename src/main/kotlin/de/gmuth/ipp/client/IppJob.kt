@@ -119,14 +119,39 @@ class IppJob(
             documentNaturalLanguage: String? = null
     ) {
         val request = ippRequest(SendDocument).apply {
-            operationGroup.run {
-                attribute("last-document", IppTag.Boolean, lastDocument)
-                documentName?.let { attribute("document-name", NameWithoutLanguage, it.toIppString()) }
-                documentNaturalLanguage?.let { attribute("document-natural-language", NaturalLanguage, it) }
-            }
+            addDocumentAttributes(operationGroup, lastDocument, documentName, documentNaturalLanguage)
             documentInputStream = inputStream
         }
         attributes = exchangeSuccessful(request).jobGroup
+    }
+
+    //---------
+    // Send-URI
+    //---------
+
+    @JvmOverloads
+    fun sendUri(
+            documentUri: URI,
+            lastDocument: Boolean = true,
+            documentName: String? = null,
+            documentNaturalLanguage: String? = null
+    ) {
+        val request = ippRequest(SendURI).apply {
+            operationGroup.attribute("document-uri", Uri, documentUri)
+            addDocumentAttributes(operationGroup, lastDocument, documentName, documentNaturalLanguage)
+        }
+        attributes = exchangeSuccessful(request).jobGroup
+    }
+
+    protected fun addDocumentAttributes(
+            group: IppAttributesGroup,
+            lastDocument: Boolean,
+            documentName: String?,
+            documentNaturalLanguage: String?
+    ) = group.run {
+        attribute("last-document", IppTag.Boolean, lastDocument)
+        documentName?.let { attribute("document-name", NameWithoutLanguage, it.toIppString()) }
+        documentNaturalLanguage?.let { attribute("document-natural-language", NaturalLanguage, it) }
     }
 
     //---------------------------------------------------------
