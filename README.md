@@ -34,6 +34,7 @@ val job = ippPrinter.printJob(
     numberUp(2),
     pageRanges(2..3, 8..10),
     printerResolution(300),
+    finishings(Punch, Staple),
     IppPrintQuality.High,
     IppColorMode.Monochrome,
     IppSides.TwoSidedLongEdge,
