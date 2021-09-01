@@ -60,20 +60,25 @@ class IppJob(
     fun isTerminated() = state in listOf(Canceled, Aborted, Completed)
 
     fun isProcessingToStopPoint() =
-            hasJobStateReasons() && stateReasons.contains("processing-to-stop-point")
+            hasStateReasons() && stateReasons.contains("processing-to-stop-point")
 
-    fun hasJobStateReasons() = attributes.containsKey("job-state-reasons")
+    fun hasStateReasons() = attributes.containsKey("job-state-reasons")
 
     //-------------------
     // Get-Job-Attributes
     //-------------------
 
+    //  RFC 8011 4.3.4 groups: 'all', 'job-template', 'job-description'
+
     @JvmOverloads
     fun getJobAttributes(requestedAttributes: List<String>? = null) =
             exchange(ippRequest(GetJobAttributes, requestedAttributes))
 
-    fun updateAllAttributes() {
-        attributes = getJobAttributes().jobGroup
+    fun getJobAttributes(vararg requestedAttribute: String) =
+            getJobAttributes(requestedAttribute.toList())
+
+    fun updateAttributes(jobAttributeGroupName: String = "all") {
+        attributes = getJobAttributes(jobAttributeGroupName).jobGroup
     }
 
     //------------------------------------------
@@ -88,7 +93,7 @@ class IppJob(
         log.info { toString() }
         while (!isTerminated()) {
             Thread.sleep(delayMillis)
-            updateAllAttributes()
+            updateAttributes()
             if (toString() != lastJobString) {
                 lastJobString = toString()
                 log.info { lastJobString }
@@ -109,17 +114,17 @@ class IppJob(
     //-------------------
 
     fun hold() =
-            exchange(ippRequest(HoldJob)).also { updateAllAttributes() }
+            exchange(ippRequest(HoldJob)).also { updateAttributes() }
 
     fun release() =
-            exchange(ippRequest(ReleaseJob)).also { updateAllAttributes() }
+            exchange(ippRequest(ReleaseJob)).also { updateAttributes() }
 
     fun cancel(messageForOperator: String? = null): IppResponse { // RFC 8011 4.3.3
         if (isProcessingToStopPoint()) log.warn { "job #$id is already 'processing-to-stop-point'" }
         val request = ippRequest(CancelJob).apply {
             messageForOperator?.let { operationGroup.attribute("message", TextWithoutLanguage, it.toIppString()) }
         }
-        return exchange(request).also { updateAllAttributes() }
+        return exchange(request).also { updateAttributes() }
     }
 
     //--------------
@@ -206,7 +211,7 @@ class IppJob(
     override fun toString(): String = with(attributes) {
         StringBuffer("id=$id, uri=$uri").apply {
             if (containsKey("job-state")) append(", state=$state")
-            if (hasJobStateReasons()) append(", stateReasons=$stateReasons")
+            if (hasStateReasons()) append(", stateReasons=$stateReasons")
             if (containsKey("job-name")) append(", name=$name")
             if (containsKey("job-originating-user-name")) append(", originatingUserName=$originatingUserName")
             if (containsKey("job-impressions-completed")) append(", impressionsCompleted=$impressionsCompleted")
