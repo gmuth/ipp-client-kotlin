@@ -119,6 +119,9 @@ class IppJob(
     fun release() =
             exchange(ippRequest(ReleaseJob)).also { updateAttributes() }
 
+    fun restart() =
+            exchange(ippRequest(RestartJob)).also { updateAttributes() }
+
     fun cancel(messageForOperator: String? = null): IppResponse { // RFC 8011 4.3.3
         if (isProcessingToStopPoint()) log.warn { "job #$id is already 'processing-to-stop-point'" }
         val request = ippRequest(CancelJob).apply {
