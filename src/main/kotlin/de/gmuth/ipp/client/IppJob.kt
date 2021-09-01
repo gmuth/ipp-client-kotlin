@@ -60,7 +60,9 @@ class IppJob(
     fun isTerminated() = state in listOf(Canceled, Aborted, Completed)
 
     fun isProcessingToStopPoint() =
-            attributes.containsKey("job-state-reasons") && stateReasons.contains("processing-to-stop-point")
+            hasJobStateReasons() && stateReasons.contains("processing-to-stop-point")
+
+    fun hasJobStateReasons() = attributes.containsKey("job-state-reasons")
 
     //-------------------
     // Get-Job-Attributes
@@ -204,7 +206,7 @@ class IppJob(
     override fun toString(): String = with(attributes) {
         StringBuffer("id=$id, uri=$uri").apply {
             if (containsKey("job-state")) append(", state=$state")
-            if (containsKey("job-state-reasons")) append(", stateReasons=$stateReasons")
+            if (hasJobStateReasons()) append(", stateReasons=$stateReasons")
             if (containsKey("job-name")) append(", name=$name")
             if (containsKey("job-originating-user-name")) append(", originatingUserName=$originatingUserName")
             if (containsKey("job-impressions-completed")) append(", impressionsCompleted=$impressionsCompleted")
