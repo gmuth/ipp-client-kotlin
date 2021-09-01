@@ -59,6 +59,9 @@ class IppJob(
     fun isProcessingStopped() = state == ProcessingStopped
     fun isTerminated() = state in listOf(Canceled, Aborted, Completed)
 
+    fun isProcessingToStopPoint() =
+            attributes.containsKey("job-state-reasons") && stateReasons.contains("processing-to-stop-point")
+
     //-------------------
     // Get-Job-Attributes
     //-------------------
@@ -103,9 +106,19 @@ class IppJob(
     // Job administration
     //-------------------
 
-    fun hold() = exchange(ippRequest(HoldJob))
-    fun cancel() = exchange(ippRequest(CancelJob))
-    fun release() = exchange(ippRequest(ReleaseJob))
+    fun hold() =
+            exchange(ippRequest(HoldJob)).also { updateAllAttributes() }
+
+    fun release() =
+            exchange(ippRequest(ReleaseJob)).also { updateAllAttributes() }
+
+    fun cancel(messageForOperator: String? = null): IppResponse { // RFC 8011 4.3.3
+        if (isProcessingToStopPoint()) log.warn { "job #$id is already 'processing-to-stop-point'" }
+        val request = ippRequest(CancelJob).apply {
+            messageForOperator?.let { operationGroup.attribute("message", TextWithoutLanguage, it.toIppString()) }
+        }
+        return exchange(request).also { updateAllAttributes() }
+    }
 
     //--------------
     // Send-Document
@@ -199,5 +212,4 @@ class IppJob(
     }
 
     fun logDetails() = attributes.logDetails(title = "JOB-$id")
-
 }
