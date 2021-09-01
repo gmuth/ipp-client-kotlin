@@ -8,6 +8,7 @@ import de.gmuth.ipp.core.IppAttribute
 import de.gmuth.ipp.core.IppResolution
 import de.gmuth.ipp.core.IppResolution.Unit
 import de.gmuth.ipp.core.IppResolution.Unit.DPI
+import de.gmuth.ipp.core.IppTag
 import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.ipp.core.toIppString
 
@@ -51,5 +52,9 @@ object IppTemplateAttributes {
     @JvmStatic
     fun media(keyword: String) =
             IppAttribute("media", Keyword, keyword)
+
+    @JvmStatic
+    fun finishings(vararg finishing: IppFinishing) =
+            IppAttribute("finishings", IppTag.Enum, finishing.toList().map { it.code })
 
 }
