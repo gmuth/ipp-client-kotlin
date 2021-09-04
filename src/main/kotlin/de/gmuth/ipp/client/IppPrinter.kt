@@ -17,7 +17,6 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
 import java.net.URI
-import java.nio.charset.Charset
 
 open class IppPrinter(
         val printerUri: URI,
@@ -298,6 +297,42 @@ open class IppPrinter(
                 .getAttributesGroups(Job)
                 .map { IppJob(this, it) }
     }
+
+    //----------------------------
+    // Create-Printer-Subscription
+    //----------------------------
+
+    fun createPrinterSubscription(
+            notifyEvents: List<String>? = null,
+            notifyLeaseDuration: Int? = null, // seconds
+            updateAttributes: Boolean = true
+    ): IppSubscription {
+        val request = ippRequest(CreatePrinterSubscriptions).apply {
+            createAttributesGroup(Subscription).apply {
+                attribute("notify-pull-method", Keyword, "ippget")
+                notifyEvents?.let { attribute("notify-events", Keyword, it) }
+                notifyLeaseDuration?.let { attribute("notify-lease-duration", Integer, it) }
+            }
+        }
+        val attributesGroup = exchange(request).getSingleAttributesGroup(Subscription)
+        return IppSubscription(this, attributesGroup).apply {
+            if (updateAttributes) updateAllAttributes()
+        }
+    }
+
+    //------------------
+    // Get-Subscriptions
+    //------------------
+
+    // "notify-job-id" (integer(1:MAX))
+    // "limit" (integer(1:MAX))
+    // "requested-attributes" (1setOf type2 keyword)
+    // "my-subscriptions" (boolean)
+
+    fun getSubscriptions() =
+            exchange(ippRequest(GetSubscriptions))
+                    .getAttributesGroups(Subscription)
+                    .map { IppSubscription(this, it) }
 
     //----------------------
     // delegate to IppClient
