@@ -8,41 +8,23 @@ import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppRequest
-import de.gmuth.ipp.core.IppString
 import de.gmuth.ipp.core.IppTag.Integer
 import de.gmuth.ipp.core.IppTag.Subscription
 import de.gmuth.log.Logging
-import java.net.URI
 
-@SuppressWarnings("kotlin:S1192")
 class IppSubscription(
         val printer: IppPrinter,
         var attributes: IppAttributesGroup
 ) {
     companion object {
-        val log = Logging.getLogger { }
+        val log = Logging.getLogger {}
     }
 
-    val notifySubscriptionId: Int
+    val id: Int
         get() = attributes.getValue("notify-subscription-id")
 
-    val notifyPrinterUri: URI
-        get() = attributes.getValue("notify-printer-uri")
-
-    val notifyEvents: List<String>
+    val events: List<String>
         get() = attributes.getValues("notify-events")
-
-    val notifyLeaseDuration: Int
-        get() = attributes.getValue("notify-lease-duration")
-
-    val notifyPullMethod: String
-        get() = attributes.getValue("notify-pull-method")
-
-    val notifySubscriberUserName: IppString
-        get() = attributes.getValue("notify-subscriber-user-name")
-
-    val notifyTimeInterval: Int
-        get() = attributes.getValue("notify-time-interval")
 
     //----------------------------
     // get subscription attributes
@@ -78,7 +60,7 @@ class IppSubscription(
 
     fun ippRequest(operation: IppOperation, requestedAttributes: List<String>? = null) =
             printer.ippRequest(operation, requestedAttributes = requestedAttributes).apply {
-                operationGroup.attribute("notify-subscription-id", Integer, notifySubscriptionId)
+                operationGroup.attribute("notify-subscription-id", Integer, id)
             }
 
     fun exchange(request: IppRequest) =
@@ -89,16 +71,10 @@ class IppSubscription(
     // -------
 
     override fun toString() =
-            "subscription #$notifySubscriptionId: ${notifyEvents.joinToString(",")}"
+            "subscription #$id: ${events.joinToString(",")}"
 
     fun logDetails() {
-        log.info { "subscription id:   $notifySubscriptionId" }
-        log.info { "printer uri:       $notifyPrinterUri" }
-        log.info { "events:            ${notifyEvents.joinToString(",")}" }
-        log.info { "subscriber user:   $notifySubscriberUserName" }
-        if (attributes.containsKey("notify-lease-duration")) log.info { "lease duration:    $notifyLeaseDuration seconds" }
-        if (attributes.containsKey("notify-time-interval")) log.info { "time interval:     $notifyTimeInterval" }
-        if (attributes.containsKey("notify-pull-method")) log.info { "pull method:       $notifyPullMethod" }
+        attributes.logDetails(title = "subscription #$id")
     }
 
 }
