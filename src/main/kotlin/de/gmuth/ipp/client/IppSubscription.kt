@@ -14,6 +14,7 @@ import de.gmuth.ipp.core.IppTag.Subscription
 import de.gmuth.log.Logging
 import java.net.URI
 
+@SuppressWarnings("kotlin:S1192")
 class IppSubscription(
         val printer: IppPrinter,
         var attributes: IppAttributesGroup
