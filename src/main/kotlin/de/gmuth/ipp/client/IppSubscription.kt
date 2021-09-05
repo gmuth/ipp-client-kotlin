@@ -70,8 +70,9 @@ class IppSubscription(
     // Logging
     // -------
 
-    override fun toString() =
-            "subscription #$id: ${events.joinToString(",")}"
+    override fun toString() = StringBuilder("subscription #$id").apply {
+        if (attributes.contains("notify-events")) append(": ${events.joinToString(",")}")
+    }.toString()
 
     fun logDetails() {
         attributes.logDetails(title = "subscription #$id")
