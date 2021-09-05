@@ -328,15 +328,23 @@ open class IppPrinter(
     // Get-Subscriptions
     //------------------
 
-    // "notify-job-id" (integer(1:MAX))
-    // "limit" (integer(1:MAX))
-    // "requested-attributes" (1setOf type2 keyword)
-    // "my-subscriptions" (boolean)
-
-    fun getSubscriptions() =
-            exchange(ippRequest(GetSubscriptions))
-                    .getAttributesGroups(Subscription)
-                    .map { IppSubscription(this, it) }
+    fun getSubscriptions(
+            notifyJobId: Int? = null,
+            mySubscriptions: Boolean? = null,
+            limit: Int? = null,
+            requestedAttributes: List<String>? = null
+    ): List<IppSubscription> {
+        val request = ippRequest(GetSubscriptions, requestedAttributes = requestedAttributes).apply {
+            operationGroup.run {
+                notifyJobId?.let { attribute("notify-job-id", Integer, it) }
+                mySubscriptions?.let { attribute("my-subscriptions", IppTag.Boolean, it) }
+                limit?.let { attribute("limit", Integer, it) }
+            }
+        }
+        return exchange(request)
+                .getAttributesGroups(Subscription)
+                .map { IppSubscription(this, it) }
+    }
 
     //----------------------
     // delegate to IppClient
