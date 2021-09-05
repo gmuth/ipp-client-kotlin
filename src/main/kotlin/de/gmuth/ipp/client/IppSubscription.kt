@@ -94,8 +94,8 @@ class IppSubscription(
         log.info { "subscription id:   $notifySubscriptionId" }
         log.info { "printer uri:       $notifyPrinterUri" }
         log.info { "events:            ${notifyEvents.joinToString(",")}" }
-        log.info { "lease duration:    $notifyLeaseDuration seconds" }
         log.info { "subscriber user:   $notifySubscriberUserName" }
+        if (attributes.containsKey("notify-lease-duration")) log.info { "lease duration:    $notifyLeaseDuration seconds" }
         if (attributes.containsKey("notify-time-interval")) log.info { "time interval:     $notifyTimeInterval" }
         if (attributes.containsKey("notify-pull-method")) log.info { "pull method:       $notifyPullMethod" }
     }
