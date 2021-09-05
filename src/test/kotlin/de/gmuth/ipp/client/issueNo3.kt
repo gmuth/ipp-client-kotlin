@@ -21,14 +21,12 @@ fun main() {
 
     val ippConfig = IppConfig().apply {
         ippVersion = "1.1"
-        chunkedTransferEncoding = false
         getPrinterAttributesOnInit = true
-        acceptEncoding = "identity" // overwrite android's default 'gzip'
         logDetails()
     }
     try {
         log.info { "open ipp connection to $printerUri" }
-        ippPrinter = IppPrinter(printerUri, config = ippConfig)
+        ippPrinter = IppPrinter(printerUri, ippConfig = ippConfig)
         log.info { "successfully connected $printerUri" }
     } catch (exception: Exception) {
         log.error(exception) { "failed to connect to $printerUri" }

@@ -14,14 +14,13 @@ interface Http {
 
     open class Config(
             var timeout: Int = 30000, // milli seconds
-            var userAgent: String? = null,
+            var userAgent: String? = "ipp-client-kotlin/2.2",
             var basicAuth: BasicAuth? = null,
             var sslSocketFactory: SSLSocketFactory? = null,
             // trust any certificate: sslSocketFactoryForAnyCertificate()
             // use individual certificate: sslSocketFactory(loadCertificate(FileInputStream("printer.pem")))
             // use truststore: sslSocketFactory(loadKeyStore(FileInputStream("printer.jks"), "changeit"))
             var verifySSLHostname: Boolean = true,
-            var chunkedTransferEncoding: Boolean? = false,
             var acceptEncoding: String? = null
     ) {
         fun trustAnyCertificate() {
@@ -51,7 +50,7 @@ interface Http {
         abstract fun post(
                 uri: URI,
                 contentType: String, writeContent: (OutputStream) -> Unit,
-                chunked: Boolean = config.chunkedTransferEncoding ?: false
+                chunked: Boolean = false
         ): Response
     }
 

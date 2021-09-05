@@ -24,7 +24,10 @@ open class CupsClient(val cupsUri: URI) : IppClient() {
     }
 
     init {
-        if (cupsUri.scheme == "ipps") config.trustAnyCertificate()
+        if (cupsUri.scheme == "ipps") httpClient.config.apply {
+            verifySSLHostname = false
+            trustAnyCertificate()
+        }
     }
 
     val printerMap: Map<String, IppPrinter> by lazy {

@@ -21,13 +21,14 @@ import java.net.URI
 open class IppPrinter(
         val printerUri: URI,
         var attributes: IppAttributesGroup = IppAttributesGroup(Printer),
-        val config: IppConfig = IppConfig(),
-        httpClient: Http.Client = HttpURLConnectionClient(config),
-        val ippClient: IppClient = IppClient(config, httpClient)
+        httpConfig: Http.Config = Http.Config(),
+        httpClient: Http.Client = HttpURLConnectionClient(httpConfig),
+        ippConfig: IppConfig = IppConfig(),
+        val ippClient: IppClient = IppClient(ippConfig, httpClient)
 ) {
 
     init {
-        if (!config.getPrinterAttributesOnInit) {
+        if (!ippConfig.getPrinterAttributesOnInit) {
             log.warn { "getPrinterAttributesOnInit disabled => no printer attributes available" }
         } else if (attributes.size == 0) {
             updateAllAttributes()
@@ -42,11 +43,14 @@ open class IppPrinter(
 
     // constructors for java usage
     constructor(printerUri: String) : this(URI.create(printerUri))
-    constructor(printerUri: String, config: IppConfig) : this(URI.create(printerUri), config = config)
+    constructor(printerUri: String, ippConfig: IppConfig) : this(URI.create(printerUri), ippConfig = ippConfig)
 
     companion object {
         val log = Logging.getLogger {}
     }
+
+    val ippConfig: IppConfig
+        get() = ippClient.ippConfig
 
     var getJobsRequestedAttributes = listOf(
             "job-id", "job-uri", "job-printer-uri", "job-state", "job-name",

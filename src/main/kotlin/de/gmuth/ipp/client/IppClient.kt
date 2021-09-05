@@ -19,15 +19,18 @@ import java.util.concurrent.atomic.AtomicInteger
 typealias IppResponseInterceptor = (request: IppRequest, response: IppResponse) -> Unit
 
 open class IppClient(
-        val config: IppConfig = IppConfig(),
-        val httpClient: Http.Client = HttpURLConnectionClient(config)
+        val ippConfig: IppConfig = IppConfig(),
+        val httpClient: Http.Client = HttpURLConnectionClient()
 ) {
     var responseInterceptor: IppResponseInterceptor? = null
+
+    val httpConfig: Http.Config
+        get() = httpClient.config
 
     protected val requestCounter = AtomicInteger(1)
 
     fun basicAuth(user: String, password: String) {
-        config.basicAuth = Http.BasicAuth(user, password)
+        httpConfig.basicAuth = Http.BasicAuth(user, password)
     }
 
     companion object {
@@ -48,11 +51,11 @@ open class IppClient(
             printerUri,
             jobId,
             requestedAttributes,
-            config.userName,
-            config.ippVersion,
+            ippConfig.userName,
+            ippConfig.ippVersion,
             requestCounter.getAndIncrement(),
-            config.charset,
-            config.naturalLanguage
+            ippConfig.charset,
+            ippConfig.naturalLanguage
     )
 
     //------------------------------------
@@ -87,7 +90,7 @@ open class IppClient(
     fun httpPostRequest(httpUri: URI, request: IppRequest) = httpClient.post(
             httpUri, "application/ipp",
             { httpPostStream -> request.write(httpPostStream) },
-            chunked = config.chunkedTransferEncoding ?: request.hasDocument()
+            chunked = request.hasDocument()
     ).apply {
         when { // http response is not successful
             !isOK() -> "http request to $httpUri failed: status=$status, content-type=$contentType${textContent()}"
@@ -96,7 +99,7 @@ open class IppClient(
             else -> null
         }?.let {
             server?.run { log.info { "ipp-server: $server" } }
-            config.logDetails()
+            ippConfig.logDetails()
             request.logDetails()
             throw IppExchangeException(request, null, status, message = it)
         }
