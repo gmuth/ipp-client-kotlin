@@ -1,12 +1,12 @@
 package de.gmuth.ipp.client
 
-import de.gmuth.ipp.core.IppAttributesGroup
-import de.gmuth.ipp.core.IppString
-import de.gmuth.log.Logging
-
 /**
  * Copyright (c) 2021 Gerhard Muth
  */
+
+import de.gmuth.ipp.core.IppAttributesGroup
+import de.gmuth.ipp.core.IppString
+import de.gmuth.log.Logging
 
 class IppEventNotification(
         var attributes: IppAttributesGroup
