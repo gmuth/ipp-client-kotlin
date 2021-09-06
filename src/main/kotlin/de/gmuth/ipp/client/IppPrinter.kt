@@ -324,9 +324,9 @@ open class IppPrinter(
         }
     }
 
-    //-----------------------------------------------
-    // Get-Subscription-Attributes as IppSubscription
-    //-----------------------------------------------
+    //-------------------------------------------------
+    // Get-Subscription-Attributes (as IppSubscription)
+    //-------------------------------------------------
 
     fun getSubscription(id: Int) = IppSubscription(this,
             exchange(ippRequest(GetSubscriptionAttributes).apply {
@@ -334,9 +334,9 @@ open class IppPrinter(
             }).getSingleAttributesGroup(Subscription)
     )
 
-    //-------------------------------------------
-    // Get-Subscriptions as List<IppSubscription>
-    //-------------------------------------------
+    //---------------------------------------------
+    // Get-Subscriptions (as List<IppSubscription>)
+    //---------------------------------------------
 
     fun getSubscriptions(
             notifyJobId: Int? = null,
