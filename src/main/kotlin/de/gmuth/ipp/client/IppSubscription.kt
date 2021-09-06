@@ -8,8 +8,7 @@ import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppRequest
-import de.gmuth.ipp.core.IppTag.Integer
-import de.gmuth.ipp.core.IppTag.Subscription
+import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.log.Logging
 
 class IppSubscription(
@@ -26,8 +25,11 @@ class IppSubscription(
     val events: List<String>
         get() = attributes.getValues("notify-events")
 
+    val jobId: Int
+        get() = attributes.getValue("notify-job-id")
+
     //----------------------------
-    // get subscription attributes
+    // Get-Subscription-Attributes
     //----------------------------
 
     // RFC 3995 11.2.4.1.2: 'subscription-template', 'subscription-description' or  'all' (default)
@@ -40,12 +42,32 @@ class IppSubscription(
         attributes = getSubscriptionAttributes().getSingleAttributesGroup(Subscription)
     }
 
-    //---------------
-    // administration
-    //----------------
+    //------------------
+    // Get-Notifications
+    //------------------
+
+    fun getNotifications(notifySequenceNumber: Int? = null): List<IppEventNotification> {
+        val request = ippRequest(GetNotifications).apply {
+            operationGroup.run {
+                attribute("notify-subscription-ids", Integer, id)
+                notifySequenceNumber?.let { attribute("notify-sequence-numbers", Integer, it) }
+            }
+        }
+        return exchange(request)
+                .getAttributesGroups(EventNotification)
+                .map { IppEventNotification(it) }
+    }
+
+    //--------------------
+    // Cancel-Subscription
+    //--------------------
 
     fun cancel() =
             exchange(ippRequest(CancelSubscription))
+
+    //-------------------
+    // Renew-Subscription
+    //-------------------
 
     fun renew(notifyLeaseDuration: Int? = null) =
             exchange(ippRequest(RenewSubscription).apply {
@@ -70,8 +92,9 @@ class IppSubscription(
     // Logging
     // -------
 
-    override fun toString() = StringBuilder("subscription #$id").apply {
-        if (attributes.contains("notify-events")) append(": ${events.joinToString(",")}")
+    override fun toString() = StringBuilder("subscription #$id:").apply {
+        if (attributes.containsKey("notify-job-id")) append(" job #$jobId")
+        if (attributes.containsKey("notify-events")) append(" ${events.joinToString(",")}")
     }.toString()
 
     fun logDetails() {
