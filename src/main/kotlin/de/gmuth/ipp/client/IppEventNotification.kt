@@ -44,7 +44,7 @@ class IppEventNotification(
     // -------
 
     override fun toString() = StringBuilder().apply {
-        append("event #$sequenceNumber subscription #$subscriptionId [$subscribedEvent] $text")
+        append("> subscription #$subscriptionId event #$sequenceNumber [$subscribedEvent] $text")
         if (attributes.containsKey("notify-job-id")) append(" job #$jobId")
         if (attributes.containsKey("job-state")) append(" job-state=$jobState")
         if (attributes.containsKey("job-state-reasons"))
