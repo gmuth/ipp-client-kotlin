@@ -181,6 +181,27 @@ class IppJob(
         }
     }
 
+    //------------------------
+    // Create-Job-Subscription
+    //------------------------
+
+    fun createJobSubscription(
+            notifyEvent: String? = null,
+            updateAttributes: Boolean = true
+    ): IppSubscription {
+        val request = ippRequest(CreateJobSubscriptions).apply {
+            createAttributesGroup(Subscription).apply {
+                attribute("notify-job-id", Integer, id)
+                attribute("notify-pull-method", Keyword, "ippget")
+                notifyEvent?.let { attribute("notify-events", Keyword, notifyEvent) }
+            }
+        }
+        val subscriptionAttributes = exchange(request).getSingleAttributesGroup(Subscription)
+        return IppSubscription(printer, subscriptionAttributes).apply {
+            if (updateAttributes) updateAllAttributes()
+        }
+    }
+
     //---------------------------------------------------------
     // Cups-Get-Document
     // https://www.cups.org/doc/spec-ipp.html#CUPS_GET_DOCUMENT
