@@ -8,8 +8,8 @@ import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppString
 import de.gmuth.log.Logging
 
-class IppEventNotification(
-        var attributes: IppAttributesGroup
+class IppEventNotification(mm
+        val attributes: IppAttributesGroup
 ) {
     companion object {
         val log = Logging.getLogger {}
