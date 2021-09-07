@@ -12,7 +12,7 @@ import javax.net.ssl.SSLSocketFactory
 
 interface Http {
 
-    open class Config(
+    class Config(
             var timeout: Int = 30000, // milli seconds
             var userAgent: String? = "ipp-client-kotlin/2.2",
             var basicAuth: BasicAuth? = null,
@@ -49,7 +49,8 @@ interface Http {
     abstract class Client(val config: Config = Config()) {
         abstract fun post(
                 uri: URI,
-                contentType: String, writeContent: (OutputStream) -> Unit,
+                contentType: String,
+                writeContent: (OutputStream) -> Unit,
                 chunked: Boolean = false
         ): Response
     }
