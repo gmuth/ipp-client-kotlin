@@ -4,12 +4,12 @@ package de.gmuth.http
  * Copyright (c) 2020-2021 Gerhard Muth
  */
 
+import de.gmuth.http.Http.Implementation.JavaHttpURLConnection
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI
 import java.util.*
 import javax.net.ssl.SSLContext
-import de.gmuth.http.Http.Implementation.*
 
 interface Http {
 
@@ -22,7 +22,9 @@ interface Http {
             // use individual certificate: sslContext(loadCertificate(FileInputStream("printer.pem")))
             // use truststore: sslContext(loadKeyStore(FileInputStream("printer.jks"), "changeit"))
             var verifySSLHostname: Boolean = true,
-            var acceptEncoding: String? = null
+            var accept: String? = null,
+            var acceptEncoding: String? = null,
+            var debugLogging: Boolean = false
     ) {
         fun trustAnyCertificate() {
             sslContext = SSLHelper.sslContextForAnyCertificate()
@@ -56,16 +58,15 @@ interface Http {
         ): Response
     }
 
-    enum class Implementation(val createClient: (config: Config) -> Client) {
+    enum class Implementation(
+            val createClient: (config: Config) -> Client
+    ) {
         JavaHttpURLConnection({ HttpURLConnectionClient(it) }),
         Java11HttpClient({ JavaHttpClient(it) });
-        fun createHttpClient(config: Config = Config()) = createClient(config)
     }
 
     companion object {
-        var defaultImplementation :Implementation =
-                if (JavaHttpClient.isSupported()) Java11HttpClient
-                else JavaHttpURLConnection
+        var defaultImplementation: Implementation = JavaHttpURLConnection
     }
 
 }

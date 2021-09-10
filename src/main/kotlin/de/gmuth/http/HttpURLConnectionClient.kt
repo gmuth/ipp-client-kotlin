@@ -10,6 +10,10 @@ import de.gmuth.log.Logging.LogLevel.TRACE
 import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URI
+import java.util.logging.Handler
+import java.util.logging.Level
+import java.util.logging.LogRecord
+import java.util.logging.Logger
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.HttpsURLConnection
 
@@ -21,6 +25,14 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
 
     init {
         log.info { "HttpURLConnectionClient created" }
+        if (config.debugLogging) Logger.getLogger("sun.net.www.protocol.http.HttpURLConnection").run {
+            addHandler(object : Handler() { // redirect java util logging message
+                override fun publish(record: LogRecord) = record.run { Logging.getLogger(loggerName, TRACE).debug { message } }
+                override fun flush() {}
+                override fun close() {}
+            })
+            level = Level.ALL
+        }
     }
 
     override fun post(uri: URI, contentType: String, writeContent: (OutputStream) -> Unit, chunked: Boolean): Http.Response {
@@ -32,8 +44,9 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
             connectTimeout = config.timeout
             readTimeout = config.timeout
             doOutput = true // trigger POST method
-            config.basicAuth?.let { setRequestProperty("Authorization", "Basic ${it.encodeBase64()}") }
+            config.accept?.let { setRequestProperty("Accept", it) }
             config.acceptEncoding?.let { setRequestProperty("Accept-Encoding", it) }
+            config.basicAuth?.let { setRequestProperty("Authorization", "Basic ${it.encodeBase64()}") }
             config.userAgent?.let { setRequestProperty("User-Agent", it) }
             setRequestProperty("Content-Type", contentType)
             if (chunked) setChunkedStreamingMode(0)
