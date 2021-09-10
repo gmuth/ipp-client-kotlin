@@ -110,7 +110,7 @@ object IppRegistrationsSection2 {
             getAttribute(name, false)?.is1setOf()
 
     fun selectGroupForAttribute(name: String) =
-            getAttribute(name, false)!!.collectionGroupTag()
+            getAttribute(name, false)?.collectionGroupTag()
 
     val unknownAttributes = mutableSetOf<String>()
 
