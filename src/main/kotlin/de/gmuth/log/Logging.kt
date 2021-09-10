@@ -65,13 +65,13 @@ object Logging {
     var factory = Factory { Logger(it) }
 
     @JvmOverloads
-    fun getLogger(name: String, logLevel: LogLevel = defaultLogLevel): Logger {
-        if (debugLoggingConfig) println(String.format("new Logger: level=%-5s name=%s", logLevel, name))
-        return factory.getLogger(name).apply { this.logLevel = logLevel }
+    fun getLogger(name: String, logLevel: LogLevel = defaultLogLevel) = factory.getLogger(name).apply {
+        if (debugLoggingConfig) println("new Logger: level=%-5s name=%s".format(logLevel, name))
+        this.logLevel = logLevel
     }
 
     fun getLogger(logLevel: LogLevel = defaultLogLevel, noOperation: () -> Unit) =
-        getLogger(noOperation.javaClass.enclosingClass.name, logLevel)
+            getLogger(noOperation.javaClass.enclosingClass.name, logLevel)
 
     fun useSlf4j() {
         factory = Factory { Slf4jLoggerAdapter(it) }
