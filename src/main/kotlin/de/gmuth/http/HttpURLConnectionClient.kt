@@ -41,13 +41,15 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
                 sslSocketFactory = config.sslContext!!.socketFactory
                 if (!config.verifySSLHostname) hostnameVerifier = HostnameVerifier { _, _ -> true }
             }
-            connectTimeout = config.timeout
-            readTimeout = config.timeout
             doOutput = true // trigger POST method
-            config.accept?.let { setRequestProperty("Accept", it) }
-            config.acceptEncoding?.let { setRequestProperty("Accept-Encoding", it) }
-            config.basicAuth?.let { setRequestProperty("Authorization", "Basic ${it.encodeBase64()}") }
-            config.userAgent?.let { setRequestProperty("User-Agent", it) }
+            config.run {
+                connectTimeout = timeout
+                readTimeout = timeout
+                accept?.let { setRequestProperty("Accept", it) }
+                acceptEncoding?.let { setRequestProperty("Accept-Encoding", it) }
+                basicAuth?.let { setRequestProperty("Authorization", "Basic ${it.encodeBase64()}") }
+                userAgent?.let { setRequestProperty("User-Agent", it) }
+            }
             setRequestProperty("Content-Type", contentType)
             if (chunked) setChunkedStreamingMode(0)
             writeContent(outputStream)
