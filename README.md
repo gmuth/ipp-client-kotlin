@@ -2,7 +2,8 @@
 
 A client implementation of the ipp protocol written in kotlin.
 [RFC 8010](https://tools.ietf.org/html/rfc8010),
-[RFC 8011](https://tools.ietf.org/html/rfc8011)
+[RFC 8011](https://tools.ietf.org/html/rfc8011),
+[RFC 3995](https://datatracker.ietf.org/doc/html/rfc3995)
 
 [![build](https://github.com/gmuth/ipp-client-kotlin/workflows/build/badge.svg)](https://github.com/gmuth/ipp-client-kotlin/actions?query=workflow%3Abuild)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=gmuth_ipp-client-kotlin&metric=alert_status)](https://sonarcloud.io/dashboard?id=gmuth_ipp-client-kotlin)
@@ -38,9 +39,11 @@ val job = ippPrinter.printJob(
     IppPrintQuality.High,
     IppColorMode.Monochrome,
     IppSides.TwoSidedLongEdge,
-    IppMedia.Collection(source = "tray-1")
+    IppMedia.Collection(source = "tray-1"),
+    notifyEvents = listOf("job-state-changed", "job-stopped", "job-completed") // CUPS
 )
 job.logDetails()
+job.subscription?.processEvents { log.info {it} }
 
 // print remote file, make printer pull document from remote server
 val remoteFile = URI.create("http://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf")
@@ -64,6 +67,10 @@ job.cancel()
 ippPrinter.pause()
 ippPrinter.resume()
 ippPrinter.sound() // identify printer
+
+// subscribe and process events (e.g. from CUPS) for 1 minute
+ippPrinter.createPrinterSubscription(60)
+          .processEvents { event -> log.info { event } }
 ```
 ### Printer Capabilities
 
