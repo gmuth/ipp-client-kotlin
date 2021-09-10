@@ -8,7 +8,6 @@ import de.gmuth.http.Http
 import de.gmuth.ipp.client.IppPrinterState.*
 import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppOperation.*
-import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.log.Logging
@@ -212,9 +211,9 @@ open class IppPrinter(
         return exchange(request)
     }
 
-    //----------
-    // Print-Job
-    //----------
+    //--------------------------------------
+    // Print-Job (with subscription support)
+    //--------------------------------------
 
     fun printJob(inputStream: InputStream, vararg attributeBuilder: IppAttributeBuilder, notifyEvents: List<String>? = null) =
             printInputStream(inputStream, attributeBuilder, notifyEvents)
@@ -312,8 +311,8 @@ open class IppPrinter(
     //----------------------------
 
     fun createPrinterSubscription(
-            notifyEvents: List<String>? = null,
-            notifyLeaseDuration: Int? = null // seconds
+            notifyLeaseDuration: Int? = null, // seconds
+            notifyEvents: List<String>? = listOf("all")
     ): IppSubscription {
         val request = ippRequest(CreatePrinterSubscriptions).apply {
             createSubscriptionGroup(this, notifyEvents, notifyLeaseDuration)
@@ -333,7 +332,7 @@ open class IppPrinter(
                 notifyJobId?.let { attribute("notify-job-id", Integer, it) }
                 notifyLeaseDuration?.let { attribute("notify-lease-duration", Integer, it) }
                 notifyEvents?.let {
-                    if (notifyEvents.isNotEmpty() && notifyEvents.first() != "all")
+                    if (it.isNotEmpty() && it.first() != "all")
                         checkIfValueIsSupported("notify-events-supported", it)
                     attribute("notify-events", Keyword, it)
                 }
@@ -388,7 +387,7 @@ open class IppPrinter(
 
     fun exchangeForIppJob(request: IppRequest): IppJob {
         if (request.containsGroup(Subscription) && !supportsOperations(CreateJobSubscriptions))
-            log.warn { "printer does not support Create-Job-Subscription" }
+            log.warn { "printer does not support Create-Job-Subscriptions" }
         val response = exchange(request)
         if (request.containsGroup(Subscription) && !response.containsGroup(Subscription)) {
             request.logDetails("REQUEST: ")
@@ -476,26 +475,5 @@ open class IppPrinter(
             printerGroup.saveText(File("$printerModel.txt"))
         }
     }
-
-    // -------------------------------------------------
-    // Create Printer Subscription and log Notifications
-    // -------------------------------------------------
-
-    fun logNotifications(notifyLeaseDuration: Int = 60 * 10, notifyEvents: List<String> = listOf("all")) =
-            createPrinterSubscription(notifyEvents, notifyLeaseDuration).run {
-                log.info { this }
-                try {
-                    do {
-                        Thread.sleep(1000)
-                        getNotifications(onlyNewEvents = true).forEach { log.info { it } }
-                    } while (true)
-                } catch (exchangeException: IppExchangeException) {
-                    if (exchangeException.statusIs(ClientErrorNotFound)) {
-                        log.info { exchangeException.response!!.statusMessage }
-                    } else {
-                        throw exchangeException
-                    }
-                }
-            }
 
 }
