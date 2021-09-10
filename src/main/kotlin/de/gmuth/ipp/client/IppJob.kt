@@ -14,12 +14,16 @@ import java.net.URI
 
 class IppJob(
         val printer: IppPrinter,
-        var attributes: IppAttributesGroup
+        var attributes: IppAttributesGroup,
+        subscriptionAttributes: IppAttributesGroup? = null
+
 ) {
     companion object {
         val log = Logging.getLogger {}
         var defaultDelayMillis: Long = 3000
     }
+
+    var subscription: IppSubscription? = subscriptionAttributes?.let { IppSubscription(printer, it) }
 
     //--------------
     // IppAttributes
@@ -55,14 +59,16 @@ class IppJob(
     val numberOfDocuments: Int
         get() = attributes.getValue("number-of-documents")
 
+    fun hasStateReasons() = attributes.containsKey("job-state-reasons")
+
     fun isProcessing() = state == Processing
+
     fun isProcessingStopped() = state == ProcessingStopped
+
     fun isTerminated() = state in listOf(Canceled, Aborted, Completed)
 
     fun isProcessingToStopPoint() =
             hasStateReasons() && stateReasons.contains("processing-to-stop-point")
-
-    fun hasStateReasons() = attributes.containsKey("job-state-reasons")
 
     //-------------------
     // Get-Job-Attributes
@@ -88,9 +94,9 @@ class IppJob(
     @JvmOverloads
     fun waitForTermination(delayMillis: Long = defaultDelayMillis) {
         log.info { "wait for termination of job #$id" }
-        var lastJobString = ""
         var lastPrinterString = ""
-        log.info { toString() }
+        var lastJobString = toString()
+        log.info { lastJobString }
         while (!isTerminated()) {
             Thread.sleep(delayMillis)
             updateAttributes()
@@ -127,6 +133,7 @@ class IppJob(
         val request = ippRequest(CancelJob).apply {
             messageForOperator?.let { operationGroup.attribute("message", TextWithoutLanguage, it.toIppString()) }
         }
+        log.info { "cancel job#$id" }
         return exchange(request).also { updateAttributes() }
     }
 
@@ -185,20 +192,16 @@ class IppJob(
     // Create-Job-Subscription
     //------------------------
 
-    fun createJobSubscription(
-            notifyEvent: String? = null,
-            updateAttributes: Boolean = true
-    ): IppSubscription {
+    fun createJobSubscription(notifyEvents: List<String>? = null): IppSubscription {
         val request = ippRequest(CreateJobSubscriptions).apply {
-            createAttributesGroup(Subscription).apply {
-                attribute("notify-job-id", Integer, id)
-                attribute("notify-pull-method", Keyword, "ippget")
-                notifyEvent?.let { attribute("notify-events", Keyword, notifyEvent) }
-            }
+            printer.createSubscriptionGroup(this, notifyEvents, notifyJobId = id)
         }
         val subscriptionAttributes = exchange(request).getSingleAttributesGroup(Subscription)
         return IppSubscription(printer, subscriptionAttributes).apply {
-            if (updateAttributes) updateAllAttributes()
+            subscription = this
+            if (notifyEvents != null && !events.containsAll(notifyEvents)) {
+                log.warn { "server ignored some notifyEvents $notifyEvents, subscribed events: $events" }
+            }
         }
     }
 
