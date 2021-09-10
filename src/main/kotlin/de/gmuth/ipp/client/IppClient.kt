@@ -18,8 +18,8 @@ import java.util.concurrent.atomic.AtomicInteger
 typealias IppResponseInterceptor = (request: IppRequest, response: IppResponse) -> Unit
 
 open class IppClient(
-        val ippConfig: IppConfig = IppConfig(),
-        val httpClient: Http.Client = Http.defaultImplementation.createHttpClient()
+        val config: IppConfig = IppConfig(),
+        val httpClient: Http.Client = Http.defaultImplementation.createClient(Http.Config())
 ) {
     var responseInterceptor: IppResponseInterceptor? = null
 
@@ -50,11 +50,11 @@ open class IppClient(
             printerUri,
             jobId,
             requestedAttributes,
-            ippConfig.userName,
-            ippConfig.ippVersion,
+            config.userName,
+            config.ippVersion,
             requestCounter.getAndIncrement(),
-            ippConfig.charset,
-            ippConfig.naturalLanguage
+            config.charset,
+            config.naturalLanguage
     )
 
     //------------------------------------
@@ -98,7 +98,7 @@ open class IppClient(
             else -> null
         }?.let {
             server?.run { log.info { "ipp-server: $server" } }
-            ippConfig.logDetails()
+            config.logDetails()
             request.logDetails()
             throw IppExchangeException(request, null, status, message = it)
         }
