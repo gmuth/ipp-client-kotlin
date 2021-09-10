@@ -1,6 +1,7 @@
 package de.gmuth.log
 
 import de.gmuth.log.Logging.Factory
+import de.gmuth.log.Logging.LogLevel.*
 import java.io.PrintWriter
 
 /**
@@ -22,19 +23,24 @@ object Logging {
     open class Logger(val name: String, var logLevel: LogLevel = defaultLogLevel) {
 
         @JvmOverloads
-        fun trace(throwable: Throwable? = null, messageProducer: MessageProducer) = log(LogLevel.TRACE, throwable, messageProducer)
+        fun trace(throwable: Throwable? = null, messageProducer: MessageProducer = { "" }) =
+                log(TRACE, throwable, messageProducer)
 
         @JvmOverloads
-        fun debug(throwable: Throwable? = null, messageProducer: MessageProducer) = log(LogLevel.DEBUG, throwable, messageProducer)
+        fun debug(throwable: Throwable? = null, messageProducer: MessageProducer = { "" }) =
+                log(DEBUG, throwable, messageProducer)
 
         @JvmOverloads
-        fun info(throwable: Throwable? = null, messageProducer: MessageProducer) = log(LogLevel.INFO, throwable, messageProducer)
+        fun info(throwable: Throwable? = null, messageProducer: MessageProducer = { "" }) =
+                log(INFO, throwable, messageProducer)
 
         @JvmOverloads
-        fun warn(throwable: Throwable? = null, messageProducer: MessageProducer) = log(LogLevel.WARN, throwable, messageProducer)
+        fun warn(throwable: Throwable? = null, messageProducer: MessageProducer = { "" }) =
+                log(WARN, throwable, messageProducer)
 
         @JvmOverloads
-        fun error(throwable: Throwable? = null, messageProducer: MessageProducer) = log(LogLevel.ERROR, throwable, messageProducer)
+        fun error(throwable: Throwable? = null, messageProducer: MessageProducer = { "" }) =
+                log(ERROR, throwable, messageProducer)
 
         @JvmOverloads
         fun log(messageLogLevel: LogLevel, throwable: Throwable? = null, produceMessage: MessageProducer) {
