@@ -3,6 +3,7 @@ package de.gmuth.ipp.client
 import de.gmuth.ipp.core.IppException
 import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppResponse
+import de.gmuth.ipp.core.IppStatus
 import de.gmuth.log.Logging
 import java.io.File
 
@@ -33,6 +34,8 @@ class IppExchangeException(
     init {
         if (httpStatus == 400) saveMessages("http_400")
     }
+
+    fun statusIs(status: IppStatus) = response?.status == status
 
     fun logDetails() {
         if (httpStatus != null) log.info { "HTTP-STATUS: $httpStatus" }
