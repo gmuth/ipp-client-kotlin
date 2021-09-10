@@ -63,7 +63,7 @@ interface Http {
     }
 
     companion object {
-        var implementation :Implementation =
+        var defaultImplementation :Implementation =
                 if (JavaHttpClient.isSupported()) Java11HttpClient
                 else JavaHttpURLConnection
     }

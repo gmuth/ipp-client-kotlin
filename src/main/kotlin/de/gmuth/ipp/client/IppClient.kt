@@ -5,7 +5,6 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.http.Http
-import de.gmuth.http.HttpURLConnectionClient
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppResponse
@@ -20,7 +19,7 @@ typealias IppResponseInterceptor = (request: IppRequest, response: IppResponse) 
 
 open class IppClient(
         val ippConfig: IppConfig = IppConfig(),
-        val httpClient: Http.Client = HttpURLConnectionClient()
+        val httpClient: Http.Client = Http.defaultImplementation.createHttpClient()
 ) {
     var responseInterceptor: IppResponseInterceptor? = null
 

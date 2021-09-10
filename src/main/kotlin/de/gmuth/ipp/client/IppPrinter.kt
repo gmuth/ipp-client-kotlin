@@ -22,7 +22,7 @@ open class IppPrinter(
         val printerUri: URI,
         var attributes: IppAttributesGroup = IppAttributesGroup(Printer),
         httpConfig: Http.Config = Http.Config(),
-        httpClient: Http.Client = Http.implementation.createHttpClient(httpConfig),
+        httpClient: Http.Client = Http.defaultImplementation.createHttpClient(httpConfig),
         ippConfig: IppConfig = IppConfig(),
         val ippClient: IppClient = IppClient(ippConfig, httpClient)
 ) {
