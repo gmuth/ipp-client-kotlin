@@ -20,30 +20,30 @@ object IppTemplateAttributes {
     // for operation group
 
     @JvmStatic
-    fun documentFormat(value: String) =
-            IppAttribute("document-format", MimeMediaType, value)
+    fun documentFormat(format: String) =
+            IppAttribute("document-format", MimeMediaType, format)
 
     @JvmStatic
-    fun jobName(value: String) =
-            IppAttribute("job-name", NameWithoutLanguage, value.toIppString())
+    fun jobName(name: String) =
+            IppAttribute("job-name", NameWithoutLanguage, name.toIppString())
 
     // for job group
 
     @JvmStatic
-    fun jobPriority(value: Int) =
-            IppAttribute("job-priority", Integer, value)
+    fun jobPriority(priority: Int) =
+            IppAttribute("job-priority", Integer, priority)
 
     @JvmStatic
-    fun copies(value: Int) =
-            IppAttribute("copies", Integer, value)
+    fun copies(number: Int) =
+            IppAttribute("copies", Integer, number)
 
     @JvmStatic
-    fun numberUp(value: Int) =
-            IppAttribute("number-up", Integer, value)
+    fun numberUp(up: Int) =
+            IppAttribute("number-up", Integer, up)
 
     @JvmStatic
-    fun printerResolution(value: Int, unit: Unit = DPI) =
-            IppAttribute("printer-resolution", Resolution, IppResolution(value, unit))
+    fun printerResolution(resolution: Int, unit: Unit = DPI) =
+            IppAttribute("printer-resolution", Resolution, IppResolution(resolution, unit))
 
     @JvmStatic
     fun pageRanges(vararg ranges: IntRange) =
