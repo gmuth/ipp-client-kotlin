@@ -8,6 +8,7 @@ import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppRequest
+import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.log.Logging
 
@@ -21,13 +22,19 @@ class IppSubscription(
     }
 
     init {
-        if (updateAttributes) updateAllAttributes()
+        if (updateAttributes) {
+            updateAllAttributes()
+            log.info { toString() }
+        }
     }
 
     private var lastSequenceNumber: Int = 0
 
     val id: Int
         get() = attributes.getValue("notify-subscription-id")
+
+    val leaseDuration: Int
+        get() = attributes.getValue("notify-lease-duration")
 
     val events: List<String>
         get() = attributes.getValues("notify-events")
@@ -56,7 +63,7 @@ class IppSubscription(
     //------------------
 
     fun getNotifications(
-            onlyNewEvents: Boolean = false,
+            onlyNewEvents: Boolean = true,
             notifySequenceNumber: Int? = if (onlyNewEvents) lastSequenceNumber + 1 else null
     ): List<IppEventNotification> {
         val request = ippRequest(GetNotifications).apply {
@@ -99,6 +106,29 @@ class IppSubscription(
 
     fun exchange(request: IppRequest) = printer.exchange(request)
 
+
+    //------------------------------------------
+    // process events until subscription expires
+    //------------------------------------------
+
+    var processEvents = false
+
+    fun processEvents(
+            delayMillis: Long = 1000 * 5,
+            onEvent: (event: IppEventNotification) -> Unit = { log.info { it } }
+    ) {
+        processEvents = true
+        try {
+            do {
+                getNotifications(onlyNewEvents = true).forEach { onEvent(it) }
+                Thread.sleep(delayMillis)
+            } while (processEvents)
+        } catch (exchangeException: IppExchangeException) {
+            if (!exchangeException.statusIs(ClientErrorNotFound)) throw exchangeException
+            else log.info { exchangeException.response!!.statusMessage }
+        }
+    }
+
     // -------
     // Logging
     // -------
@@ -106,6 +136,7 @@ class IppSubscription(
     override fun toString() = StringBuilder("subscription #$id:").run {
         if (hasJobId()) append(" job #$jobId")
         if (attributes.containsKey("notify-events")) append(" events=${events.joinToString(",")}")
+        if (attributes.containsKey("notify-lease-duration")) append(" lease-duration=$leaseDuration seconds")
         toString()
     }
 
