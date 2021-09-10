@@ -104,7 +104,7 @@ class IppSubscription(
     // -------
 
     override fun toString() = StringBuilder("subscription #$id:").run {
-        if (attributes.containsKey("notify-job-id")) append(" job #$jobId")
+        if (hasJobId()) append(" job #$jobId")
         if (attributes.containsKey("notify-events")) append(" events=${events.joinToString(",")}")
         toString()
     }
