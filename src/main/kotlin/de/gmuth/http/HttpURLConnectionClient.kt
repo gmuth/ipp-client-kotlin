@@ -33,7 +33,7 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
                 }
 
                 override fun flush() {
-                    // nothing to flash
+                    // nothing to flush
                 }
 
                 override fun close() {
