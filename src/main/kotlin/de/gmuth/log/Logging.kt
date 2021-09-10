@@ -13,10 +13,10 @@ typealias MessageProducer = () -> Any?
 object Logging {
 
     var debugLoggingConfig = false
-    var defaultLogLevel = LogLevel.INFO
-    var useSimpleClassName = true
+    var defaultLogLevel = INFO
     var consoleWriterEnabled = true
     var consoleWriterFormat: String = "%-25s %-5s %s" // name, level, message
+    var consoleWriterSimpleClassName = true
 
     enum class LogLevel { TRACE, DEBUG, INFO, WARN, ERROR }
 
@@ -51,7 +51,8 @@ object Logging {
 
         open fun publish(messageLogLevel: LogLevel, throwable: Throwable?, messageString: String?) {
             if (consoleWriterEnabled) {
-                println(consoleWriterFormat.format(name, messageLogLevel, messageString))
+                val loggerName = if (consoleWriterSimpleClassName) name.substringAfterLast(".") else name
+                println(consoleWriterFormat.format(loggerName, messageLogLevel, messageString))
                 throwable?.printStackTrace(PrintWriter(System.out, true))
             }
         }
@@ -69,15 +70,10 @@ object Logging {
         return factory.getLogger(name).apply { this.logLevel = logLevel }
     }
 
-    fun getLogger(logLevel: LogLevel = defaultLogLevel, noOperation: () -> Unit): Logger {
-        val loggerName = with(noOperation.javaClass.enclosingClass.name) {
-            if (useSimpleClassName) substringAfterLast(".") else this
-        }
-        return getLogger(loggerName, logLevel)
-    }
+    fun getLogger(logLevel: LogLevel = defaultLogLevel, noOperation: () -> Unit) =
+        getLogger(noOperation.javaClass.enclosingClass.name, logLevel)
 
     fun useSlf4j() {
-        useSimpleClassName = false
         factory = Factory { Slf4jLoggerAdapter(it) }
     }
 
