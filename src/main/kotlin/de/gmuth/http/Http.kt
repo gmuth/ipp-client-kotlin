@@ -58,11 +58,9 @@ interface Http {
         ): Response
     }
 
-    enum class Implementation(
-            val createClient: (config: Config) -> Client
-    ) {
-        JavaHttpURLConnection({ HttpURLConnectionClient(it) }),
-        Java11HttpClient({ JavaHttpClient(it) });
+    enum class Implementation(val createClient: (config: Config) -> Client) {
+        JavaHttpURLConnection({ config -> HttpURLConnectionClient(config) }),
+        Java11HttpClient({ config -> JavaHttpClient(config) });
     }
 
     companion object {
