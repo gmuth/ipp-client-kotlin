@@ -41,7 +41,7 @@ class IppSubscription(
     // Get-Subscription-Attributes
     //----------------------------
 
-    // RFC 3995 11.2.4.1.2: 'subscription-template', 'subscription-description' or  'all' (default)
+    // RFC 3995 11.2.4.1.2: 'subscription-template', 'subscription-description' or 'all' (default)
 
     @JvmOverloads
     fun getSubscriptionAttributes(requestedAttributes: List<String>? = null) =
