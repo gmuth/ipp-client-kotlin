@@ -26,10 +26,19 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
     init {
         log.info { "HttpURLConnectionClient created" }
         if (config.debugLogging) Logger.getLogger("sun.net.www.protocol.http.HttpURLConnection").run {
-            addHandler(object : Handler() { // redirect java util logging message
-                override fun publish(record: LogRecord) = record.run { Logging.getLogger(loggerName, TRACE).debug { message } }
-                override fun flush() {}
-                override fun close() {}
+            addHandler(object : Handler() {
+                // redirect java util logging message
+                override fun publish(record: LogRecord) = record.run {
+                    Logging.getLogger(loggerName, TRACE).debug { message }
+                }
+
+                override fun flush() {
+                    // nothing to flash
+                }
+
+                override fun close() {
+                    // nothing to close
+                }
             })
             level = Level.ALL
         }

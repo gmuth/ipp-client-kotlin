@@ -12,6 +12,7 @@ import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.log.Logging
 
+@SuppressWarnings("kotlin:S1192") // notify-lease-duration
 class IppSubscription(
         val printer: IppPrinter,
         var attributes: IppAttributesGroup,
