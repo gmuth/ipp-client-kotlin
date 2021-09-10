@@ -21,7 +21,7 @@ open class IppPrinter(
         val printerUri: URI,
         var attributes: IppAttributesGroup = IppAttributesGroup(Printer),
         httpConfig: Http.Config = Http.Config(),
-        httpClient: Http.Client = Http.defaultImplementation.createHttpClient(httpConfig),
+        httpClient: Http.Client = Http.defaultImplementation.createClient(httpConfig),
         ippConfig: IppConfig = IppConfig(),
         val ippClient: IppClient = IppClient(ippConfig, httpClient)
 ) {
@@ -49,7 +49,7 @@ open class IppPrinter(
     }
 
     val ippConfig: IppConfig
-        get() = ippClient.ippConfig
+        get() = ippClient.config
 
     var getJobsRequestedAttributes = listOf(
             "job-id", "job-uri", "job-printer-uri", "job-state", "job-name",
