@@ -5,10 +5,10 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.http.Http
-import de.gmuth.http.HttpURLConnectionClient
 import de.gmuth.ipp.client.IppPrinterState.*
 import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppOperation.*
+import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.log.Logging
@@ -22,7 +22,7 @@ open class IppPrinter(
         val printerUri: URI,
         var attributes: IppAttributesGroup = IppAttributesGroup(Printer),
         httpConfig: Http.Config = Http.Config(),
-        httpClient: Http.Client = HttpURLConnectionClient(httpConfig),
+        httpClient: Http.Client = Http.implementation.createHttpClient(httpConfig),
         ippConfig: IppConfig = IppConfig(),
         val ippClient: IppClient = IppClient(ippConfig, httpClient)
 ) {
@@ -216,17 +216,22 @@ open class IppPrinter(
     // Print-Job
     //----------
 
-    fun printJob(inputStream: InputStream, vararg attributeBuilder: IppAttributeBuilder) =
-            printInputStream(inputStream, attributeBuilder)
+    fun printJob(inputStream: InputStream, vararg attributeBuilder: IppAttributeBuilder, notifyEvents: List<String>? = null) =
+            printInputStream(inputStream, attributeBuilder, notifyEvents)
 
-    fun printJob(byteArray: ByteArray, vararg attributeBuilder: IppAttributeBuilder) =
-            printInputStream(ByteArrayInputStream(byteArray), attributeBuilder)
+    fun printJob(byteArray: ByteArray, vararg attributeBuilder: IppAttributeBuilder, notifyEvents: List<String>? = null) =
+            printInputStream(ByteArrayInputStream(byteArray), attributeBuilder, notifyEvents)
 
-    fun printJob(file: File, vararg attributeBuilder: IppAttributeBuilder) =
-            printInputStream(FileInputStream(file), attributeBuilder)
+    fun printJob(file: File, vararg attributeBuilder: IppAttributeBuilder, notifyEvents: List<String>? = null) =
+            printInputStream(FileInputStream(file), attributeBuilder, notifyEvents)
 
-    protected fun printInputStream(inputStream: InputStream, attributeBuilders: Array<out IppAttributeBuilder>): IppJob {
+    protected fun printInputStream(
+            inputStream: InputStream,
+            attributeBuilders: Array<out IppAttributeBuilder>,
+            notifyEvents: List<String>? = null
+    ): IppJob {
         val request = attributeBuildersRequest(PrintJob, attributeBuilders).apply {
+            notifyEvents?.let { createSubscriptionGroup(this, notifyEvents) }
             documentInputStream = inputStream
         }
         return exchangeForIppJob(request)
@@ -260,8 +265,8 @@ open class IppPrinter(
                     val attribute = attributeBuilder.buildIppAttribute(attributes)
                     checkIfValueIsSupported("${attribute.name}-supported", attribute.values)
                     // put attribute in operation or job group?
-                    val groupTag = IppRegistrationsSection2.selectGroupForAttribute(attribute.name)
-                    if (getAttributesGroups(groupTag).isEmpty()) createAttributesGroup(groupTag)
+                    val groupTag = IppRegistrationsSection2.selectGroupForAttribute(attribute.name) ?: Job
+                    if (!containsGroup(groupTag)) createAttributesGroup(groupTag)
                     log.trace { "$groupTag put $attribute" }
                     getSingleAttributesGroup(groupTag).put(attribute)
                 }
@@ -308,21 +313,31 @@ open class IppPrinter(
 
     fun createPrinterSubscription(
             notifyEvents: List<String>? = null,
-            notifyLeaseDuration: Int? = null, // seconds
-            updateAttributes: Boolean = true
+            notifyLeaseDuration: Int? = null // seconds
     ): IppSubscription {
         val request = ippRequest(CreatePrinterSubscriptions).apply {
-            createAttributesGroup(Subscription).apply {
-                attribute("notify-pull-method", Keyword, "ippget")
-                notifyEvents?.let { attribute("notify-events", Keyword, it) }
-                notifyLeaseDuration?.let { attribute("notify-lease-duration", Integer, it) }
-            }
+            createSubscriptionGroup(this, notifyEvents, notifyLeaseDuration)
         }
-        val attributesGroup = exchange(request).getSingleAttributesGroup(Subscription)
-        return IppSubscription(this, attributesGroup).apply {
-            if (updateAttributes) updateAllAttributes()
-        }
+        val subscriptionAttributes = exchange(request).getSingleAttributesGroup(Subscription)
+        return IppSubscription(this, subscriptionAttributes)
     }
+
+    fun createSubscriptionGroup(
+            request: IppRequest,
+            notifyEvents: List<String>? = null,
+            notifyLeaseDuration: Int? = null, // seconds
+            notifyJobId: Int? = null
+    ) =
+            request.createAttributesGroup(Subscription).apply {
+                attribute("notify-pull-method", Keyword, "ippget")
+                notifyJobId?.let { attribute("notify-job-id", Integer, it) }
+                notifyLeaseDuration?.let { attribute("notify-lease-duration", Integer, it) }
+                notifyEvents?.let {
+                    if (notifyEvents.isNotEmpty() && notifyEvents.first() != "all")
+                        checkIfValueIsSupported("notify-events-supported", it)
+                    attribute("notify-events", Keyword, it)
+                }
+            }
 
     //-------------------------------------------------
     // Get-Subscription-Attributes (as IppSubscription)
@@ -371,8 +386,20 @@ open class IppPrinter(
         })
     }
 
-    fun exchangeForIppJob(request: IppRequest) =
-            IppJob(this, exchange(request).jobGroup)
+    fun exchangeForIppJob(request: IppRequest): IppJob {
+        if (request.containsGroup(Subscription) && !supportsOperations(CreateJobSubscriptions))
+            log.warn { "printer does not support Create-Job-Subscription" }
+        val response = exchange(request)
+        if (request.containsGroup(Subscription) && !response.containsGroup(Subscription)) {
+            request.logDetails("REQUEST: ")
+            val events: List<String> = request.getSingleAttributesGroup(Subscription).getValues("notify-events")
+            throw IppException("server did not create subscription for events: ${events.joinToString(",")}")
+        }
+        val subscriptionsAttributes = response.run {
+            if (containsGroup(Subscription)) getSingleAttributesGroup(Subscription) else null
+        }
+        return IppJob(this, response.jobGroup, subscriptionsAttributes)
+    }
 
     // -------
     // Logging
@@ -388,7 +415,7 @@ open class IppPrinter(
     // attribute value checking based on printer capabilities
     // ------------------------------------------------------
 
-    protected fun checkIfValueIsSupported(supportedAttributeName: String, value: Any) {
+    fun checkIfValueIsSupported(supportedAttributeName: String, value: Any) {
         if (attributes.size == 0) return
 
         if (!supportedAttributeName.endsWith("-supported"))
@@ -403,7 +430,7 @@ open class IppPrinter(
         }
     }
 
-    protected fun isAttributeValueSupported(supportedAttributeName: String, value: Any): Boolean? {
+    fun isAttributeValueSupported(supportedAttributeName: String, value: Any): Boolean? {
         val supportedAttribute = attributes[supportedAttributeName] ?: return null
         val attributeValueIsSupported = when (supportedAttribute.tag) {
             IppTag.Boolean -> { // e.g. 'page-ranges-supported'
@@ -449,5 +476,26 @@ open class IppPrinter(
             printerGroup.saveText(File("$printerModel.txt"))
         }
     }
+
+    // -------------------------------------------------
+    // Create Printer Subscription and log Notifications
+    // -------------------------------------------------
+
+    fun logNotifications(notifyLeaseDuration: Int = 60 * 10, notifyEvents: List<String> = listOf("all")) =
+            createPrinterSubscription(notifyEvents, notifyLeaseDuration).run {
+                log.info { this }
+                try {
+                    do {
+                        Thread.sleep(1000)
+                        getNotifications(onlyNewEvents = true).forEach { log.info { it } }
+                    } while (true)
+                } catch (exchangeException: IppExchangeException) {
+                    if (exchangeException.statusIs(ClientErrorNotFound)) {
+                        log.info { exchangeException.response!!.statusMessage }
+                    } else {
+                        throw exchangeException
+                    }
+                }
+            }
 
 }
