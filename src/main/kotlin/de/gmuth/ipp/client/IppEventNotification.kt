@@ -43,15 +43,17 @@ class IppEventNotification(
     // Logging
     // -------
 
-    override fun toString() = StringBuilder().apply {
-        append("> subscription #$subscriptionId event #$sequenceNumber [$subscribedEvent] $text")
+    override fun toString() = StringBuilder().run {
+        append("subscription #$subscriptionId event #$sequenceNumber")
         if (attributes.containsKey("notify-job-id")) append(" job #$jobId")
+        append(" [$subscribedEvent] $text")
         if (attributes.containsKey("job-state")) append(" job-state=$jobState")
         if (attributes.containsKey("job-state-reasons"))
             append(" job-state-reasons=${jobStateReasons.joinToString(",")}")
-    }.toString()
-
-    fun logDetails() {
-        attributes.logDetails(title = "event notification #$sequenceNumber $subscribedEvent")
+        toString()
     }
+
+    fun logDetails() =
+            attributes.logDetails(title = "event notification #$sequenceNumber $subscribedEvent")
+
 }
