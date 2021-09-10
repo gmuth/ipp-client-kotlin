@@ -13,11 +13,18 @@ import de.gmuth.log.Logging
 
 class IppSubscription(
         val printer: IppPrinter,
-        var attributes: IppAttributesGroup
+        var attributes: IppAttributesGroup,
+        updateAttributes: Boolean = attributes.size <= 1
 ) {
     companion object {
         val log = Logging.getLogger {}
     }
+
+    init {
+        if (updateAttributes) updateAllAttributes()
+    }
+
+    private var lastSequenceNumber: Int = 0
 
     val id: Int
         get() = attributes.getValue("notify-subscription-id")
@@ -27,6 +34,8 @@ class IppSubscription(
 
     val jobId: Int
         get() = attributes.getValue("notify-job-id")
+
+    fun hasJobId() = attributes.containsKey("notify-job-id")
 
     //----------------------------
     // Get-Subscription-Attributes
@@ -46,7 +55,10 @@ class IppSubscription(
     // Get-Notifications
     //------------------
 
-    fun getNotifications(notifySequenceNumber: Int? = null): List<IppEventNotification> {
+    fun getNotifications(
+            onlyNewEvents: Boolean = false,
+            notifySequenceNumber: Int? = if (onlyNewEvents) lastSequenceNumber + 1 else null
+    ): List<IppEventNotification> {
         val request = ippRequest(GetNotifications).apply {
             operationGroup.run {
                 attribute("notify-subscription-ids", Integer, id)
@@ -56,14 +68,14 @@ class IppSubscription(
         return exchange(request)
                 .getAttributesGroups(EventNotification)
                 .map { IppEventNotification(it) }
+                .apply { if (isNotEmpty()) lastSequenceNumber = last().sequenceNumber }
     }
 
     //--------------------
     // Cancel-Subscription
     //--------------------
 
-    fun cancel() =
-            exchange(ippRequest(CancelSubscription))
+    fun cancel() = exchange(ippRequest(CancelSubscription))
 
     //-------------------
     // Renew-Subscription
@@ -85,20 +97,18 @@ class IppSubscription(
                 operationGroup.attribute("notify-subscription-id", Integer, id)
             }
 
-    fun exchange(request: IppRequest) =
-            printer.exchange(request)
+    fun exchange(request: IppRequest) = printer.exchange(request)
 
     // -------
     // Logging
     // -------
 
-    override fun toString() = StringBuilder("subscription #$id:").apply {
+    override fun toString() = StringBuilder("subscription #$id:").run {
         if (attributes.containsKey("notify-job-id")) append(" job #$jobId")
-        if (attributes.containsKey("notify-events")) append(" ${events.joinToString(",")}")
-    }.toString()
-
-    fun logDetails() {
-        attributes.logDetails(title = "subscription #$id")
+        if (attributes.containsKey("notify-events")) append(" events=${events.joinToString(",")}")
+        toString()
     }
+
+    fun logDetails() = attributes.logDetails(title = "subscription #$id")
 
 }
