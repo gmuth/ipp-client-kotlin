@@ -8,7 +8,8 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI
 import java.util.*
-import javax.net.ssl.SSLSocketFactory
+import javax.net.ssl.SSLContext
+import de.gmuth.http.Http.Implementation.*
 
 interface Http {
 
@@ -16,15 +17,15 @@ interface Http {
             var timeout: Int = 30000, // milli seconds
             var userAgent: String? = "ipp-client-kotlin/2.2",
             var basicAuth: BasicAuth? = null,
-            var sslSocketFactory: SSLSocketFactory? = null,
-            // trust any certificate: sslSocketFactoryForAnyCertificate()
-            // use individual certificate: sslSocketFactory(loadCertificate(FileInputStream("printer.pem")))
-            // use truststore: sslSocketFactory(loadKeyStore(FileInputStream("printer.jks"), "changeit"))
+            var sslContext: SSLContext? = null,
+            // trust any certificate: sslContextForAnyCertificate()
+            // use individual certificate: sslContext(loadCertificate(FileInputStream("printer.pem")))
+            // use truststore: sslContext(loadKeyStore(FileInputStream("printer.jks"), "changeit"))
             var verifySSLHostname: Boolean = true,
             var acceptEncoding: String? = null
     ) {
         fun trustAnyCertificate() {
-            sslSocketFactory = SSLHelper.sslSocketFactoryForAnyCertificate()
+            sslContext = SSLHelper.sslContextForAnyCertificate()
         }
     }
 
@@ -46,13 +47,25 @@ interface Http {
         fun textContent() = if (hasContent() && contentTypeIsText()) "\n" + readTextContent() else ""
     }
 
-    abstract class Client(val config: Config = Config()) {
+    abstract class Client(val config: Config) {
         abstract fun post(
                 uri: URI,
                 contentType: String,
                 writeContent: (OutputStream) -> Unit,
                 chunked: Boolean = false
         ): Response
+    }
+
+    enum class Implementation(val createClient: (config: Config) -> Client) {
+        JavaHttpURLConnection({ HttpURLConnectionClient(it) }),
+        Java11HttpClient({ JavaHttpClient(it) });
+        fun createHttpClient(config: Config = Config()) = createClient(config)
+    }
+
+    companion object {
+        var implementation :Implementation =
+                if (JavaHttpClient.isSupported()) Java11HttpClient
+                else JavaHttpURLConnection
     }
 
 }

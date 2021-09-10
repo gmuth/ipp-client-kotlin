@@ -23,11 +23,15 @@ object SSLHelper {
     fun loadKeyStore(keyStoreInputStream: InputStream, keyStorePassword: String, keyStoreType: String = KeyStore.getDefaultType()) =
             KeyStore.getInstance(keyStoreType).apply { load(keyStoreInputStream, keyStorePassword.toCharArray()) }
 
-    fun sslSocketFactory(trustmanagers: Array<TrustManager>, protocol: String = "TLS") =
-            SSLContext.getInstance(protocol).apply { init(null, trustmanagers, SecureRandom()) }.socketFactory
+    //------------
+    // SSLContexts
+    //------------
+
+    fun sslContext(trustmanagers: Array<TrustManager>, protocol: String = "TLS") =
+            SSLContext.getInstance(protocol).apply { init(null, trustmanagers, SecureRandom()) }
 
     @SuppressWarnings("kotlin:S4830")
-    fun sslSocketFactoryForAnyCertificate() = sslSocketFactory(arrayOf(
+    fun sslContextForAnyCertificate() = sslContext(arrayOf(
             object : X509TrustManager {
                 override fun checkClientTrusted(certificates: Array<out X509Certificate>?, string: String?) = Unit
                 override fun checkServerTrusted(certificates: Array<out X509Certificate>?, string: String?) = Unit
@@ -35,15 +39,14 @@ object SSLHelper {
             }
     ))
 
-    fun sslSocketFactory(certificate: Certificate) = sslSocketFactory(
+    fun sslContext(keyStore: KeyStore, algorithm: String = TrustManagerFactory.getDefaultAlgorithm()) =
+            sslContext(TrustManagerFactory.getInstance(algorithm).apply { init(keyStore) }.trustManagers)
+
+    fun sslContext(certificate: Certificate) = sslContext(
             KeyStore.getInstance(KeyStore.getDefaultType()).apply {
                 load(null) // initialize keystore
                 setCertificateEntry("alias", certificate)
             }
-    )
-
-    fun sslSocketFactory(keyStore: KeyStore, algorithm: String = TrustManagerFactory.getDefaultAlgorithm()) = sslSocketFactory(
-            TrustManagerFactory.getInstance(algorithm).apply { init(keyStore) }.trustManagers
     )
 
 }
