@@ -32,13 +32,8 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
                     Logging.getLogger(loggerName, TRACE).debug { message }
                 }
 
-                override fun flush() {
-                    // nothing to flush
-                }
-
-                override fun close() {
-                    // nothing to close
-                }
+                override fun flush() = Unit
+                override fun close() = Unit
             })
             level = Level.ALL
         }
