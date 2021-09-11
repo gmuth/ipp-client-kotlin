@@ -389,8 +389,6 @@ open class IppPrinter(
     }
 
     fun exchangeForIppJob(request: IppRequest): IppJob {
-        if (request.containsGroup(Subscription) && !supportsOperations(CreateJobSubscriptions))
-            log.warn { "printer does not support Create-Job-Subscriptions" }
         val response = exchange(request)
         if (request.containsGroup(Subscription) && !response.containsGroup(Subscription)) {
             request.logDetails("REQUEST: ")
