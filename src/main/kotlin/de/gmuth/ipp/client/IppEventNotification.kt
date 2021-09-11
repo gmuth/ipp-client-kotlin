@@ -39,17 +39,26 @@ class IppEventNotification(
     val jobImpressionsCompleted: Int
         get() = attributes.getValue("job-impressions-completed")
 
+    val printerState: IppPrinterState
+        get() = IppPrinterState.fromInt(attributes.getValue("printer-state"))
+
+    val printerStateReasons: List<String>
+        get() = attributes.getValues("printer-state-reasons")
+
     // -------
     // Logging
     // -------
 
     override fun toString() = StringBuilder().run {
-        append("subscription #$subscriptionId event #$sequenceNumber")
-        if (attributes.containsKey("notify-job-id")) append(" job #$jobId")
+        append("subscription #$subscriptionId event #$sequenceNumber:")
         append(" [$subscribedEvent] $text")
-        if (attributes.containsKey("job-state")) append(" job-state=$jobState")
+        if (attributes.containsKey("notify-job-id")) append(" job #$jobId")
+        if (attributes.containsKey("job-state")) append(", job-state=$jobState")
         if (attributes.containsKey("job-state-reasons"))
-            append(" job-state-reasons=${jobStateReasons.joinToString(",")}")
+            append(" (reasons=${jobStateReasons.joinToString(",")})")
+        if (attributes.containsKey("printer-state")) append(", printer-state=$printerState")
+        if (attributes.containsKey("printer-state-reasons"))
+            append(" (reasons=${printerStateReasons.joinToString(",")})")
         toString()
     }
 
