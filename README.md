@@ -43,7 +43,7 @@ val job = ippPrinter.printJob(
     notifyEvents = listOf("job-state-changed", "job-stopped", "job-completed") // CUPS
 )
 job.logDetails()
-job.subscription?.processEvents { log.info {it} }
+job.subscription?.processEvents { println(it) }
 
 // print remote file, make printer pull document from remote server
 val remoteFile = URI.create("http://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf")
@@ -68,9 +68,9 @@ ippPrinter.pause()
 ippPrinter.resume()
 ippPrinter.sound() // identify printer
 
-// subscribe and process events (e.g. from CUPS) for 1 minute
+// subscribe and log events (e.g. from CUPS) for 1 minute
 ippPrinter.createPrinterSubscription(60)
-          .processEvents { event -> log.info { event } }
+          .processEvents()
 ```
 ### Printer Capabilities
 
