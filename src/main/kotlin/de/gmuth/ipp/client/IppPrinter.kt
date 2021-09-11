@@ -215,12 +215,15 @@ open class IppPrinter(
     // Print-Job (with subscription support)
     //--------------------------------------
 
+    @JvmOverloads
     fun printJob(inputStream: InputStream, vararg attributeBuilder: IppAttributeBuilder, notifyEvents: List<String>? = null) =
             printInputStream(inputStream, attributeBuilder, notifyEvents)
 
+    @JvmOverloads
     fun printJob(byteArray: ByteArray, vararg attributeBuilder: IppAttributeBuilder, notifyEvents: List<String>? = null) =
             printInputStream(ByteArrayInputStream(byteArray), attributeBuilder, notifyEvents)
 
+    @JvmOverloads
     fun printJob(file: File, vararg attributeBuilder: IppAttributeBuilder, notifyEvents: List<String>? = null) =
             printInputStream(FileInputStream(file), attributeBuilder, notifyEvents)
 
