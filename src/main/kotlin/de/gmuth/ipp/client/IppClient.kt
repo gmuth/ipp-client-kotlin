@@ -9,6 +9,7 @@ import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppStatus.ClientErrorBadRequest
+import de.gmuth.ipp.core.IppStatus.SuccessfulOk
 import de.gmuth.ipp.core.IppTag.Unsupported
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.log.Logging
@@ -77,6 +78,7 @@ open class IppClient(
                 IppRegistrationsSection2.validate(request)
                 throw IppExchangeException(request, response)
             }
+            if (status != SuccessfulOk) log.warn { "status: $status" }
         }
     }
 
