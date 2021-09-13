@@ -27,8 +27,6 @@ open class IppClient(
     val httpConfig: Http.Config
         get() = httpClient.config
 
-    protected val requestCounter = AtomicInteger(1)
-
     fun basicAuth(user: String, password: String) {
         httpConfig.basicAuth = Http.BasicAuth(user, password)
     }
@@ -49,6 +47,8 @@ open class IppClient(
     //-----------------
     // build IppRequest
     //-----------------
+
+    private val requestCounter = AtomicInteger(1)
 
     fun ippRequest(
             operation: IppOperation,
