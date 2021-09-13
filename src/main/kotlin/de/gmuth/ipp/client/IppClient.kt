@@ -37,6 +37,14 @@ open class IppClient(
         val log = Logging.getLogger {}
     }
 
+    init {
+        httpConfig.apply {
+            userAgent = "ipp-client-kotlin/2.2"
+            acceptEncoding = "identity" // avoids 'gzip' with Android's OkHttp
+            accept = "application/ipp" // avoids 'text/html' with sun.net.www.protocol.http.HttpURLConnection
+        }
+    }
+
     //-----------------
     // build IppRequest
     //-----------------
