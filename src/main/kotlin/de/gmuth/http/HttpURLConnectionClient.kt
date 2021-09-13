@@ -5,8 +5,7 @@ package de.gmuth.http
  */
 
 import de.gmuth.log.Logging
-import de.gmuth.log.Logging.LogLevel.ERROR
-import de.gmuth.log.Logging.LogLevel.TRACE
+import de.gmuth.log.Logging.LogLevel.*
 import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URI
@@ -21,22 +20,24 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
 
     companion object {
         val log = Logging.getLogger {}
+        val julHandler = object : Handler() {
+            // redirect java util logging message, ignore level
+            override fun publish(record: LogRecord) = record.run {
+                Logging.getLogger(loggerName, DEBUG).log(DEBUG) { message }
+            }
+
+            override fun flush() = Unit
+            override fun close() = Unit
+        }
     }
 
     init {
         log.info { "HttpURLConnectionClient created" }
-        if (config.debugLogging) Logger.getLogger("sun.net.www.protocol.http.HttpURLConnection").run {
-            addHandler(object : Handler() {
-                // redirect java util logging message
-                override fun publish(record: LogRecord) = record.run {
-                    Logging.getLogger(loggerName, TRACE).debug { message }
-                }
-
-                override fun flush() = Unit
-                override fun close() = Unit
-            })
-            level = Level.ALL
-        }
+        if (config.debugLogging)
+            Logger.getLogger("sun.net.www.protocol.http.HttpURLConnection").run {
+                if (!handlers.contains(julHandler)) addHandler(julHandler)
+                level = Level.ALL
+            }
     }
 
     override fun post(uri: URI, contentType: String, writeContent: (OutputStream) -> Unit, chunked: Boolean): Http.Response {
