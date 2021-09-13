@@ -15,7 +15,7 @@ interface Http {
 
     class Config(
             var timeout: Int = 30000, // milli seconds
-            var userAgent: String? = "ipp-client-kotlin/2.2",
+            var userAgent: String? = null,
             var basicAuth: BasicAuth? = null,
             var sslContext: SSLContext? = null,
             // trust any certificate: sslContextForAnyCertificate()
