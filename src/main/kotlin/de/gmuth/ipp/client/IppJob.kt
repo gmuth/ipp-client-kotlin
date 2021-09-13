@@ -236,13 +236,15 @@ class IppJob(
     // -------
 
     override fun toString(): String = with(attributes) {
-        StringBuffer("id=$id, uri=$uri").apply {
-            if (containsKey("job-state")) append(", state=$state")
-            if (hasStateReasons()) append(", stateReasons=$stateReasons")
+        StringBuffer().run {
+            append("Job #$id:")
+            if (containsKey("job-state")) append(" state=$state")
+            if (hasStateReasons()) append(" (reasons=${stateReasons.joinToString(",")})")
             if (containsKey("job-name")) append(", name=$name")
-            if (containsKey("job-originating-user-name")) append(", originatingUserName=$originatingUserName")
-            if (containsKey("job-impressions-completed")) append(", impressionsCompleted=$impressionsCompleted")
-        }.toString()
+            if (containsKey("job-originating-user-name")) append(", originating-user-name=$originatingUserName")
+            if (containsKey("job-impressions-completed")) append(", impressions-completed=$impressionsCompleted")
+            toString()
+        }
     }
 
     fun logDetails() = attributes.logDetails(title = "JOB-$id")
