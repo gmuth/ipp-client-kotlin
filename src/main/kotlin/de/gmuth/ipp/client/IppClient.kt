@@ -35,13 +35,14 @@ open class IppClient(
 
     companion object {
         val log = Logging.getLogger {}
+        const val APPLICATION_IPP = "application/ipp"
     }
 
     init {
         httpConfig.apply {
             userAgent = "ipp-client-kotlin/2.2"
             acceptEncoding = "identity" // avoids 'gzip' with Android's OkHttp
-            accept = "application/ipp" // avoids 'text/html' with sun.net.www.protocol.http.HttpURLConnection
+            accept = APPLICATION_IPP // avoids 'text/html' with sun.net.www.protocol.http.HttpURLConnection
         }
     }
 
@@ -97,14 +98,14 @@ open class IppClient(
     }
 
     fun httpPostRequest(httpUri: URI, request: IppRequest) = httpClient.post(
-            httpUri, "application/ipp",
+            httpUri, APPLICATION_IPP,
             { httpPostStream -> request.write(httpPostStream) },
             chunked = request.hasDocument()
     ).apply {
         when { // http response is not successful
             !isOK() -> "http request to $httpUri failed: status=$status, content-type=$contentType${textContent()}"
             !hasContentType() -> "missing content-type in http response (application/ipp required)"
-            !contentType!!.startsWith("application/ipp") -> "invalid content-type: $contentType"
+            !contentType!!.startsWith(APPLICATION_IPP) -> "invalid content-type: $contentType"
             else -> null
         }?.let {
             server?.run { log.info { "ipp-server: $server" } }
