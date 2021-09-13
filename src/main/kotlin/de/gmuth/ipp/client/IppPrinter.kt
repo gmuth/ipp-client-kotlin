@@ -53,7 +53,7 @@ open class IppPrinter(
 
     var getJobsRequestedAttributes = listOf(
             "job-id", "job-uri", "job-printer-uri", "job-state", "job-name",
-            "job-state-message", "job-state-reasons", "job-originating-user-name"
+            "job-state-reasons", "job-originating-user-name"
     )
 
     //---------------
@@ -393,7 +393,7 @@ open class IppPrinter(
         if (request.containsGroup(Subscription) && !response.containsGroup(Subscription)) {
             request.logDetails("REQUEST: ")
             val events: List<String> = request.getSingleAttributesGroup(Subscription).getValues("notify-events")
-            throw IppException("server did not create subscription for events: ${events.joinToString(",")}")
+            throw IppException("printer/server did not create subscription for events: ${events.joinToString(",")}")
         }
         val subscriptionsAttributes = response.run {
             if (containsGroup(Subscription)) getSingleAttributesGroup(Subscription) else null
