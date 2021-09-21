@@ -198,7 +198,8 @@ or [JavaHttpClient](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/m
 
 ## Build
 
-To build the jar into `build/libs` run the default tasks
+To build the jar make sure you have JDK 11 installed.
+The default tasks build the jar in `build/libs`. 
 
     ./gradlew
 
@@ -211,6 +212,7 @@ This software has **no dependencies** to
 [CUPS](https://www.cups.org) or
 [ipptool](https://www.cups.org/doc/man-ipptool.html).
 Operation has mostly been tested for target `jvm`. Android is supported since v1.6.
+A Java Version 11 Runtime is only required if you want to use the Java 11 HttpClient.
 
 ## Artifacts
 
