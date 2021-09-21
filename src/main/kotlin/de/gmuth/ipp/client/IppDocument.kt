@@ -1,7 +1,6 @@
 package de.gmuth.ipp.client
 
 import de.gmuth.ipp.core.IppResponse
-import de.gmuth.ipp.core.IppString
 import de.gmuth.log.Logging
 import java.io.File
 
@@ -35,25 +34,23 @@ class IppDocument(val job: IppJob, cupsGetDocumentResponse: IppResponse) {
 
     fun hasName() = attributes.contains("document-name")
 
-    override fun toString() =
-            StringBuilder("document #$number ($format)").apply {
-                if (hasName()) append(" '$name'")
-            }.toString()
+    override fun toString() = StringBuilder("document #$number ($format)").run {
+        if (hasName()) append(" '$name'")
+        toString()
+    }
 
     fun readBytes() = inputStream.readBytes().also {
         log.debug { "read ${it.size} bytes of $this" }
     }
 
-    fun filename() = StringBuilder().apply {
+    fun filename(): String {
         val suffix = getMimeTypeSuffix(format)
-        when {
-            hasName() -> append("$name.$suffix")
-            job.attributes.containsKey("document-name-supplied") -> {
-                append(job.attributes.getValue<IppString>("document-name-supplied").text)
-            }
-            else -> append("job-${job.id}-doc-$number.$suffix")
+        return when {
+            hasName() -> "$name.$suffix"
+            job.attributes.containsKey("document-name-supplied") -> job.documentNameSupplied.text
+            else -> "job-${job.id}-doc-$number.$suffix"
         }
-    }.toString()
+    }
 
     fun save(file: File = File(filename())): File {
         inputStream.copyTo(file.outputStream())

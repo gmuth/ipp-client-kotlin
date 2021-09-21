@@ -59,6 +59,9 @@ class IppJob(
     val numberOfDocuments: Int
         get() = attributes.getValue("number-of-documents")
 
+    val documentNameSupplied: IppString
+        get() = attributes.getValue("document-name-supplied")
+
     fun hasStateReasons() = attributes.containsKey("job-state-reasons")
 
     fun isProcessing() = state == Processing
