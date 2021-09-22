@@ -165,13 +165,16 @@ A simple stdout console writer is enabled by default and can be disabled.
 Logging.consoleWriterEnabled = false
 ```
 
-You can configure the library to use [Slf4j](http://www.slf4j.org).
+You can configure the library to use 
+[Java Util Logging](https://docs.oracle.com/en/java/javase/11/core/java-logging-overview.html)
+or [Slf4j](http://www.slf4j.org).
 Then the log levels must be configured according to the underlaying implementation 
 (e.g. [logback](http://logback.qos.ch/manual/configuration.html)
 or [Slf4j-Android](http://www.slf4j.org/android/)).
 
 ```kotlin
-Logging.useSlf4j()
+JulAdapter.configure("/ipp-client-logging.conf")
+Slf4jAdapter.configure()
 ```
     
 ## Source packages
