@@ -73,8 +73,4 @@ object Logging {
     fun getLogger(logLevel: LogLevel = defaultLogLevel, noOperation: () -> Unit) =
             getLogger(noOperation.javaClass.enclosingClass.name, logLevel)
 
-    fun useSlf4j() {
-        factory = Factory { Slf4jLoggerAdapter(it) }
-    }
-
 }
