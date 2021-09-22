@@ -1,7 +1,6 @@
 package de.gmuth.ipp.iana
 
 import de.gmuth.csv.CSVTable
-import de.gmuth.ipp.core.IppOperation
 import de.gmuth.log.Logging
 
 /**
@@ -47,7 +46,7 @@ object IppRegistrationsSection6 {
     fun getEnumName(attribute: String, value: Any) =
             if (attribute == "operations-supported" && value is Number) {
                 // lookup the name in IppOperation because CUPS operations are not iana registered
-                IppOperation.fromShort(value.toShort()).toString()
+                de.gmuth.ipp.core.IppOperation.fromShort(value.toShort()).toString()
             } else {
                 getEnumAttributeValue(aliasMap[attribute] ?: attribute, value)?.name
             } ?: value
