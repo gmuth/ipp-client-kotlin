@@ -6,7 +6,6 @@ import de.gmuth.log.Logging
 /**
  * https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xhtml#ipp-registrations-6
  */
-@SuppressWarnings("kotlin:S1128")
 object IppRegistrationsSection6 {
 
     data class EnumAttributeValue(
