@@ -31,7 +31,7 @@ class JulAdapter(name: String) : Logging.Logger(name) {
 
     companion object {
         fun configure(configResource: String? = null) { // e.g. "/ipp-client-logging.conf"
-            configResource?.let { LogManager.getLogManager().readConfiguration(Logging::class.java.getResourceAsStream(it)) }
+            configResource?.let { LogManager.getLogManager().readConfiguration(JulAdapter::class.java.getResourceAsStream(it)) }
             Logging.factory = Logging.Factory { JulAdapter(it) }
         }
     }
