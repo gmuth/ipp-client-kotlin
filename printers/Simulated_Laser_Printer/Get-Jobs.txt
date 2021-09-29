@@ -1,0 +1,7 @@
+job-state-reasons (1setOf keyword) = job-printing
+job-originating-user-name (nameWithoutLanguage) = gmuth
+job-name (nameWithoutLanguage) = A4-blank.pdf
+job-state (enum) = processing
+job-id (integer) = 461881017
+job-uri (uri) = ipp://SpaceBook-2.local.:8632/jobs/461881017
+job-printer-uri (uri) = ipp://SpaceBook-2.local.:8632/printers/laser
