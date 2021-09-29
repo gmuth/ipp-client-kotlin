@@ -1,5 +1,9 @@
 package de.gmuth.ipp.client
 
+/**
+ * Copyright (c) 2021 Gerhard Muth
+ */
+
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppTag
