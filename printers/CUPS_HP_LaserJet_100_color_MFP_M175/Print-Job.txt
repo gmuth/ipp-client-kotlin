@@ -1,0 +1,5 @@
+job-uri (uri) = ipp://localhost:631/jobs/2366
+job-id (integer) = 2366
+job-state (enum) = pending
+job-state-message (textWithoutLanguage) = 
+job-state-reasons (1setOf keyword) = none

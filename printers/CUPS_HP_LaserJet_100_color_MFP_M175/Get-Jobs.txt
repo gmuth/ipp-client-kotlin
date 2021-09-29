@@ -1,0 +1,7 @@
+job-printer-uri (uri) = ipp://localhost:631/printers/ColorJet_HP
+job-uri (uri) = ipp://localhost:631/jobs/2366
+job-originating-user-name (nameWithoutLanguage) = gmuth
+job-name (nameWithoutLanguage) = A4-blank.pdf
+job-id (integer) = 2366
+job-state (enum) = processing
+job-state-reasons (1setOf keyword) = job-printing
