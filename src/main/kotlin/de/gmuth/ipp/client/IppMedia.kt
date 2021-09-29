@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2021 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppAttribute
@@ -11,11 +11,9 @@ import de.gmuth.ipp.core.IppCollection
 import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.log.Logging
 
-class IppMedia {
+object IppMedia {
 
-    companion object {
-        val log = Logging.getLogger {}
-    }
+    val log = Logging.getLogger {}
 
     // unit: 1/100 mm, e.g. 2540 = 1 inch
     class Size(val xDimension: Int, val yDimension: Int) : IppAttributeBuilder {
