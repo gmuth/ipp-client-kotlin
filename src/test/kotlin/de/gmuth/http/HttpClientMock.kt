@@ -1,6 +1,11 @@
 package de.gmuth.http
 
+/**
+ * Copyright (c) 2021 Gerhard Muth
+ */
+
 import de.gmuth.ipp.core.IppResponse
+import de.gmuth.ipp.core.IppStatus
 import de.gmuth.log.Logging
 import java.io.*
 import java.net.URI
@@ -16,10 +21,11 @@ class HttpClientMock(config: Http.Config = Http.Config()) : Http.Client(config) 
     var httpServer: String? = "HttpClientMock"
     var httpContentType: String? = "application/ipp"
     var httpContentStream: InputStream? = null
-    var ippResponse: IppResponse? = null
+    var ippResponse: IppResponse? = IppResponse(IppStatus.SuccessfulOk)
 
     fun mockResponse(file: File) {
         httpContentStream = FileInputStream(file)
+        ippResponse = null
     }
 
     fun mockResponse(fileName: String, directory: String = "printers") =
