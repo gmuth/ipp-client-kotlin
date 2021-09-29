@@ -1,0 +1,4 @@
+job-uri (uri) = ipp://SpaceBook-2.local.:8632/jobs/461881017
+job-id (integer) = 461881017
+job-state (enum) = pending
+job-state-reasons (1setOf keyword) = none
