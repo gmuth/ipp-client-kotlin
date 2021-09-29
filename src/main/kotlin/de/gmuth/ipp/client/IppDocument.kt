@@ -1,6 +1,7 @@
 package de.gmuth.ipp.client
 
 import de.gmuth.ipp.core.IppResponse
+import de.gmuth.ipp.core.IppString
 import de.gmuth.log.Logging
 import java.io.File
 
@@ -29,7 +30,7 @@ class IppDocument(val job: IppJob, cupsGetDocumentResponse: IppResponse) {
     val format: String
         get() = attributes.getValue("document-format")
 
-    val name: String
+    val name: IppString
         get() = attributes.getValue("document-name")
 
     fun hasName() = attributes.contains("document-name")
@@ -46,7 +47,7 @@ class IppDocument(val job: IppJob, cupsGetDocumentResponse: IppResponse) {
     fun filename(): String {
         val suffix = getMimeTypeSuffix(format)
         return when {
-            hasName() -> "$name.$suffix"
+            hasName() -> "${name.text}.$suffix"
             job.attributes.containsKey("document-name-supplied") -> job.documentNameSupplied.text
             else -> "job-${job.id}-doc-$number.$suffix"
         }
