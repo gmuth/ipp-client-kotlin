@@ -8,7 +8,7 @@ import de.gmuth.ipp.core.IppTag.*
 import java.net.URI
 import java.nio.charset.Charset
 
-class IppRequest() : IppMessage() {
+class IppRequest : IppMessage {
 
     val printerUri: URI
         get() = operationGroup.getValueOrNull("printer-uri") ?: throw IppException("missing 'printer-uri'")
@@ -22,6 +22,8 @@ class IppRequest() : IppMessage() {
     val attributesCharset: Charset
         get() = operationGroup.getValue("attributes-charset")
 
+    constructor() : super()
+
     constructor(
             operation: IppOperation,
             printerUri: URI? = null,
@@ -32,17 +34,9 @@ class IppRequest() : IppMessage() {
             requestId: Int = 1,
             charset: Charset = Charsets.UTF_8,
             naturalLanguage: String = "en"
-    ) : this() {
-
-        this.version = version
-        this.code = operation.code
-        this.requestId = requestId
-
-        createAttributesGroup(Operation).run {
-            // required attributes
-            attribute("attributes-charset", Charset, charset)
-            attribute("attributes-natural-language", NaturalLanguage, naturalLanguage)
-            // useful attributes
+    ) : super(version, requestId, charset, naturalLanguage) {
+        code = operation.code
+        operationGroup.run {
             jobId?.let { attribute("job-id", Integer, it) }
             printerUri?.let { attribute("printer-uri", Uri, it) }
             requestedAttributes?.let { attribute("requested-attributes", Keyword, it) }

@@ -1,13 +1,14 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2021 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppTag.Printer
 import de.gmuth.ipp.core.IppTag.Unsupported
+import java.nio.charset.Charset
 
-class IppResponse : IppMessage() {
+class IppResponse : IppMessage {
 
     override val codeDescription: String
         get() = status.toString()
@@ -33,4 +34,15 @@ class IppResponse : IppMessage() {
 
     fun isSuccessful() = status.isSuccessful()
 
+    constructor() : super()
+
+    constructor(
+            status: IppStatus,
+            version: String = "1.1",
+            requestId: Int = 1,
+            charset: Charset = Charsets.UTF_8,
+            naturalLanguage: String = "en"
+    ) : super(version, requestId, charset, naturalLanguage) {
+        code = status.code
+    }
 }

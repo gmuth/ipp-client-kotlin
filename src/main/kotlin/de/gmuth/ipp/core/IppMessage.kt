@@ -6,10 +6,11 @@ package de.gmuth.ipp.core
 
 import de.gmuth.io.ByteArraySavingInputStream
 import de.gmuth.io.ByteArraySavingOutputStream
+import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.log.Logging
 import java.io.*
 
-abstract class IppMessage {
+abstract class IppMessage() {
 
     var code: Short? = null
     var requestId: Int? = null
@@ -28,11 +29,20 @@ abstract class IppMessage {
         val log = Logging.getLogger {}
     }
 
+    constructor(version: String, requestId: Int, charset: java.nio.charset.Charset, naturalLanguage: String) : this() {
+        this.version = version
+        this.requestId = requestId
+        createAttributesGroup(Operation).run {
+            attribute("attributes-charset", Charset, charset)
+            attribute("attributes-natural-language", NaturalLanguage, naturalLanguage)
+        }
+    }
+
     val operationGroup: IppAttributesGroup
-        get() = getSingleAttributesGroup(IppTag.Operation)
+        get() = getSingleAttributesGroup(Operation)
 
     val jobGroup: IppAttributesGroup
-        get() = getSingleAttributesGroup(IppTag.Job)
+        get() = getSingleAttributesGroup(Job)
 
     fun getAttributesGroups(tag: IppTag) =
             attributesGroups.filter { it.tag == tag }
@@ -74,6 +84,8 @@ abstract class IppMessage {
         log.debug { "ByteArrayOutputStream size = ${this.size()}" }
         toByteArray()
     }
+
+    fun encodeAsInputStream() = ByteArrayInputStream(encode())
 
     // --------
     // DECODING
@@ -117,10 +129,15 @@ abstract class IppMessage {
         log.info { "saved ${file.length()} document bytes to file ${file.path}" }
     }
 
-    fun saveRawBytes(file: File) = file.apply {
-        writeBytes(rawBytes ?: throw RuntimeException("missing raw bytes. you must call read/decode or write/encode before."))
-        log.info { "saved: $path" }
-    }
+    fun saveRawBytes(file: File) =
+            if (rawBytes == null) {
+                log.warn { "no raw bytes to save. you must call read/decode or write/encode before." }
+                null
+            } else {
+                file.writeBytes(rawBytes!!)
+                log.info { "saved: ${file.path}" }
+                file
+            }
 
     // -------
     // LOGGING
