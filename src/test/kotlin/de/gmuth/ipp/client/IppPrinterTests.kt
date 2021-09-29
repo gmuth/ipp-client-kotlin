@@ -20,13 +20,15 @@ import de.gmuth.ipp.client.IppTemplateAttributes.printerResolution
 import de.gmuth.ipp.client.IppWhichJobs.Completed
 import de.gmuth.ipp.core.IppOperation.GetPrinterAttributes
 import de.gmuth.ipp.core.IppResponse
-import de.gmuth.ipp.core.IppStatus.*
 import de.gmuth.log.Logging
 import de.gmuth.log.Logging.LogLevel.TRACE
 import java.io.File
 import java.io.FileInputStream
 import java.net.URI
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class IppPrinterTests {
 
@@ -37,7 +39,7 @@ class IppPrinterTests {
 
     val httpClient = HttpClientMock()
 
-    var printer = IppPrinter(
+    val printer = IppPrinter(
             URI.create("ipp://printer"),
             httpClient = httpClient,
             ippConfig = IppConfig(getPrinterAttributesOnInit = false)
@@ -115,7 +117,6 @@ class IppPrinterTests {
 
     @Test
     fun validateJob() {
-        httpClient.ippResponse = IppResponse(SuccessfulOk)
         printer.validateJob(
                 documentFormat("application/pdf"),
                 media("iso_a4_210x297mm"),
@@ -155,27 +156,21 @@ class IppPrinterTests {
     }
 
     @Test
-    fun printJobInputStreamFails() {
-        httpClient.httpContentType = "text/html"
-        assertFailsWith<IppExchangeException> { // invalid content-type: text/html
-            printer.printJob(FileInputStream(blankPdf))
-        }
+    fun printJobInputStream() {
+        httpClient.mockResponse("Simulated_Laser_Printer/Print-Job.ipp")
+        printer.printJob(FileInputStream(blankPdf))
     }
 
     @Test
-    fun printJobByteArrayFails() {
-        httpClient.httpContentType = null
-        assertFailsWith<IppExchangeException> { // missing content-type in http response (application/ipp required)
-            printer.printJob(blankPdf.readBytes())
-        }
+    fun printJobByteArray() {
+        httpClient.mockResponse("Simulated_Laser_Printer/Print-Job.ipp")
+        printer.printJob(blankPdf.readBytes())
     }
 
     @Test
-    fun printUriFails() {
-        httpClient.mockResponse("invalidHpNameWithLanguage.response", "src/test/resources")
-        assertFailsWith<IppExchangeException> { // failed to decode ipp response
-            printer.printUri(URI.create("http://server/document.pdf"))
-        }
+    fun printUri() {
+        httpClient.mockResponse("Simulated_Laser_Printer/Print-Job.ipp")
+        printer.printUri(URI.create("http://server/document.pdf"))
     }
 
     @Test
@@ -183,9 +178,9 @@ class IppPrinterTests {
         httpClient.mockResponse("Simulated_Laser_Printer/Print-Job.ipp")
         printer.createJob().apply {
             httpClient.mockResponse("Simulated_Laser_Printer/Print-Job.ipp")
-            sendDocument(FileInputStream(blankPdf), documentName = "blank.pdf")
+            sendDocument(FileInputStream(blankPdf), true, "blank.pdf", "en")
             httpClient.mockResponse("Simulated_Laser_Printer/Print-Job.ipp")
-            sendUri(URI.create("http://server/document.pdf"), documentNaturalLanguage = "en")
+            sendUri(URI.create("http://server/document.pdf"), true, "black.pdf", "en")
         }
     }
 
@@ -215,34 +210,27 @@ class IppPrinterTests {
 
     @Test
     fun sound() {
-        httpClient.ippResponse = IppResponse(SuccessfulOkIgnoredOrSubstitutedAttributes)
         printer.sound()
     }
 
     @Test
-    fun flashFails() {
-        httpClient.ippResponse = IppResponse(ServerErrorInternalError)
-        assertFailsWith<IppExchangeException> {
-            printer.flash()
-        }
+    fun flash() {
+        printer.flash()
     }
 
     @Test
     fun pause() {
-        httpClient.ippResponse = IppResponse(SuccessfulOk)
         printer.ippClient.basicAuth("user", "password")
         printer.pause()
     }
 
     @Test
     fun resume() {
-        httpClient.ippResponse = IppResponse(SuccessfulOk)
         printer.resume()
     }
 
     @Test
     fun purgeJobs() {
-        httpClient.ippResponse = IppResponse(SuccessfulOk)
         printer.purgeJobs()
     }
 
