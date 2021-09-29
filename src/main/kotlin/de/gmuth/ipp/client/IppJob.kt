@@ -122,14 +122,11 @@ class IppJob(
     // Job administration
     //-------------------
 
-    fun hold() =
-            exchange(ippRequest(HoldJob)).also { updateAttributes() }
+    fun hold() = exchange(ippRequest(HoldJob)).also { updateAttributes() }
 
-    fun release() =
-            exchange(ippRequest(ReleaseJob)).also { updateAttributes() }
+    fun release() = exchange(ippRequest(ReleaseJob)).also { updateAttributes() }
 
-    fun restart() =
-            exchange(ippRequest(RestartJob)).also { updateAttributes() }
+    fun restart() = exchange(ippRequest(RestartJob)).also { updateAttributes() }
 
     fun cancel(messageForOperator: String? = null): IppResponse { // RFC 8011 4.3.3
         if (isProcessingToStopPoint()) log.warn { "job #$id is already 'processing-to-stop-point'" }
@@ -151,9 +148,7 @@ class IppJob(
             documentName: String? = null,
             documentNaturalLanguage: String? = null
     ) {
-        val request = documentRequest(
-                SendDocument, lastDocument, documentName, documentNaturalLanguage
-        ).apply {
+        val request = documentRequest(SendDocument, lastDocument, documentName, documentNaturalLanguage).apply {
             documentInputStream = inputStream
         }
         attributes = exchange(request).jobGroup
@@ -170,9 +165,7 @@ class IppJob(
             documentName: String? = null,
             documentNaturalLanguage: String? = null
     ) {
-        val request = documentRequest(
-                SendURI, lastDocument, documentName, documentNaturalLanguage
-        ).apply {
+        val request = documentRequest(SendURI, lastDocument, documentName, documentNaturalLanguage).apply {
             operationGroup.attribute("document-uri", Uri, documentUri)
         }
         attributes = exchange(request).jobGroup
