@@ -55,6 +55,12 @@ class CupsClientTests {
     }
 
     @Test
+    fun getDefault() {
+        httpClient.mockResponse("CUPS/Cups-Get-Default.ipp")
+        cupsClient.getDefault()
+    }
+
+    @Test
     fun getDefaultFails() {
         val exception = assertFailsWith<IppExchangeException> {
             httpClient.mockResponse("CUPS/Cups-Get-Default-Error.ipp")
