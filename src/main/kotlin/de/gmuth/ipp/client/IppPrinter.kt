@@ -21,13 +21,13 @@ open class IppPrinter(
         val printerUri: URI,
         var attributes: IppAttributesGroup = IppAttributesGroup(Printer),
         httpConfig: Http.Config = Http.Config(),
-        httpClient: Http.Client = Http.defaultImplementation.createClient(httpConfig),
         ippConfig: IppConfig = IppConfig(),
-        val ippClient: IppClient = IppClient(ippConfig, httpClient)
+        val ippClient: IppClient = IppClient(ippConfig, Http.defaultImplementation.createClient(httpConfig))
 ) {
 
     init {
-        if (!ippConfig.getPrinterAttributesOnInit) {
+        log.debug { "create IppPrinter for $printerUri" }
+        if (!ippClient.config.getPrinterAttributesOnInit) {
             log.warn { "getPrinterAttributesOnInit disabled => no printer attributes available" }
         } else if (attributes.size == 0) {
             updateAllAttributes()

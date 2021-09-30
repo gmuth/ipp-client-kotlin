@@ -37,22 +37,22 @@ class IppPrinterTests {
         val blankPdf = File("tool/A4-blank.pdf")
     }
 
+    init {
+        IppClient.log.logLevel = TRACE
+        IppPrinter.log.logLevel = TRACE
+    }
+
     val httpClient = HttpClientMock()
+    val ippConfig = IppConfig(getPrinterAttributesOnInit = false)
 
     val printer = IppPrinter(
             URI.create("ipp://printer"),
-            httpClient = httpClient,
-            ippConfig = IppConfig(getPrinterAttributesOnInit = false)
+            ippClient = IppClient(ippConfig, httpClient)
     ).apply {
         attributes = IppResponse().run {
             read(File("printers/Simulated_Laser_Printer/Get-Printer-Attributes.ipp"))
             printerGroup
         }
-    }
-
-    init {
-        IppClient.log.logLevel = TRACE
-        IppPrinter.log.logLevel = TRACE
     }
 
     @Test

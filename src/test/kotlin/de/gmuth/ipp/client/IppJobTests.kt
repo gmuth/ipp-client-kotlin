@@ -27,6 +27,7 @@ class IppJobTests {
     }
 
     val httpClient = HttpClientMock()
+    val ippConfig = IppConfig(getPrinterAttributesOnInit = false)
     val printer: IppPrinter
     val job: IppJob
 
@@ -34,8 +35,7 @@ class IppJobTests {
         // mock ipp printer
         printer = IppPrinter(
                 URI.create("ipp://printer"),
-                httpClient = httpClient,
-                ippConfig = IppConfig(getPrinterAttributesOnInit = false)
+                ippClient = IppClient(ippConfig, httpClient)
         ).apply {
             attributes = ippResponse("Get-Printer-Attributes.ipp").printerGroup
         }
