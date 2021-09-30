@@ -23,8 +23,8 @@ class JulAdapter(name: String) : Logging.Logger(name) {
         ERROR -> Level.SEVERE
     }
 
-    override fun isEnabled(logLevel: LogLevel) =
-            julLogger.isLoggable(toJulLevel(logLevel))
+    override fun isEnabled(level: LogLevel) =
+            julLogger.isLoggable(toJulLevel(level))
 
     override fun publish(messageLogLevel: LogLevel, throwable: Throwable?, messageString: String?) =
             julLogger.log(toJulLevel(messageLogLevel), messageString, throwable)
