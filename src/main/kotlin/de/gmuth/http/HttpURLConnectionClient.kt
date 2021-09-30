@@ -32,8 +32,8 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
     }
 
     init {
-        log.info { "HttpURLConnectionClient created" }
-        if (config.debugLogging)
+        log.debug { "HttpURLConnectionClient created" }
+        if (config.debugLogging) // logger name depends on jvm implementation? omg!
             Logger.getLogger("sun.net.www.protocol.http.HttpURLConnection").run {
                 if (!handlers.contains(julHandler)) addHandler(julHandler)
                 level = Level.ALL

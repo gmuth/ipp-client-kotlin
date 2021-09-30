@@ -33,7 +33,7 @@ class JavaHttpClient(config: Http.Config = Http.Config()) : Http.Client(config) 
     }
 
     init {
-        log.info { "JavaHttpClient created" }
+        log.debug { "JavaHttpClient created" }
         if (!config.verifySSLHostname)
             setProperty("jdk.internal.httpclient.disableHostnameVerification", true.toString())
     }
