@@ -5,6 +5,7 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.http.Http
+import de.gmuth.ipp.core.IppException
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppResponse
@@ -13,6 +14,7 @@ import de.gmuth.ipp.core.IppStatus.SuccessfulOk
 import de.gmuth.ipp.core.IppTag.Unsupported
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.log.Logging
+import java.io.File
 import java.net.URI
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -22,6 +24,8 @@ open class IppClient(
         val config: IppConfig = IppConfig(),
         val httpClient: Http.Client = Http.defaultImplementation.createClient(Http.Config())
 ) {
+    var saveMessages: Boolean = false
+    var saveMessagesDirectory = File("ipp-messages")
     var responseInterceptor: IppResponseInterceptor? = null
 
     val httpConfig: Http.Config
@@ -79,6 +83,15 @@ open class IppClient(
         val httpResponse = httpPostRequest(httpUri, request)
         val response = decodeIppResponse(request, httpResponse)
         log.debug { "$ippUri: $request => $response" }
+
+        if (saveMessages) {
+            val messageSubDirectory = File(saveMessagesDirectory, ippUri.host).apply {
+                if (!mkdirs() && !isDirectory) throw IppException("failed to create directory: $path")
+            }
+            fun file(suffix: String) = File(messageSubDirectory, "${request.requestId}-${request.operation}.$suffix")
+            request.saveRawBytes(file("request"))
+            response.saveRawBytes(file("response"))
+        }
 
         responseInterceptor?.invoke(request, response)
 
