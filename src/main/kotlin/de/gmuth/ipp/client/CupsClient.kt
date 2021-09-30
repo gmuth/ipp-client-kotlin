@@ -4,6 +4,7 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020-2021 Gerhard Muth
  */
 
+import de.gmuth.http.Http
 import de.gmuth.ipp.core.IppException
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppOperation.*
@@ -12,12 +13,14 @@ import de.gmuth.log.Logging
 import java.net.URI
 
 // https://www.cups.org/doc/spec-ipp.html
-open class CupsClient(val cupsUri: URI) : IppClient() {
+open class CupsClient(
+        val cupsUri: URI = URI.create("ipp://localhost"),
+        config: IppConfig = IppConfig(),
+        httpClient: Http.Client = Http.defaultImplementation.createClient(Http.Config())
 
-    constructor(host: String = "localhost", port: Int = 631) : this(URI.create("ipp://$host:$port"))
+) : IppClient(config, httpClient) {
 
-    // for java
-    constructor(host: String) : this(host, 631)
+    constructor(host: String = "localhost") : this(URI.create("ipp://$host"))
 
     companion object {
         val log = Logging.getLogger { }
@@ -31,7 +34,7 @@ open class CupsClient(val cupsUri: URI) : IppClient() {
     }
 
     val printerMap: Map<String, IppPrinter> by lazy {
-        exchangeIppRequest(CupsGetPrinters)
+        exchange(ippRequest(CupsGetPrinters))
                 .getAttributesGroups(Printer)
                 .map { IppPrinter(it, this) }
                 .associateBy { it.name.text }
@@ -44,16 +47,12 @@ open class CupsClient(val cupsUri: URI) : IppClient() {
                 log.warn { "available printers: ${printerMap.keys.joinToString(",")}" }
             }
 
-    protected fun ippRequest(operation: IppOperation) =
-            ippRequest(operation, cupsUri)
+    protected fun ippRequest(operation: IppOperation) = ippRequest(operation, cupsUri)
 
-    protected fun exchangeIppRequest(operation: IppOperation) =
-            exchange(ippRequest(operation))
+    fun getDefault() =
+            IppPrinter(exchange(ippRequest(CupsGetDefault)).printerGroup, this)
 
     fun setDefault(defaultPrinterUri: URI) =
             exchange(ippRequest(CupsSetDefault, defaultPrinterUri))
-
-    fun getDefault() =
-            IppPrinter(exchangeIppRequest(CupsGetDefault).printerGroup, this)
 
 }
