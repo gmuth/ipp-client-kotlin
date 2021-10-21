@@ -7,7 +7,8 @@ RFCs [8010](https://tools.ietf.org/html/rfc8010),
 [3996](https://datatracker.ietf.org/doc/html/rfc3996)
 
 [![build](https://github.com/gmuth/ipp-client-kotlin/workflows/build/badge.svg)](https://github.com/gmuth/ipp-client-kotlin/actions?query=workflow%3Abuild)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=gmuth_ipp-client-kotlin&metric=alert_status)](https://sonarcloud.io/dashboard?id=gmuth_ipp-client-kotlin)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=gmuth_ipp-client-kotlin&metric=alert_status)](https://sonarcloud.io/summary/overall?id=gmuth_ipp-client-kotlin)
+
 ## Usage
 
 You may use ```ippfind``` or other ZeroConf tools for discovery.
