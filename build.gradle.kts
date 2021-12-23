@@ -2,10 +2,10 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.4.20"
+    id("org.jetbrains.kotlin.jvm") version "1.5.32"
     //id("com.github.johnrengelman.shadow") version "5.2.0"
     id("jacoco")
-    id("org.sonarqube") version "3.0"
+    id("org.sonarqube") version "3.3"
     id("maven-publish")
 }
 
@@ -33,8 +33,8 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 
     //"slf4jSupportImplementation"("org.slf4j:slf4j-api:1.7.30") // pom.xml: scope=compile, optional=true
-    compileOnly("org.slf4j:slf4j-api:1.7.30")
-    testRuntimeOnly("org.slf4j:slf4j-simple:1.7.30")
+    compileOnly("org.slf4j:slf4j-api:1.7.+")
+    testRuntimeOnly("org.slf4j:slf4j-simple:1.7.+")
 }
 
 // gradlew clean -x test build publishToMavenLocal
@@ -42,8 +42,9 @@ defaultTasks("clean", "build", "publishToMavenLocal")
 
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
-    languageVersion = "1.4"
-    jvmTarget = "1.6"
+    languageVersion = "1.5"
+    // JVM target 1.6 is deprecated and will be removed in a future release. Please migrate to JVM target 1.8 or above
+    jvmTarget = "1.6" // keep as long as we can to support older android versions
     // jdkHome = "path_to_jdk_1.6"
 }
 
