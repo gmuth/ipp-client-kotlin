@@ -110,7 +110,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
             }
 
             Charset -> with(value as Charset) {
-                writeString(name().toLowerCase())
+                writeString(name().lowercase())
             }
 
             Uri -> with(value as URI) {
@@ -148,7 +148,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
                 writeByte(minutes)
                 writeByte(seconds)
                 writeByte(deciSeconds)
-                writeByte(directionFromUTC.toInt())
+                writeByte(directionFromUTC.code)
                 writeByte(hoursFromUTC)
                 writeByte(minutesFromUTC)
             }

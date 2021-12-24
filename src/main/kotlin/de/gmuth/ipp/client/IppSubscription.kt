@@ -115,7 +115,7 @@ class IppSubscription(
     var processEvents = false
 
     fun processEvents(
-            delayMillis: Long = 1000 * 5,
+            delayMillis: Long = 1000L * 5,
             onEvent: (event: IppEventNotification) -> Unit = { log.info { it } }
     ) {
         processEvents = true

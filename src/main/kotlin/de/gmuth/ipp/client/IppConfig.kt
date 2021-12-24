@@ -21,7 +21,7 @@ class IppConfig(
     fun logDetails() {
         log.info { "userName: $userName" }
         log.info { "ippVersion: $ippVersion" }
-        log.info { "charset: ${charset.name().toLowerCase()}" }
+        log.info { "charset: ${charset.name().lowercase()}" }
         log.info { "naturalLanguage: $naturalLanguage" }
         log.info { "getPrinterAttributesOnInit: $getPrinterAttributesOnInit" }
     }

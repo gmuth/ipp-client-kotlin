@@ -62,7 +62,7 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
     }
 
     internal fun valueToString(value: T) = when {
-        tag == Charset -> with(value as Charset) { name().toLowerCase() }
+        tag == Charset -> with(value as Charset) { name().lowercase() }
         tag == RangeOfInteger -> with(value as IntRange) { "$start-$endInclusive" }
         value is ByteArray -> with(value as ByteArray) { if (isEmpty()) "no-value" else "$size bytes" }
         else -> enumNameOrValue(value as Any).toString()

@@ -12,7 +12,7 @@ enum class IppPrinterState(val code: Int) {
     Stopped(5);
 
     // https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-6
-    override fun toString() = name.toLowerCase()
+    override fun toString() = name.lowercase()
 
     companion object {
         fun fromInt(code: Int) = values().single { it.code == code }

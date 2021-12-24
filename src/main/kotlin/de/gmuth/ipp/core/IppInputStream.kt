@@ -145,7 +145,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                             minutes = read(),
                             seconds = read(),
                             deciSeconds = read(),
-                            directionFromUTC = readByte().toChar(),
+                            directionFromUTC = readByte().toInt().toChar(),
                             hoursFromUTC = read(),
                             minutesFromUTC = read()
                     )

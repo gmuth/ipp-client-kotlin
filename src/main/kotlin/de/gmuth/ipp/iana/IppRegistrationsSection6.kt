@@ -36,7 +36,7 @@ object IppRegistrationsSection6 {
     // alias example: finishings-default, <Any "finishings" value>
     val aliasMap = mutableMapOf<String, String>().apply {
         allEnumAttributeValues
-                .filter { it.value.toLowerCase().contains("any") }
+                .filter { it.value.lowercase().contains("any") }
                 .forEach { put(it.attribute, it.value.replace("^.*\"(.+)\".*$".toRegex(), "$1")) }
     }
 

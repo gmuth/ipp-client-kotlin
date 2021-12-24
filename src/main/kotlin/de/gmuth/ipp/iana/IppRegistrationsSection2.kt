@@ -84,7 +84,7 @@ object IppRegistrationsSection2 {
     //  alias example: Printer Description,media-col-default,"<Member attributes are the same as the ""media-col"" Job Template attribute>"
     val aliasMap = mutableMapOf<String, String>().apply {
         allAttributes
-                .filter { it.memberAttribute.toLowerCase().contains("same as") }
+                .filter { it.memberAttribute.lowercase().contains("same as") }
                 .forEach { put(it.name, it.memberAttribute.replace("^.*\"(.+)\".*$".toRegex(), "$1")) }
         // apple cups extension 'output-mode' was standardized to 'print-color-mode'
         put("output-mode-default", "print-color-mode-default")
