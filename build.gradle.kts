@@ -133,6 +133,7 @@ tasks.jacocoTestReport {
 // https://docs.sonarqube.org/latest/analysis/scan/sonarscanner-for-gradle/
 // configure token with 'publish analysis' permission in file ~/.gradle/gradle.properties:
 // systemProp.sonar.login=<token>
+// warning: The Report.destination property has been deprecated. This is scheduled to be removed in Gradle 8.0.
 sonarqube {
     properties {
         property("sonar.projectKey", "gmuth_ipp-client-kotlin")
