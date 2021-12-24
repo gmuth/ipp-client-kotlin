@@ -61,7 +61,7 @@ class IppAttributesGroupTests {
         group.attribute("foo", Keyword, "bar")
         assertEquals("bar", group.getValue("foo") as String)
         assertEquals("bar", group.getValueOrNull("foo") ?: throw NullPointerException())
-        assertEquals(null, group.getValueOrNull("invalid-name"))
+        assertEquals(null, group.getValueOrNull<String>("invalid-name"))
     }
 
     @Test
