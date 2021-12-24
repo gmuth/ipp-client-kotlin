@@ -2,10 +2,10 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.5.32"
+    id("org.jetbrains.kotlin.jvm") version "1.5.32" // 1.4.32
     //id("com.github.johnrengelman.shadow") version "5.2.0"
     id("jacoco")
-    id("org.sonarqube") version "3.3"
+    id("org.sonarqube") version "3.3" // 3.2.0
     id("maven-publish")
 }
 
@@ -14,7 +14,7 @@ version = "2.2-SNAPSHOT"
 
 repositories {
     mavenCentral()
-    jcenter()
+    //jcenter()
 }
 
 //java {
@@ -120,10 +120,12 @@ publishing {
 // required for sonarqube code coverage
 tasks.jacocoTestReport {
     dependsOn(tasks.test)
+    // https://stackoverflow.com/questions/67725347/jacoco-fails-on-gradle-7-0-2-and-kotlin-1-5-10
+    version = "0.8.7"
     reports {
-        xml.isEnabled = true
-        csv.isEnabled = false
-        html.isEnabled = true
+        xml.required.set(true)
+        csv.required.set(false)
+        html.required.set(false)
     }
 }
 
