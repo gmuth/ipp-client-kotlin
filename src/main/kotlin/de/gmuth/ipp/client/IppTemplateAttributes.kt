@@ -21,29 +21,29 @@ object IppTemplateAttributes {
 
     @JvmStatic
     fun documentFormat(format: String) =
-            IppAttribute("document-format", MimeMediaType, format)
+        IppAttribute("document-format", MimeMediaType, format)
 
     @JvmStatic
     fun jobName(name: String) =
-            IppAttribute("job-name", NameWithoutLanguage, name.toIppString())
+        IppAttribute("job-name", NameWithoutLanguage, name.toIppString())
 
     // for job group
 
     @JvmStatic
     fun jobPriority(priority: Int) =
-            IppAttribute("job-priority", Integer, priority)
+        IppAttribute("job-priority", Integer, priority)
 
     @JvmStatic
     fun copies(number: Int) =
-            IppAttribute("copies", Integer, number)
+        IppAttribute("copies", Integer, number)
 
     @JvmStatic
     fun numberUp(up: Int) =
-            IppAttribute("number-up", Integer, up)
+        IppAttribute("number-up", Integer, up)
 
     @JvmStatic
     fun printerResolution(resolution: Int, unit: Unit = DPI) =
-            IppAttribute("printer-resolution", Resolution, IppResolution(resolution, unit))
+        IppAttribute("printer-resolution", Resolution, IppResolution(resolution, unit))
 
     @JvmStatic
     fun pageRanges(ranges: Collection<IntRange>) =
@@ -51,11 +51,11 @@ object IppTemplateAttributes {
 
     @JvmStatic
     fun media(keyword: String) =
-            IppAttribute("media", Keyword, keyword)
+        IppAttribute("media", Keyword, keyword)
 
     @JvmStatic
     fun finishings(finishings: Collection<IppFinishing>) =
-            IppAttribute("finishings", IppTag.Enum, finishings.map { it.code })
+        IppAttribute("finishings", IppTag.Enum, finishings.map { it.code })
 
     // support vararg parameter for convenience
 
