@@ -46,15 +46,23 @@ object IppTemplateAttributes {
             IppAttribute("printer-resolution", Resolution, IppResolution(resolution, unit))
 
     @JvmStatic
-    fun pageRanges(vararg ranges: IntRange) =
-            IppAttribute("page-ranges", RangeOfInteger, ranges.toList())
+    fun pageRanges(ranges: Collection<IntRange>) =
+        IppAttribute("page-ranges", RangeOfInteger, ranges)
 
     @JvmStatic
     fun media(keyword: String) =
             IppAttribute("media", Keyword, keyword)
 
     @JvmStatic
-    fun finishings(vararg finishing: IppFinishing) =
-            IppAttribute("finishings", IppTag.Enum, finishing.toList().map { it.code })
+    fun finishings(finishings: Collection<IppFinishing>) =
+            IppAttribute("finishings", IppTag.Enum, finishings.map { it.code })
+
+    // support vararg parameter for convenience
+
+    @JvmStatic
+    fun pageRanges(vararg ranges: IntRange) = pageRanges(ranges.toList())
+
+    @JvmStatic
+    fun finishings(vararg finishings: IppFinishing) = finishings(finishings.toList())
 
 }
