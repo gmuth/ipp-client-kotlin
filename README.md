@@ -226,7 +226,7 @@ You can access the repo with any github account. If you prefer to download a zip
 
 ```
 repositories {
-    jcenter()
+    mavenCentral()
     maven {
       url = uri("https://maven.pkg.github.com/gmuth/ipp-client-kotlin")
       credentials {
@@ -243,7 +243,6 @@ repositories {
 Add dependency:
 
 ```
-    implementation("de.gmuth.ipp:ipp-client-kotlin:2.1")
-or  implementation("de.gmuth.ipp:ipp-client-kotlin:2.2-SNAPSHOT")
+    implementation("de.gmuth.ipp:ipp-client-kotlin:2.2")
+or  implementation("de.gmuth.ipp:ipp-client-kotlin:2.3-SNAPSHOT")
 ```
-

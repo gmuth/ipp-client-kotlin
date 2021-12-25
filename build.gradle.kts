@@ -1,20 +1,17 @@
-//import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.5.32" // 1.4.32
-    //id("com.github.johnrengelman.shadow") version "5.2.0"
     id("jacoco")
     id("org.sonarqube") version "3.3" // 3.2.0
     id("maven-publish")
 }
 
 group = "de.gmuth.ipp"
-version = "2.2"
+version = "2.3-SNAPSHOT"
 
 repositories {
     mavenCentral()
-    //jcenter()
 }
 
 //java {
@@ -48,30 +45,10 @@ compileKotlin.kotlinOptions {
     // jdkHome = "path_to_jdk_1.6"
 }
 
-//tasks.withType<KotlinCompile> {
-//    kotlinOptions {
-//        jvmTarget = "1.6"
-//    }
-//}
-
 tasks.withType<Jar> {
     archiveBaseName.set("ipp-client")
     archiveClassifier.set("")
 }
-
-//tasks.withType<ShadowJar> {
-//    archiveBaseName.set("ipp-client-fat")
-//    archiveClassifier.set("")
-//    manifest {
-//        attributes(mapOf("Main-Class" to "de.gmuth.ipp.tool.PrintFileKt"))
-//    }
-//}
-
-//tasks {
-//    build {
-//        dependsOn(shadowJar)
-//    }
-//}
 
 // do NOT publish from your developer host!
 // to release: 1. remove SNAPSHOT from version; 2. commit & push; 3. check github workflow results
