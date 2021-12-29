@@ -18,11 +18,11 @@ import java.io.InputStream
 import java.net.URI
 
 open class IppPrinter(
-        val printerUri: URI,
-        var attributes: IppAttributesGroup = IppAttributesGroup(Printer),
-        httpConfig: Http.Config = Http.Config(),
-        ippConfig: IppConfig = IppConfig(),
-        val ippClient: IppClient = IppClient(ippConfig, Http.defaultImplementation.createClient(httpConfig))
+    val printerUri: URI,
+    var attributes: IppAttributesGroup = IppAttributesGroup(Printer),
+    httpConfig: Http.Config = Http.Config(),
+    ippConfig: IppConfig = IppConfig(),
+    val ippClient: IppClient = IppClient(ippConfig, Http.defaultImplementation.createClient(httpConfig))
 ) {
 
     init {
@@ -35,9 +35,9 @@ open class IppPrinter(
     }
 
     constructor(printerAttributes: IppAttributesGroup, ippClient: IppClient = IppClient()) : this(
-            printerAttributes.getValues<List<URI>>("printer-uri-supported").first(),
-            printerAttributes,
-            ippClient = ippClient
+        printerAttributes.getValues<List<URI>>("printer-uri-supported").first(),
+        printerAttributes,
+        ippClient = ippClient
     )
 
     // constructors for java usage
@@ -52,8 +52,8 @@ open class IppPrinter(
         get() = ippClient.config
 
     var getJobsRequestedAttributes = listOf(
-            "job-id", "job-uri", "job-printer-uri", "job-state", "job-name",
-            "job-state-reasons", "job-originating-user-name"
+        "job-id", "job-uri", "job-printer-uri", "job-state", "job-name",
+        "job-state-reasons", "job-originating-user-name"
     )
 
     //---------------
@@ -128,7 +128,7 @@ open class IppPrinter(
         get() = CupsPrinterType(attributes.getValue("printer-type"))
 
     fun hasCapability(capability: CupsPrinterType.Capability) =
-            printerType.contains(capability)
+        printerType.contains(capability)
 
     val markers: List<CupsMarker>
         get() = mutableListOf<CupsMarker>().apply {
@@ -195,7 +195,7 @@ open class IppPrinter(
 
     @JvmOverloads
     fun getPrinterAttributes(requestedAttributes: List<String>? = null) =
-            exchange(ippRequest(GetPrinterAttributes, requestedAttributes = requestedAttributes))
+        exchange(ippRequest(GetPrinterAttributes, requestedAttributes = requestedAttributes))
 
     fun updateAllAttributes() {
         attributes = getPrinterAttributes().printerGroup
@@ -207,7 +207,7 @@ open class IppPrinter(
 
     @Throws(IppExchangeException::class)
     fun validateJob(vararg attributeBuilders: IppAttributeBuilder): IppResponse {
-        val request = attributeBuildersRequest(ValidateJob, attributeBuilders)
+        val request = attributeBuildersRequest(ValidateJob, attributeBuilders.toList())
         return exchange(request)
     }
 
@@ -216,21 +216,10 @@ open class IppPrinter(
     //--------------------------------------
 
     @JvmOverloads
-    fun printJob(inputStream: InputStream, vararg attributeBuilder: IppAttributeBuilder, notifyEvents: List<String>? = null) =
-            printInputStream(inputStream, attributeBuilder, notifyEvents)
-
-    @JvmOverloads
-    fun printJob(byteArray: ByteArray, vararg attributeBuilder: IppAttributeBuilder, notifyEvents: List<String>? = null) =
-            printInputStream(ByteArrayInputStream(byteArray), attributeBuilder, notifyEvents)
-
-    @JvmOverloads
-    fun printJob(file: File, vararg attributeBuilder: IppAttributeBuilder, notifyEvents: List<String>? = null) =
-            printInputStream(FileInputStream(file), attributeBuilder, notifyEvents)
-
-    protected fun printInputStream(
-            inputStream: InputStream,
-            attributeBuilders: Array<out IppAttributeBuilder>,
-            notifyEvents: List<String>? = null
+    fun printJob(
+        inputStream: InputStream,
+        attributeBuilders: Collection<IppAttributeBuilder>,
+        notifyEvents: List<String>? = null
     ): IppJob {
         val request = attributeBuildersRequest(PrintJob, attributeBuilders).apply {
             notifyEvents?.let { createSubscriptionGroup(this, notifyEvents) }
@@ -239,12 +228,26 @@ open class IppPrinter(
         return exchangeForIppJob(request)
     }
 
+    // vararg signatures for convenience
+
+    @JvmOverloads
+    fun printJob(inputStream: InputStream, vararg attributeBuilders: IppAttributeBuilder, notifyEvents: List<String>? = null) =
+        printJob(inputStream, attributeBuilders.toList(), notifyEvents)
+
+    @JvmOverloads
+    fun printJob(byteArray: ByteArray, vararg attributeBuilders: IppAttributeBuilder, notifyEvents: List<String>? = null) =
+        printJob(ByteArrayInputStream(byteArray), attributeBuilders.toList(), notifyEvents)
+
+    @JvmOverloads
+    fun printJob(file: File, vararg attributeBuilders: IppAttributeBuilder, notifyEvents: List<String>? = null) =
+        printJob(FileInputStream(file), attributeBuilders.toList(), notifyEvents)
+
     //----------
     // Print-URI
     //----------
 
     fun printUri(documentUri: URI, vararg attributeBuilders: IppAttributeBuilder): IppJob {
-        val request = attributeBuildersRequest(PrintURI, attributeBuilders).apply {
+        val request = attributeBuildersRequest(PrintURI, attributeBuilders.toList()).apply {
             operationGroup.attribute("document-uri", Uri, documentUri)
         }
         return exchangeForIppJob(request)
@@ -255,24 +258,23 @@ open class IppPrinter(
     //-----------
 
     fun createJob(vararg attributeBuilders: IppAttributeBuilder): IppJob {
-        val request = attributeBuildersRequest(CreateJob, attributeBuilders)
+        val request = attributeBuildersRequest(CreateJob, attributeBuilders.toList())
         return exchangeForIppJob(request)
     }
 
     // ---- factory method for operations Validate-Job, Print-Job, Print-Uri, Create-Job
 
-    protected fun attributeBuildersRequest(operation: IppOperation, attributeBuilders: Array<out IppAttributeBuilder>) =
-            ippRequest(operation).apply {
-                for (attributeBuilder in attributeBuilders) {
-                    val attribute = attributeBuilder.buildIppAttribute(attributes)
-                    checkIfValueIsSupported("${attribute.name}-supported", attribute.values)
-                    // put attribute in operation or job group?
-                    val groupTag = IppRegistrationsSection2.selectGroupForAttribute(attribute.name) ?: Job
-                    if (!containsGroup(groupTag)) createAttributesGroup(groupTag)
-                    log.trace { "$groupTag put $attribute" }
-                    getSingleAttributesGroup(groupTag).put(attribute)
-                }
-            }
+    protected fun attributeBuildersRequest(operation: IppOperation, attributeBuilders: Collection<IppAttributeBuilder>) = ippRequest(operation).apply {
+        for (attributeBuilder in attributeBuilders) {
+            val attribute = attributeBuilder.buildIppAttribute(attributes)
+            checkIfValueIsSupported("${attribute.name}-supported", attribute.values)
+            // put attribute in operation or job group?
+            val groupTag = IppRegistrationsSection2.selectGroupForAttribute(attribute.name) ?: Job
+            if (!containsGroup(groupTag)) createAttributesGroup(groupTag)
+            log.trace { "$groupTag put $attribute" }
+            getSingleAttributesGroup(groupTag).put(attribute)
+        }
+    }
 
     //-------------------------------
     // Get-Job-Attributes (as IppJob)
@@ -289,10 +291,10 @@ open class IppPrinter(
 
     @JvmOverloads
     fun getJobs(
-            whichJobs: IppWhichJobs? = null,
-            myJobs: Boolean? = null,
-            limit: Int? = null,
-            requestedAttributes: List<String> = getJobsRequestedAttributes
+        whichJobs: IppWhichJobs? = null,
+        myJobs: Boolean? = null,
+        limit: Int? = null,
+        requestedAttributes: List<String> = getJobsRequestedAttributes
     ): List<IppJob> {
         val request = ippRequest(GetJobs, requestedAttributes = requestedAttributes).apply {
             operationGroup.run {
@@ -305,8 +307,8 @@ open class IppPrinter(
             }
         }
         return exchange(request)
-                .getAttributesGroups(Job)
-                .map { IppJob(this, it) }
+            .getAttributesGroups(Job)
+            .map { IppJob(this, it) }
     }
 
     //----------------------------
@@ -314,8 +316,8 @@ open class IppPrinter(
     //----------------------------
 
     fun createPrinterSubscription(
-            notifyLeaseDuration: Int? = null, // seconds
-            notifyEvents: List<String>? = listOf("all")
+        notifyLeaseDuration: Int? = null, // seconds
+        notifyEvents: List<String>? = listOf("all")
     ): IppSubscription {
         val request = ippRequest(CreatePrinterSubscriptions).apply {
             createSubscriptionGroup(this, notifyEvents, notifyLeaseDuration)
@@ -325,30 +327,31 @@ open class IppPrinter(
     }
 
     fun createSubscriptionGroup(
-            request: IppRequest,
-            notifyEvents: List<String>? = null,
-            notifyLeaseDuration: Int? = null, // seconds
-            notifyJobId: Int? = null
+        request: IppRequest,
+        notifyEvents: List<String>? = null,
+        notifyLeaseDuration: Int? = null, // seconds
+        notifyJobId: Int? = null
     ) =
-            request.createAttributesGroup(Subscription).apply {
-                attribute("notify-pull-method", Keyword, "ippget")
-                notifyJobId?.let { attribute("notify-job-id", Integer, it) }
-                notifyLeaseDuration?.let { attribute("notify-lease-duration", Integer, it) }
-                notifyEvents?.let {
-                    if (it.isNotEmpty() && it.first() != "all")
-                        checkIfValueIsSupported("notify-events-supported", it)
-                    attribute("notify-events", Keyword, it)
-                }
+        request.createAttributesGroup(Subscription).apply {
+            attribute("notify-pull-method", Keyword, "ippget")
+            notifyJobId?.let { attribute("notify-job-id", Integer, it) }
+            notifyLeaseDuration?.let { attribute("notify-lease-duration", Integer, it) }
+            notifyEvents?.let {
+                if (it.isNotEmpty() && it.first() != "all")
+                    checkIfValueIsSupported("notify-events-supported", it)
+                attribute("notify-events", Keyword, it)
             }
+        }
 
     //-------------------------------------------------
     // Get-Subscription-Attributes (as IppSubscription)
     //-------------------------------------------------
 
-    fun getSubscription(id: Int) = IppSubscription(this,
-            exchange(ippRequest(GetSubscriptionAttributes).apply {
-                operationGroup.attribute("notify-subscription-id", Integer, id)
-            }).getSingleAttributesGroup(Subscription)
+    fun getSubscription(id: Int) = IppSubscription(
+        this,
+        exchange(ippRequest(GetSubscriptionAttributes).apply {
+            operationGroup.attribute("notify-subscription-id", Integer, id)
+        }).getSingleAttributesGroup(Subscription)
     )
 
     //---------------------------------------------
@@ -356,10 +359,10 @@ open class IppPrinter(
     //---------------------------------------------
 
     fun getSubscriptions(
-            notifyJobId: Int? = null,
-            mySubscriptions: Boolean? = null,
-            limit: Int? = null,
-            requestedAttributes: List<String>? = null
+        notifyJobId: Int? = null,
+        mySubscriptions: Boolean? = null,
+        limit: Int? = null,
+        requestedAttributes: List<String>? = null
     ): List<IppSubscription> {
         val request = ippRequest(GetSubscriptions, requestedAttributes = requestedAttributes).apply {
             operationGroup.run {
@@ -369,8 +372,8 @@ open class IppPrinter(
             }
         }
         return exchange(request)
-                .getAttributesGroups(Subscription)
-                .map { IppSubscription(this, it) }
+            .getAttributesGroups(Subscription)
+            .map { IppSubscription(this, it) }
     }
 
     //----------------------
@@ -378,7 +381,7 @@ open class IppPrinter(
     //----------------------
 
     fun ippRequest(operation: IppOperation, jobId: Int? = null, requestedAttributes: List<String>? = null) =
-            ippClient.ippRequest(operation, printerUri, jobId, requestedAttributes)
+        ippClient.ippRequest(operation, printerUri, jobId, requestedAttributes)
 
     fun exchange(request: IppRequest): IppResponse {
         return ippClient.exchange(request.apply {
@@ -406,10 +409,10 @@ open class IppPrinter(
     // -------
 
     override fun toString() =
-            "IppPrinter: name=$name, makeAndModel=$makeAndModel, state=$state, stateReasons=$stateReasons"
+        "IppPrinter: name=$name, makeAndModel=$makeAndModel, state=$state, stateReasons=$stateReasons"
 
     fun logDetails() =
-            attributes.logDetails(title = "PRINTER-$name ($makeAndModel), $state $stateReasons")
+        attributes.logDetails(title = "PRINTER-$name ($makeAndModel), $state $stateReasons")
 
     // ------------------------------------------------------
     // attribute value checking based on printer capabilities
@@ -439,7 +442,7 @@ open class IppPrinter(
             IppTag.Enum, Charset, NaturalLanguage, MimeMediaType, Keyword, Resolution -> when (supportedAttributeName) {
                 "media-col-supported" -> with(value as IppCollection) {
                     members.filter { !supportedAttribute.values.contains(it.name) }
-                            .forEach { log.warn { "member unsupported: $it" } }
+                        .forEach { log.warn { "member unsupported: $it" } }
                     // all member names must be supported
                     supportedAttribute.values.containsAll(members.map { it.name })
                 }
