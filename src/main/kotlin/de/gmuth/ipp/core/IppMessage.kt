@@ -45,7 +45,7 @@ abstract class IppMessage() {
         get() = getSingleAttributesGroup(Job)
 
     fun getAttributesGroups(tag: IppTag) =
-            attributesGroups.filter { it.tag == tag }
+        attributesGroups.filter { it.tag == tag }
 
     fun getSingleAttributesGroup(tag: IppTag) = with(getAttributesGroups(tag)) {
         if (isEmpty()) throw IppException("no group found with tag '$tag' in $attributesGroups")
@@ -53,11 +53,11 @@ abstract class IppMessage() {
     }
 
     fun containsGroup(tag: IppTag) =
-            attributesGroups.map { it.tag }.contains(tag)
+        attributesGroups.map { it.tag }.contains(tag)
 
     // factory method for IppAttributesGroup
     fun createAttributesGroup(tag: IppTag) =
-            IppAttributesGroup(tag).apply { attributesGroups.add(this) }
+        IppAttributesGroup(tag).apply { attributesGroups.add(this) }
 
     fun hasDocument() = documentInputStream != null
 
@@ -130,23 +130,21 @@ abstract class IppMessage() {
     }
 
     fun saveRawBytes(file: File) =
-            if (rawBytes == null) {
-                log.warn { "no raw bytes to save. you must call read/decode or write/encode before." }
-                null
-            } else {
-                file.writeBytes(rawBytes!!)
-                log.info { "saved: ${file.path}" }
-                file
-            }
+        if (rawBytes == null) {
+            log.warn { "no raw bytes to save. you must call read/decode or write/encode before." }
+        } else {
+            file.writeBytes(rawBytes!!)
+            log.info { "saved: ${file.path}" }
+        }
 
     // -------
     // LOGGING
     // -------
 
     override fun toString() = "%s %s%s".format(
-            codeDescription,
-            attributesGroups.map { "${it.values.size} ${it.tag}" },
-            if (rawBytes == null) "" else " (${rawBytes!!.size} bytes)"
+        codeDescription,
+        attributesGroups.map { "${it.values.size} ${it.tag}" },
+        if (rawBytes == null) "" else " (${rawBytes!!.size} bytes)"
     )
 
     fun logDetails(prefix: String = "") {
