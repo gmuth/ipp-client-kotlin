@@ -165,20 +165,18 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
             }
 
     internal fun readCollection() = IppCollection().apply {
-        var memberAttribute: IppAttribute<Any>? = null
+        lateinit var currentMemberAttribute: IppAttribute<Any>
         do {
             val attribute = readAttribute(readTag())
-            if (memberAttribute != null && attribute.tag in listOf(EndCollection, MemberAttrName)) {
-                add(memberAttribute)
-            }
             when {
                 attribute.tag.isMemberAttrName() -> {
                     val memberName = attribute.value as String
                     val firstValue = readAttribute(readTag())
-                    memberAttribute = IppAttribute(memberName, firstValue.tag, firstValue.value)
+                    currentMemberAttribute = IppAttribute(memberName, firstValue.tag, firstValue.value)
+                    add(currentMemberAttribute)
                 }
                 attribute.tag.isMemberAttrValue() -> {
-                    memberAttribute!!.additionalValue(attribute)
+                    currentMemberAttribute.additionalValue(attribute)
                 }
             }
         } while (attribute.tag != EndCollection)
@@ -191,7 +189,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
     internal fun readLengthAndValue() =
             readBytes(readShort().toInt())
 
-    // avoid Java-11-readNBytes(length) for backwards compatibility
+    // avoid Java-11-readNBytes(length) for compatibility with older jvms
     internal fun readBytes(length: Int) =
             ByteArray(length).apply {
                 log.trace { "read $length bytes" }
