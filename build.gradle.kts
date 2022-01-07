@@ -1,10 +1,13 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+// how to build? run ./gradlew
+// where is the jar? build/lib/ipp-client-kotlin...jar
+
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.5.32" // 1.4.32
-    id("jacoco")
-    id("org.sonarqube") version "3.3" // 3.2.0
+    id("org.jetbrains.kotlin.jvm") version "1.5.32"
+    id("org.sonarqube") version "3.3"
     id("maven-publish")
+    id("jacoco")
 }
 
 group = "de.gmuth.ipp"
@@ -14,6 +17,9 @@ repositories {
     mavenCentral()
 }
 
+// update gradle wrapper
+// ./gradlew wrapper --gradle-version 7.3.3
+
 //java {
 //    registerFeature("slf4jSupport") {
 //        usingSourceSet(sourceSets["main"])
@@ -21,8 +27,8 @@ repositories {
 //}
 
 dependencies {
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
-    implementation("org.jetbrains.kotlin:kotlin-stdlib")
+    //implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
+    //implementation("org.jetbrains.kotlin:kotlin-stdlib")
     //implementation("org.jetbrains.kotlin:kotlin-reflect")
     //implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
 
@@ -35,7 +41,7 @@ dependencies {
 }
 
 // gradlew clean -x test build publishToMavenLocal
-defaultTasks("clean", "build", "publishToMavenLocal")
+defaultTasks("assemble")
 
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
@@ -45,10 +51,10 @@ compileKotlin.kotlinOptions {
     // jdkHome = "path_to_jdk_1.6"
 }
 
-tasks.withType<Jar> {
-    archiveBaseName.set("ipp-client")
-    archiveClassifier.set("")
-}
+//tasks.withType<Jar> {
+//    archiveBaseName.set("ipp-client")
+//    archiveClassifier.set("")
+//}
 
 // do NOT publish from your developer host!
 // to release: 1. remove SNAPSHOT from version; 2. commit & push; 3. check github workflow results
