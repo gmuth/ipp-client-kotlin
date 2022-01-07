@@ -1,5 +1,4 @@
-# https://hub.docker.com/_/gradle
-# https://github.com/keeganwitt/docker-gradle
 # use gradle standard settings and cache
 mkdir -p "$HOME"/.gradle
-docker run -it --rm -v "$HOME"/.gradle:/home/gradle/.gradle -v "$PWD":/work -w /work gradle:7-jdk11 gradle assemble
+docker run -it --rm -v "$HOME"/.gradle:/root/.gradle -v "$PWD":/work -w /work adoptopenjdk:11 ./gradlew assemble
+ls -l build/libs
