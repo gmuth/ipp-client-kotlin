@@ -35,7 +35,7 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 
-    //"slf4jSupportImplementation"("org.slf4j:slf4j-api:1.7.30") // pom.xml: scope=compile, optional=true
+    //"slf4jSupportImplementation"("org.slf4j:slf4j-api:1.7.+") // pom.xml: scope=compile, optional=true
     compileOnly("org.slf4j:slf4j-api:1.7.+")
     testRuntimeOnly("org.slf4j:slf4j-simple:1.7.+")
 }
@@ -43,12 +43,19 @@ dependencies {
 // gradlew clean -x test build publishToMavenLocal
 defaultTasks("assemble")
 
-val compileKotlin: KotlinCompile by tasks
-compileKotlin.kotlinOptions {
-    languageVersion = "1.5"
-    // JVM target 1.6 is deprecated and will be removed in a future release. Please migrate to JVM target 1.8 or above
-    jvmTarget = "1.6" // keep as long as we can to support older android versions
-    // jdkHome = "path_to_jdk_1.6"
+tasks.compileKotlin {
+    kotlinOptions {
+        languageVersion = "1.5"
+        // JVM target 1.6 is deprecated and will be removed in a future release. Please migrate to JVM target 1.8 or above
+        jvmTarget = "1.6" // keep as long as we can to support older android versions
+        // jdkHome = "path_to_jdk_1.6"
+    }
+}
+
+// to avoid warning "jvm target compatibility should be set to the same Java version."
+tasks.compileJava {
+    targetCompatibility = "1.6"
+    //options.release.set(6) // not available for kotlinOptions
 }
 
 //tasks.withType<Jar> {
