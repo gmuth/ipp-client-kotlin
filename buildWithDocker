@@ -1,4 +1,4 @@
 # use gradle standard settings and cache
 mkdir -p "$HOME"/.gradle
-docker run -it --rm -v "$HOME"/.gradle:/root/.gradle -v "$PWD":/work -w /work adoptopenjdk:11 ./gradlew assemble
+docker run -it --rm -v "$HOME"/.gradle:/root/.gradle -v "$PWD":/work -w /work adoptopenjdk:11 ./gradlew --no-daemon assemble
 ls -l build/libs
