@@ -45,17 +45,19 @@ defaultTasks("assemble")
 
 tasks.compileKotlin {
     kotlinOptions {
-        languageVersion = "1.5"
-        // JVM target 1.6 is deprecated and will be removed in a future release. Please migrate to JVM target 1.8 or above
-        jvmTarget = "1.6" // keep as long as we can to support older android versions
-        // jdkHome = "path_to_jdk_1.6"
+        // JVM target 1.6 is deprecated and will be removed in a future release.
+        jvmTarget = "1.6" // Keep for support of old android versions
     }
 }
 
-// to avoid warning "jvm target compatibility should be set to the same Java version."
+// avoid warnings "jvm target compatibility should be set to the same Java version."
+tasks.compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "11"
+    }
+}
 tasks.compileJava {
-    targetCompatibility = "1.6"
-    //options.release.set(6) // not available for kotlinOptions
+    targetCompatibility = tasks.compileKotlin.get().kotlinOptions.jvmTarget
 }
 
 //tasks.withType<Jar> {

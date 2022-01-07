@@ -7,9 +7,7 @@ import java.net.URI
 
 fun main() {
 
-    var printerUri = URI.create("ipp://xero.local:631/ipp/print")
-    //printerUri = URI.create("ipp://BRWD812655BA041.local:631/ipp/print")
-    printerUri = URI.create("ipp://10.22.56.2:631/ipp")
+    val printerUri = URI.create("ipp://xero.local:631/ipp/print")
 
     Logging.defaultLogLevel = Logging.LogLevel.DEBUG
     HttpURLConnectionClient.log.logLevel = Logging.LogLevel.TRACE
