@@ -74,6 +74,12 @@ class IppAttributeTests {
     }
 
     @Test
+    fun toStringByteArrayNonEmpty() {
+        val byteArrayAttribute = IppAttribute("", NoValue, ByteArray(2))
+        assertTrue(byteArrayAttribute.toString().endsWith("2 bytes"))
+    }
+
+    @Test
     fun toStringIntRange() {
         assertTrue(IppAttribute("int-range", RangeOfInteger, 1..2).toString().endsWith("1-2"))
     }
