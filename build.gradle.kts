@@ -113,7 +113,7 @@ publishing {
 tasks.jacocoTestReport {
     dependsOn(tasks.test)
     // https://stackoverflow.com/questions/67725347/jacoco-fails-on-gradle-7-0-2-and-kotlin-1-5-10
-    version = "0.8.7"
+    //version = "0.8.7"
     reports {
         xml.required.set(true)
         csv.required.set(false)
