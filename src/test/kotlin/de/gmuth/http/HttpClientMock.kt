@@ -4,6 +4,7 @@ package de.gmuth.http
  * Copyright (c) 2021 Gerhard Muth
  */
 
+import de.gmuth.io.ByteArray
 import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppStatus
 import de.gmuth.log.Logging
@@ -35,7 +36,7 @@ class HttpClientMock(config: Http.Config = Http.Config()) : Http.Client(config) 
             Http.Response(
                     httpStatus, httpServer, httpContentType, ippResponse?.encodeAsInputStream() ?: httpContentStream
             ).apply {
-                rawIppRequest = ByteArrayOutputStream().also { writeContent(it) }.toByteArray()
+                rawIppRequest = ByteArray(writeContent)
                 log.info { "post ${rawIppRequest.size} bytes ipp request to $uri -> response '$server', $status, ${this.contentType}" }
             }
 }

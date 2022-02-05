@@ -1,5 +1,8 @@
 package de.gmuth.io
 
+import java.io.ByteArrayOutputStream
+import java.io.OutputStream
+
 fun ByteArray.hexdump(maxRows: Int = 32, dump: (String) -> Unit) =
         with(StringBuilder()) {
             for ((index, b) in withIndex()) {
@@ -11,3 +14,6 @@ fun ByteArray.hexdump(maxRows: Int = 32, dump: (String) -> Unit) =
             }
             if (isNotEmpty()) dump(toString())
         }
+
+fun ByteArray(writeContent: (OutputStream) -> Unit): ByteArray =
+    ByteArrayOutputStream().also { writeContent(it) }.toByteArray()
