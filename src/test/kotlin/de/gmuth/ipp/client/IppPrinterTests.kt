@@ -5,6 +5,7 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.http.HttpClientMock
+import de.gmuth.io.toIppResponse
 import de.gmuth.ipp.client.CupsPrinterType.Capability.CanPunchOutput
 import de.gmuth.ipp.client.IppFinishing.Punch
 import de.gmuth.ipp.client.IppFinishing.Staple
@@ -49,10 +50,9 @@ class IppPrinterTests {
             URI.create("ipp://printer"),
             ippClient = IppClient(ippConfig, httpClient)
     ).apply {
-        attributes = IppResponse().run {
-            read(File("printers/Simulated_Laser_Printer/Get-Printer-Attributes.ipp"))
-            printerGroup
-        }
+        attributes = File("printers/Simulated_Laser_Printer/Get-Printer-Attributes.ipp")
+            .toIppResponse()
+            .printerGroup
     }
 
     @Test

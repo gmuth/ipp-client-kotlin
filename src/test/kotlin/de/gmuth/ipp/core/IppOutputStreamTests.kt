@@ -37,6 +37,12 @@ class IppOutputStreamTest {
     }
 
     @Test
+    fun writeAttribute() {
+        ippOutputStream.writeAttribute(IppAttribute("0", IppTag.NotSettable, ByteArray(0)))
+        assertEquals("15 00 01 30 00 00", byteArrayOutputStream.toHex());
+    }
+
+    @Test
     fun writeAttributeValueBooleanFalse() {
         ippOutputStream.writeAttributeValue(IppTag.Boolean, false)
         assertEquals("00 01 00", byteArrayOutputStream.toHex())
