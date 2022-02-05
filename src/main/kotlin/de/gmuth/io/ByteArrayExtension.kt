@@ -15,5 +15,5 @@ fun ByteArray.hexdump(maxRows: Int = 32, dump: (String) -> Unit) =
             if (isNotEmpty()) dump(toString())
         }
 
-fun ByteArray(writeContent: (OutputStream) -> Unit): ByteArray =
-    ByteArrayOutputStream().also { writeContent(it) }.toByteArray()
+fun ByteArray(writeBytes: (OutputStream) -> Unit): ByteArray =
+    ByteArrayOutputStream().also { writeBytes(it) }.toByteArray()
