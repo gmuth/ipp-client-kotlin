@@ -151,7 +151,7 @@ printer.printJob(
 
 ## Logging
 
-Log levels can by changed globally or individually.
+Log levels can be changed globally or individually.
 The `defaultLogLevel` must be changed before any constructor of a logger is called.
 
 ```kotlin
