@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2022 Gerhard Muth
  */
 
 import de.gmuth.io.hexdump
@@ -56,23 +56,25 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                 }
             } while (tag != End)
         } catch (exception: Exception) {
-            val bytes = readBytes()
-            log.warn { "${bytes.size} unparsed bytes" }
+            readBytes().apply {
+                log.warn { "skipped $size unparsed bytes" }
+                hexdump { log.warn { it } }
+            }
             throw exception
         }
     }
 
     internal fun readTag() =
-            IppTag.fromByte(readByte()).apply {
-                if (isDelimiterTag()) log.debug { "--- $this ---" }
-            }
+        IppTag.fromByte(readByte()).apply {
+            if (isDelimiterTag()) log.debug { "--- $this ---" }
+        }
 
     internal fun readAttribute(tag: IppTag): IppAttribute<Any> {
         val name = readString()
         val value = try {
             readAttributeValue(tag)
         } catch (exception: Exception) {
-            if (exception !is EOFException) readBytes().hexdump { log.debug { it } }
+            if (exception !is EOFException) readBytes().hexdump { log.info { it } }
             throw IppException("failed to read attribute value of '$name' ($tag)", exception)
         }
         // remember attributes-charset for name and text value decoding
@@ -81,88 +83,88 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
     }
 
     internal fun readAttributeValue(tag: IppTag): Any =
-            when (tag) {
+        when (tag) {
 
-                IppTag.Boolean -> {
-                    readExpectedValueLength(1)
-                    readBoolean()
-                }
+            IppTag.Boolean -> {
+                readExpectedValueLength(1)
+                readBoolean()
+            }
 
-                Integer,
-                IppTag.Enum -> {
-                    readExpectedValueLength(4)
-                    readInt()
-                }
+            Integer,
+            IppTag.Enum -> {
+                readExpectedValueLength(4)
+                readInt()
+            }
 
-                RangeOfInteger -> {
-                    readExpectedValueLength(8)
-                    IntRange(
-                            start = readInt(),
-                            endInclusive = readInt()
-                    )
-                }
+            RangeOfInteger -> {
+                readExpectedValueLength(8)
+                IntRange(
+                    start = readInt(),
+                    endInclusive = readInt()
+                )
+            }
 
-                Resolution -> {
-                    readExpectedValueLength(9)
-                    IppResolution(
-                            x = readInt(),
-                            y = readInt(),
-                            unit = readByte().toInt()
-                    )
-                }
+            Resolution -> {
+                readExpectedValueLength(9)
+                IppResolution(
+                    x = readInt(),
+                    y = readInt(),
+                    unit = readByte().toInt()
+                )
+            }
 
-                Charset -> Charset.forName(readString())
+            Charset -> Charset.forName(readString())
 
-                Uri -> URI.create(readString())
+            Uri -> URI.create(readString())
 
-                // String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
-                Keyword,
-                UriScheme,
-                OctetString,
-                MimeMediaType,
-                MemberAttrName,
-                NaturalLanguage -> readString()
+            // String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
+            Keyword,
+            UriScheme,
+            OctetString,
+            MimeMediaType,
+            MemberAttrName,
+            NaturalLanguage -> readString()
 
-                TextWithoutLanguage,
-                NameWithoutLanguage -> IppString(readString(attributesCharset))
+            TextWithoutLanguage,
+            NameWithoutLanguage -> IppString(readString(attributesCharset))
 
-                TextWithLanguage,
-                NameWithLanguage -> {
-                    readShort()
-                    IppString(
-                            language = readString(attributesCharset),
-                            text = readString(attributesCharset)
-                    )
-                }
+            TextWithLanguage,
+            NameWithLanguage -> {
+                readShort()
+                IppString(
+                    language = readString(attributesCharset),
+                    text = readString(attributesCharset)
+                )
+            }
 
-                DateTime -> {
-                    readExpectedValueLength(11)
-                    IppDateTime(
-                            year = readShort().toInt(),
-                            month = read(),
-                            day = read(),
-                            hour = read(),
-                            minutes = read(),
-                            seconds = read(),
-                            deciSeconds = read(),
-                            directionFromUTC = readByte().toInt().toChar(),
-                            hoursFromUTC = read(),
-                            minutesFromUTC = read()
-                    )
-                }
+            DateTime -> {
+                readExpectedValueLength(11)
+                IppDateTime(
+                    year = readShort().toInt(),
+                    month = read(),
+                    day = read(),
+                    hour = read(),
+                    minutes = read(),
+                    seconds = read(),
+                    deciSeconds = read(),
+                    directionFromUTC = readByte().toInt().toChar(),
+                    hoursFromUTC = read(),
+                    minutesFromUTC = read()
+                )
+            }
 
-                BegCollection -> {
-                    readExpectedValueLength(0)
-                    readCollection()
-                }
+            BegCollection -> {
+                readExpectedValueLength(0)
+                readCollection()
+            }
 
-                // for all other tags (including out-of-bound), read raw bytes (if present at all)
-                else -> { // ByteArray - possibly empty
-                    readLengthAndValue().apply {
-                        if (size > 0) log.warn { "ignoring $size bytes ($tag)" }
-                    }
+            // for all other tags (including out-of-bound), read raw bytes (if present at all)
+            else -> { // ByteArray - possibly empty
+                readLengthAndValue().apply {
+                    if (size > 0) log.warn { "ignoring $size bytes ($tag)" }
                 }
             }
+        }
 
     internal fun readCollection() = IppCollection().apply {
         lateinit var currentMemberAttribute: IppAttribute<Any>
@@ -184,17 +186,17 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
     // RFC 8011 4.1.4.1 -> use attributes-charset
     internal fun readString(charset: Charset = Charsets.US_ASCII) =
-            String(readLengthAndValue(), charset)
+        String(readLengthAndValue(), charset)
 
     internal fun readLengthAndValue() =
-            readBytes(readShort().toInt())
+        readBytes(readShort().toInt())
 
     // avoid Java-11-readNBytes(length) for compatibility with older jvms
     internal fun readBytes(length: Int) =
-            ByteArray(length).apply {
-                log.trace { "read $length bytes" }
-                readFully(this)
-            }
+        ByteArray(length).apply {
+            log.trace { "read $length bytes" }
+            readFully(this)
+        }
 
     internal fun readExpectedValueLength(expected: Int) {
         val length = readShort().toInt()
