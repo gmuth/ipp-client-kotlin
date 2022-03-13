@@ -18,27 +18,27 @@ open class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttrib
     }
 
     open fun put(attribute: IppAttribute<*>) =
-            put(attribute.name, attribute).apply {
-                if (this != null) log.warn { "replaced '$this' with '${attribute.values.joinToString(",")}' in group $tag" }
-            }
+        put(attribute.name, attribute).apply {
+            if (this != null) log.warn { "replaced '$this' with '${attribute.values.joinToString(",")}' in group $tag" }
+        }
 
     fun attribute(name: String, tag: IppTag, vararg values: Any) =
-            put(IppAttribute(name, tag, values.toList()))
+        put(IppAttribute(name, tag, values.toList()))
 
     fun attribute(name: String, tag: IppTag, values: List<Any>) =
-            put(IppAttribute(name, tag, values))
+        put(IppAttribute(name, tag, values))
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getValueOrNull(name: String) =
-            get(name)?.value as T?
+        get(name)?.value as T?
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getValue(name: String) =
-            get(name)?.value as T ?: throw IppException("attribute '$name' not found in group $tag")
+        get(name)?.value as T ?: throw IppException("attribute '$name' not found in group $tag")
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getValues(name: String) =
-            get(name)?.values as T ?: throw IppException("attribute '$name' not found in group $tag")
+        get(name)?.values as T ?: throw IppException("attribute '$name' not found in group $tag")
 
     override fun toString() = "'$tag' $size attributes"
 
