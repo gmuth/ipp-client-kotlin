@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020-2021 Gerhard Muth
+ * Copyright (c) 2020-2022 Gerhard Muth
  */
 
 import de.gmuth.http.Http
@@ -30,7 +30,15 @@ open class IppPrinter(
         if (!ippClient.config.getPrinterAttributesOnInit) {
             log.warn { "getPrinterAttributesOnInit disabled => no printer attributes available" }
         } else if (attributes.size == 0) {
-            updateAllAttributes()
+            try {
+                updateAllAttributes()
+            } catch (ippExchangeException: IppExchangeException) {
+                ippExchangeException.logAllMessages()
+                log.error { "failed to get printer attributes on init" }
+                ippExchangeException.response?.let { log.info { "${it.printerGroup.size} attributes parsed" } }
+                fetchRawPrinterAttributes("getPrinterAttributesFailed.bin")
+                throw ippExchangeException
+            }
         }
     }
 
@@ -108,11 +116,13 @@ open class IppPrinter(
                 val uriSecuritySupportedList = getValues<List<String>>("uri-security-supported")
                 val uriAuthenticationSupportedList = getValues<List<String>>("uri-authentication-supported")
                 for ((index, printerUriSupported) in printerUriSupportedList.withIndex())
-                    add(IppCommunicationChannel(
+                    add(
+                        IppCommunicationChannel(
                             printerUriSupported,
                             uriSecuritySupportedList[index],
                             uriAuthenticationSupportedList[index]
-                    ))
+                        )
+                    )
             }
         }
 
@@ -140,14 +150,16 @@ open class IppPrinter(
                 val names = getValues<List<IppString>>("marker-names")
                 val colors = getValues<List<IppString>>("marker-colors")
                 for ((index, type) in types.withIndex())
-                    add(CupsMarker(
+                    add(
+                        CupsMarker(
                             type,
                             names[index].text,
                             levels[index],
                             lowLevels[index],
                             highLevels[index],
                             colors[index].text
-                    ))
+                        )
+                    )
             }
         }
 
@@ -477,6 +489,17 @@ open class IppPrinter(
         getPrinterAttributes().run {
             saveRawBytes(File("$printerModel.bin"))
             printerGroup.saveText(File("$printerModel.txt"))
+        }
+    }
+
+    fun fetchRawPrinterAttributes(filename: String = "printer-attributes.bin") {
+        ippClient.run {
+            val httpResponse = httpPostRequest(toHttpUri(printerUri), ippRequest(GetPrinterAttributes))
+            log.info { "http status: ${httpResponse.status}, content-type: ${httpResponse.contentType}" }
+            File(filename).apply {
+                httpResponse.contentStream!!.copyTo(outputStream())
+                log.info { "saved ${length()} bytes: $path" }
+            }
         }
     }
 
