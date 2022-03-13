@@ -21,11 +21,11 @@ class HttpClientMock(config: Http.Config = Http.Config()) : Http.Client(config) 
     var httpStatus: Int = 200
     var httpServer: String? = "HttpClientMock"
     var httpContentType: String? = "application/ipp"
-    var httpContentStream: InputStream? = null
     var ippResponse: IppResponse? = IppResponse(IppStatus.SuccessfulOk)
+    var httpContentFile: File? = null
 
     fun mockResponse(file: File) {
-        httpContentStream = FileInputStream(file)
+        httpContentFile = file
         ippResponse = null
     }
 
@@ -34,7 +34,7 @@ class HttpClientMock(config: Http.Config = Http.Config()) : Http.Client(config) 
 
     override fun post(uri: URI, contentType: String, writeContent: (OutputStream) -> Unit, chunked: Boolean) =
             Http.Response(
-                    httpStatus, httpServer, httpContentType, ippResponse?.encodeAsInputStream() ?: httpContentStream
+                    httpStatus, httpServer, httpContentType, ippResponse?.encodeAsInputStream() ?: httpContentFile?.inputStream()
             ).apply {
                 rawIppRequest = ByteArray(writeContent)
                 log.info { "post ${rawIppRequest.size} bytes ipp request to $uri -> response '$server', $status, ${this.contentType}" }
