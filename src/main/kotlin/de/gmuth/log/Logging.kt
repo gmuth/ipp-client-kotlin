@@ -24,23 +24,23 @@ object Logging {
 
         @JvmOverloads
         fun trace(throwable: Throwable? = null, messageProducer: MessageProducer = { "" }) =
-                log(TRACE, throwable, messageProducer)
+            log(TRACE, throwable, messageProducer)
 
         @JvmOverloads
         fun debug(throwable: Throwable? = null, messageProducer: MessageProducer = { "" }) =
-                log(DEBUG, throwable, messageProducer)
+            log(DEBUG, throwable, messageProducer)
 
         @JvmOverloads
         fun info(throwable: Throwable? = null, messageProducer: MessageProducer = { "" }) =
-                log(INFO, throwable, messageProducer)
+            log(INFO, throwable, messageProducer)
 
         @JvmOverloads
         fun warn(throwable: Throwable? = null, messageProducer: MessageProducer = { "" }) =
-                log(WARN, throwable, messageProducer)
+            log(WARN, throwable, messageProducer)
 
         @JvmOverloads
         fun error(throwable: Throwable? = null, messageProducer: MessageProducer = { "" }) =
-                log(ERROR, throwable, messageProducer)
+            log(ERROR, throwable, messageProducer)
 
         @JvmOverloads
         fun log(messageLogLevel: LogLevel, throwable: Throwable? = null, produceMessage: MessageProducer) {
@@ -71,6 +71,6 @@ object Logging {
     }
 
     fun getLogger(logLevel: LogLevel = defaultLogLevel, noOperation: () -> Unit) =
-            getLogger(noOperation.javaClass.enclosingClass.name, logLevel)
+        getLogger(noOperation.javaClass.enclosingClass.name, logLevel)
 
 }
