@@ -48,7 +48,7 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
                         val attribute = readAttribute(tag)
                         log.debug { "$attribute" }
                         if (attribute.name.isNotEmpty()) {
-                            currentGroup.put(attribute)
+                            currentGroup.put(attribute, onReplaceWarn = true)
                             currentAttribute = attribute
                         } else { // name.isEmpty() -> 1setOf
                             currentAttribute.additionalValue(attribute)
