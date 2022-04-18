@@ -31,7 +31,7 @@ open class IppPrinter(
             log.warn { "getPrinterAttributesOnInit disabled => no printer attributes available" }
         } else if (attributes.size == 0) {
             try {
-                updateAllAttributes()
+                updateAttributes(ippClient.config.requestedAttributesOnInit)
             } catch (ippExchangeException: IppExchangeException) {
                 ippExchangeException.logAllMessages()
                 log.error { "failed to get printer attributes on init" }
@@ -54,6 +54,16 @@ open class IppPrinter(
 
     companion object {
         val log = Logging.getLogger {}
+
+        val printerStateAttributes = listOf(
+            "printer-is-accepting-jobs", "printer-state", "printer-state-reasons"
+        )
+
+        val printerClassAttributes = listOf(
+            "printer-name", "printer-make-and-model", "printer-is-accepting-jobs", "printer-state", "printer-state-reasons",
+            "document-format-supported", "operations-supported", "color-supported", "sides-supported",
+            "media-supported", "media-ready", "media-default", "ipp-versions-supported"
+        )
     }
 
     val ippConfig: IppConfig
@@ -201,17 +211,30 @@ open class IppPrinter(
     fun resume() = exchange(ippRequest(ResumePrinter))
     fun purgeJobs() = exchange(ippRequest(PurgeJobs))
 
-    //-----------------------
+    //------------------------------------------
     // Get-Printer-Attributes
-    //-----------------------
+    // names of attribute groups: RFC 8011 4.2.5
+    //------------------------------------------
 
-    @JvmOverloads
     fun getPrinterAttributes(requestedAttributes: List<String>? = null) =
         exchange(ippRequest(GetPrinterAttributes, requestedAttributes = requestedAttributes))
 
-    fun updateAllAttributes() {
-        attributes = getPrinterAttributes().printerGroup
+    fun getPrinterAttributes(vararg requestedAttributes: String) =
+        getPrinterAttributes(requestedAttributes.toList())
+
+    fun updateAttributes(requestedAttributes: List<String>? = null) {
+        log.info { "update attributes: $requestedAttributes" }
+        getPrinterAttributes(requestedAttributes).run {
+            if (containsGroup(Printer)) attributes.put(printerGroup)
+            else log.info { "no printerGroup in response for requested attributes: $requestedAttributes" }
+        }
     }
+
+    fun updateAttributes(vararg requestedAttributes: String) =
+        updateAttributes(requestedAttributes.toList())
+
+    fun updatePrinterStateAttributes() =
+        updateAttributes(printerStateAttributes)
 
     //-------------
     // Validate-Job
