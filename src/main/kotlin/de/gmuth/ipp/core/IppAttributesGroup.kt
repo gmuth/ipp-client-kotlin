@@ -17,9 +17,9 @@ open class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttrib
         if (!tag.isGroupTag()) throw IppException("'$tag' is not a group tag")
     }
 
-    open fun put(attribute: IppAttribute<*>) =
+    open fun put(attribute: IppAttribute<*>, onReplaceWarn: Boolean = false) =
         put(attribute.name, attribute).apply {
-            if (this != null) log.warn { "replaced '$this' with '${attribute.values.joinToString(",")}' in group $tag" }
+            if (this != null && onReplaceWarn) log.warn { "replaced '$this' with '${attribute.values.joinToString(",")}' in group $tag" }
         }
 
     fun attribute(name: String, tag: IppTag, vararg values: Any) =
