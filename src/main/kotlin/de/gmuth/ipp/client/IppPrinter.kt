@@ -17,6 +17,7 @@ import java.io.FileInputStream
 import java.io.InputStream
 import java.net.URI
 
+@SuppressWarnings("kotlin:S1192")
 open class IppPrinter(
     val printerUri: URI,
     var attributes: IppAttributesGroup = IppAttributesGroup(Printer),
