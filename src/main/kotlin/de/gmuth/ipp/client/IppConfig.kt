@@ -12,7 +12,9 @@ class IppConfig(
         var ippVersion: String = "1.1",
         var charset: Charset = Charsets.UTF_8,
         var naturalLanguage: String = "en",
-        var getPrinterAttributesOnInit: Boolean = true
+        var getPrinterAttributesOnInit: Boolean = true,
+        // job-template, printer-description, all, media-col-database (not included in all!)
+        var requestedAttributesOnInit: List<String>? = null
 ) {
     companion object {
         val log = Logging.getLogger {}
