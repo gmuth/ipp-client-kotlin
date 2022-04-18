@@ -12,6 +12,7 @@ import java.io.EOFException
 import java.io.InputStream
 import java.net.URI
 import java.nio.charset.Charset
+import de.gmuth.log.Logging.LogLevel.*
 
 class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
 
@@ -161,7 +162,11 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
             // for all other tags (including out-of-bound), read raw bytes (if present at all)
             else -> { // ByteArray - possibly empty
                 readLengthAndValue().apply {
-                    if (size > 0) log.warn { "ignoring $size bytes ($tag)" }
+                    if (size > 0) {
+                        val level = if (tag == Unsupported_) DEBUG else WARN
+                        log.log(level) { "ignore $size value bytes tagged '$tag'" }
+                        hexdump { log.log(level) { it } }
+                    }
                 }
             }
         }
