@@ -3,7 +3,7 @@ package de.gmuth.ipp.core
 import de.gmuth.log.Logging
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2022 Gerhard Muth
  */
 
 // RFC8010 3.1.6.
@@ -16,18 +16,25 @@ data class IppCollection(val members: MutableList<IppAttribute<*>> = mutableList
     constructor(vararg attributes: IppAttribute<*>) : this(attributes.toMutableList())
 
     fun attribute(name: String, tag: IppTag, vararg values: Any) =
-            add(IppAttribute(name, tag, values.toMutableList()))
+        add(IppAttribute(name, tag, values.toMutableList()))
 
     fun add(attribute: IppAttribute<*>) =
-            members.add(attribute)
+        members.add(attribute)
 
     fun addAll(attributes: Collection<IppAttribute<*>>) =
-            members.addAll(attributes)
+        members.addAll(attributes)
+
+    @Suppress("UNCHECKED_CAST")
+    fun <T> getMember(memberName: String) =
+        members.single { it.name == memberName } as IppAttribute<T>
+
+    fun <T> getMemberValue(memberName: String) =
+        getMember<T>(memberName).value
 
     override fun toString() =
-            members.joinToString(" ", "{", "}") {
-                "${it.name}=${it.values.joinToString(",")}"
-            }
+        members.joinToString(" ", "{", "}") {
+            "${it.name}=${it.values.joinToString(",")}"
+        }
 
     fun logDetails(prefix: String = "") {
         val string = toString()
