@@ -4,7 +4,7 @@ import de.gmuth.log.Logging
 import java.io.File
 
 /**
- * Copyright (c) 2020-2021 Gerhard Muth
+ * Copyright (c) 2020-2022 Gerhard Muth
  */
 
 open class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*>>() {
@@ -39,6 +39,11 @@ open class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttrib
     @Suppress("UNCHECKED_CAST")
     fun <T> getValues(name: String) =
         get(name)?.values as T ?: throw IppException("attribute '$name' not found in group $tag")
+
+    fun put(attributesGroup: IppAttributesGroup) {
+        log.debug { "put ${attributesGroup.size} attributes" }
+        attributesGroup.values.forEach { put(it, false) }
+    }
 
     override fun toString() = "'$tag' $size attributes"
 
