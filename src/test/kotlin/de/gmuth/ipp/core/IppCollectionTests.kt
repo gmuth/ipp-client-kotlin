@@ -18,7 +18,7 @@ class IppCollectionTests {
 
     @Test
     fun attribute() {
-        collection.attribute("year", IppTag.Integer, 2021)
+        collection.addAttribute("year", IppTag.Integer, 2021)
         assertEquals(2, collection.members.size)
     }
 
