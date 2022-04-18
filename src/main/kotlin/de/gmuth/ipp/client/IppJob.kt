@@ -108,7 +108,7 @@ class IppJob(
                 log.info { lastJobString }
             }
             if (isProcessingStopped() || lastPrinterString.isNotEmpty()) {
-                printer.updateAllAttributes()
+                printer.updatePrinterStateAttributes()
                 if (printer.toString() != lastPrinterString) {
                     lastPrinterString = printer.toString()
                     log.info { lastPrinterString }
