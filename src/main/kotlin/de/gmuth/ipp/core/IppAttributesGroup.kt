@@ -1,11 +1,11 @@
 package de.gmuth.ipp.core
 
-import de.gmuth.log.Logging
-import java.io.File
-
 /**
  * Copyright (c) 2020-2022 Gerhard Muth
  */
+
+import de.gmuth.log.Logging
+import java.io.File
 
 open class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*>>() {
 

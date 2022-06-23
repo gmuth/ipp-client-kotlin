@@ -1,10 +1,10 @@
 package de.gmuth.ipp.core
 
-import de.gmuth.log.Logging
-
 /**
  * Copyright (c) 2020-2022 Gerhard Muth
  */
+
+import de.gmuth.log.Logging
 
 // RFC8010 3.1.6.
 data class IppCollection(val members: MutableList<IppAttribute<*>> = mutableListOf()) {

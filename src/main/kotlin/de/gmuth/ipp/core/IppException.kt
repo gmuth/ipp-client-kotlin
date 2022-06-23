@@ -1,11 +1,11 @@
 package de.gmuth.ipp.core
 
-import de.gmuth.log.Logging
-import de.gmuth.log.Logging.LogLevel.ERROR
-
 /**
  * Copyright (c) 2020-2022 Gerhard Muth
  */
+
+import de.gmuth.log.Logging
+import de.gmuth.log.Logging.LogLevel.ERROR
 
 open class IppException(message: String, cause: Throwable? = null) : RuntimeException(message, cause) {
 
