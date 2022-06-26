@@ -224,10 +224,10 @@ open class IppPrinter(
         getPrinterAttributes(requestedAttributes.toList())
 
     fun updateAttributes(requestedAttributes: List<String>? = null) {
-        log.info { "update attributes: $requestedAttributes" }
+        log.debug { "update attributes: $requestedAttributes" }
         getPrinterAttributes(requestedAttributes).run {
             if (containsGroup(Printer)) attributes.put(printerGroup)
-            else log.info { "no printerGroup in response for requested attributes: $requestedAttributes" }
+            else log.warn { "no printerGroup in response for requested attributes: $requestedAttributes" }
         }
     }
 
