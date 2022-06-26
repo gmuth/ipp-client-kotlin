@@ -32,7 +32,6 @@ val job = ippPrinter.printJob(
     jobName(file.name),
     jobPriority(30),
     documentFormat("application/pdf"),
-    media("iso_a4_210x297mm"),
     copies(2),
     numberUp(2),
     pageRanges(2..3, 8..10),
@@ -41,7 +40,8 @@ val job = ippPrinter.printJob(
     IppPrintQuality.High,
     IppColorMode.Monochrome,
     IppSides.TwoSidedLongEdge,
-    IppMedia.Collection(source = "tray-1"),
+    media("iso_a4_210x297mm"),
+    mediaColSource("tray-1"),
     notifyEvents = listOf("job-state-changed", "job-stopped", "job-completed") // CUPS
 )
 job.logDetails()
