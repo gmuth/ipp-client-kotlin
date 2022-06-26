@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020-2021 Gerhard Muth
+ * Copyright (c) 2020-2022 Gerhard Muth
  */
 
 import de.gmuth.ipp.client.IppJobState.*
@@ -13,9 +13,9 @@ import java.io.InputStream
 import java.net.URI
 
 class IppJob(
-        val printer: IppPrinter,
-        var attributes: IppAttributesGroup,
-        subscriptionAttributes: IppAttributesGroup? = null
+    val printer: IppPrinter,
+    var attributes: IppAttributesGroup,
+    subscriptionAttributes: IppAttributesGroup? = null
 
 ) {
     companion object {
@@ -64,14 +64,18 @@ class IppJob(
 
     fun hasStateReasons() = attributes.containsKey("job-state-reasons")
 
+    fun isPending() = state == Pending
+    fun isCanceled() = state == Canceled
     fun isProcessing() = state == Processing
-
     fun isProcessingStopped() = state == ProcessingStopped
 
     fun isTerminated() = state in listOf(Canceled, Aborted, Completed)
 
     fun isProcessingToStopPoint() =
-            hasStateReasons() && stateReasons.contains("processing-to-stop-point")
+        hasStateReasons() && stateReasons.contains("processing-to-stop-point")
+
+    fun resourcesAreNotReady() =
+        hasStateReasons() && stateReasons.contains("resources-are-not-ready")
 
     //-------------------
     // Get-Job-Attributes
@@ -81,10 +85,10 @@ class IppJob(
 
     @JvmOverloads
     fun getJobAttributes(requestedAttributes: List<String>? = null) =
-            exchange(ippRequest(GetJobAttributes, requestedAttributes))
+        exchange(ippRequest(GetJobAttributes, requestedAttributes))
 
     fun getJobAttributes(vararg requestedAttribute: String) =
-            getJobAttributes(requestedAttribute.toList())
+        getJobAttributes(requestedAttribute.toList())
 
     fun updateAttributes(jobAttributeGroupName: String = "all") {
         attributes = getJobAttributes(jobAttributeGroupName).jobGroup
@@ -129,6 +133,7 @@ class IppJob(
     fun restart() = exchange(ippRequest(RestartJob)).also { updateAttributes() }
 
     fun cancel(messageForOperator: String? = null): IppResponse { // RFC 8011 4.3.3
+        if (isCanceled()) log.warn { "job #$id is already 'canceled'" }
         if (isProcessingToStopPoint()) log.warn { "job #$id is already 'processing-to-stop-point'" }
         val request = ippRequest(CancelJob).apply {
             messageForOperator?.let { operationGroup.attribute("message", TextWithoutLanguage, it.toIppString()) }
@@ -143,10 +148,10 @@ class IppJob(
 
     @JvmOverloads
     fun sendDocument(
-            inputStream: InputStream,
-            lastDocument: Boolean = true,
-            documentName: String? = null,
-            documentNaturalLanguage: String? = null
+        inputStream: InputStream,
+        lastDocument: Boolean = true,
+        documentName: String? = null,
+        documentNaturalLanguage: String? = null
     ) {
         val request = documentRequest(SendDocument, lastDocument, documentName, documentNaturalLanguage).apply {
             documentInputStream = inputStream
@@ -160,10 +165,10 @@ class IppJob(
 
     @JvmOverloads
     fun sendUri(
-            documentUri: URI,
-            lastDocument: Boolean = true,
-            documentName: String? = null,
-            documentNaturalLanguage: String? = null
+        documentUri: URI,
+        lastDocument: Boolean = true,
+        documentName: String? = null,
+        documentNaturalLanguage: String? = null
     ) {
         val request = documentRequest(SendURI, lastDocument, documentName, documentNaturalLanguage).apply {
             operationGroup.attribute("document-uri", Uri, documentUri)
@@ -172,10 +177,10 @@ class IppJob(
     }
 
     protected fun documentRequest(
-            operation: IppOperation,
-            lastDocument: Boolean,
-            documentName: String?,
-            documentNaturalLanguage: String?
+        operation: IppOperation,
+        lastDocument: Boolean,
+        documentName: String?,
+        documentNaturalLanguage: String?
     ) = ippRequest(operation).apply {
         operationGroup.run {
             attribute("last-document", IppTag.Boolean, lastDocument)
@@ -222,10 +227,10 @@ class IppJob(
     //-----------------------
 
     fun ippRequest(operation: IppOperation, requestedAttributes: List<String>? = null) =
-            printer.ippRequest(operation, id, requestedAttributes)
+        printer.ippRequest(operation, id, requestedAttributes)
 
     fun exchange(request: IppRequest) =
-            printer.exchange(request)
+        printer.exchange(request)
 
     // -------
     // Logging
