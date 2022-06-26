@@ -56,6 +56,11 @@ object Logging {
                 throwable?.printStackTrace(PrintWriter(System.out, true))
             }
         }
+
+        fun logWithCauseMessages(throwable: Throwable, logLevel: LogLevel = ERROR) {
+            throwable.cause?.let { logWithCauseMessages(it, logLevel) }
+            log(logLevel) { "${throwable.message}" }
+        }
     }
 
     fun interface Factory {
