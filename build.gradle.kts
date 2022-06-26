@@ -8,6 +8,7 @@ plugins {
     id("org.jetbrains.dokka") version "1.7.0"
     id("org.sonarqube") version "3.3"
     id("maven-publish")
+//    id("signing")
     id("jacoco")
 }
 
@@ -73,7 +74,6 @@ tasks.compileJava {
 // if the workflow tries to publish the same release again you'll get: "Received status code 409 from server: Conflict"
 
 publishing {
-
     repositories {
         maven {
             name = "GitHubPackages" // Must match regex [A-Za-z0-9_\-.]+.
@@ -84,12 +84,12 @@ publishing {
             }
         }
     }
-
     publications {
-        create<MavenPublication>("ipp-client") {
+        create<MavenPublication>("ippclient") {
             from(components["java"])
             pom {
                 name.set("ipp client library")
+                description.set("A client implementation of the ipp protocol, RFCs 8010, 8011, 3995 and 3996")
                 url.set("https://github.com/gmuth/ipp-client-kotlin")
                 licenses {
                     license {
@@ -104,12 +104,28 @@ publishing {
                         email.set("gerhard.muth@gmx.de")
                     }
                 }
+                scm {
+                    connection.set("scm:git:git://github.com/gmuth/ipp-client-kotlin.git")
+                    developerConnection.set("scm:git:ssh://git@github.com/gmuth/ipp-client-kotlin.git")
+                    url.set("https://github.com/gmuth/ipp-client-kotlin")
+                }
             }
         }
     }
-
 }
-// ======  produce source.jar and javadoc.jar ======
+
+// ====== signing ======
+
+// set gradle.properties
+// signing.keyId
+// signing.password
+// signing.secretKeyRingFile
+
+signing {
+    sign(publishing.publications["ippclient"])
+}
+
+// ======  produce sources.jar and javadoc.jar ======
 
 java {
     withSourcesJar()
