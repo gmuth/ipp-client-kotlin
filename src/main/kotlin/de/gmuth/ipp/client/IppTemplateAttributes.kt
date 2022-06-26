@@ -57,6 +57,10 @@ object IppTemplateAttributes {
     fun finishings(finishings: Collection<IppFinishing>) =
         IppAttribute("finishings", IppTag.Enum, finishings.map { it.code })
 
+    @JvmStatic // input tray
+    fun mediaColSource(value: String) =
+        IppMedia.Collection(source = value)
+
     // support vararg parameter for convenience
 
     @JvmStatic
