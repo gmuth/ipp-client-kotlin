@@ -46,7 +46,7 @@ class IppTagTests {
 
     @Test
     fun fromByteFails() {
-        assertFailsWith<NoSuchElementException> { IppTag.fromByte(0x00) }
+        assertFailsWith<IppException> { IppTag.fromByte(0x77) }
     }
 
 }

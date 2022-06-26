@@ -6,9 +6,9 @@ package de.gmuth.ipp.core
 
 // [RFC 8010] and [RFC 3380]
 enum class IppTag(
-        val code: Byte,
-        val registeredName: String,
-        val valueHasValidClass: (Any) -> kotlin.Boolean = { true }
+    val code: Byte,
+    val registeredName: String,
+    val valueHasValidClass: (Any) -> kotlin.Boolean = { true }
 ) {
 
     // delimiter tags
@@ -79,9 +79,9 @@ enum class IppTag(
 
     companion object {
         fun fromByte(code: Byte): IppTag =
-                values().single { it.code == code }
+            values().singleOrNull { it.code == code } ?: throw IppException("Unknown tag 0x%02X".format(code))
 
         fun fromString(name: String): IppTag =
-                values().single { it.registeredName == name }
+            values().single { it.registeredName == name }
     }
 }
