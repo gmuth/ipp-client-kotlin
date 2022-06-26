@@ -37,15 +37,13 @@ class IppResponseTests {
 
     @Test
     fun invalidXeroxMediaColResponse() {
-        assertFailsWith<IppException> {
-            ippResponse.read(File("src/test/resources/invalidXeroxMediaCol.response"))
-            ippResponse.logDetails()
-            with(ippResponse.jobGroup) {
-                assertEquals(598, getValue("job-id"))
-                assertEquals(4, getValue("job-state")) // pending-held
-                assertEquals(listOf("job-hold-until-specified"), getValues("job-state-reasons"))
-                assertEquals(URI.create("ipp://xero.local./ipp/print/Job-598"), getValue("job-uri"))
-            }
+        ippResponse.read(File("src/test/resources/invalidXeroxMediaCol.response"))
+        ippResponse.logDetails()
+        with(ippResponse.jobGroup) {
+            assertEquals(598, getValue("job-id"))
+            assertEquals(4, getValue("job-state")) // pending-held
+            assertEquals(listOf("job-hold-until-specified"), getValues("job-state-reasons"))
+            assertEquals(URI.create("ipp://xero.local./ipp/print/Job-598"), getValue("job-uri"))
         }
     }
 

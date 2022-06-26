@@ -205,10 +205,11 @@ class IppInputStreamTest {
 // hex utility extensions
 
 fun String.toByteArray() =
-        ByteArray((length + 1) / 3) { substring(3 * it, 3 * it + 2).toInt(16).toByte() }
+    ByteArray((length + 1) / 3) { substring(3 * it, 3 * it + 2).toInt(16).toByte() }
 
-fun String.toIppInputStream() =
-        IppInputStream(ByteArrayInputStream(toByteArray())).apply { attributesCharset = Charsets.US_ASCII }
+fun String.toIppInputStream() = IppInputStream(ByteArrayInputStream(toByteArray()).buffered()).apply {
+    attributesCharset = Charsets.US_ASCII
+}
 
 fun String.readAttributeValue(tag: IppTag) =
-        toIppInputStream().readAttributeValue(tag)
+    toIppInputStream().readAttributeValue(tag)

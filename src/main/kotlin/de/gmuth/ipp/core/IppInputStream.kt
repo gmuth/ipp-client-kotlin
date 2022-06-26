@@ -7,14 +7,14 @@ package de.gmuth.ipp.core
 import de.gmuth.io.hexdump
 import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.log.Logging
+import de.gmuth.log.Logging.LogLevel.*
+import java.io.BufferedInputStream
 import java.io.DataInputStream
 import java.io.EOFException
-import java.io.InputStream
 import java.net.URI
 import java.nio.charset.Charset
-import de.gmuth.log.Logging.LogLevel.*
 
-class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
+class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputStream) {
 
     companion object {
         val log = Logging.getLogger {}
@@ -155,8 +155,13 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
             }
 
             BegCollection -> {
-                readExpectedValueLength(0)
-                readCollection()
+                if (readExpectedValueLength(0, throwException = false)) {
+                    readCollection()
+                } else {
+                    // Xerox B210: workaround for invalid 'media-col' without members
+                    log.warn { "invalid value length for IppCollection, trying to recover" }
+                    IppCollection()
+                }
             }
 
             // for all other tags (including out-of-bound), read raw bytes (if present at all)
@@ -203,9 +208,17 @@ class IppInputStream(inputStream: InputStream) : DataInputStream(inputStream) {
             readFully(this)
         }
 
-    internal fun readExpectedValueLength(expected: Int) {
+    internal fun readExpectedValueLength(expected: Int, throwException: Boolean = true): Boolean {
+        mark(2)
         val length = readShort().toInt()
-        if (length != expected) throw IppException("expected value length of $expected bytes but found $length")
+        return (length == expected).apply {
+            if (!this) { // unexpected value length
+                reset() // revert 'readShort()'
+                with("expected value length of $expected bytes but found $length") {
+                    if (throwException) throw IppException(this) else log.warn { this }
+                }
+            }
+        }
     }
 
 }

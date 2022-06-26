@@ -71,7 +71,7 @@ abstract class IppMessage() {
             IppOutputStream(byteArraySavingOutputStream).writeMessage(this)
         } finally {
             rawBytes = byteArraySavingOutputStream.toByteArray()
-            log.debug { "wrote ${rawBytes!!.size} raw bytes" }
+            log.debug { "wrote raw ipp message: ${rawBytes!!.size} bytes" }
             byteArraySavingOutputStream.saveBytes = false // stop saving document bytes
         }
         copyDocumentStream(byteArraySavingOutputStream)
@@ -81,7 +81,7 @@ abstract class IppMessage() {
 
     fun encode(): ByteArray = with(ByteArrayOutputStream()) {
         write(this)
-        log.debug { "ByteArrayOutputStream size = ${this.size()}" }
+        log.debug { "ByteArrayOutputStream size: ${this.size()} bytes" }
         toByteArray()
     }
 
@@ -92,11 +92,11 @@ abstract class IppMessage() {
     // --------
 
     fun read(inputStream: InputStream) {
-        val byteArraySavingInputStream = ByteArraySavingInputStream(inputStream.buffered())
+        val byteArraySavingInputStream = ByteArraySavingInputStream(inputStream)
+        val bufferedInputStream = byteArraySavingInputStream.buffered()
         try {
-            IppInputStream(byteArraySavingInputStream).readMessage(this)
-            byteArraySavingInputStream.saveBytes = false // don't save document bytes
-            documentInputStream = byteArraySavingInputStream
+            IppInputStream(bufferedInputStream).readMessage(this)
+            documentInputStream = bufferedInputStream
         } finally {
             rawBytes = byteArraySavingInputStream.toByteArray()
             log.debug { "read ${rawBytes!!.size} raw bytes" }
@@ -104,7 +104,7 @@ abstract class IppMessage() {
     }
 
     fun read(file: File) {
-        log.debug { "read file ${file.absolutePath} (${file.length()} bytes)" }
+        log.debug { "read file ${file.absolutePath}: ${file.length()} bytes" }
         read(FileInputStream(file))
     }
 
@@ -117,11 +117,12 @@ abstract class IppMessage() {
     // DOCUMENT and IPP-MESSAGE
     // ------------------------
 
-    private fun copyDocumentStream(outputStream: OutputStream) {
+    private fun copyDocumentStream(outputStream: OutputStream): Long? {
         if (documentInputStreamIsConsumed) log.warn { "documentInputStream is consumed" }
-        documentInputStream?.copyTo(outputStream)
-        log.debug { "consumed documentInputStream" }
-        documentInputStreamIsConsumed = true
+        return documentInputStream?.copyTo(outputStream).apply {
+            log.debug { "consumed documentInputStream: $this bytes" }
+            documentInputStreamIsConsumed = true
+        }
     }
 
     fun saveDocumentStream(file: File) {
