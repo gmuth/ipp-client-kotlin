@@ -34,7 +34,7 @@ open class IppPrinter(
             try {
                 updateAttributes(ippClient.config.requestedAttributesOnInit)
             } catch (ippExchangeException: IppExchangeException) {
-                ippExchangeException.logAllMessages()
+                log.logWithCauseMessages(ippExchangeException)
                 log.error { "failed to get printer attributes on init" }
                 ippExchangeException.response?.let { log.info { "${it.printerGroup.size} attributes parsed" } }
                 fetchRawPrinterAttributes("getPrinterAttributesFailed.bin")
