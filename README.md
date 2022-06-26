@@ -260,3 +260,4 @@ By default implementation [HttpURLConnectionClient](https://github.com/gmuth/ipp
 is used which in turn uses javas [HttpURLConnection](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/net/HttpURLConnection.html).
 
 Only java runtimes (including Android) provide implementations of these classes.
+The java standard libraries also provide [support for SSL/TLS](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/javax/net/ssl/SSLContext.html).
