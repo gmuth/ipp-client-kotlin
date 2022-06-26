@@ -13,7 +13,7 @@ plugins {
 }
 
 group = "de.gmuth.ipp"
-version = "2.3-SNAPSHOT"
+version = "2.3"
 
 repositories {
     mavenCentral()
@@ -121,9 +121,9 @@ publishing {
 // signing.password
 // signing.secretKeyRingFile
 
-signing {
-    sign(publishing.publications["ippclient"])
-}
+//signing {
+//    sign(publishing.publications["ippclient"])
+//}
 
 // ======  produce sources.jar and javadoc.jar ======
 
