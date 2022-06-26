@@ -61,7 +61,7 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
             for ((key, values) in headerFields) {
                 log.log(if (responseCode < 300) TRACE else ERROR) { "$key = $values" }
             }
-            val contentResponseStream = try {
+            val responseStream = try {
                 inputStream
             } catch (exception: Exception) {
                 log.error { "http exception: $responseCode $responseMessage" }
@@ -71,7 +71,7 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
                     responseCode,
                     getHeaderField("Server"),
                     getHeaderField("Content-Type"),
-                    contentResponseStream
+                    responseStream
             )
         }
     }
