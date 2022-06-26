@@ -246,3 +246,17 @@ Add dependency:
     implementation("de.gmuth.ipp:ipp-client-kotlin:2.2")
 or  implementation("de.gmuth.ipp:ipp-client-kotlin:2.3-SNAPSHOT")
 ```
+
+## No Multiplatform support yet
+
+IPP is based on the exchange of binary messages via HTTP.
+For reading and writing binary data
+[DataInputStream](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/io/DataInputStream.html)
+and [DataOutputStream](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/io/DataOutputStream.html) are used.
+
+For the transport layer I've created a
+[HTTP interface](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/Http.kt).
+By default implementation [HttpURLConnectionClient](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/HttpURLConnectionClient.kt)
+is used which in turn uses javas [HttpURLConnection](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/net/HttpURLConnection.html).
+
+Only java runtimes (including Android) provide implementations of these classes.
