@@ -8,12 +8,12 @@ plugins {
     id("org.jetbrains.dokka") version "1.7.0"
     id("org.sonarqube") version "3.3"
     id("maven-publish")
-//    id("signing")
+    id("signing")
     id("jacoco")
 }
 
-group = "de.gmuth.ipp"
-version = "2.3"
+group = "de.gmuth"
+version = "2.4-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -69,18 +69,42 @@ tasks.compileJava {
 
 // ================= PUBLISHING ================
 
+// Github Packages:
 // do NOT publish from your developer host!
 // to release: 1. remove SNAPSHOT from version; 2. commit & push; 3. check github workflow results
 // if the workflow tries to publish the same release again you'll get: "Received status code 409 from server: Conflict"
 
+val repo = System.getProperty("repo")
 publishing {
     repositories {
-        maven {
-            name = "GitHubPackages" // Must match regex [A-Za-z0-9_\-.]+.
-            url = uri("https://maven.pkg.github.com/gmuth/ipp-client-kotlin")
-            credentials {
-                username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
-                password = project.findProperty("gpr.token") as String? ?: System.getenv("GITHUB_TOKEN")
+        if (repo == "github") {
+            println("> maven repo github")
+            maven {
+                name = "GitHubPackages" // Must match regex [A-Za-z0-9_\-.]+.
+                url = uri("https://maven.pkg.github.com/gmuth/ipp-client-kotlin")
+                credentials {
+                    username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
+                    password = project.findProperty("gpr.token") as String? ?: System.getenv("GITHUB_TOKEN")
+                }
+            }
+        }
+        // gradlew publish
+        if (repo == "sonatype") {
+            println("> maven repo sonatype")
+            maven {
+                name = "Sonatype"
+                //val snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+                //val releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                //url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
+                val host = "https://s01.oss.sonatype.org"
+                val path = if (version.toString().endsWith("SNAPSHOT")) "/content/repositories/snapshots/"
+                else "/service/local/staging/deploy/maven2/"
+                url = uri(host.plus(path))
+                println("> publish.url: $url")
+                credentials {
+                    username = project.findProperty("ossrh.username") as String?
+                    password = project.findProperty("ossrh.password") as String?
+                }
             }
         }
     }
@@ -121,9 +145,11 @@ publishing {
 // signing.password
 // signing.secretKeyRingFile
 
-//signing {
-//    sign(publishing.publications["ippclient"])
-//}
+
+// gradle signIppclientPublication
+signing {
+    sign(publishing.publications["ippclient"])
+}
 
 // ======  produce sources.jar and javadoc.jar ======
 
