@@ -1,4 +1,4 @@
-# ipp-client-kotlin
+# ipp-client for java and kotlin
 
 A client implementation of the ipp protocol written in kotlin.
 RFCs [8010](https://tools.ietf.org/html/rfc8010),
@@ -6,14 +6,16 @@ RFCs [8010](https://tools.ietf.org/html/rfc8010),
 [3995](https://datatracker.ietf.org/doc/html/rfc3995) and
 [3996](https://datatracker.ietf.org/doc/html/rfc3996)
 
-[![build](https://github.com/gmuth/ipp-client-kotlin/workflows/build/badge.svg)](https://github.com/gmuth/ipp-client-kotlin/actions?query=workflow%3Abuild)
+[![Build](https://github.com/gmuth/ipp-client-kotlin/workflows/build/badge.svg)](https://github.com/gmuth/ipp-client-kotlin/actions?query=workflow%3Abuild)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=gmuth_ipp-client-kotlin&metric=alert_status)](https://sonarcloud.io/summary/overall?id=gmuth_ipp-client-kotlin)
 [![Sonar Coverage](https://img.shields.io/sonar/coverage/gmuth_ipp-client-kotlin?color=00AA00&server=https%3A%2F%2Fsonarcloud.io)](https://sonarcloud.io/component_measures?metric=Coverage&view=list&id=gmuth_ipp-client-kotlin)
+[![Maven Central](https://img.shields.io/maven-central/v/de.gmuth/ipp-client.svg?label=maven%20central)](https://search.maven.org/search?q=g:%22de.gmuth%22%20AND%20a:%22ipp-client%22)
+
 ## Usage
 
-You may use ```ippfind``` or other ZeroConf tools for discovery.
-The CupsClient supports printer lookup by queue name.
-Repository [ipp-samples](https://github.com/gmuth/ipp-samples) contains a kotlin example how to use jmDNS.
+You may use ```ippfind``` or other ZeroConf tools for printer discovery.
+The [CupsClient](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/CupsClient.kt) supports printer lookup by queue name.
+Repository [ipp-samples](https://github.com/gmuth/ipp-samples) contains examples how to use jmDNS.
 
 ### [IppPrinter](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppPrinter.kt) and [IppJob](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppJob.kt)
 ```kotlin
@@ -218,33 +220,19 @@ This software has **no dependencies** to
 Operation has mostly been tested for target `jvm`. Android is supported since v1.6.
 A Java Version 11 Runtime is only required if you want to use the Java 11 HttpClient.
 
-## Artifacts
+## Artifact coordinates
 
-[Configure Gradle for use with Github Packages](https://docs.github.com/en/packages/using-github-packages-with-your-projects-ecosystem/configuring-gradle-for-use-with-github-packages).
-Use this [github package](https://github.com/gmuth/ipp-client-kotlin/packages/214725/versions) of the project as maven repo.
-You can access the repo with any github account. If you prefer to download a zip look for [Release assets](https://github.com/gmuth/ipp-client-kotlin/releases).
+The build produces the jar, sources and javadoc artifacts. They are available at Sonatypes
+[Maven Central Repository](https://search.maven.org/artifact/de.gmuth/ipp-client)
 
-```
-repositories {
-    mavenCentral()
-    maven {
-      url = uri("https://maven.pkg.github.com/gmuth/ipp-client-kotlin")
-      credentials {
-          // configure gpr.user and gpr.token in ~/.gradle/gradle.properties
-          // gpr.user=yourname
-          // gpr.token=yourtoken
-          username = project.findProperty("gpr.user") as String?
-          password = project.findProperty("gpr.token") as String?
-      }
-    }
-}
-```
+- group: gmuth.de
+- artifact: ipp-client
+- version: 2.3
 
 Add dependency:
 
 ```
-    implementation("de.gmuth.ipp:ipp-client-kotlin:2.2")
-or  implementation("de.gmuth.ipp:ipp-client-kotlin:2.3-SNAPSHOT")
+    implementation("de.gmuth:ipp-client:2.3")
 ```
 
 ## No Multiplatform support yet
