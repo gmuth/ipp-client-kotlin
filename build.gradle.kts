@@ -73,7 +73,8 @@ tasks.compileJava {
 // do NOT publish from your developer host!
 // to release: 1. remove SNAPSHOT from version; 2. commit & push; 3. check github workflow results
 // if the workflow tries to publish the same release again you'll get: "Received status code 409 from server: Conflict"
-
+// Maven Central:
+// https://central.sonatype.org/publish/release/
 val repo = System.getProperty("repo")
 publishing {
     repositories {
