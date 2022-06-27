@@ -179,28 +179,6 @@ or [Slf4j-Android](http://www.slf4j.org/android/)).
 JulAdapter.configure("/ipp-client-logging.conf")
 Slf4jAdapter.configure()
 ```
-    
-## Source packages
-
-Package
-[`de.gmuth.ipp.core`](https://github.com/gmuth/ipp-client-kotlin/tree/master/src/main/kotlin/de/gmuth/ipp/core)
-contains the usual
-[encoding](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppOutputStream.kt)
-and
-[decoding](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppInputStream.kt)
-operations. RFC 8010 is fully supported.
-E.g. decode a cups spool file: 
-`IppRequest().read(File("/var/spool/cups/c01579")).logDetails()`
-
-Package
-[`de.gmuth.ipp.client`](https://github.com/gmuth/ipp-client-kotlin/tree/master/src/main/kotlin/de/gmuth/ipp/client)
-contains the
-[IppClient](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppClient.kt)
-which requires a
-[Http.Client](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/Http.kt)
-that implements HTTP:
-e.g. [HttpURLConnectionClient](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/HttpURLConnectionClient.kt)
-or [JavaHttpClient](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/JavaHttpClient.kt)
 
 ## Build
 
@@ -249,3 +227,23 @@ is used which in turn uses javas [HttpURLConnection](https://docs.oracle.com/en/
 
 Only java runtimes (including Android) provide implementations of these classes.
 The java standard libraries also provide [support for SSL/TLS](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/javax/net/ssl/SSLContext.html).
+
+## Source packages
+
+Package
+[`de.gmuth.ipp.core`](https://github.com/gmuth/ipp-client-kotlin/tree/master/src/main/kotlin/de/gmuth/ipp/core)
+contains the usual
+[encoding](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppOutputStream.kt)
+and
+[decoding](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppInputStream.kt)
+operations. RFC 8010 is fully supported.
+
+Package
+[`de.gmuth.ipp.client`](https://github.com/gmuth/ipp-client-kotlin/tree/master/src/main/kotlin/de/gmuth/ipp/client)
+contains the
+[IppClient](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppClient.kt)
+which requires a
+[Http.Client](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/Http.kt)
+that implements HTTP:
+e.g. [HttpURLConnectionClient](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/HttpURLConnectionClient.kt)
+or [JavaHttpClient](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/JavaHttpClient.kt)
