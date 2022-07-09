@@ -1,6 +1,6 @@
-# ipp-client for java and kotlin
+# ipp-client 
 
-A client implementation of the ipp protocol written in kotlin.
+A client implementation of the ipp protocol for java and kotlin.
 RFCs [8010](https://tools.ietf.org/html/rfc8010),
 [8011](https://tools.ietf.org/html/rfc8011),
 [3995](https://datatracker.ietf.org/doc/html/rfc3995) and
