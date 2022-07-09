@@ -9,6 +9,8 @@ import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.log.Logging
+import java.io.File
+import java.io.FileInputStream
 import java.io.InputStream
 import java.net.URI
 
@@ -68,7 +70,6 @@ class IppJob(
     fun isCanceled() = state == Canceled
     fun isProcessing() = state == Processing
     fun isProcessingStopped() = state == ProcessingStopped
-
     fun isTerminated() = state in listOf(Canceled, Aborted, Completed)
 
     fun isProcessingToStopPoint() =
@@ -101,6 +102,7 @@ class IppJob(
     @JvmOverloads
     fun waitForTermination(delayMillis: Long = defaultDelayMillis) {
         log.info { "wait for termination of job #$id" }
+        if (state == PendingHeld) log.warn { "manual action might be necessary" }
         var lastPrinterString = ""
         var lastJobString = toString()
         log.info { lastJobString }
@@ -127,9 +129,7 @@ class IppJob(
     //-------------------
 
     fun hold() = exchange(ippRequest(HoldJob)).also { updateAttributes() }
-
     fun release() = exchange(ippRequest(ReleaseJob)).also { updateAttributes() }
-
     fun restart() = exchange(ippRequest(RestartJob)).also { updateAttributes() }
 
     fun cancel(messageForOperator: String? = null): IppResponse { // RFC 8011 4.3.3
@@ -158,6 +158,14 @@ class IppJob(
         }
         attributes = exchange(request).jobGroup
     }
+
+    @JvmOverloads
+    fun sendDocument(
+        file: File,
+        lastDocument: Boolean = true,
+        documentName: String? = null,
+        documentNaturalLanguage: String? = null
+    ) = sendDocument(FileInputStream(file), lastDocument, documentName, documentNaturalLanguage)
 
     //---------
     // Send-URI
