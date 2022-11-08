@@ -6,7 +6,7 @@ import org.jetbrains.dokka.gradle.DokkaTask
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.5.32"
     id("org.jetbrains.dokka") version "1.7.0"
-    id("org.sonarqube") version "3.3"
+    id("org.sonarqube") version "3.5.0.2730" // https://plugins.gradle.org/plugin/org.sonarqube
     id("maven-publish")
     id("signing")
     id("jacoco")
@@ -178,12 +178,12 @@ tasks.jacocoTestReport {
     }
 }
 
-// gradle test jacocoTestReport sonarqube
+// gradle test jacocoTestReport sonar
 // https://docs.sonarqube.org/latest/analysis/scan/sonarscanner-for-gradle/
 // configure token with 'publish analysis' permission in file ~/.gradle/gradle.properties:
 // systemProp.sonar.login=<token>
 // warning: The Report.destination property has been deprecated. This is scheduled to be removed in Gradle 8.0.
-sonarqube {
+sonar {
     properties {
         property("sonar.projectKey", "gmuth_ipp-client-kotlin")
         property("sonar.organization", "gmuth")
