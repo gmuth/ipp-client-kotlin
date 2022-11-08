@@ -25,8 +25,6 @@ class CupsClientTests {
     val cupsClient = CupsClient(URI.create("ipps://cups"), httpClient = httpClient)
 
     init {
-        httpClient.mockResponse("CUPS/Cups-Get-Printers.ipp")
-        log.info { "${cupsClient.printerMap.size} cups printers" }
         httpClient.ippResponse = IppResponse(SuccessfulOk) // default mocked response
     }
 
@@ -39,11 +37,13 @@ class CupsClientTests {
 
     @Test
     fun getPrinters() {
+        httpClient.mockResponse("CUPS/Cups-Get-Printers.ipp")
         cupsClient.getPrinters().forEach { log.info { it } }
     }
 
     @Test
     fun getPrinter() {
+        httpClient.mockResponse("CUPS/Cups-Get-Printers.ipp")
         cupsClient.getPrinter("ColorJet_HP")
     }
 
