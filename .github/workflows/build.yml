@@ -30,21 +30,28 @@ jobs:
           distribution: corretto
           java-version: 11
       # https://github.com/gradle/gradle-build-action
-      - name: Setup build cache
-        uses: actions/cache@v2
+      - name: Gradle build
+        uses: gradle/gradle-build-action@v2
         with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-      - name: Grant execute permission to gradlew
-        run: chmod +x gradlew
-      - name: Build with gradle wrapper
-        run: ./gradlew build
+          arguments: build
+
+#      - name: Setup build cache
+#        uses: actions/cache@v2
+#        with:
+#          path: ~/.gradle/caches
+#          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts') }}
+#          restore-keys: |
+#            ${{ runner.os }}-gradle-
+#      - name: Grant execute permission to gradlew
+#        run: chmod +x gradlew
+#      - name: Build with gradle wrapper
+#        run: ./gradlew build
+
 #      - name: Publish GitHub Packages
 #        env:
 #          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 #        run: ./gradlew publish
+
       - name: Analyse with SonarQube
 #        run: ./gradlew test jacocoTestReport sonarqube
         run: ./gradlew sonarqube
