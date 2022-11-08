@@ -25,7 +25,7 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
 
     fun readMessage(message: IppMessage) {
         with(message) {
-            version = "${read()}.${read()}"
+            version = "${readUnsignedByte()}.${readUnsignedByte()}"
             log.debug { "version = $version" }
 
             code = readShort()
@@ -142,15 +142,15 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
                 readExpectedValueLength(11)
                 IppDateTime(
                     year = readShort().toInt(),
-                    month = read(),
-                    day = read(),
-                    hour = read(),
-                    minutes = read(),
-                    seconds = read(),
-                    deciSeconds = read(),
+                    month = readUnsignedByte(),
+                    day = readUnsignedByte(),
+                    hour = readUnsignedByte(),
+                    minutes = readUnsignedByte(),
+                    seconds = readUnsignedByte(),
+                    deciSeconds = readUnsignedByte(),
                     directionFromUTC = readByte().toInt().toChar(),
-                    hoursFromUTC = read(),
-                    minutesFromUTC = read()
+                    hoursFromUTC = readUnsignedByte(),
+                    minutesFromUTC = readUnsignedByte()
                 )
             }
 
