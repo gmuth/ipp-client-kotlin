@@ -1,0 +1,12 @@
+RECEIVED: 115 bytes in response
+status-code = server-error-internal-error (Unable to copy PPD file.)
+attributes-charset (charset) = utf-8
+attributes-natural-language (naturalLanguage) = en
+status-message (textWithoutLanguage) = Unable to copy PPD file.
+--
+/var/log/cups/error_log:
+[cups-driverd] Unable to open \"/usr/share/cups/model/everywhere\" - No such file or directory
+copy_model: empty PPD file
+[Client 319] Returning IPP server-error-internal-error for CUPS-Add-Modify-Printer (ipps://localhost:631/printers/x3) from localhost.
+--
+CUPS 2.3.4 on macOS 12.6.1

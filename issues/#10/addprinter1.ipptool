@@ -1,0 +1,12 @@
+#!/usr/bin/env ipptool -tv ipps://localhost/printers/x3
+{
+	OPERATION Cups-Add-Modify-Printer
+	GROUP operation-attributes-tag
+	ATTR charset attributes-charset utf-8
+	ATTR language attributes-natural-language en
+	ATTR uri printer-uri $uri
+	ATTR uri device-uri ipp://192.168.2.145
+	ATTR text printer-info x3_Info
+	ATTR text printer-location x3_Location
+	ATTR name ppd-name everywhere
+}
