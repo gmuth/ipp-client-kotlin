@@ -61,9 +61,19 @@ open class IppPrinter(
         )
 
         val printerClassAttributes = listOf(
-            "printer-name", "printer-make-and-model", "printer-is-accepting-jobs", "printer-state", "printer-state-reasons",
-            "document-format-supported", "operations-supported", "color-supported", "sides-supported",
-            "media-supported", "media-ready", "media-default", "ipp-versions-supported"
+            "printer-name",
+            "printer-make-and-model",
+            "printer-is-accepting-jobs",
+            "printer-state",
+            "printer-state-reasons",
+            "document-format-supported",
+            "operations-supported",
+            "color-supported",
+            "sides-supported",
+            "media-supported",
+            "media-ready",
+            "media-default",
+            "ipp-versions-supported"
         )
     }
 
@@ -211,6 +221,12 @@ open class IppPrinter(
     fun pause() = exchange(ippRequest(PausePrinter))
     fun resume() = exchange(ippRequest(ResumePrinter))
     fun purgeJobs() = exchange(ippRequest(PurgeJobs))
+    fun enable() = exchange(ippRequest(EnablePrinter))
+    fun disable() = exchange(ippRequest(DisablePrinter))
+    fun holdNewJobs() = exchange(ippRequest(HoldNewJobs))
+    fun releaseHeldNewJobs() = exchange(ippRequest(ReleaseHeldNewJobs))
+    fun cancelJobs() = exchange(ippRequest(CancelJobs))
+    fun cancelMyJobs() = exchange(ippRequest(CancelMyJobs))
 
     //------------------------------------------
     // Get-Printer-Attributes
@@ -267,11 +283,19 @@ open class IppPrinter(
     // vararg signatures for convenience
 
     @JvmOverloads
-    fun printJob(inputStream: InputStream, vararg attributeBuilders: IppAttributeBuilder, notifyEvents: List<String>? = null) =
+    fun printJob(
+        inputStream: InputStream,
+        vararg attributeBuilders: IppAttributeBuilder,
+        notifyEvents: List<String>? = null
+    ) =
         printJob(inputStream, attributeBuilders.toList(), notifyEvents)
 
     @JvmOverloads
-    fun printJob(byteArray: ByteArray, vararg attributeBuilders: IppAttributeBuilder, notifyEvents: List<String>? = null) =
+    fun printJob(
+        byteArray: ByteArray,
+        vararg attributeBuilders: IppAttributeBuilder,
+        notifyEvents: List<String>? = null
+    ) =
         printJob(ByteArrayInputStream(byteArray), attributeBuilders.toList(), notifyEvents)
 
     @JvmOverloads
@@ -300,7 +324,10 @@ open class IppPrinter(
 
     // ---- factory method for operations Validate-Job, Print-Job, Print-Uri, Create-Job
 
-    protected fun attributeBuildersRequest(operation: IppOperation, attributeBuilders: Collection<IppAttributeBuilder>) = ippRequest(operation).apply {
+    protected fun attributeBuildersRequest(
+        operation: IppOperation,
+        attributeBuilders: Collection<IppAttributeBuilder>
+    ) = ippRequest(operation).apply {
         for (attributeBuilder in attributeBuilders) {
             val attribute = attributeBuilder.buildIppAttribute(attributes)
             checkIfValueIsSupported("${attribute.name}-supported", attribute.values)
@@ -475,6 +502,7 @@ open class IppPrinter(
             IppTag.Boolean -> { // e.g. 'page-ranges-supported'
                 supportedAttribute.value as Boolean
             }
+
             IppTag.Enum, Charset, NaturalLanguage, MimeMediaType, Keyword, Resolution -> when (supportedAttributeName) {
                 "media-col-supported" -> with(value as IppCollection) {
                     members.filter { !supportedAttribute.values.contains(it.name) }
@@ -482,15 +510,19 @@ open class IppPrinter(
                     // all member names must be supported
                     supportedAttribute.values.containsAll(members.map { it.name })
                 }
+
                 else -> supportedAttribute.values.contains(value)
             }
+
             Integer -> {
                 if (supportedAttribute.is1setOf()) supportedAttribute.values.contains(value)
                 else value is Int && value <= supportedAttribute.value as Int // e.g. 'job-priority-supported'
             }
+
             RangeOfInteger -> {
                 value is Int && value in supportedAttribute.value as IntRange
             }
+
             else -> null
         }
         when (attributeValueIsSupported) {
