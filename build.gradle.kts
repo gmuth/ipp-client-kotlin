@@ -186,10 +186,13 @@ tasks.jacocoTestReport {
 // warning: The Report.destination property has been deprecated. This is scheduled to be removed in Gradle 8.0.
 sonar {
     properties {
+        property("sonar.host.url", "https://sonarcloud.io")
         property("sonar.projectKey", "gmuth_ipp-client-kotlin")
         property("sonar.organization", "gmuth")
-        property("sonar.host.url", "https://sonarcloud.io")
-        property("sonar.junit.reportPaths", "build/test-results/test")
+        //property("sonar.verbose", "true")
+        //property("sonar.junit.reportPaths", "build/test-results/test")
+        //property("sonar.jacoco.reportPaths", "build/jacoco/test.exec")
+        //property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/")
     }
 }
 
