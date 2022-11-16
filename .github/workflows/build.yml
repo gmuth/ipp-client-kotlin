@@ -57,7 +57,7 @@ jobs:
 #        run: ./gradlew sonarqube
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: sonar
+          arguments: test jacocoTestReport sonar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
