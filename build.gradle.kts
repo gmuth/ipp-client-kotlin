@@ -20,7 +20,7 @@ repositories {
 }
 
 // update gradle wrapper
-// ./gradlew wrapper --gradle-version 7.3.3
+// ./gradlew wrapper --gradle-version 7.5.1
 
 //java {
 //    registerFeature("slf4jSupport") {
@@ -183,7 +183,6 @@ tasks.jacocoTestReport {
 // https://docs.sonarqube.org/latest/analysis/scan/sonarscanner-for-gradle/
 // configure token with 'publish analysis' permission in file ~/.gradle/gradle.properties:
 // systemProp.sonar.login=<token>
-// warning: The Report.destination property has been deprecated. This is scheduled to be removed in Gradle 8.0.
 sonar {
     properties {
         property("sonar.host.url", "https://sonarcloud.io")
