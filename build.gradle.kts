@@ -167,6 +167,7 @@ tasks.named<Jar>("javadocJar") {
 // ====== analyse code with SonarQube ======
 
 // required for sonarqube code coverage
+// https://docs.sonarqube.org/latest/analysis/test-coverage/java-test-coverage
 tasks.jacocoTestReport {
     dependsOn(tasks.test)
     // https://stackoverflow.com/questions/67725347/jacoco-fails-on-gradle-7-0-2-and-kotlin-1-5-10
@@ -188,9 +189,10 @@ sonar {
         property("sonar.projectKey", "gmuth_ipp-client-kotlin")
         property("sonar.organization", "gmuth")
         property("sonar.host.url", "https://sonarcloud.io")
+        property("sonar.junit.reportPaths", "build/test-results/test")
     }
 }
 
-tasks.sonarqube {
+tasks.sonar {
     dependsOn(tasks.jacocoTestReport) // for coverage
 }
