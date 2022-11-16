@@ -193,6 +193,12 @@ class IppInputStreamTest {
     }
 
     @Test
+    fun readOutOfBandAttribute() {
+        val encoded = "00 01 65 00 01 02"
+        encoded.toIppInputStream().readAttribute(IppTag.NoValue)
+    }
+
+    @Test
     fun readUnsupportedAttribute() {
         val encoded = "00 01 66 00 01 40"
         val attribute = encoded.toIppInputStream().readAttribute(IppTag.Unsupported_)
