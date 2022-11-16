@@ -36,13 +36,13 @@ class IppAttributesGroupTests {
         }
     }
 
-    //@Test
-    fun putWithReplacementDenied() {
+    @Test
+    fun putWithReplacementWarning() {
         IppAttributesGroup.log.logLevel = Logging.LogLevel.INFO
-        group.attribute("number", Integer, 0)
-        group.attribute("number", Integer, 1, 2)
+        group.put(IppAttribute("number", Integer, 0))
+        group.put(IppAttribute("number", Integer, 1, 2), true)
         assertEquals(1, group.size)
-        assertEquals(group.get("number")!!.values.size, 1)
+        assertEquals(group.get("number")!!.values.size, 2)
     }
 
     @Test
