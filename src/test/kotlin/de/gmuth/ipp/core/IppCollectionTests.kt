@@ -4,8 +4,10 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
+import java.util.NoSuchElementException
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class IppCollectionTests {
 
@@ -20,6 +22,19 @@ class IppCollectionTests {
     fun attribute() {
         collection.addAttribute("year", IppTag.Integer, 2021)
         assertEquals(2, collection.members.size)
+    }
+
+    @Test
+    fun getMember() {
+        val fooAttribute = collection.getMember<IppAttribute<Any>>("foo")
+        assertEquals(2, fooAttribute.values.size)
+    }
+
+    @Test
+    fun getMemberFails() {
+        assertFailsWith<NoSuchElementException> {
+            collection.getMember<Any>("does-not-exist")
+        }
     }
 
     @Test
