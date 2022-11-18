@@ -5,7 +5,7 @@ import org.jetbrains.dokka.gradle.DokkaTask
 
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.6.21"
-    id("org.jetbrains.dokka") version "1.7.0"
+    id("org.jetbrains.dokka") version "1.7.20"
     id("org.sonarqube") version "3.5.0.2730" // https://plugins.gradle.org/plugin/org.sonarqube
     id("maven-publish")
     id("signing")
