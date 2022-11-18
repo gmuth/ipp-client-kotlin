@@ -52,8 +52,8 @@ open class CupsClient(
     fun getDefault() =
         IppPrinter(exchange(ippRequest(CupsGetDefault)).printerGroup, this)
 
-    fun setDefault(defaultPrinterUri: URI) =
-        exchange(ippRequest(CupsSetDefault, defaultPrinterUri))
+    fun setDefault(printerName: String) =
+        exchange(ippRequest(CupsSetDefault, cupsPrinterUri(printerName)))
 
     protected fun cupsPrinterUri(printerName: String) =
         with(cupsUri) { URI("$scheme://$host/printers/$printerName") }
