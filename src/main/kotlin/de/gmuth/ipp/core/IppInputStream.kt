@@ -7,7 +7,8 @@ package de.gmuth.ipp.core
 import de.gmuth.io.hexdump
 import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.log.Logging
-import de.gmuth.log.Logging.LogLevel.*
+import de.gmuth.log.Logging.LogLevel.DEBUG
+import de.gmuth.log.Logging.LogLevel.WARN
 import java.io.BufferedInputStream
 import java.io.DataInputStream
 import java.io.EOFException
@@ -44,6 +45,7 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
                     tag.isGroupTag() -> {
                         currentGroup = message.createAttributesGroup(tag)
                     }
+
                     tag.isValueTag() -> {
                         val attribute = readAttribute(tag)
                         log.debug { "$attribute" }
@@ -58,8 +60,10 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
             } while (tag != End)
         } catch (exception: Exception) {
             readBytes().apply {
-                log.warn { "skipped $size unparsed bytes" }
-                hexdump { log.warn { it } }
+                if (isNotEmpty()) {
+                    log.warn { "skipped $size unparsed bytes" }
+                    hexdump { log.warn { it } }
+                }
             }
             throw exception
         }
@@ -187,6 +191,7 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
                     currentMemberAttribute = IppAttribute(memberName, firstValue.tag, firstValue.value)
                     add(currentMemberAttribute)
                 }
+
                 attribute.tag.isMemberAttrValue() -> {
                     currentMemberAttribute.additionalValue(attribute)
                 }
