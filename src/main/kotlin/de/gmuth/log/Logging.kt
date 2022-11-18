@@ -5,7 +5,7 @@ import de.gmuth.log.Logging.LogLevel.*
 import java.io.PrintWriter
 
 /**
- * Copyright (c) 2020-2021 Gerhard Muth
+ * Copyright (c) 2020-2022 Gerhard Muth
  */
 
 typealias MessageProducer = () -> Any?
@@ -64,16 +64,19 @@ object Logging {
     }
 
     fun interface Factory {
-        fun getLogger(name: String): Logger
+        fun createLogger(name: String): Logger
     }
 
     var factory = Factory { Logger(it) }
+    private val loggerMap: MutableMap<String, Logger> = HashMap()
 
     @JvmOverloads
-    fun getLogger(name: String, logLevel: LogLevel = defaultLogLevel) = factory.getLogger(name).apply {
-        if (debugLoggingConfig) println("new Logger: level=%-5s name=%s".format(logLevel, name))
-        this.logLevel = logLevel
-    }
+    fun getLogger(name: String, logLevel: LogLevel = defaultLogLevel) =
+        loggerMap[name] ?: factory.createLogger(name).apply {
+            loggerMap[name] = this
+            this.logLevel = logLevel
+            if (debugLoggingConfig) println("Logging: level=%-5s name=%s".format(logLevel, name))
+        }
 
     fun getLogger(logLevel: LogLevel = defaultLogLevel, noOperation: () -> Unit) =
         getLogger(noOperation.javaClass.enclosingClass.name, logLevel)
