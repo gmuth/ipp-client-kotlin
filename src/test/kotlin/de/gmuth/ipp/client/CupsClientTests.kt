@@ -71,7 +71,7 @@ class CupsClientTests {
 
     @Test
     fun setDefault() {
-        cupsClient.setDefault(URI.create("ipp://cups:631/printers/matrix"))
+        cupsClient.setDefault("matrix")
     }
 
 }
