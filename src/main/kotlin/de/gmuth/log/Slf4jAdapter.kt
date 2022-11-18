@@ -1,7 +1,7 @@
 package de.gmuth.log
 
 /**
- * Copyright (c) 2021 Gerhard Muth
+ * Copyright (c) 2022 Gerhard Muth
  */
 
 import de.gmuth.log.Logging.LogLevel
@@ -11,7 +11,7 @@ import de.gmuth.log.Logging.LogLevel.*
 
 class Slf4jAdapter(name: String) : Logging.Logger(name) {
 
-    val slf4jLogger = org.slf4j.LoggerFactory.getLogger(name)
+    private val slf4jLogger = org.slf4j.LoggerFactory.getLogger(name)
 
     override fun isEnabled(level: LogLevel) = with(slf4jLogger) {
         when (level) {

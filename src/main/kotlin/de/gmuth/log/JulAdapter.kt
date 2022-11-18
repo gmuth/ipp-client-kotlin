@@ -1,7 +1,7 @@
 package de.gmuth.log
 
 /**
- * Copyright (c) 2021 Gerhard Muth
+ * Copyright (c) 2022 Gerhard Muth
  */
 
 import de.gmuth.log.Logging.LogLevel
@@ -13,7 +13,7 @@ import java.util.logging.LogManager
 
 class JulAdapter(name: String) : Logging.Logger(name) {
 
-    val julLogger = java.util.logging.Logger.getLogger(name)
+    private val julLogger = java.util.logging.Logger.getLogger(name)
 
     private fun toJulLevel(logLevel: LogLevel) = when (logLevel) {
         TRACE -> Level.FINER
