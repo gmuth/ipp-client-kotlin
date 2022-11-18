@@ -4,7 +4,7 @@ import org.jetbrains.dokka.gradle.DokkaTask
 // where is the jar? build/lib/ipp-client-kotlin...jar
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.6.21"
+    id("org.jetbrains.kotlin.jvm") version "1.7.21"
     id("org.jetbrains.dokka") version "1.7.20"
     id("org.sonarqube") version "3.5.0.2730" // https://plugins.gradle.org/plugin/org.sonarqube
     id("maven-publish")
@@ -47,8 +47,8 @@ defaultTasks("assemble")
 
 tasks.compileKotlin {
     kotlinOptions {
-        // JVM target 1.6 is deprecated and will be removed in a future release.
-        jvmTarget = "1.6" // Keep for support of old android versions
+        // If 1.6 is required you also have to configure gradle plugin org.jetbrains.kotlin.jvm version 1.6
+        jvmTarget = "1.8"
     }
 }
 
