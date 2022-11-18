@@ -146,18 +146,29 @@ class IppOutputStreamTest {
     @Test
     fun writeAttributeValueTextWithLanguage() {
         ippOutputStream.writeAttributeValue(IppTag.TextWithLanguage, IppString("aTextWithLanguage", "en"))
-        assertEquals("00 17 00 02 65 6E 00 11 61 54 65 78 74 57 69 74 68 4C 61 6E 67 75 61 67 65", byteArrayOutputStream.toHex())
+        assertEquals(
+            "00 17 00 02 65 6E 00 11 61 54 65 78 74 57 69 74 68 4C 61 6E 67 75 61 67 65",
+            byteArrayOutputStream.toHex()
+        )
     }
 
     @Test
     fun writeAttributeValueNameWithLanguage() {
         ippOutputStream.writeAttributeValue(IppTag.NameWithLanguage, IppString("einNameMitSprache", "de"))
-        assertEquals("00 17 00 02 64 65 00 11 65 69 6E 4E 61 6D 65 4D 69 74 53 70 72 61 63 68 65", byteArrayOutputStream.toHex())
+        assertEquals(
+            "00 17 00 02 64 65 00 11 65 69 6E 4E 61 6D 65 4D 69 74 53 70 72 61 63 68 65",
+            byteArrayOutputStream.toHex()
+        )
     }
 
     @Test
     fun writeAttributeValueNameWithLanguageFails() {
-        assertFailsWith<IppException> { ippOutputStream.writeAttributeValue(IppTag.NameWithLanguage, "text-without-language".toIppString()) }
+        assertFailsWith<IppException> {
+            ippOutputStream.writeAttributeValue(
+                IppTag.NameWithLanguage,
+                "text-without-language".toIppString()
+            )
+        }
     }
 
     @Test
@@ -168,8 +179,14 @@ class IppOutputStreamTest {
 
     @Test
     fun writeAttributeValueCollection() {
-        ippOutputStream.writeAttributeValue(IppTag.BegCollection, IppCollection(IppAttribute("foo", IppTag.Keyword, "a", "b")))
-        assertEquals("00 00 4A 00 00 00 03 66 6F 6F 44 00 00 00 01 61 44 00 00 00 01 62 37 00 00 00 00", byteArrayOutputStream.toHex())
+        ippOutputStream.writeAttributeValue(
+            IppTag.BegCollection,
+            IppCollection(IppAttribute("foo", IppTag.Keyword, "a", "b"))
+        )
+        assertEquals(
+            "00 00 4A 00 00 00 03 66 6F 6F 44 00 00 00 01 61 44 00 00 00 01 62 37 00 00 00 00",
+            byteArrayOutputStream.toHex()
+        )
     }
 
     @Test
@@ -193,8 +210,8 @@ class IppOutputStreamTest {
         IppOutputStream.log.logLevel = Logging.LogLevel.WARN
 
         assertEquals(
-                "02 01 00 0B 00 00 00 08 01 47 00 12 61 74 74 72 69 62 75 74 65 73 2D 63 68 61 72 73 65 74 00 05 75 74 66 2D 38 02 22 00 01 31 00 01 01 22 00 00 00 01 00 13 00 01 30 00 00 03",
-                byteArrayOutputStream.toHex()
+            "02 01 00 0B 00 00 00 08 01 47 00 12 61 74 74 72 69 62 75 74 65 73 2D 63 68 61 72 73 65 74 00 05 75 74 66 2D 38 02 22 00 01 31 00 01 01 22 00 00 00 01 00 13 00 01 30 00 00 03",
+            byteArrayOutputStream.toHex()
         )
     }
 
