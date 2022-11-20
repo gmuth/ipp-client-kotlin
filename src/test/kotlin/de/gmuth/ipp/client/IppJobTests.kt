@@ -187,7 +187,7 @@ class IppJobTests {
         httpClient.ippResponse = cupsDocumentResponse("application/pdf")
         job.cupsGetDocument().apply {
             log.info { toString() }
-            save()
+            save().delete()
         }
     }
 
