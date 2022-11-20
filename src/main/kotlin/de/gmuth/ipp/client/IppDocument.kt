@@ -5,6 +5,7 @@ import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppString
 import de.gmuth.log.Logging
 import java.io.File
+import kotlin.io.path.createTempDirectory
 
 /**
  * Copyright (c) 2021-2022 Gerhard Muth
@@ -51,7 +52,7 @@ class IppDocument(val job: IppJob, cupsGetDocumentResponse: IppResponse) {
     }
 
     fun save(
-        directory: File = job.printer.printerDirectory(),
+        directory: File = createTempDirectory().toFile(),
         file: File = File(directory, filename()),
         overwrite: Boolean = true
     ) = file.also {
