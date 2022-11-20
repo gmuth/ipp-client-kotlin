@@ -20,20 +20,25 @@ open class IppPrinter(
     var attributes: IppAttributesGroup = IppAttributesGroup(Printer),
     httpConfig: Http.Config = Http.Config(),
     ippConfig: IppConfig = IppConfig(),
-    val ippClient: IppClient = IppClient(ippConfig, Http.defaultImplementation.createClient(httpConfig))
+    val ippClient: IppClient = IppClient(ippConfig, Http.defaultImplementation.createClient(httpConfig)),
+    getPrinterAttributesOnInit: Boolean = true,
+    requestedAttributesOnInit: List<String>? = null
 ) {
 
     init {
         log.debug { "create IppPrinter for $printerUri" }
-        if (!ippClient.config.getPrinterAttributesOnInit) {
+        if (!getPrinterAttributesOnInit) {
             log.warn { "getPrinterAttributesOnInit disabled => no printer attributes available" }
         } else if (attributes.size == 0) {
             try {
-                updateAttributes(ippClient.config.requestedAttributesOnInit)
+                updateAttributes(requestedAttributesOnInit)
             } catch (ippExchangeException: IppExchangeException) {
                 log.logWithCauseMessages(ippExchangeException)
                 log.error { "failed to get printer attributes on init" }
-                ippExchangeException.response?.let { log.info { "${it.printerGroup.size} attributes parsed" } }
+                ippExchangeException.response?.let {
+                    if (it.containsGroup(Printer)) log.info { "${it.printerGroup.size} attributes parsed" }
+                    else log.warn { it }
+                }
                 fetchRawPrinterAttributes("getPrinterAttributesFailed.bin")
                 throw ippExchangeException
             }
@@ -271,7 +276,10 @@ open class IppPrinter(
         notifyEvents: List<String>? = null
     ): IppJob {
         val request = attributeBuildersRequest(PrintJob, attributeBuilders).apply {
-            notifyEvents?.let { createSubscriptionGroup(this, notifyEvents) }
+            notifyEvents?.let {
+                checkNotifyEvents(notifyEvents)
+                createSubscriptionAttributesGroup(notifyEvents)
+            }
             documentInputStream = inputStream
         }
         return exchangeForIppJob(request)
@@ -380,28 +388,17 @@ open class IppPrinter(
         notifyEvents: List<String>? = listOf("all") // https://datatracker.ietf.org/doc/html/rfc3995#section-5.3.3.4.2
     ): IppSubscription {
         val request = ippRequest(CreatePrinterSubscriptions).apply {
-            createSubscriptionGroup(this, notifyEvents, notifyLeaseDuration)
+            checkNotifyEvents(notifyEvents)
+            createSubscriptionAttributesGroup(notifyEvents, notifyLeaseDuration)
         }
         val subscriptionAttributes = exchange(request).getSingleAttributesGroup(Subscription)
         return IppSubscription(this, subscriptionAttributes)
     }
 
-    fun createSubscriptionGroup(
-        request: IppRequest,
-        notifyEvents: List<String>? = null,
-        notifyLeaseDuration: Int? = null, // seconds
-        notifyJobId: Int? = null
-    ) =
-        request.createAttributesGroup(Subscription).apply {
-            attribute("notify-pull-method", Keyword, "ippget")
-            notifyJobId?.let { attribute("notify-job-id", Integer, it) }
-            notifyLeaseDuration?.let { attribute("notify-lease-duration", Integer, it) }
-            notifyEvents?.let {
-                if (it.isNotEmpty() && it.first() != "all")
-                    checkIfValueIsSupported("notify-events-supported", it)
-                attribute("notify-events", Keyword, it)
-            }
-        }
+    fun checkNotifyEvents(notifyEvents: List<String>?) = notifyEvents?.let {
+        if (it.isNotEmpty() && it.first() != "all")
+            checkIfValueIsSupported("notify-events-supported", it)
+    }
 
     //-------------------------------------------------
     // Get-Subscription-Attributes (as IppSubscription)

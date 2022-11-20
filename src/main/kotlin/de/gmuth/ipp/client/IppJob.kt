@@ -203,7 +203,8 @@ class IppJob(
 
     fun createJobSubscription(notifyEvents: List<String>? = null): IppSubscription {
         val request = ippRequest(CreateJobSubscriptions).apply {
-            printer.createSubscriptionGroup(this, notifyEvents, notifyJobId = id)
+            printer.checkNotifyEvents(notifyEvents)
+            createSubscriptionAttributesGroup(notifyEvents, notifyJobId = id)
         }
         val subscriptionAttributes = exchange(request).getSingleAttributesGroup(Subscription)
         return IppSubscription(printer, subscriptionAttributes).apply {
