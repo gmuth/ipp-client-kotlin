@@ -118,6 +118,7 @@ class IppSubscription(
         onEvent: (event: IppEventNotification) -> Unit = { log.info { it } }
     ) {
         try {
+            log.info { "event processing will stop in $leaseDuration seconds when subscription #${id} expires." }
             processEvents = true
             do {
                 getNotifications(onlyNewEvents = true).forEach { onEvent(it) }
