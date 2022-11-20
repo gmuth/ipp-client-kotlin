@@ -15,15 +15,14 @@ import de.gmuth.log.Logging
 @SuppressWarnings("kotlin:S1192") // notify-lease-duration
 class IppSubscription(
     val printer: IppPrinter,
-    var attributes: IppAttributesGroup,
-    updateAttributes: Boolean = attributes.size <= 1
+    var attributes: IppAttributesGroup
 ) {
     companion object {
         val log = Logging.getLogger {}
     }
 
     init {
-        if (updateAttributes) {
+        if (attributes.size <= 1) {
             updateAllAttributes()
             log.info { toString() }
         }
@@ -43,7 +42,7 @@ class IppSubscription(
     val jobId: Int
         get() = attributes.getValue("notify-job-id")
 
-    fun hasJobId() = attributes.containsKey("notify-job-id")
+    fun hasJobId() = attributes.contains("notify-job-id")
 
     //----------------------------
     // Get-Subscription-Attributes
