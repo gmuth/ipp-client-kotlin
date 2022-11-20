@@ -58,8 +58,8 @@ class IppJob(
     val kOctets: Int
         get() = attributes.getValue("job-k-octets")
 
-    val numberOfDocuments: Int
-        get() = attributes.getValue("number-of-documents")
+    val numberOfDocuments: Int? // should I switch to nullable values overall?
+        get() = attributes.getValueOrNull("number-of-documents")
 
     val documentNameSupplied: IppString
         get() = attributes.getValue("document-name-supplied")
@@ -221,7 +221,7 @@ class IppJob(
 
     fun cupsGetDocument(documentNumber: Int = 1): IppDocument {
         if (!printer.isCups()) log.warn { "printer is not CUPS: ${printer.printerUri}" }
-        if (attributes.containsKey("number-of-documents") && documentNumber > numberOfDocuments) {
+        if (attributes.containsKey("number-of-documents") && documentNumber > numberOfDocuments!!) {
             log.warn { "job has only $numberOfDocuments document(s)" }
         }
         val request = ippRequest(CupsGetDocument).apply {
@@ -235,7 +235,7 @@ class IppJob(
         directory: File = printer.printerDirectory(),
         overwrite: Boolean = true
     ) {
-        for (documentNumber in (1..numberOfDocuments)) {
+        for (documentNumber in (1..numberOfDocuments!!)) {
             cupsGetDocument(documentNumber).save(directory, overwrite = overwrite)
         }
     }

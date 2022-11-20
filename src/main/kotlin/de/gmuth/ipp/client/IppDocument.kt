@@ -42,7 +42,7 @@ class IppDocument(val job: IppJob, cupsGetDocumentResponse: IppResponse) {
     fun filename() = StringBuilder().run {
         with(job) {
             append("job-$id")
-            if (numberOfDocuments > 1) append("-doc-$number")
+            numberOfDocuments?.let { if (it > 1) append("-doc-$it") }
             if (attributes.contains("job-originating-user-name")) append("-$originatingUserName")
             if (attributes.contains("job-name")) append("-${name.text}")
         }
