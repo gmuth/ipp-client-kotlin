@@ -11,10 +11,7 @@ import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.log.Logging
-import java.io.ByteArrayInputStream
-import java.io.File
-import java.io.FileInputStream
-import java.io.InputStream
+import java.io.*
 import java.net.URI
 
 @SuppressWarnings("kotlin:S1192")
@@ -557,6 +554,10 @@ open class IppPrinter(
                 log.info { "saved ${length()} bytes: $path" }
             }
         }
+    }
+
+    fun printerDirectory() = File(name.text.replace("\\s+".toRegex(), "_")).apply {
+        if (!mkdirs() && !isDirectory) throw IppException("failed to create printer directory: $path")
     }
 
 }
