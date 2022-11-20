@@ -230,6 +230,16 @@ class IppJob(
         return IppDocument(this, exchange(request))
     }
 
+    // Get and save all documents of this job (CUPS only)
+    fun getAndSaveDocuments(
+        directory: File = printer.printerDirectory(),
+        overwrite: Boolean = true
+    ) {
+        for (documentNumber in (1..numberOfDocuments)) {
+            cupsGetDocument(documentNumber).save(directory, overwrite = overwrite)
+        }
+    }
+
     //-----------------------
     // delegate to IppPrinter
     //-----------------------
