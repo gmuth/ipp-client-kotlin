@@ -197,7 +197,7 @@ open class IppPrinter(
     fun isDuplexSupported() = sidesSupported.any { it.startsWith("two-sided") }
     fun supportsOperations(vararg operations: IppOperation) = operationsSupported.containsAll(operations.toList())
     fun supportsVersion(version: String) = versionsSupported.contains(version)
-    fun isCups() = attributes.containsKey("cups-version")
+    fun isCups() = attributes.contains("cups-version")
 
     //-----------------
     // Identify-Printer
@@ -555,8 +555,9 @@ open class IppPrinter(
 
     var workDirectory: File = File(".")
 
-    fun printerDirectory() = File(workDirectory, name.text.replace("\\s+".toRegex(), "_")).apply {
-        if (!mkdirs() && !isDirectory) throw IppException("failed to create printer directory: $path")
-    }
+    fun printerDirectory(printerName: String = name.text.replace("\\s+".toRegex(), "_")) =
+        File(workDirectory, printerName).apply {
+            if (!mkdirs() && !isDirectory) throw IppException("failed to create printer directory: $path")
+        }
 
 }
