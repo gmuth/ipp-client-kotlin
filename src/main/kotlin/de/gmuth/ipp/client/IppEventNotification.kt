@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2021 Gerhard Muth
+ * Copyright (c) 2021-2022 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppAttributesGroup
@@ -9,7 +9,8 @@ import de.gmuth.ipp.core.IppString
 import de.gmuth.log.Logging
 
 class IppEventNotification(
-        val attributes: IppAttributesGroup
+    val subscription: IppSubscription,
+    val attributes: IppAttributesGroup
 ) {
     companion object {
         val log = Logging.getLogger {}
@@ -45,6 +46,9 @@ class IppEventNotification(
     val printerStateReasons: List<String>
         get() = attributes.getValues("printer-state-reasons")
 
+    // get job from printer
+    fun getJob() = subscription.printer.getJob(jobId)
+
     // -------
     // Logging
     // -------
@@ -52,17 +56,17 @@ class IppEventNotification(
     override fun toString() = StringBuilder().run {
         append("subscription #$subscriptionId event #$sequenceNumber:")
         append(" [$subscribedEvent] $text")
-        if (attributes.containsKey("notify-job-id")) append(" job #$jobId")
-        if (attributes.containsKey("job-state")) append(", job-state=$jobState")
-        if (attributes.containsKey("job-state-reasons"))
-            append(" (reasons=${jobStateReasons.joinToString(",")})")
-        if (attributes.containsKey("printer-state")) append(", printer-state=$printerState")
-        if (attributes.containsKey("printer-state-reasons"))
-            append(" (reasons=${printerStateReasons.joinToString(",")})")
+        with(attributes) {
+            if (contains("notify-job-id")) append(", job #$jobId")
+            if (contains("job-state")) append(", job-state=$jobState")
+            if (contains("job-state-reasons")) append(" (reasons=${jobStateReasons.joinToString(",")})")
+            if (contains("printer-state")) append(", printer-state=$printerState")
+            if (contains("printer-state-reasons")) append(" (reasons=${printerStateReasons.joinToString(",")})")
+        }
         toString()
     }
 
     fun logDetails() =
-            attributes.logDetails(title = "event notification #$sequenceNumber $subscribedEvent")
+        attributes.logDetails(title = "event notification #$sequenceNumber $subscribedEvent")
 
 }

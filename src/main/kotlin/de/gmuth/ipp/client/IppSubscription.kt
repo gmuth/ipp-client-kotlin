@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2021 Gerhard Muth
+ * Copyright (c) 2021-2022 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppAttributesGroup
@@ -14,9 +14,9 @@ import de.gmuth.log.Logging
 
 @SuppressWarnings("kotlin:S1192") // notify-lease-duration
 class IppSubscription(
-        val printer: IppPrinter,
-        var attributes: IppAttributesGroup,
-        updateAttributes: Boolean = attributes.size <= 1
+    val printer: IppPrinter,
+    var attributes: IppAttributesGroup,
+    updateAttributes: Boolean = attributes.size <= 1
 ) {
     companion object {
         val log = Logging.getLogger {}
@@ -53,7 +53,7 @@ class IppSubscription(
 
     @JvmOverloads
     fun getSubscriptionAttributes(requestedAttributes: List<String>? = null) =
-            exchange(ippRequest(GetSubscriptionAttributes, requestedAttributes = requestedAttributes))
+        exchange(ippRequest(GetSubscriptionAttributes, requestedAttributes = requestedAttributes))
 
     fun updateAllAttributes() {
         attributes = getSubscriptionAttributes().getSingleAttributesGroup(Subscription)
@@ -64,8 +64,8 @@ class IppSubscription(
     //------------------
 
     fun getNotifications(
-            onlyNewEvents: Boolean = true,
-            notifySequenceNumber: Int? = if (onlyNewEvents) lastSequenceNumber + 1 else null
+        onlyNewEvents: Boolean = true,
+        notifySequenceNumber: Int? = if (onlyNewEvents) lastSequenceNumber + 1 else null
     ): List<IppEventNotification> {
         val request = ippRequest(GetNotifications).apply {
             operationGroup.run {
@@ -74,9 +74,9 @@ class IppSubscription(
             }
         }
         return exchange(request)
-                .getAttributesGroups(EventNotification)
-                .map { IppEventNotification(it) }
-                .apply { if (isNotEmpty()) lastSequenceNumber = last().sequenceNumber }
+            .getAttributesGroups(EventNotification)
+            .map { IppEventNotification(this, it) }
+            .apply { if (isNotEmpty()) lastSequenceNumber = last().sequenceNumber }
     }
 
     //--------------------
@@ -90,23 +90,22 @@ class IppSubscription(
     //-------------------
 
     fun renew(notifyLeaseDuration: Int? = null) =
-            exchange(ippRequest(RenewSubscription).apply {
-                createAttributesGroup(Subscription).apply {
-                    notifyLeaseDuration?.let { attribute("notify-lease-duration", Integer, it) }
-                }
-            }).also { updateAllAttributes() }
+        exchange(ippRequest(RenewSubscription).apply {
+            createAttributesGroup(Subscription).apply {
+                notifyLeaseDuration?.let { attribute("notify-lease-duration", Integer, it) }
+            }
+        }).also { updateAllAttributes() }
 
     //-----------------------
     // delegate to IppPrinter
     //-----------------------
 
     fun ippRequest(operation: IppOperation, requestedAttributes: List<String>? = null) =
-            printer.ippRequest(operation, requestedAttributes = requestedAttributes).apply {
-                operationGroup.attribute("notify-subscription-id", Integer, id)
-            }
+        printer.ippRequest(operation, requestedAttributes = requestedAttributes).apply {
+            operationGroup.attribute("notify-subscription-id", Integer, id)
+        }
 
     fun exchange(request: IppRequest) = printer.exchange(request)
-
 
     //------------------------------------------
     // process events until subscription expires
@@ -115,16 +114,17 @@ class IppSubscription(
     var processEvents = false
 
     fun processEvents(
-            delayMillis: Long = 1000L * 5,
-            onEvent: (event: IppEventNotification) -> Unit = { log.info { it } }
+        delayMillis: Long = 1000L * 5,
+        onEvent: (event: IppEventNotification) -> Unit = { log.info { it } }
     ) {
-        processEvents = true
         try {
+            processEvents = true
             do {
                 getNotifications(onlyNewEvents = true).forEach { onEvent(it) }
                 Thread.sleep(delayMillis)
             } while (processEvents)
         } catch (exchangeException: IppExchangeException) {
+            processEvents = false
             if (!exchangeException.statusIs(ClientErrorNotFound)) throw exchangeException
             else log.info { exchangeException.response!!.statusMessage }
         }
