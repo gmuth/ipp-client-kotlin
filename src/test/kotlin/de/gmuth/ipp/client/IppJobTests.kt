@@ -15,6 +15,7 @@ import org.junit.Test
 import java.io.File
 import java.io.FileInputStream
 import java.net.URI
+import kotlin.io.path.createTempDirectory
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -38,6 +39,7 @@ class IppJobTests {
                 ippClient = IppClient(ippConfig, httpClient)
         ).apply {
             attributes = ippResponse("Get-Printer-Attributes.ipp").printerGroup
+            workDirectory = createTempDirectory().toFile()
         }
         // mock ipp job
         job = IppJob(printer, ippResponse("Get-Job-Attributes.ipp").jobGroup.apply {
@@ -208,10 +210,15 @@ class IppJobTests {
         job.cupsGetDocument(2).apply {
             log.info { toString() }
             log.info { "${filename()} (${readBytes().size} bytes)" }
-
             job.attributes.remove("document-name-supplied")
             log.info { "${filename()}" }
         }
+    }
+
+    @Test
+    fun cupsGetAndSaveDocuments() {
+        httpClient.ippResponse = cupsDocumentResponse("application/postscript")
+        job.getAndSaveDocuments()
     }
 
 }
