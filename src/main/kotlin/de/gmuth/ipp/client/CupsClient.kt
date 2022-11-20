@@ -5,12 +5,9 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.http.Http
-import de.gmuth.ipp.core.IppException
-import de.gmuth.ipp.core.IppOperation
+import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppOperation.*
-import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppTag.*
-import de.gmuth.ipp.core.toIppString
 import de.gmuth.log.Logging
 import java.io.InputStream
 import java.net.URI
@@ -18,11 +15,9 @@ import java.net.URI
 // https://www.cups.org/doc/spec-ipp.html
 open class CupsClient(
     val cupsUri: URI = URI.create("ipp://localhost"),
-    config: IppConfig = IppConfig(),
+    ippConfig: IppConfig = IppConfig(),
     httpClient: Http.Client = Http.defaultImplementation.createClient(Http.Config())
-
-) : IppClient(config, httpClient) {
-
+) {
     constructor(host: String = "localhost") : this(URI.create("ipp://$host"))
 
     companion object {
@@ -36,9 +31,11 @@ open class CupsClient(
         }
     }
 
+    val ippClient = IppClient(ippConfig, httpClient)
+
     fun getPrinters() = exchange(ippRequest(CupsGetPrinters))
         .getAttributesGroups(Printer)
-        .map { IppPrinter(it, this) }
+        .map { IppPrinter(it, ippClient) }
 
     fun getPrinter(printerName: String): IppPrinter {
         val printerMap = getPrinters().associateBy { it.name.text }
@@ -47,10 +44,8 @@ open class CupsClient(
         }
     }
 
-    protected fun ippRequest(operation: IppOperation) = ippRequest(operation, cupsUri)
-
     fun getDefault() =
-        IppPrinter(exchange(ippRequest(CupsGetDefault)).printerGroup, this)
+        IppPrinter(exchange(ippRequest(CupsGetDefault)).printerGroup, ippClient)
 
     fun setDefault(printerName: String) =
         exchange(ippRequest(CupsSetDefault, cupsPrinterUri(printerName)))
@@ -81,5 +76,31 @@ open class CupsClient(
 
     fun deletePrinter(printerName: String) =
         exchange(ippRequest(CupsDeletePrinter, cupsPrinterUri(printerName)))
+
+    //----------------------
+    // delegate to IppClient
+    //----------------------
+
+    fun ippRequest(operation: IppOperation, printerURI: URI = cupsUri) =
+        ippClient.ippRequest(operation, printerURI)
+
+    fun exchange(ippRequest: IppRequest) =
+        ippClient.exchange(ippRequest)
+
+    fun basicAuth(user: String, password: String) {
+        ippClient.basicAuth(user, password)
+    }
+
+    //-----------------------
+    // delegate to IppPrinter
+    //-----------------------
+
+    val ippPrinter = IppPrinter(cupsUri, ippClient = ippClient, getPrinterAttributesOnInit = false)
+
+    fun createPrinterSubscription(
+        notifyLeaseDuration: Int? = null, // seconds
+        notifyEvents: List<String>? = listOf("all") // https://datatracker.ietf.org/doc/html/rfc3995#section-5.3.3.4.2
+    ) =
+        ippPrinter.createPrinterSubscription(notifyLeaseDuration, notifyEvents)
 
 }

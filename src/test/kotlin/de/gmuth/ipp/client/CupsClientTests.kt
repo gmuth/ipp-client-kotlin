@@ -32,7 +32,7 @@ class CupsClientTests {
     fun constructors() {
         CupsClient()
         CupsClient("host")
-        CupsClient(config = IppConfig())
+        CupsClient(ippConfig = IppConfig())
     }
 
     @Test
