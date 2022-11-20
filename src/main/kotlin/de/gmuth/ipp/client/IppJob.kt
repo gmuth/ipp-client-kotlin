@@ -37,6 +37,9 @@ class IppJob(
     val uri: URI
         get() = attributes.getValue("job-uri")
 
+    val printerUri: URI
+        get() = attributes.getValue("job-printer-uri")
+
     val state: IppJobState
         get() = IppJobState.fromInt(attributes.getValue("job-state"))
 
@@ -221,7 +224,6 @@ class IppJob(
     //---------------------------------------------------------
 
     fun cupsGetDocument(documentNumber: Int = 1): IppDocument {
-        if (!printer.isCups()) log.warn { "printer is not CUPS: ${printer.printerUri}" }
         if (attributes.containsKey("number-of-documents") && documentNumber > numberOfDocuments!!) {
             log.warn { "job has only $numberOfDocuments document(s)" }
         }
@@ -233,7 +235,7 @@ class IppJob(
 
     // Get and save all documents of this job (CUPS only)
     fun getAndSaveDocuments(
-        directory: File = printer.printerDirectory(),
+        directory: File = printer.printerDirectory(printerUri.toString().substringAfterLast("/")),
         overwrite: Boolean = true
     ) {
         for (documentNumber in (1..numberOfDocuments!!)) {
