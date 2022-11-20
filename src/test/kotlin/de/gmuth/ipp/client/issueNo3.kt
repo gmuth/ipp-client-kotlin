@@ -19,12 +19,11 @@ fun main() {
 
     val ippConfig = IppConfig().apply {
         ippVersion = "1.1"
-        getPrinterAttributesOnInit = true
         logDetails()
     }
     try {
         log.info { "open ipp connection to $printerUri" }
-        ippPrinter = IppPrinter(printerUri, ippConfig = ippConfig)
+        ippPrinter = IppPrinter(printerUri, ippConfig = ippConfig, getPrinterAttributesOnInit = true)
         log.info { "successfully connected $printerUri" }
     } catch (exception: Exception) {
         log.error(exception) { "failed to connect to $printerUri" }

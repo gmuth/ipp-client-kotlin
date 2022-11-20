@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2021 Gerhard Muth
+ * Copyright (c) 2021-2022 Gerhard Muth
  */
 
 import de.gmuth.http.HttpClientMock
@@ -20,7 +20,6 @@ import de.gmuth.ipp.client.IppTemplateAttributes.pageRanges
 import de.gmuth.ipp.client.IppTemplateAttributes.printerResolution
 import de.gmuth.ipp.client.IppWhichJobs.Completed
 import de.gmuth.ipp.core.IppOperation.GetPrinterAttributes
-import de.gmuth.ipp.core.IppResponse
 import de.gmuth.log.Logging
 import de.gmuth.log.Logging.LogLevel.TRACE
 import java.io.File
@@ -44,11 +43,12 @@ class IppPrinterTests {
     }
 
     val httpClient = HttpClientMock()
-    val ippConfig = IppConfig(getPrinterAttributesOnInit = false)
+    val ippConfig = IppConfig()
 
     val printer = IppPrinter(
-            URI.create("ipp://printer"),
-            ippClient = IppClient(ippConfig, httpClient)
+        URI.create("ipp://printer"),
+        ippClient = IppClient(ippConfig, httpClient),
+        getPrinterAttributesOnInit = false
     ).apply {
         attributes = File("printers/Simulated_Laser_Printer/Get-Printer-Attributes.ipp")
             .toIppResponse()
@@ -118,8 +118,8 @@ class IppPrinterTests {
     @Test
     fun validateJob() {
         printer.validateJob(
-                documentFormat("application/pdf"),
-                media("iso_a4_210x297mm"),
+            documentFormat("application/pdf"),
+            media("iso_a4_210x297mm"),
         )
     }
 
@@ -127,26 +127,26 @@ class IppPrinterTests {
     fun printJobFile() {
         httpClient.mockResponse("Simulated_Laser_Printer/Print-Job.ipp")
         printer.printJob(
-                File("tool/A4-blank.pdf"),
-                jobName("A4.pdf"),
-                documentFormat("application/pdf"),
-                media("iso_a4_210x297mm"),
-                jobPriority(30),
-                copies(1),
-                numberUp(1),
-                pageRanges(1..5),
-                printerResolution(600),
-                IppOrientationRequested.Portrait,
-                IppColorMode.Monochrome,
-                IppSides.TwoSidedLongEdge,
-                IppPrintQuality.High,
-                finishings(Staple, Punch),
-                IppMedia.Collection(
-                        size = IppMedia.Size(20, 30),
-                        margins = IppMedia.Margins(10, 10, 10, 10),
-                        source = "main",
-                        type = "stationery"
-                )
+            File("tool/A4-blank.pdf"),
+            jobName("A4.pdf"),
+            documentFormat("application/pdf"),
+            media("iso_a4_210x297mm"),
+            jobPriority(30),
+            copies(1),
+            numberUp(1),
+            pageRanges(1..5),
+            printerResolution(600),
+            IppOrientationRequested.Portrait,
+            IppColorMode.Monochrome,
+            IppSides.TwoSidedLongEdge,
+            IppPrintQuality.High,
+            finishings(Staple, Punch),
+            IppMedia.Collection(
+                size = IppMedia.Size(20, 30),
+                margins = IppMedia.Margins(10, 10, 10, 10),
+                source = "main",
+                type = "stationery"
+            )
         ).apply {
             assertEquals(461881017, id)
             assertEquals(IppJobState.Pending, state)

@@ -28,15 +28,16 @@ class IppJobTests {
     }
 
     val httpClient = HttpClientMock()
-    val ippConfig = IppConfig(getPrinterAttributesOnInit = false)
+    val ippConfig = IppConfig()
     val printer: IppPrinter
     val job: IppJob
 
     init {
         // mock ipp printer
         printer = IppPrinter(
-                URI.create("ipp://printer"),
-                ippClient = IppClient(ippConfig, httpClient)
+            URI.create("ipp://printer"),
+            ippClient = IppClient(ippConfig, httpClient),
+            getPrinterAttributesOnInit = false
         ).apply {
             attributes = ippResponse("Get-Printer-Attributes.ipp").printerGroup
             workDirectory = createTempDirectory().toFile()
@@ -48,7 +49,7 @@ class IppJobTests {
     }
 
     fun ippResponse(fileName: String, directory: String = "printers/CUPS_HP_LaserJet_100_color_MFP_M175") =
-            IppResponse().apply { read(File(directory, fileName)) }
+        IppResponse().apply { read(File(directory, fileName)) }
 
     @Test
     fun jobAttributes() {
