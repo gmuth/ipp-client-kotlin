@@ -33,6 +33,10 @@ open class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttrib
         get(name)?.value as T?
 
     @Suppress("UNCHECKED_CAST")
+    fun <T> getValuesOrNull(name: String) =
+        get(name)?.values as T?
+
+    @Suppress("UNCHECKED_CAST")
     fun <T> getValue(name: String) =
         get(name)?.value as T ?: throw IppException("attribute '$name' not found in group $tag")
 

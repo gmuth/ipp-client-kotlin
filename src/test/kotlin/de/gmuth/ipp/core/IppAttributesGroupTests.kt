@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2022 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppTag.*
@@ -52,6 +52,16 @@ class IppAttributesGroupTests {
     }
 
     @Test
+    fun putAttributesGroup() {
+        val fooGroup = IppAttributesGroup(Operation).apply {
+            attribute("one", Integer, 1)
+            attribute("two", Integer, 2)
+        }
+        group.put(fooGroup)
+        assertEquals(2, group.size)
+    }
+
+    @Test
     fun toStringValue() {
         assertEquals("'operation-attributes-tag' 0 attributes", group.toString())
     }
@@ -60,7 +70,12 @@ class IppAttributesGroupTests {
     fun getValue() {
         group.attribute("foo", Keyword, "bar")
         assertEquals("bar", group.getValue("foo") as String)
-        assertEquals("bar", group.getValueOrNull("foo") ?: throw NullPointerException())
+    }
+
+    @Test
+    fun getValueOrNull() {
+        group.attribute("foo0", Keyword, "bar0")
+        assertEquals("bar0", group.getValueOrNull("foo0"))
         assertEquals(null, group.getValueOrNull<String>("invalid-name"))
     }
 
@@ -68,6 +83,13 @@ class IppAttributesGroupTests {
     fun getValues() {
         group.attribute("multiple", Integer, 1, 2)
         assertEquals(listOf(1, 2), group.getValues("multiple"))
+    }
+
+    @Test
+    fun getValuesOrNull() {
+        group.attribute("multiple0", Integer, 0, 1, 2)
+        assertEquals(listOf(0, 1, 2), group.getValuesOrNull("multiple0"))
+        assertEquals(null, group.getValuesOrNull<List<Int>>("invalid-name"))
     }
 
     @Test
