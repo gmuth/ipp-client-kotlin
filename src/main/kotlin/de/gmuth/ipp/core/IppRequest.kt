@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2021 Gerhard Muth
+ * Copyright (c) 2020-2022 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppTag.*
@@ -25,15 +25,15 @@ class IppRequest : IppMessage {
     constructor() : super()
 
     constructor(
-            operation: IppOperation,
-            printerUri: URI? = null,
-            jobId: Int? = null,
-            requestedAttributes: List<String>? = null,
-            requestingUserName: String? = null,
-            version: String = "1.1",
-            requestId: Int = 1,
-            charset: Charset = Charsets.UTF_8,
-            naturalLanguage: String = "en"
+        operation: IppOperation,
+        printerUri: URI? = null,
+        jobId: Int? = null,
+        requestedAttributes: List<String>? = null,
+        requestingUserName: String? = null,
+        version: String = "1.1",
+        requestId: Int = 1,
+        charset: Charset = Charsets.UTF_8,
+        naturalLanguage: String = "en"
     ) : super(version, requestId, charset, naturalLanguage) {
         code = operation.code
         operationGroup.run {
@@ -42,5 +42,16 @@ class IppRequest : IppMessage {
             requestedAttributes?.let { attribute("requested-attributes", Keyword, it) }
             requestingUserName?.let { attribute("requesting-user-name", NameWithoutLanguage, it.toIppString()) }
         }
+    }
+
+    fun createSubscriptionAttributesGroup(
+        notifyEvents: List<String>? = null,
+        notifyLeaseDuration: Int? = null, // seconds
+        notifyJobId: Int? = null
+    ) = createAttributesGroup(Subscription).apply {
+        attribute("notify-pull-method", Keyword, "ippget")
+        notifyJobId?.let { attribute("notify-job-id", Integer, it) }
+        notifyEvents?.let { attribute("notify-events", Keyword, it) }
+        notifyLeaseDuration?.let { attribute("notify-lease-duration", Integer, it) }
     }
 }
