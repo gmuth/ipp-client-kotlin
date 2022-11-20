@@ -556,7 +556,9 @@ open class IppPrinter(
         }
     }
 
-    fun printerDirectory() = File(name.text.replace("\\s+".toRegex(), "_")).apply {
+    var workDirectory: File = File(".")
+
+    fun printerDirectory() = File(workDirectory, name.text.replace("\\s+".toRegex(), "_")).apply {
         if (!mkdirs() && !isDirectory) throw IppException("failed to create printer directory: $path")
     }
 
