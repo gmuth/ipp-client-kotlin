@@ -377,7 +377,7 @@ open class IppPrinter(
 
     fun createPrinterSubscription(
         notifyLeaseDuration: Int? = null, // seconds
-        notifyEvents: List<String>? = listOf("all")
+        notifyEvents: List<String>? = listOf("all") // https://datatracker.ietf.org/doc/html/rfc3995#section-5.3.3.4.2
     ): IppSubscription {
         val request = ippRequest(CreatePrinterSubscriptions).apply {
             createSubscriptionGroup(this, notifyEvents, notifyLeaseDuration)
