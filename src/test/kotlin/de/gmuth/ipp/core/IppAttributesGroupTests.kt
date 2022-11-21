@@ -42,7 +42,7 @@ class IppAttributesGroupTests {
         group.put(IppAttribute("number", Integer, 0))
         group.put(IppAttribute("number", Integer, 1, 2), true)
         assertEquals(1, group.size)
-        assertEquals(group.get("number")!!.values.size, 2)
+        assertEquals(group["number"]!!.values.size, 2)
     }
 
     @Test
