@@ -58,7 +58,7 @@ class IppDocument(val job: IppJob, cupsGetDocumentResponse: IppResponse) {
     ) = file.also {
         if (file.isFile && !overwrite) throw IppException("File '$it' already exists")
         inputStream.copyTo(it.outputStream())
-        log.info { "saved $this: ${it} (${it.length()} bytes)" }
+        log.info { "saved $this: $it (${it.length()} bytes)" }
     }
 
     fun delete(directory: File) {
