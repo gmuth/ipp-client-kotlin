@@ -23,6 +23,7 @@ enum class IppJobState(val code: Int, private val registeredName: String) {
     Aborted(8, "aborted"),
     Completed(9, "completed");
 
+    fun isTerminated() = this in listOf(Canceled, Aborted, Completed)
 
     // https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-6
     override fun toString() = registeredName
