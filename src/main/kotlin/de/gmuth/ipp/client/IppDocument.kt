@@ -1,15 +1,15 @@
 package de.gmuth.ipp.client
 
+/**
+ * Copyright (c) 2021-2022 Gerhard Muth
+ */
+
 import de.gmuth.ipp.core.IppException
 import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppString
 import de.gmuth.log.Logging
 import java.io.File
 import kotlin.io.path.createTempDirectory
-
-/**
- * Copyright (c) 2021-2022 Gerhard Muth
- */
 
 class IppDocument(val job: IppJob, cupsGetDocumentResponse: IppResponse) {
 
@@ -58,7 +58,13 @@ class IppDocument(val job: IppJob, cupsGetDocumentResponse: IppResponse) {
     ) = file.also {
         if (file.isFile && !overwrite) throw IppException("File '$it' already exists")
         inputStream.copyTo(it.outputStream())
-        log.info { "saved ${it.length()} bytes of $this to file ${it.path}" }
+        log.info { "saved $this: ${it} (${it.length()} bytes)" }
+    }
+
+    fun delete(directory: File) {
+        val file = File(directory, filename())
+        val action = if (file.delete()) "deleted" else "failed to delete"
+        log.info { "$action $this: $file" }
     }
 
     override fun toString() = StringBuilder("document #$number ($format)").run {
