@@ -55,7 +55,7 @@ object Logging {
         open fun publish(messageLogLevel: LogLevel, throwable: Throwable?, messageString: String?) {
             if (consoleWriterEnabled) {
                 val loggerName = if (consoleWriterSimpleClassName) name.substringAfterLast(".") else name
-                val timestamp = if (consoleWriterLogTimestamp) now().format(ofPattern("HH:mm:ss.S ")) else ""
+                val timestamp = if (consoleWriterLogTimestamp) now().format(ofPattern("HH:mm:ss.SSS ")) else ""
                 println(consoleWriterFormat.format(timestamp, loggerName, messageLogLevel, messageString))
                 throwable?.printStackTrace(PrintWriter(System.out, true))
             }
