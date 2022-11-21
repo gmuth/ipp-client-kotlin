@@ -171,7 +171,7 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
             // for all other tags (including out-of-bound), read raw bytes (if present at all)
             else -> { // ByteArray - possibly empty
                 readLengthAndValue().apply {
-                    if (size > 0) {
+                    if (isNotEmpty()) {
                         val level = if (tag == Unsupported_) DEBUG else WARN
                         log.log(level) { "ignore $size value bytes tagged '$tag'" }
                         hexdump { log.log(level) { it } }
