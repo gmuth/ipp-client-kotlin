@@ -40,11 +40,17 @@ class IppEventNotification(
     val jobImpressionsCompleted: Int
         get() = attributes.getValue("job-impressions-completed")
 
+    val printerName: IppString
+        get() = attributes.getValue("printer-name")
+
     val printerState: IppPrinterState
         get() = IppPrinterState.fromInt(attributes.getValue("printer-state"))
 
     val printerStateReasons: List<String>
         get() = attributes.getValues("printer-state-reasons")
+
+    val printerIsAcceptingJobs: Boolean
+        get() = attributes.getValue("printer-is-accepting-jobs")
 
     // get job from printer
     fun getJob() = subscription.printer.getJob(jobId)
@@ -53,13 +59,15 @@ class IppEventNotification(
     // Logging
     // -------
 
+    @SuppressWarnings("kotlin:S3776")
     override fun toString() = StringBuilder().run {
-        append("subscription #$subscriptionId event #$sequenceNumber:")
+        append("event #$sequenceNumber:")
         append(" [$subscribedEvent] $text")
         with(attributes) {
             if (contains("notify-job-id")) append(", job #$jobId")
             if (contains("job-state")) append(", job-state=$jobState")
             if (contains("job-state-reasons")) append(" (reasons=${jobStateReasons.joinToString(",")})")
+            if (contains("printer-name")) append(", printer-name=$printerName")
             if (contains("printer-state")) append(", printer-state=$printerState")
             if (contains("printer-state-reasons")) append(" (reasons=${printerStateReasons.joinToString(",")})")
         }
