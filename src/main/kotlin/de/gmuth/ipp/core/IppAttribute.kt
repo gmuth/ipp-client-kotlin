@@ -80,7 +80,7 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
                 if (value is IppCollection) {
                     value.logDetails("$prefix  ")
                 } else {
-                    log.info { "${prefix}  ${enumNameOrValue(value as Any)}" }
+                    log.info { "$prefix  ${enumNameOrValue(value as Any)}" }
                 }
             }
         }
