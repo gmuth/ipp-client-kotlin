@@ -11,6 +11,9 @@ import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.log.Logging
+import java.time.Duration
+import java.time.LocalDateTime
+import java.time.LocalDateTime.now
 
 @SuppressWarnings("kotlin:S1192") // notify-lease-duration
 class IppSubscription(
@@ -21,6 +24,9 @@ class IppSubscription(
         val log = Logging.getLogger {}
     }
 
+    private var lastSequenceNumber: Int = 0
+    private var leaseStartedAt = now()
+
     init {
         if (attributes.size <= 1) {
             updateAllAttributes()
@@ -28,13 +34,11 @@ class IppSubscription(
         }
     }
 
-    private var lastSequenceNumber: Int = 0
-
     val id: Int
         get() = attributes.getValue("notify-subscription-id")
 
-    val leaseDuration: Int
-        get() = attributes.getValue("notify-lease-duration")
+    val leaseDuration: Duration
+        get() = Duration.ofSeconds(attributes.getValue<Int>("notify-lease-duration").toLong())
 
     val events: List<String>
         get() = attributes.getValues("notify-events")
@@ -88,12 +92,14 @@ class IppSubscription(
     // Renew-Subscription
     //-------------------
 
-    fun renew(notifyLeaseDuration: Int? = null) =
+    fun renew(leaseDuration: Duration? = null) =
         exchange(ippRequest(RenewSubscription).apply {
-            createAttributesGroup(Subscription).apply {
-                notifyLeaseDuration?.let { attribute("notify-lease-duration", Integer, it) }
-            }
-        }).also { updateAllAttributes() }
+            createSubscriptionAttributesGroup(notifyLeaseDuration = leaseDuration)
+        }).also {
+            leaseStartedAt = now()
+            updateAllAttributes()
+            log.info { "renewed $this" }
+        }
 
     //-----------------------
     // delegate to IppPrinter
@@ -106,25 +112,38 @@ class IppSubscription(
 
     fun exchange(request: IppRequest) = printer.exchange(request)
 
-    //------------------------------------------
-    // process events until subscription expires
-    //------------------------------------------
+    //------------------------------------
+    // get and process event notifications
+    //------------------------------------
 
-    var processEvents = false
+    var processNotifications = false
 
-    fun processEvents(
-        delayMillis: Long = 1000L * 5,
+    val expiresAt: LocalDateTime
+        get() = leaseStartedAt.plus(leaseDuration)
+
+    fun expired() = LocalDateTime.now().isAfter(expiresAt)
+
+    fun getAndProcessNotificatons(
+        delay: Duration = Duration.ofSeconds(5),
+        autoRenewSubscription: Boolean = false,
         onEvent: (event: IppEventNotification) -> Unit = { log.info { it } }
     ) {
+        if (delay < Duration.ofSeconds(1) && autoRenewSubscription)
+            log.warn { "autoRenewSubscription does not work reliable for delays of less than 1 seconds" }
+        fun expiresAfterDelay() = now().plus(delay).isAfter(expiresAt.minusSeconds(1))
         try {
-            log.info { "event processing will stop in $leaseDuration seconds when subscription #${id} expires." }
-            processEvents = true
+            if (!autoRenewSubscription) {
+                log.info { "processing will stop in $leaseDuration when subscription #${id} expires (at $expiresAt)" }
+            }
+            processNotifications = true
             do {
+                if (expired()) log.warn { "subscription #$id has expired" }
                 getNotifications(onlyNewEvents = true).forEach { onEvent(it) }
-                Thread.sleep(delayMillis)
-            } while (processEvents)
+                if (expiresAfterDelay() && autoRenewSubscription) renew(leaseDuration)
+                Thread.sleep(delay.toMillis())
+            } while (processNotifications)
         } catch (exchangeException: IppExchangeException) {
-            processEvents = false
+            processNotifications = false
             if (!exchangeException.statusIs(ClientErrorNotFound)) throw exchangeException
             else log.info { exchangeException.response!!.statusMessage }
         }
@@ -136,8 +155,10 @@ class IppSubscription(
 
     override fun toString() = StringBuilder("subscription #$id:").run {
         if (hasJobId()) append(" job #$jobId")
-        if (attributes.containsKey("notify-events")) append(" events=${events.joinToString(",")}")
-        if (attributes.containsKey("notify-lease-duration")) append(" lease-duration=$leaseDuration seconds")
+        if (attributes.contains("notify-events")) append(" events=${events.joinToString(",")}")
+        if (attributes.contains("notify-lease-duration")) {
+            append(" lease-duration=$leaseDuration (expires at $expiresAt)")
+        }
         toString()
     }
 
