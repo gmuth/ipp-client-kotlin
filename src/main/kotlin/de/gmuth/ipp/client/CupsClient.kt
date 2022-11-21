@@ -9,6 +9,7 @@ import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.log.Logging
+import java.io.File
 import java.io.InputStream
 import java.net.URI
 import java.time.Duration
@@ -109,4 +110,42 @@ open class CupsClient(
         notifyLeaseDuration: Duration? = null
     ) =
         createPrinterSubscription(notifyEvents.toList(), notifyLeaseDuration)
+
+    // --------------------------------------
+    // wait for print jobs and copy documents
+    // --------------------------------------
+
+    fun copyPrintJobDocuments(
+        workDirectory: File = File("cups-${cupsUri.host}"),
+        leaseDuration: Duration = Duration.ofMinutes(30),
+        autoRenew: Boolean = true,
+        deleteCanceledJobs: Boolean = true
+    ) {
+        ippPrinter.workDirectory = workDirectory
+        log.info { "workDirectory: $workDirectory" }
+        log.info { "wait for jobs from ${getPrinters().map { it.name }}" }
+        val subscription = createPrinterSubscription(
+            "job-state-changed",
+            notifyLeaseDuration = leaseDuration
+        )
+        subscription.getAndProcessNotificatons(
+            Duration.ofSeconds(5), // polling interval
+            autoRenewSubscription = autoRenew
+        ) {
+            with(it) {
+                log.info { "$subscribedEvent: $text" }
+                when (subscribedEvent) {
+                    "job-created" -> with(getJob()) {
+                        log.info { this }
+                        getAndSaveDocuments()
+                    }
+
+                    "job-completed" -> with(getJob()) {
+                        log.info { this }
+                        if (deleteCanceledJobs && (isCanceled() || isAborted())) deleteDocuments()
+                    }
+                }
+            }
+        }
+    }
 }
