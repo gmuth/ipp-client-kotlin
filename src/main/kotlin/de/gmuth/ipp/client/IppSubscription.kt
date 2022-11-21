@@ -9,6 +9,7 @@ import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
+import de.gmuth.ipp.core.IppString
 import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.log.Logging
 import java.time.Duration
@@ -45,6 +46,9 @@ class IppSubscription(
 
     val jobId: Int
         get() = attributes.getValue("notify-job-id")
+
+    val subscriberUserName: IppString
+        get() = attributes.getValue("notify-subscriber-user-name")
 
     fun hasJobId() = attributes.contains("notify-job-id")
 
@@ -121,7 +125,7 @@ class IppSubscription(
     val expiresAt: LocalDateTime
         get() = leaseStartedAt.plus(leaseDuration)
 
-    fun expired() = LocalDateTime.now().isAfter(expiresAt)
+    fun expired() = !leaseDuration.isZero && now().isAfter(expiresAt)
 
     fun getAndProcessNotificatons(
         delay: Duration = Duration.ofSeconds(5),
@@ -129,12 +133,9 @@ class IppSubscription(
         onEvent: (event: IppEventNotification) -> Unit = { log.info { it } }
     ) {
         if (delay < Duration.ofSeconds(1) && autoRenewSubscription)
-            log.warn { "autoRenewSubscription does not work reliable for delays of less than 1 seconds" }
-        fun expiresAfterDelay() = now().plus(delay).isAfter(expiresAt.minusSeconds(1))
+            log.warn { "autoRenewSubscription does not work reliably for delays of less than 1 seconds" }
+        fun expiresAfterDelay() = !leaseDuration.isZero && now().plus(delay).isAfter(expiresAt.minusSeconds(1))
         try {
-            if (!autoRenewSubscription) {
-                log.info { "processing will stop in $leaseDuration when subscription #${id} expires (at $expiresAt)" }
-            }
             processNotifications = true
             do {
                 if (expired()) log.warn { "subscription #$id has expired" }
