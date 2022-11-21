@@ -212,7 +212,7 @@ class IppJobTests {
             log.info { toString() }
             log.info { "${filename()} (${readBytes().size} bytes)" }
             job.attributes.remove("document-name-supplied")
-            log.info { "${filename()}" }
+            log.info { filename() }
         }
     }
 
