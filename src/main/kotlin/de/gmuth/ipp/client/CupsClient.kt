@@ -11,6 +11,7 @@ import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.log.Logging
 import java.io.InputStream
 import java.net.URI
+import java.time.Duration
 
 // https://www.cups.org/doc/spec-ipp.html
 open class CupsClient(
@@ -98,9 +99,14 @@ open class CupsClient(
     val ippPrinter = IppPrinter(cupsUri, ippClient = ippClient, getPrinterAttributesOnInit = false)
 
     fun createPrinterSubscription(
-        notifyLeaseDuration: Int? = null, // seconds
-        notifyEvents: List<String>? = listOf("all") // https://datatracker.ietf.org/doc/html/rfc3995#section-5.3.3.4.2
+        notifyEvents: List<String>? = listOf("all"), // https://datatracker.ietf.org/doc/html/rfc3995#section-5.3.3.4.2
+        notifyLeaseDuration: Duration? = null
     ) =
-        ippPrinter.createPrinterSubscription(notifyLeaseDuration, notifyEvents)
+        ippPrinter.createPrinterSubscription(notifyEvents, notifyLeaseDuration)
 
+    fun createPrinterSubscription(
+        vararg notifyEvents: String = arrayOf("all"),
+        notifyLeaseDuration: Duration? = null
+    ) =
+        createPrinterSubscription(notifyEvents.toList(), notifyLeaseDuration)
 }

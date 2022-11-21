@@ -7,6 +7,7 @@ package de.gmuth.ipp.core
 import de.gmuth.ipp.core.IppTag.*
 import java.net.URI
 import java.nio.charset.Charset
+import java.time.Duration
 
 class IppRequest : IppMessage {
 
@@ -46,12 +47,12 @@ class IppRequest : IppMessage {
 
     fun createSubscriptionAttributesGroup(
         notifyEvents: List<String>? = null,
-        notifyLeaseDuration: Int? = null, // seconds
+        notifyLeaseDuration: Duration? = null,
         notifyJobId: Int? = null
     ) = createAttributesGroup(Subscription).apply {
         attribute("notify-pull-method", Keyword, "ippget")
         notifyJobId?.let { attribute("notify-job-id", Integer, it) }
         notifyEvents?.let { attribute("notify-events", Keyword, it) }
-        notifyLeaseDuration?.let { attribute("notify-lease-duration", Integer, it) }
+        notifyLeaseDuration?.let { attribute("notify-lease-duration", Integer, it.toSeconds()) }
     }
 }

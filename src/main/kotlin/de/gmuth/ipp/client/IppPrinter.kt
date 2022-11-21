@@ -13,6 +13,7 @@ import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.log.Logging
 import java.io.*
 import java.net.URI
+import java.time.Duration
 
 @SuppressWarnings("kotlin:S1192")
 open class IppPrinter(
@@ -384,8 +385,8 @@ open class IppPrinter(
     //----------------------------
 
     fun createPrinterSubscription(
-        notifyLeaseDuration: Int? = null, // seconds
-        notifyEvents: List<String>? = listOf("all") // https://datatracker.ietf.org/doc/html/rfc3995#section-5.3.3.4.2
+        notifyEvents: List<String>? = listOf("all"), // https://datatracker.ietf.org/doc/html/rfc3995#section-5.3.3.4.2
+        notifyLeaseDuration: Duration? = null
     ): IppSubscription {
         val request = ippRequest(CreatePrinterSubscriptions).apply {
             checkNotifyEvents(notifyEvents)
