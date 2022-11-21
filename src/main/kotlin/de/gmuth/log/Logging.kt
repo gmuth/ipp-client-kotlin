@@ -3,6 +3,8 @@ package de.gmuth.log
 import de.gmuth.log.Logging.Factory
 import de.gmuth.log.Logging.LogLevel.*
 import java.io.PrintWriter
+import java.time.LocalTime.now
+import java.time.format.DateTimeFormatter.ofPattern
 
 /**
  * Copyright (c) 2020-2022 Gerhard Muth
@@ -15,8 +17,9 @@ object Logging {
     var debugLoggingConfig = false
     var defaultLogLevel = INFO
     var consoleWriterEnabled = true
-    var consoleWriterFormat: String = "%-25s %-5s %s" // name, level, message
+    var consoleWriterFormat: String = "%s%-25s %-5s %s" // timestamp, name, level, message
     var consoleWriterSimpleClassName = true
+    var consoleWriterLogTimestamp = true
 
     enum class LogLevel { TRACE, DEBUG, INFO, WARN, ERROR }
 
@@ -52,7 +55,8 @@ object Logging {
         open fun publish(messageLogLevel: LogLevel, throwable: Throwable?, messageString: String?) {
             if (consoleWriterEnabled) {
                 val loggerName = if (consoleWriterSimpleClassName) name.substringAfterLast(".") else name
-                println(consoleWriterFormat.format(loggerName, messageLogLevel, messageString))
+                val timestamp = if (consoleWriterLogTimestamp) now().format(ofPattern("HH:mm:ss.S ")) else ""
+                println(consoleWriterFormat.format(timestamp, loggerName, messageLogLevel, messageString))
                 throwable?.printStackTrace(PrintWriter(System.out, true))
             }
         }
