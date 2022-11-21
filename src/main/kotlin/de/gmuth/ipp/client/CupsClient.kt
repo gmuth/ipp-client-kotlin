@@ -123,7 +123,6 @@ open class CupsClient(
     ) {
         ippPrinter.workDirectory = workDirectory
         log.info { "workDirectory: $workDirectory" }
-        log.info { "wait for jobs from ${getPrinters().map { it.name }}" }
         val subscription = createPrinterSubscription(
             "job-state-changed",
             notifyLeaseDuration = leaseDuration
