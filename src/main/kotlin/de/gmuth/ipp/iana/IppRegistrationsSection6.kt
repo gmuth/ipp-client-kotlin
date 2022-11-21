@@ -40,7 +40,7 @@ object IppRegistrationsSection6 {
                 .forEach { put(it.attribute, it.value.replace("^.*\"(.+)\".*$".toRegex(), "$1")) }
     }
 
-    fun getEnumAttributeValue(attribute: String, value: Any) = enumAttributeValuesMap.get("$attribute/$value")
+    fun getEnumAttributeValue(attribute: String, value: Any) = enumAttributeValuesMap["$attribute/$value"]
 
     fun getEnumName(attribute: String, value: Any) =
             if (attribute == "operations-supported" && value is Number) {
