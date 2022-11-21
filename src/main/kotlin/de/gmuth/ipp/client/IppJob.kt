@@ -70,10 +70,11 @@ class IppJob(
     fun hasStateReasons() = attributes.containsKey("job-state-reasons")
 
     fun isPending() = state == Pending
+    fun isAborted() = state == Aborted
     fun isCanceled() = state == Canceled
     fun isProcessing() = state == Processing
     fun isProcessingStopped() = state == ProcessingStopped
-    fun isTerminated() = state in listOf(Canceled, Aborted, Completed)
+    fun isTerminated() = state.isTerminated()
 
     fun isProcessingToStopPoint() =
         hasStateReasons() && stateReasons.contains("processing-to-stop-point")
@@ -224,7 +225,7 @@ class IppJob(
     //---------------------------------------------------------
 
     fun cupsGetDocument(documentNumber: Int = 1): IppDocument {
-        if (attributes.containsKey("number-of-documents") && documentNumber > numberOfDocuments!!) {
+        if (attributes.contains("number-of-documents") && documentNumber > numberOfDocuments!!) {
             log.warn { "job has only $numberOfDocuments document(s)" }
         }
         val request = ippRequest(CupsGetDocument).apply {
@@ -233,14 +234,22 @@ class IppJob(
         return IppDocument(this, exchange(request))
     }
 
+    private fun printerDirectory() =
+        printer.printerDirectory(printerUri.toString().substringAfterLast("/"))
+
     // Get and save all documents of this job (CUPS only)
     fun getAndSaveDocuments(
-        directory: File = printer.printerDirectory(printerUri.toString().substringAfterLast("/")),
+        directory: File = printerDirectory(),
         overwrite: Boolean = true
     ) {
-        for (documentNumber in (1..numberOfDocuments!!)) {
+        for (documentNumber in (1..numberOfDocuments!!))
             cupsGetDocument(documentNumber).save(directory, overwrite = overwrite)
-        }
+    }
+
+    // Delete all (previously saved) documents of this job
+    fun deleteDocuments(directory: File = printerDirectory()) {
+        for (documentNumber in (1..numberOfDocuments!!))
+            cupsGetDocument(documentNumber).delete(directory)
     }
 
     //-----------------------
