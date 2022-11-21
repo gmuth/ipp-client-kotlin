@@ -33,6 +33,7 @@ open class IppClient(
 
     fun basicAuth(user: String, password: String) {
         httpConfig.basicAuth = Http.BasicAuth(user, password)
+        config.userName = user
     }
 
     companion object {
