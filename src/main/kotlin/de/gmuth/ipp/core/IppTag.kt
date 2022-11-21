@@ -64,7 +64,7 @@ enum class IppTag(
     fun isDelimiterTag() = code < 0x10
     fun isGroupTag() = code < 0x10 && code != End.code
     fun isValueTag() = 0x10 <= code
-    fun isOutOfBandTag() = 0x10 <= code && code < 0x20
+    fun isOutOfBandTag() = code in 0x10..0x1f
     fun isMemberAttrName() = code == MemberAttrName.code
     fun isMemberAttrValue() = 0x10 <= code && code != MemberAttrName.code && code != EndCollection.code
 
