@@ -240,10 +240,13 @@ class IppJob(
     // Get and save all documents of this job (CUPS only)
     fun getAndSaveDocuments(
         directory: File = printerDirectory(),
-        overwrite: Boolean = true
+        overwrite: Boolean = true,
+        command: String? = null
     ) {
         for (documentNumber in (1..numberOfDocuments!!))
-            cupsGetDocument(documentNumber).save(directory, overwrite = overwrite)
+            cupsGetDocument(documentNumber).save(directory, overwrite = overwrite).apply {
+                command?.let { Runtime.getRuntime().exec("$it $absolutePath") }
+            }
     }
 
     // Delete all (previously saved) documents of this job

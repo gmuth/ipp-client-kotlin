@@ -119,7 +119,8 @@ open class CupsClient(
         workDirectory: File = File("cups-${cupsUri.host}"),
         leaseDuration: Duration = Duration.ofMinutes(30),
         autoRenew: Boolean = true,
-        deleteCanceledJobs: Boolean = true
+        deleteCanceledJobs: Boolean = true,
+        command: String? = null
     ) {
         ippPrinter.workDirectory = workDirectory
         log.info { "workDirectory: $workDirectory" }
@@ -136,7 +137,7 @@ open class CupsClient(
                 when (subscribedEvent) {
                     "job-created" -> with(getJob()) {
                         log.info { this }
-                        getAndSaveDocuments()
+                        getAndSaveDocuments(command = command)
                     }
 
                     "job-completed" -> with(getJob()) {
