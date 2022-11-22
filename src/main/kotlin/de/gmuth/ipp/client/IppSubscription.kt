@@ -16,7 +16,6 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.time.LocalDateTime.now
 
-@SuppressWarnings("kotlin:S1192") // notify-lease-duration
 class IppSubscription(
     val printer: IppPrinter,
     var attributes: IppAttributesGroup
