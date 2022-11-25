@@ -121,30 +121,23 @@ open class IppClient(
         { httpPostStream -> request.write(httpPostStream) },
         chunked = request.hasDocument()
     ).apply {
-        checkContentType(contentType)
-        if (!isOK()) {
+        var exceptionMessage: String? = null
+        if (contentType == null) {
+            log.debug { "missing content-type in http response (should be '$APPLICATION_IPP')" }
+        } else {
+            if (!contentType.startsWith(APPLICATION_IPP)) {
+                exceptionMessage = "invalid content-type: $contentType (expecting '$APPLICATION_IPP')"
+            }
+        }
+        if (status != 200) exceptionMessage = "http request to $httpUri failed: status=$status"
+        exceptionMessage?.run {
             config.logDetails()
             request.logDetails("IPP REQUEST: ")
             log.error { "http response status: $status" }
             server?.let { log.error { "ipp-server: $it" } }
             contentType?.let { log.error { "content-type: $it" } }
             contentStream?.let { log.error { "content:\n" + it.bufferedReader().use { it.readText() } } }
-            throw IppExchangeException(
-                request,
-                null,
-                status,
-                message = "http request to $httpUri failed: status=$status"
-            )
-        }
-    }
-
-    fun checkContentType(contentType: String?) {
-        if (contentType == null) {
-            log.info { "missing content-type in http response (should be 'application/ipp')" }
-        } else {
-            if (!contentType!!.startsWith(APPLICATION_IPP)) {
-                log.info { "invalid content-type: $contentType (expecting 'application/ipp')" }
-            }
+            throw IppExchangeException(request, null, status, message = exceptionMessage)
         }
     }
 
