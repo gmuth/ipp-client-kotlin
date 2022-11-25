@@ -11,22 +11,22 @@ fun main() {
     IppClient.log.logLevel = Logging.LogLevel.DEBUG
 
     val log = Logging.getLogger {}
-    var ippPrinter: IppPrinter? = null
 
     val printerUri = URI.create("ipp://192.168.31.244:631/ipp/print")
     //val printerUri = URI.create("ipp://xero.local/ipp/print")
 
     try {
         log.info { "open ipp connection to $printerUri" }
-        ippPrinter = IppPrinter(
-            printerUri,
-            httpConfig = Http.Config(
-                debugLogging = true,
-                accept = null // overriden from IppClient
-            ),
-            getPrinterAttributesOnInit = false
-        )
-        with(ippPrinter) {
+        with(
+            IppPrinter(
+                printerUri,
+                httpConfig = Http.Config(
+                    debugLogging = true,
+                    accept = null // overriden from IppClient
+                ),
+                getPrinterAttributesOnInit = false
+            )
+        ) {
             with(ippClient.httpClient) {
                 config.accept = null
                 config.acceptEncoding = null
