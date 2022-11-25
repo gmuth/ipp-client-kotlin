@@ -47,7 +47,7 @@ open class IppClient(
         }
     }
 
-    init {
+    init { // this overrides custom settings! -> bad
         httpConfig.apply {
             userAgent = "ipp-client/$version"
             acceptEncoding = "identity" // avoids 'gzip' with Android's OkHttp
@@ -121,16 +121,30 @@ open class IppClient(
         { httpPostStream -> request.write(httpPostStream) },
         chunked = request.hasDocument()
     ).apply {
-        when { // http response is not successful
-            !isOK() -> "http request to $httpUri failed: status=$status, content-type=$contentType${textContent()}"
-            !hasContentType() -> "missing content-type in http response (application/ipp required)"
-            !contentType!!.startsWith(APPLICATION_IPP) -> "invalid content-type: $contentType"
-            else -> null
-        }?.let {
-            server?.run { log.info { "ipp-server: $server" } }
+        checkContentType(contentType)
+        if (!isOK()) {
             config.logDetails()
-            request.logDetails()
-            throw IppExchangeException(request, null, status, message = it)
+            request.logDetails("IPP REQUEST: ")
+            log.info { "http response status: $status" }
+            server?.let { log.info { "ipp-server: $it" } }
+            contentType?.let { log.info { "content-type: $it" } }
+            contentStream?.let { log.info { "content:\n" + it.bufferedReader().use { it.readText() } } }
+            throw IppExchangeException(
+                request,
+                null,
+                status,
+                message = "http request to $httpUri failed: status=$status"
+            )
+        }
+    }
+
+    fun checkContentType(contentType: String?) {
+        if (contentType == null) {
+            log.info { "missing content-type in http response (should be 'application/ipp')" }
+        } else {
+            if (!contentType!!.startsWith(APPLICATION_IPP)) {
+                log.info { "invalid content-type: $contentType (expecting 'application/ipp')" }
+            }
         }
     }
 
