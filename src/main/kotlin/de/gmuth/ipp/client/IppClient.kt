@@ -22,7 +22,12 @@ typealias IppResponseInterceptor = (request: IppRequest, response: IppResponse) 
 
 open class IppClient(
     val config: IppConfig = IppConfig(),
-    val httpClient: Http.Client = Http.defaultImplementation.createClient(Http.Config())
+    val httpClient: Http.Client = Http.defaultImplementation.createClient(
+        Http.Config(
+            accept = APPLICATION_IPP, // avoid 'text/html' with sun.net.www.protocol.http.HttpURLConnection
+            acceptEncoding = "identity" // avoid 'gzip' with Androids OkHttp
+        )
+    )
 ) {
     var saveMessages: Boolean = false
     var saveMessagesDirectory = File("ipp-messages")
@@ -48,11 +53,7 @@ open class IppClient(
     }
 
     init {
-        httpConfig.apply {
-            if (userAgent == null) userAgent = "ipp-client/$version"
-            if (acceptEncoding == null) acceptEncoding = "identity" // avoid gzip with Androids OkHttp
-            if (accept == null) accept = APPLICATION_IPP // avoid text/html sun.net.www.protocol.http.HttpURLConnection
-        }
+        with(httpConfig) { if (userAgent == null) userAgent = "ipp-client/$version" }
     }
 
     //-----------------
