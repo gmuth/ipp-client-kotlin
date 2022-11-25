@@ -40,7 +40,11 @@ open class IppPrinter(
                     if (it.containsGroup(Printer)) log.info { "${it.printerGroup.size} attributes parsed" }
                     else log.warn { it }
                 }
-                fetchRawPrinterAttributes("getPrinterAttributesFailed.bin")
+                try {
+                    fetchRawPrinterAttributes("getPrinterAttributesFailed.bin")
+                } catch (exception: Exception) {
+                    log.error(exception) { "failed to fetch raw printer attributes" }
+                }
                 throw ippExchangeException
             }
         }
