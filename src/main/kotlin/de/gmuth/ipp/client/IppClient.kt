@@ -47,11 +47,11 @@ open class IppClient(
         }
     }
 
-    init { // this overrides custom settings! -> bad
+    init {
         httpConfig.apply {
-            userAgent = "ipp-client/$version"
-            acceptEncoding = "identity" // avoids 'gzip' with Android's OkHttp
-            accept = APPLICATION_IPP // avoids 'text/html' with sun.net.www.protocol.http.HttpURLConnection
+            if (userAgent == null) userAgent = "ipp-client/$version"
+            if (acceptEncoding == null) acceptEncoding = "identity" // avoid gzip with Androids OkHttp
+            if (accept == null) accept = APPLICATION_IPP // avoid text/html sun.net.www.protocol.http.HttpURLConnection
         }
     }
 
