@@ -20,18 +20,11 @@ fun main() {
         with(
             IppPrinter(
                 printerUri,
-                httpConfig = Http.Config(
-                    debugLogging = true,
-                    accept = null // overriden from IppClient
-                ),
+                // omit accept and accept-encoding (null!)
+                httpConfig = Http.Config(debugLogging = true),
                 getPrinterAttributesOnInit = false
             )
         ) {
-            with(ippClient.httpClient) {
-                config.accept = null
-                config.acceptEncoding = null
-                log.info { config }
-            }
             updateAttributes()
             logDetails()
         }
