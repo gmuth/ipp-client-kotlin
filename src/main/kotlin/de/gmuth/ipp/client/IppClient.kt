@@ -125,10 +125,10 @@ open class IppClient(
         if (!isOK()) {
             config.logDetails()
             request.logDetails("IPP REQUEST: ")
-            log.info { "http response status: $status" }
-            server?.let { log.info { "ipp-server: $it" } }
-            contentType?.let { log.info { "content-type: $it" } }
-            contentStream?.let { log.info { "content:\n" + it.bufferedReader().use { it.readText() } } }
+            log.error { "http response status: $status" }
+            server?.let { log.error { "ipp-server: $it" } }
+            contentType?.let { log.error { "content-type: $it" } }
+            contentStream?.let { log.error { "content:\n" + it.bufferedReader().use { it.readText() } } }
             throw IppExchangeException(
                 request,
                 null,
