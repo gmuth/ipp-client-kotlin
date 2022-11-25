@@ -1,11 +1,12 @@
 package de.gmuth.http
 
 /**
- * Copyright (c) 2020-2021 Gerhard Muth
+ * Copyright (c) 2020-2022 Gerhard Muth
  */
 
 import de.gmuth.log.Logging
-import de.gmuth.log.Logging.LogLevel.*
+import de.gmuth.log.Logging.LogLevel.DEBUG
+import de.gmuth.log.Logging.LogLevel.ERROR
 import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URI
@@ -40,7 +41,9 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
             }
     }
 
-    override fun post(uri: URI, contentType: String, writeContent: (OutputStream) -> Unit, chunked: Boolean): Http.Response {
+    override fun post(
+        uri: URI, contentType: String, writeContent: (OutputStream) -> Unit, chunked: Boolean
+    ): Http.Response {
         with(uri.toURL().openConnection() as HttpURLConnection) {
             if (this is HttpsURLConnection && config.sslContext != null) {
                 sslSocketFactory = config.sslContext!!.socketFactory
@@ -59,7 +62,7 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
             if (chunked) setChunkedStreamingMode(0)
             writeContent(outputStream)
             for ((key, values) in headerFields) {
-                log.log(if (responseCode < 300) TRACE else ERROR) { "$key = $values" }
+                log.log(if (responseCode < 300) DEBUG else ERROR) { "$key = $values" }
             }
             val responseStream = try {
                 inputStream
@@ -68,10 +71,7 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
                 errorStream
             }
             return Http.Response(
-                    responseCode,
-                    getHeaderField("Server"),
-                    getHeaderField("Content-Type"),
-                    responseStream
+                responseCode, getHeaderField("Server"), getHeaderField("Content-Type"), responseStream
             )
         }
     }
