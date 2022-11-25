@@ -1,14 +1,14 @@
 package de.gmuth.log
 
+/**
+ * Copyright (c) 2020-2022 Gerhard Muth
+ */
+
 import de.gmuth.log.Logging.Factory
 import de.gmuth.log.Logging.LogLevel.*
 import java.io.PrintWriter
 import java.time.LocalTime.now
 import java.time.format.DateTimeFormatter.ofPattern
-
-/**
- * Copyright (c) 2020-2022 Gerhard Muth
- */
 
 typealias MessageProducer = () -> Any?
 
@@ -63,7 +63,7 @@ object Logging {
 
         fun logWithCauseMessages(throwable: Throwable, logLevel: LogLevel = ERROR) {
             throwable.cause?.let { logWithCauseMessages(it, logLevel) }
-            log(logLevel) { "${throwable.message}" }
+            log(logLevel) { "${throwable.javaClass.name}: ${throwable.message}" }
         }
     }
 
