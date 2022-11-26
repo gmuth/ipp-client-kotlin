@@ -22,13 +22,15 @@ fun main() {
                 printerUri,
                 // omit accept and accept-encoding (null!)
                 httpConfig = Http.Config(debugLogging = true),
-                getPrinterAttributesOnInit = false
+                //getPrinterAttributesOnInit = false
             )
         ) {
-            updateAttributes()
-            logDetails()
+            //ippClient.httpConfig.debugLogging = true
+            //updateAttributes()
+            log.info { "successfully connected $printerUri" }
+            //logDetails()
+            markers.forEach { log.info { it } }
         }
-        log.info { "successfully connected $printerUri" }
     } catch (exception: Exception) {
         log.error(exception) { "failed to connect to $printerUri" }
     }
