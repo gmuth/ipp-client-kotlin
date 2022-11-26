@@ -4,16 +4,12 @@ package de.gmuth.http
  * Copyright (c) 2020-2022 Gerhard Muth
  */
 
+import de.gmuth.log.JulHandler
 import de.gmuth.log.Logging
-import de.gmuth.log.Logging.LogLevel.DEBUG
-import de.gmuth.log.Logging.LogLevel.ERROR
+import de.gmuth.log.Logging.LogLevel.*
 import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URI
-import java.util.logging.Handler
-import java.util.logging.Level
-import java.util.logging.LogRecord
-import java.util.logging.Logger
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.HttpsURLConnection
 
@@ -21,24 +17,11 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
 
     companion object {
         val log = Logging.getLogger {}
-        val julHandler = object : Handler() {
-            // redirect java util logging message, ignore level
-            override fun publish(record: LogRecord) = record.run {
-                Logging.getLogger(loggerName, DEBUG).log(DEBUG) { message }
-            }
-
-            override fun flush() = Unit
-            override fun close() = Unit
-        }
     }
 
     init {
         log.debug { "HttpURLConnectionClient created" }
-        if (config.debugLogging) // logger name depends on jvm implementation? omg!
-            Logger.getLogger("sun.net.www.protocol.http.HttpURLConnection").run {
-                if (!handlers.contains(julHandler)) addHandler(julHandler)
-                level = Level.ALL
-            }
+        if (config.debugLogging) JulHandler.configure("sun.net.www.protocol.http", TRACE)
     }
 
     override fun post(
