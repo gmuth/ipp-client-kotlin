@@ -21,7 +21,7 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
 
     init {
         log.debug { "HttpURLConnectionClient created" }
-        if (config.debugLogging) JulHandler.configure("sun.net.www.protocol.http", TRACE)
+        if (config.debugLogging) JulHandler.configure("sun.net.www.protocol.http", DEBUG)
     }
 
     override fun post(
