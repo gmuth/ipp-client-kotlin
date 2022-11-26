@@ -27,7 +27,7 @@ object JulHandler : Handler() {
     }
 
     override fun publish(record: LogRecord) = record.run {
-        Logging.getLogger(loggerName, defaultFilterLevel).log(toLogLevel(level)) { message }
+        Logging.getLogger(loggerName, defaultFilterLevel).log(toLogLevel(level), thrown) { message }
     }
 
     override fun flush() = Unit
