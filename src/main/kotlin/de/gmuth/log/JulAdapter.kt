@@ -45,7 +45,7 @@ class JulAdapter(name: String) : Logging.Logger(name, supportLevelConfiguration 
             Level.INFO, Level.CONFIG -> INFO
             Level.WARNING -> WARN
             Level.SEVERE -> ERROR
-            else -> throw IllegalStateException("unknown Level $julLevel")
+            else -> throw IllegalArgumentException("unknown Level $julLevel")
         }
 
         fun configure() {
