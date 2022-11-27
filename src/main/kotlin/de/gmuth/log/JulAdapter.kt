@@ -16,6 +16,7 @@ class JulAdapter(name: String) : Logging.Logger(name) {
     private val julLogger = java.util.logging.Logger.getLogger(name)
 
     private fun toJulLevel(logLevel: LogLevel) = when (logLevel) {
+        OFF -> Level.OFF
         TRACE -> Level.FINER
         DEBUG -> Level.FINE
         INFO -> Level.INFO

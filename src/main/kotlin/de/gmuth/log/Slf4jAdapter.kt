@@ -15,6 +15,7 @@ class Slf4jAdapter(name: String) : Logging.Logger(name) {
 
     override fun isEnabled(level: LogLevel) = with(slf4jLogger) {
         when (level) {
+            OFF -> false
             TRACE -> isTraceEnabled
             DEBUG -> isDebugEnabled
             INFO -> isInfoEnabled
@@ -25,6 +26,7 @@ class Slf4jAdapter(name: String) : Logging.Logger(name) {
 
     override fun publish(messageLogLevel: LogLevel, throwable: Throwable?, messageString: String?) = with(slf4jLogger) {
         when (messageLogLevel) {
+            OFF -> throw IllegalArgumentException("logLevel OFF not allowed")
             TRACE -> trace(messageString, throwable)
             DEBUG -> debug(messageString, throwable)
             INFO -> info(messageString, throwable)

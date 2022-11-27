@@ -21,7 +21,7 @@ object Logging {
     var consoleWriterSimpleClassName = true
     var consoleWriterLogTimestamp = true
 
-    enum class LogLevel { TRACE, DEBUG, INFO, WARN, ERROR }
+    enum class LogLevel { OFF, TRACE, DEBUG, INFO, WARN, ERROR }
 
     open class Logger(val name: String, var logLevel: LogLevel = defaultLogLevel) {
 
