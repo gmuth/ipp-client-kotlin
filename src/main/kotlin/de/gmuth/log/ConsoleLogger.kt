@@ -11,10 +11,6 @@ import java.time.format.DateTimeFormatter
 
 class ConsoleLogger(name: String) : Logging.Logger(name, supportLevelConfiguration = true) {
 
-    var format: String = "%s%-25s %-5s %s" // timestamp, name, level, message
-    var simpleClassName = true
-    var logTimestamp = true
-
     private var level: LogLevel = Logging.defaultLogLevel
 
     override var logLevel: LogLevel
@@ -33,6 +29,10 @@ class ConsoleLogger(name: String) : Logging.Logger(name, supportLevelConfigurati
     }
 
     companion object {
+        var format: String = "%s%-25s %-5s %s" // timestamp, name, level, message
+        var simpleClassName = true
+        var logTimestamp = true
+
         fun configure() {
             Logging.factory = Logging.Factory { ConsoleLogger(it) }
         }
