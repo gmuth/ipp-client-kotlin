@@ -21,9 +21,9 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
 
     init {
         log.debug { "HttpURLConnectionClient created" }
-        if (config.debugLogging) {
-            // JulHandler forwards ALL jul message to Logging
-            if (!Logging.factorySimpleClassNameStartsWith("JulAdapter")) JulHandler.addToJulLogger()
+        if (config.debugLogging && !Logging.factorySimpleClassNameStartsWith("JulAdapter")) {
+            // The JulHandler forwards ALL jul message to Logging
+            JulHandler.addToJulLogger()
             // The JulHandler does NOT use the jul output config
             Logging.configureLevel("sun.net.www.protocol.http.HttpURLConnection", TRACE, false)
         }
