@@ -6,24 +6,25 @@ package de.gmuth.log
 
 import de.gmuth.log.Logging.Factory
 import de.gmuth.log.Logging.LogLevel.*
-import java.io.PrintWriter
-import java.time.LocalTime.now
-import java.time.format.DateTimeFormatter.ofPattern
 
 typealias MessageProducer = () -> Any?
 
 object Logging {
 
-    var debugLoggingConfig = false
     var defaultLogLevel = INFO
-    var consoleWriterEnabled = true
-    var consoleWriterFormat: String = "%s%-25s %-5s %s" // timestamp, name, level, message
-    var consoleWriterSimpleClassName = true
-    var consoleWriterLogTimestamp = true
 
     enum class LogLevel { OFF, TRACE, DEBUG, INFO, WARN, ERROR }
 
-    open class Logger(val name: String, var logLevel: LogLevel = defaultLogLevel) {
+    @SuppressWarnings("kotlin:S108", "kotlin:S1186") // base logger that doesn't do anything
+    open class Logger(val name: String, val supportLevelConfiguration: Boolean = false) {
+
+        open var logLevel: LogLevel
+            get() = OFF
+            set(value) {}
+
+        open fun isEnabled(level: LogLevel): Boolean = false
+
+        open fun publish(messageLogLevel: LogLevel, throwable: Throwable?, messageString: String?) {}
 
         @JvmOverloads
         fun trace(throwable: Throwable? = null, messageProducer: MessageProducer = { "" }) =
@@ -50,17 +51,6 @@ object Logging {
             if (isEnabled(messageLogLevel)) publish(messageLogLevel, throwable, produceMessage()?.toString())
         }
 
-        open fun isEnabled(level: LogLevel) = logLevel <= level
-
-        open fun publish(messageLogLevel: LogLevel, throwable: Throwable?, messageString: String?) {
-            if (consoleWriterEnabled) {
-                val loggerName = if (consoleWriterSimpleClassName) name.substringAfterLast(".") else name
-                val timestamp = if (consoleWriterLogTimestamp) now().format(ofPattern("HH:mm:ss.SSS ")) else ""
-                println(consoleWriterFormat.format(timestamp, loggerName, messageLogLevel, messageString))
-                throwable?.printStackTrace(PrintWriter(System.out, true))
-            }
-        }
-
         fun logWithCauseMessages(throwable: Throwable, logLevel: LogLevel = ERROR) {
             throwable.cause?.let { logWithCauseMessages(it, logLevel) }
             log(logLevel) { "${throwable.javaClass.name}: ${throwable.message}" }
@@ -71,18 +61,28 @@ object Logging {
         fun createLogger(name: String): Logger
     }
 
-    var factory = Factory { Logger(it) }
+    var factory = Factory { ConsoleLogger(it) }
     private val loggerMap: MutableMap<String, Logger> = HashMap()
 
-    @JvmOverloads
-    fun getLogger(name: String, logLevel: LogLevel = defaultLogLevel) =
-        loggerMap[name] ?: factory.createLogger(name).apply {
-            loggerMap[name] = this
-            this.logLevel = logLevel
-            if (debugLoggingConfig) println("Logging: level=%-5s name=%s".format(logLevel, name))
+    fun getLogger(name: String) = loggerMap[name] ?: factory.createLogger(name).apply {
+        loggerMap[name] = this
+        if (supportLevelConfiguration) logLevel = defaultLogLevel
+    }
+
+    fun getLogger(level: LogLevel? = null, noOperation: () -> Unit) =
+        getLogger(noOperation.javaClass.enclosingClass.name).apply {
+            level?.let { logLevel = level }
         }
 
-    fun getLogger(logLevel: LogLevel = defaultLogLevel, noOperation: () -> Unit) =
-        getLogger(noOperation.javaClass.enclosingClass.name, logLevel)
+    fun configureLevel(name: String, level: LogLevel, throwIfNotSupported: Boolean = true) = getLogger(name).run {
+        if (supportLevelConfiguration) logLevel = level
+        else if (throwIfNotSupported)
+            throw UnsupportedOperationException("Logger implementation does not support level configuration.")
+    }
 
+    fun factorySimpleClassNameStartsWith(name: String) = factory.javaClass.simpleName.startsWith(name)
+
+    fun disable() {
+        factory = Factory { Logger(it) }
+    }
 }
