@@ -245,7 +245,7 @@ class IppJob(
     ) {
         for (documentNumber in (1..numberOfDocuments!!))
             cupsGetDocument(documentNumber).save(directory, overwrite = overwrite).apply {
-                command?.let { Runtime.getRuntime().exec("$it $absolutePath") }
+                command?.let { Runtime.getRuntime().exec(arrayOf(it, absolutePath)) }
             }
     }
 
