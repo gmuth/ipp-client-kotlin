@@ -5,9 +5,12 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.http.Http
-import de.gmuth.ipp.core.*
+import de.gmuth.ipp.core.IppException
+import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppOperation.*
+import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppTag.*
+import de.gmuth.ipp.core.toIppString
 import de.gmuth.log.Logging
 import java.io.InputStream
 import java.net.URI
@@ -62,18 +65,16 @@ open class CupsClient(
         printerLocation: String?,
         ppdName: String? = null, // virtual PPDs like "everywhere" are not supported by older CUPS versions
         ppdInputStream: InputStream? = null
-    ): IppResponse {
-        val ippRequest = ippRequest(CupsAddModifyPrinter, cupsPrinterUri(printerName)).apply {
+    ) =
+        exchange(ippRequest(CupsAddModifyPrinter, cupsPrinterUri(printerName)).apply {
             with(operationGroup) {
                 attribute("device-uri", Uri, deviceUri)
                 ppdName?.let { attribute("ppd-name", NameWithoutLanguage, it.toIppString()) }
                 printerInfo?.let { attribute("printer-info", TextWithoutLanguage, it.toIppString()) }
                 printerLocation?.let { attribute("printer-location", TextWithoutLanguage, it.toIppString()) }
-                documentInputStream = ppdInputStream
             }
-        }
-        return exchange(ippRequest)
-    }
+            documentInputStream = ppdInputStream
+        })
 
     fun deletePrinter(printerName: String) =
         exchange(ippRequest(CupsDeletePrinter, cupsPrinterUri(printerName)))
