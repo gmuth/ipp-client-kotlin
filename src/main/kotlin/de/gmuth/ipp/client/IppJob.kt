@@ -106,7 +106,6 @@ class IppJob(
     @JvmOverloads
     fun waitForTermination(delayMillis: Long = defaultDelayMillis) {
         log.info { "wait for termination of job #$id" }
-        if (state == PendingHeld) log.warn { "manual action might be necessary" }
         var lastPrinterString = ""
         var lastJobString = toString()
         log.info { lastJobString }
