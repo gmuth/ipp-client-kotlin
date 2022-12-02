@@ -9,7 +9,6 @@ import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.log.Logging
-import java.io.File
 import java.io.InputStream
 import java.net.URI
 import java.time.Duration
@@ -55,7 +54,7 @@ open class CupsClient(
     protected fun cupsPrinterUri(printerName: String) =
         with(cupsUri) { URI("$scheme://$host/printers/$printerName") }
 
-    // https://openprinting.github.io/cups/doc/spec-ipp.html#CUPS_ADD_MODIFY_PRINTER
+    // https://www.cups.org/doc/spec-ipp.html#CUPS_ADD_MODIFY_PRINTER
     fun addModifyPrinter(
         printerName: String,
         deviceUri: URI,
@@ -100,7 +99,8 @@ open class CupsClient(
     val ippPrinter = IppPrinter(cupsUri, ippClient = ippClient, getPrinterAttributesOnInit = false)
 
     fun createPrinterSubscription(
-        notifyEvents: List<String>? = listOf("all"), // https://datatracker.ietf.org/doc/html/rfc3995#section-5.3.3.4.2
+        // https://datatracker.ietf.org/doc/html/rfc3995#section-5.3.3.4.2
+        notifyEvents: List<String>? = listOf("all"),
         notifyLeaseDuration: Duration? = null
     ) =
         ippPrinter.createPrinterSubscription(notifyEvents, notifyLeaseDuration)
@@ -111,41 +111,4 @@ open class CupsClient(
     ) =
         createPrinterSubscription(notifyEvents.toList(), notifyLeaseDuration)
 
-    // --------------------------------------
-    // wait for print jobs and copy documents
-    // --------------------------------------
-
-    fun copyPrintJobDocuments(
-        workDirectory: File = File("cups-${cupsUri.host}"),
-        leaseDuration: Duration = Duration.ofMinutes(30),
-        autoRenew: Boolean = true,
-        deleteCanceledJobs: Boolean = true,
-        command: String? = null
-    ) {
-        ippPrinter.workDirectory = workDirectory
-        log.info { "workDirectory: $workDirectory" }
-        val subscription = createPrinterSubscription(
-            "job-state-changed",
-            notifyLeaseDuration = leaseDuration
-        )
-        subscription.getAndProcessNotificatons(
-            Duration.ofSeconds(5), // polling interval
-            autoRenewSubscription = autoRenew
-        ) {
-            with(it) {
-                log.info { "$subscribedEvent: $text" }
-                when (subscribedEvent) {
-                    "job-created" -> with(getJob()) {
-                        log.info { this }
-                        getAndSaveDocuments(command = command)
-                    }
-
-                    "job-completed" -> with(getJob()) {
-                        log.info { this }
-                        if (deleteCanceledJobs && (isCanceled() || isAborted())) deleteDocuments()
-                    }
-                }
-            }
-        }
-    }
 }
