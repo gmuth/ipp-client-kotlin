@@ -5,12 +5,9 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.http.Http
-import de.gmuth.ipp.core.IppException
-import de.gmuth.ipp.core.IppOperation
+import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppOperation.*
-import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppTag.*
-import de.gmuth.ipp.core.toIppString
 import de.gmuth.log.Logging
 import java.io.InputStream
 import java.net.URI
@@ -54,7 +51,7 @@ open class CupsClient(
     fun setDefault(printerName: String) =
         exchange(ippRequest(CupsSetDefault, cupsPrinterUri(printerName)))
 
-    protected fun cupsPrinterUri(printerName: String) =
+    fun cupsPrinterUri(printerName: String) =
         with(cupsUri) { URI("$scheme://$host/printers/$printerName") }
 
     // https://www.cups.org/doc/spec-ipp.html#CUPS_ADD_MODIFY_PRINTER
@@ -63,21 +60,53 @@ open class CupsClient(
         deviceUri: URI,
         printerInfo: String?,
         printerLocation: String?,
-        ppdName: String? = null, // virtual PPDs like "everywhere" are not supported by older CUPS versions
+        ppdName: String? = null, // virtual PPD 'everywhere' is not supported by all CUPS versions
         ppdInputStream: InputStream? = null
     ) =
-        exchange(ippRequest(CupsAddModifyPrinter, cupsPrinterUri(printerName)).apply {
-            with(operationGroup) {
-                attribute("device-uri", Uri, deviceUri)
-                ppdName?.let { attribute("ppd-name", NameWithoutLanguage, it.toIppString()) }
-                printerInfo?.let { attribute("printer-info", TextWithoutLanguage, it.toIppString()) }
-                printerLocation?.let { attribute("printer-location", TextWithoutLanguage, it.toIppString()) }
-            }
+        exchange(cupsPrinterRequest(
+            CupsAddModifyPrinter, printerName, deviceUri, ppdName, printerInfo, printerLocation
+        ).apply {
             documentInputStream = ppdInputStream
         })
 
     fun deletePrinter(printerName: String) =
         exchange(ippRequest(CupsDeletePrinter, cupsPrinterUri(printerName)))
+
+    // https://www.cups.org/doc/spec-ipp.html#CUPS_CREATE_LOCAL_PRINTER
+    fun createLocalPrinter(
+        printerName: String,
+        deviceUri: URI,
+        printerInfo: String?,
+        printerLocation: String?,
+        ppdName: String? // virtual PPD 'everywhere' is supported asynchronous
+    ) =
+        exchange(
+            cupsPrinterRequest(
+                CupsCreateLocalPrinter, printerName, deviceUri, ppdName, printerInfo, printerLocation
+            )
+        )
+
+    // -----------------------------------------------------------------
+    // build request for CupsCreateLocalPrinter and CupsAddModifyPrinter
+    // -----------------------------------------------------------------
+
+    fun cupsPrinterRequest(
+        operation: IppOperation,
+        printerName: String,
+        deviceUri: URI? = null,
+        ppdName: String? = null,
+        printerInfo: String? = null,
+        printerLocation: String? = null
+    ) =
+        ippRequest(operation, cupsPrinterUri(printerName)).apply {
+            with(createAttributesGroup(Printer)) {
+                attribute("printer-name", NameWithoutLanguage, printerName.toIppString())
+                deviceUri?.let { attribute("device-uri", Uri, it) }
+                ppdName?.let { attribute("ppd-name", NameWithoutLanguage, it.toIppString()) }
+                printerInfo?.let { attribute("printer-info", TextWithoutLanguage, it.toIppString()) }
+                printerLocation?.let { attribute("printer-location", TextWithoutLanguage, it.toIppString()) }
+            }
+        }
 
     //----------------------
     // delegate to IppClient
@@ -112,4 +141,44 @@ open class CupsClient(
     ) =
         createPrinterSubscription(notifyEvents.toList(), notifyLeaseDuration)
 
+    //-----------------------------
+    // Setup IPP Everywhere Printer
+    //-----------------------------
+
+    fun setupIppEverywherePrinter(
+        printerName: String,
+        deviceUri: URI,
+        printerInfo: String? = null,
+        printerLocation: String? = null
+    ): IppPrinter {
+
+        createLocalPrinter(printerName, deviceUri, printerInfo, printerLocation, ppdName = "everywhere").run {
+            log.info { "$statusMessage ${printerGroup.getValues<List<URI>>("printer-uri-supported")}" }
+        }
+
+        return getPrinter(printerName).apply {
+
+            // https://github.com/apple/cups/issues/5919
+            log.info { "Waiting for CUPS to generate IPP Everywhere PPD." }
+            log.info { this }
+            do {
+                Thread.sleep(1000)
+                updateAttributes("printer-make-and-model")
+            } while (!makeAndModel.text.lowercase().contains("everywhere"))
+            log.info { this }
+
+            // make printer permanent
+            exchange(ippRequest(CupsAddModifyPrinter, cupsPrinterUri(printerName)).apply {
+                createAttributesGroup(Printer).apply {
+                    attribute("printer-is-temporary", IppTag.Boolean, false)
+                }
+            })
+
+            // make printer operational
+            enable()
+            resume()
+            updateAttributes()
+            log.info { this }
+        }
+    }
 }
