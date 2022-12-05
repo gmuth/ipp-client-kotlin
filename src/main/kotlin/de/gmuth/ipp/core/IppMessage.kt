@@ -135,7 +135,7 @@ abstract class IppMessage() {
             log.warn { "no raw bytes to save. you must call read/decode or write/encode before." }
         } else {
             file.writeBytes(rawBytes!!)
-            log.info { "saved ${file.length()} bytes: ${file.path}" }
+            log.info { "saved ${file.path} (${file.length()} bytes)" }
         }
 
     // -------

@@ -64,7 +64,7 @@ open class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttrib
                 it.newLine()
             }
         }
-        log.info { "saved: $path" }
+        log.info { "saved $path" }
     }
 
 }

@@ -29,6 +29,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlin.io.path.createTempDirectory
+import kotlin.io.path.pathString
 
 class IppPrinterTests {
 
@@ -102,7 +104,7 @@ class IppPrinterTests {
     @Test
     fun savePrinterAttributes() {
         httpClient.mockResponse("Simulated_Laser_Printer/Get-Printer-Attributes.ipp")
-        printer.savePrinterAttributes()
+        printer.savePrinterAttributes(createTempDirectory().pathString)
     }
 
     @Test
