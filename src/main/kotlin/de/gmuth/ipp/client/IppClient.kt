@@ -9,7 +9,6 @@ import de.gmuth.ipp.core.IppException
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppResponse
-import de.gmuth.ipp.core.IppStatus.ClientErrorBadRequest
 import de.gmuth.ipp.core.IppStatus.SuccessfulOk
 import de.gmuth.ipp.core.IppTag.Unsupported
 import de.gmuth.ipp.iana.IppRegistrationsSection2
@@ -152,7 +151,7 @@ open class IppClient(
                 saveMessages("decoding_ipp_response_${request.requestId}_failed")
             }
         }
-        if (status == ClientErrorBadRequest) request.logDetails("BAD-REQUEST: ")
+        if (status.isClientError()) request.logDetails("REQUEST: ")
         if (status != SuccessfulOk) log.warn { "status: $status" }
         if (hasStatusMessage()) log.debug { "status-message: $statusMessage" }
         if (containsGroup(Unsupported)) unsupportedGroup.values.forEach {
