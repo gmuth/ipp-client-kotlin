@@ -151,6 +151,9 @@ open class CupsClient(
         printerInfo: String? = null,
         printerLocation: String? = null
     ): IppPrinter {
+        
+        // validate ipp scheme
+        if (!deviceUri.scheme.startsWith("ipp")) throw IllegalArgumentException(deviceUri.toString())
 
         createLocalPrinter(printerName, deviceUri, printerInfo, printerLocation, ppdName = "everywhere").run {
             log.info { "$statusMessage ${printerGroup.getValues<List<URI>>("printer-uri-supported")}" }
