@@ -102,6 +102,12 @@ open class IppPrinter(
     val makeAndModel: IppString
         get() = attributes.getValue("printer-make-and-model")
 
+    val info: IppString
+        get() = attributes.getValue("printer-info")
+
+    val location: IppString
+        get() = attributes.getValue("printer-location")
+
     val isAcceptingJobs: Boolean
         get() = attributes.getValue("printer-is-accepting-jobs")
 
@@ -470,8 +476,13 @@ open class IppPrinter(
     // Logging
     // -------
 
-    override fun toString() =
-        "IppPrinter: name=$name, makeAndModel=$makeAndModel, state=$state, stateReasons=$stateReasons"
+    override fun toString() = StringBuilder("IppPrinter:").run {
+        if (attributes.contains("printer-name")) append(" name=$name")
+        append(", makeAndModel=$makeAndModel")
+        append(", state=$state, stateReasons=$stateReasons")
+        if (attributes.contains("printer-is-accepting-jobs")) append(", isAcceptingJobs=$isAcceptingJobs")
+        toString()
+    }
 
     fun logDetails() =
         attributes.logDetails(title = "PRINTER-$name ($makeAndModel), $state $stateReasons")
