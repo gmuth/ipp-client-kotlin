@@ -50,7 +50,7 @@ open class IppPrinter(
         }
     }
 
-    constructor(printerAttributes: IppAttributesGroup, ippClient: IppClient = IppClient()) : this(
+    constructor(printerAttributes: IppAttributesGroup, ippClient: IppClient) : this(
         printerAttributes.getValues<List<URI>>("printer-uri-supported").first(),
         printerAttributes,
         ippClient = ippClient
