@@ -6,17 +6,19 @@ import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppStatus
 import de.gmuth.log.Logging
 import java.io.File
+import kotlin.io.path.createTempDirectory
+import kotlin.io.path.pathString
 
 /**
- * Copyright (c) 2020-2021 Gerhard Muth
+ * Copyright (c) 2020-2022 Gerhard Muth
  */
 
 class IppExchangeException(
-        val request: IppRequest,
-        val response: IppResponse? = null,
-        val httpStatus: Int? = null,
-        message: String = defaultMessage(request, response),
-        cause: Exception? = null
+    val request: IppRequest,
+    val response: IppResponse? = null,
+    val httpStatus: Int? = null,
+    message: String = defaultMessage(request, response),
+    cause: Exception? = null
 
 ) : IppException(message, cause) {
 
@@ -43,9 +45,12 @@ class IppExchangeException(
         response?.logDetails("RESPONSE: ")
     }
 
-    fun saveMessages(fileNameWithoutSuffix: String = "ipp_exchange_exception") {
-        request.saveRawBytes(File("$fileNameWithoutSuffix.request"))
-        response?.saveRawBytes(File("$fileNameWithoutSuffix.response"))
+    fun saveMessages(
+        fileNameWithoutSuffix: String = "ipp_exchange_exception",
+        directory: String = createTempDirectory("ipp-client-").pathString
+    ) {
+        request.saveRawBytes(File(directory, "$fileNameWithoutSuffix.request"))
+        response?.saveRawBytes(File(directory, "$fileNameWithoutSuffix.response"))
     }
 
 }
