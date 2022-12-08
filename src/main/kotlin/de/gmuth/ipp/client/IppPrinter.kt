@@ -33,6 +33,12 @@ open class IppPrinter(
         } else if (attributes.size == 0) {
             try {
                 updateAttributes(requestedAttributesOnInit)
+                if (isStopped()) {
+                    log.info { toString() }
+                    stateMessage?.let { log.info { it } }
+                    alert?.let { log.info { it } }
+                    alertDescription?.let { log.info { it } }
+                }
             } catch (ippExchangeException: IppExchangeException) {
                 log.logWithCauseMessages(ippExchangeException)
                 log.error { "failed to get printer attributes on init" }
@@ -117,6 +123,9 @@ open class IppPrinter(
     val stateReasons: List<String>
         get() = attributes.getValues("printer-state-reasons")
 
+    val stateMessage: IppString?
+        get() = attributes.getValueOrNull("printer-state-message")
+
     val documentFormatSupported: List<String>
         get() = attributes.getValues("document-format-supported")
 
@@ -159,6 +168,12 @@ open class IppPrinter(
                     )
             }
         }
+
+    val alert: List<String>? // PWG 5100.9
+        get() = attributes.getValuesOrNull("printer-alert")
+
+    val alertDescription: List<IppString>? // PWG 5100.9
+        get() = attributes.getValuesOrNull("printer-alert-description")
 
     // ----------------------------------------------
     // extensions supported by cups and some printers
