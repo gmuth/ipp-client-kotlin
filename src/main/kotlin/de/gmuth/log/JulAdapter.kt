@@ -11,7 +11,7 @@ import java.util.logging.LogManager
 
 // forward log messages to java util logging
 // https://docs.oracle.com/javase/8/docs/technotes/guides/logging/overview.html
-class JulAdapter(name: String) : Logging.Logger(name, supportLevelConfiguration = true) {
+class JulAdapter(name: String) : Logger(name, supportLevelConfiguration = true) {
 
     private val julLogger = java.util.logging.Logger.getLogger(name)
 

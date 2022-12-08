@@ -9,7 +9,7 @@ import java.io.PrintWriter
 import java.time.LocalTime.now
 import java.time.format.DateTimeFormatter
 
-class ConsoleLogger(name: String) : Logging.Logger(name, supportLevelConfiguration = true) {
+class ConsoleLogger(name: String) : Logger(name, supportLevelConfiguration = true) {
 
     private var level: LogLevel = Logging.defaultLogLevel
 
