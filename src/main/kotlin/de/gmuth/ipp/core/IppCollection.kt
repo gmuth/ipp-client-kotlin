@@ -7,7 +7,7 @@ package de.gmuth.ipp.core
 import de.gmuth.log.Logging
 
 // RFC8010 3.1.6.
-data class IppCollection(val members: MutableList<IppAttribute<*>> = mutableListOf()) {
+data class IppCollection(val members: MutableCollection<IppAttribute<*>> = mutableListOf()) {
 
     companion object {
         val log = Logging.getLogger {}
@@ -28,18 +28,14 @@ data class IppCollection(val members: MutableList<IppAttribute<*>> = mutableList
     fun <T> getMember(memberName: String) =
         members.single { it.name == memberName } as IppAttribute<T>
 
-    override fun toString() =
-        members.joinToString(" ", "{", "}") {
-            "${it.name}=${it.values.joinToString(",")}"
-        }
+    override fun toString() = members.joinToString(" ", "{", "}") {
+        "${it.name}=${it.values.joinToString(",")}"
+    }
 
     fun logDetails(prefix: String = "") {
         val string = toString()
-        if (string.length < 160) {
-            log.info { "$prefix$string" }
-        } else {
-            members.forEach { it.logDetails(prefix) }
-        }
+        if (string.length < 160) log.info { "$prefix$string" }
+        else members.forEach { member -> member.logDetails(prefix) }
     }
 
 }
