@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2021 Gerhard Muth
+ * Copyright (c) 2020-2022 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppTag.*
@@ -16,7 +16,7 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
         val log = Logging.getLogger {}
     }
 
-    val values = mutableListOf<T>()
+    val values: MutableCollection<T> = mutableListOf()
 
     init {
         if (tag.isDelimiterTag()) throw IppException("'$tag' is not a value tag")
@@ -24,7 +24,7 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
 
     constructor(name: String, tag: IppTag, values: Collection<T>) : this(name, tag) {
         if (values.isNotEmpty()) validateValueClass(values.first() as Any)
-        this.values.addAll(values.toList())
+        this.values.addAll(values)
     }
 
     constructor(name: String, tag: IppTag, vararg values: T) : this(name, tag, values.toList())
