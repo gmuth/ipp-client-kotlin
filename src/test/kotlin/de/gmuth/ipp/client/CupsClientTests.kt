@@ -43,7 +43,7 @@ class CupsClientTests {
 
     @Test
     fun getPrinter() {
-        httpClient.mockResponse("CUPS/Cups-Get-Printers.ipp")
+        httpClient.mockResponse("CUPS_HP_LaserJet_100_color_MFP_M175/Get-Printer-Attributes.ipp")
         cupsClient.getPrinter("ColorJet_HP")
     }
 

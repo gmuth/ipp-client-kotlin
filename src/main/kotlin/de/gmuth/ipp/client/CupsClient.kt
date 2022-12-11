@@ -5,9 +5,13 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.http.Http
-import de.gmuth.ipp.core.*
+import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppOperation.*
+import de.gmuth.ipp.core.IppRequest
+import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
+import de.gmuth.ipp.core.IppTag
 import de.gmuth.ipp.core.IppTag.*
+import de.gmuth.ipp.core.toIppString
 import de.gmuth.log.Logging
 import java.io.InputStream
 import java.net.URI
@@ -38,12 +42,15 @@ open class CupsClient(
         .getAttributesGroups(Printer)
         .map { IppPrinter(it, ippClient) }
 
-    fun getPrinter(printerName: String): IppPrinter {
-        val printerMap = getPrinters().associateBy { it.name.text }
-        return printerMap[printerName] ?: throw IppException("no such cups printer: $printerName").also {
-            log.warn { "available printers: ${printerMap.keys.joinToString(", ")}" }
+    fun getPrinter(printerName: String) =
+        try {
+            IppPrinter(printerUri = cupsPrinterUri(printerName), ippClient = ippClient)
+        } catch (exception: IppExchangeException) {
+            if (exception.statusIs(ClientErrorNotFound)) with(getPrinters()) {
+                if (isNotEmpty()) log.warn { "Available CUPS printers: ${map { it.name }}" }
+            }
+            throw exception
         }
-    }
 
     fun getDefault() =
         IppPrinter(exchange(ippRequest(CupsGetDefault)).printerGroup, ippClient)
@@ -151,7 +158,7 @@ open class CupsClient(
         printerInfo: String? = null,
         printerLocation: String? = null
     ): IppPrinter {
-        
+
         // validate ipp scheme
         if (!deviceUri.scheme.startsWith("ipp")) throw IllegalArgumentException(deviceUri.toString())
 
