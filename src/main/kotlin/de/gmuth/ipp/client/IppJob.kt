@@ -237,15 +237,18 @@ class IppJob(
         printer.printerDirectory(printerUri.toString().substringAfterLast("/"))
 
     // Get and save all documents of this job (CUPS only)
-    fun getAndSaveDocuments(
+    fun cupsGetAndSaveDocuments(
         directory: File = printerDirectory(),
         overwrite: Boolean = true,
         command: String? = null
-    ) {
+    ): Collection<File> {
+        val files = mutableListOf<File>()
         for (documentNumber in (1..numberOfDocuments!!))
             cupsGetDocument(documentNumber).save(directory, overwrite = overwrite).apply {
                 command?.let { Runtime.getRuntime().exec(arrayOf(it, absolutePath)) }
+                files.add(this)
             }
+        return files
     }
 
     // Delete all (previously saved) documents of this job
