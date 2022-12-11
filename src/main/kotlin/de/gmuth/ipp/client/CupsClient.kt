@@ -13,6 +13,7 @@ import de.gmuth.ipp.core.IppTag
 import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.ipp.core.toIppString
 import de.gmuth.log.Logging
+import java.io.File
 import java.io.InputStream
 import java.net.URI
 import java.time.Duration
@@ -44,7 +45,9 @@ open class CupsClient(
 
     fun getPrinter(printerName: String) =
         try {
-            IppPrinter(printerUri = cupsPrinterUri(printerName), ippClient = ippClient)
+            IppPrinter(printerUri = cupsPrinterUri(printerName), ippClient = ippClient).apply {
+                workDirectory = File("cups-${cupsUri.host}")
+            }
         } catch (exception: IppExchangeException) {
             if (exception.statusIs(ClientErrorNotFound)) with(getPrinters()) {
                 if (isNotEmpty()) log.warn { "Available CUPS printers: ${map { it.name }}" }
