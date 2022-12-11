@@ -41,13 +41,17 @@ class IppDocument(val job: IppJob, cupsGetDocumentResponse: IppResponse) {
     }
 
     fun filename() = StringBuilder().run {
+        var suffix: String? = filenameSuffix()
         with(job) {
             append("job-$id")
             numberOfDocuments?.let { if (it > 1) append("-doc-$number") }
             if (attributes.contains("job-originating-user-name")) append("-$originatingUserName")
-            if (attributes.contains("job-name")) append("-${name.text}")
+            if (attributes.contains("job-name")) {
+                append("-${name.text}")
+                if (name.text.endsWith(".$suffix")) suffix = null
+            }
         }
-        append(".${filenameSuffix()}")
+        suffix?.let { append(".$it") }
         toString()
     }
 
