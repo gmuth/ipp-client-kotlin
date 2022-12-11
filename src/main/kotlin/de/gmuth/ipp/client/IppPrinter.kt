@@ -8,6 +8,7 @@ import de.gmuth.http.Http
 import de.gmuth.ipp.client.IppPrinterState.*
 import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppOperation.*
+import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.log.Logging
@@ -29,7 +30,7 @@ open class IppPrinter(
     init {
         log.debug { "create IppPrinter for $printerUri" }
         if (!getPrinterAttributesOnInit) {
-            log.warn { "getPrinterAttributesOnInit disabled => no printer attributes available" }
+            log.info { "getPrinterAttributesOnInit disabled => no printer attributes available" }
         } else if (attributes.size == 0) {
             try {
                 updateAttributes(requestedAttributesOnInit)
@@ -40,16 +41,20 @@ open class IppPrinter(
                     alertDescription?.let { log.info { it } }
                 }
             } catch (ippExchangeException: IppExchangeException) {
-                log.logWithCauseMessages(ippExchangeException)
-                log.error { "failed to get printer attributes on init" }
-                ippExchangeException.response?.let {
-                    if (it.containsGroup(Printer)) log.info { "${it.printerGroup.size} attributes parsed" }
-                    else log.warn { it }
-                }
-                try {
-                    fetchRawPrinterAttributes("getPrinterAttributesFailed.bin")
-                } catch (exception: Exception) {
-                    log.error(exception) { "failed to fetch raw printer attributes" }
+                if (ippExchangeException.statusIs(ClientErrorNotFound))
+                    log.error { ippExchangeException.message }
+                else {
+                    log.logWithCauseMessages(ippExchangeException)
+                    log.error { "failed to get printer attributes on init" }
+                    ippExchangeException.response?.let {
+                        if (it.containsGroup(Printer)) log.info { "${it.printerGroup.size} attributes parsed" }
+                        else log.warn { it }
+                    }
+                    try {
+                        fetchRawPrinterAttributes("getPrinterAttributesFailed.bin")
+                    } catch (exception: Exception) {
+                        log.error(exception) { "failed to fetch raw printer attributes" }
+                    }
                 }
                 throw ippExchangeException
             }
@@ -388,8 +393,8 @@ open class IppPrinter(
         whichJobs: IppWhichJobs? = null,
         myJobs: Boolean? = null,
         limit: Int? = null,
-        requestedAttributes: List<String> = getJobsRequestedAttributes
-    ): List<IppJob> {
+        requestedAttributes: List<String>? = getJobsRequestedAttributes
+    ): Collection<IppJob> {
         val request = ippRequest(GetJobs, requestedAttributes = requestedAttributes).apply {
             operationGroup.run {
                 whichJobs?.keyword?.let {
@@ -404,6 +409,9 @@ open class IppPrinter(
             .getAttributesGroups(Job)
             .map { IppJob(this, it) }
     }
+
+    fun getJobs(whichJobs: IppWhichJobs? = null, vararg requestedAttributes: String) =
+        getJobs(whichJobs, requestedAttributes = requestedAttributes.toList())
 
     //----------------------------
     // Create-Printer-Subscription
