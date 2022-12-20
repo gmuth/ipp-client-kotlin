@@ -224,6 +224,7 @@ open class IppPrinter(
     fun isIdle() = state == Idle
     fun isStopped() = state == Stopped
     fun isProcessing() = state == Processing
+    fun isMediaEmpty() = stateReasons.contains("media-empty")
     fun isMediaNeeded() = stateReasons.contains("media-needed")
     fun isDuplexSupported() = sidesSupported.any { it.startsWith("two-sided") }
     fun supportsOperations(vararg operations: IppOperation) = operationsSupported.containsAll(operations.toList())
