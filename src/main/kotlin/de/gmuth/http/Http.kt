@@ -8,12 +8,12 @@ import de.gmuth.http.Http.Implementation.JavaHttpURLConnection
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI
-import java.util.*
+import java.util.Base64.getEncoder
 import javax.net.ssl.SSLContext
 
 interface Http {
 
-    class Config(
+    data class Config(
         var timeout: Int = 30000, // milli seconds
         var userAgent: String? = null,
         var basicAuth: BasicAuth? = null,
@@ -31,11 +31,13 @@ interface Http {
         }
     }
 
-    class BasicAuth(val user: String, val password: String) {
-        fun encodeBase64(): String = Base64.getEncoder().encodeToString("$user:$password".toByteArray())
+    data class BasicAuth(val user: String, val password: String) {
+        fun encodeBase64(): String = "$user:$password".run {
+            getEncoder().encodeToString(toByteArray())
+        }
     }
 
-    class Response(
+    data class Response(
         val status: Int, val server: String?, val contentType: String?, val contentStream: InputStream?
     )
 
