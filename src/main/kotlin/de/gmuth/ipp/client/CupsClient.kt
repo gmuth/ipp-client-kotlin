@@ -141,7 +141,7 @@ open class CupsClient(
     fun createPrinterSubscription(
         // https://datatracker.ietf.org/doc/html/rfc3995#section-5.3.3.4.2
         notifyEvents: List<String>? = listOf("all"),
-        notifyLeaseDuration: Duration? = null
+        notifyLeaseDuration: Duration? = Duration.ofMinutes(10)
     ) =
         ippPrinter.createPrinterSubscription(notifyEvents, notifyLeaseDuration)
 
