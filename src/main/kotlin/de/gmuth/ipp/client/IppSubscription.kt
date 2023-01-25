@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2021-2022 Gerhard Muth
+ * Copyright (c) 2021-2023 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppAttributesGroup
@@ -126,7 +126,7 @@ class IppSubscription(
 
     fun expired() = !leaseDuration.isZero && now().isAfter(expiresAt)
 
-    fun getAndProcessNotificatons(
+    fun getAndProcessNotifications(
         delay: Duration = Duration.ofSeconds(5),
         autoRenewSubscription: Boolean = false,
         onEvent: (event: IppEventNotification) -> Unit = { log.info { it } }
