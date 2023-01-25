@@ -593,7 +593,7 @@ open class IppPrinter(
         }
     }
 
-    var workDirectory: File = File(".")
+    var workDirectory: File = File("work")
 
     fun printerDirectory(printerName: String = name.text.replace("\\s+".toRegex(), "_")) =
         File(workDirectory, printerName).apply {
