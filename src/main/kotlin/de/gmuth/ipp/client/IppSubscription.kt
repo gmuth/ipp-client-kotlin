@@ -116,34 +116,34 @@ class IppSubscription(
     fun exchange(request: IppRequest) = printer.exchange(request)
 
     //------------------------------------
-    // get and process event notifications
+    // get and handle event notifications
     //------------------------------------
 
-    var processNotifications = false
+    var handleNotifications = false
 
     val expiresAt: LocalDateTime
         get() = leaseStartedAt.plus(leaseDuration)
 
     fun expired() = !leaseDuration.isZero && now().isAfter(expiresAt)
 
-    fun getAndProcessNotifications(
+    fun getAndHandleNotifications(
         delay: Duration = Duration.ofSeconds(5),
         autoRenewSubscription: Boolean = false,
-        onEvent: (event: IppEventNotification) -> Unit = { log.info { it } }
+        handleNotification: (event: IppEventNotification) -> Unit = { log.info { it } }
     ) {
         if (delay < Duration.ofSeconds(1) && autoRenewSubscription)
-            log.warn { "autoRenewSubscription does not work reliably for delays of less than 1 seconds" }
+            log.warn { "autoRenewSubscription does not work reliably for delays of less than 1 second" }
         fun expiresAfterDelay() = !leaseDuration.isZero && now().plus(delay).isAfter(expiresAt.minusSeconds(1))
         try {
-            processNotifications = true
+            handleNotifications = true
             do {
                 if (expired()) log.warn { "subscription #$id has expired" }
-                getNotifications(onlyNewEvents = true).forEach { onEvent(it) }
+                getNotifications(onlyNewEvents = true).forEach { handleNotification(it) }
                 if (expiresAfterDelay() && autoRenewSubscription) renew(leaseDuration)
                 Thread.sleep(delay.toMillis())
-            } while (processNotifications)
+            } while (handleNotifications)
         } catch (exchangeException: IppExchangeException) {
-            processNotifications = false
+            handleNotifications = false
             if (!exchangeException.statusIs(ClientErrorNotFound)) throw exchangeException
             else log.info { exchangeException.response!!.statusMessage }
         }
