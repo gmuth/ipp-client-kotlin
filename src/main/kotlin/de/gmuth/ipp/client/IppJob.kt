@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020-2022 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
 import de.gmuth.ipp.client.IppJobState.*
@@ -12,6 +12,7 @@ import de.gmuth.log.Logging
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
+import java.lang.Runtime.getRuntime
 import java.net.URI
 
 class IppJob(
@@ -61,11 +62,15 @@ class IppJob(
     val kOctets: Int
         get() = attributes.getValue("job-k-octets")
 
-    val numberOfDocuments: Int? // should I switch to nullable values overall?
-        get() = attributes.getValueOrNull("number-of-documents")
+    val numberOfDocuments: Int
+        get() = attributes.getValue("number-of-documents")
 
     val documentNameSupplied: IppString
         get() = attributes.getValue("document-name-supplied")
+
+    // only supported by Apple CUPS
+    val applePrintJobInfo: ApplePrintJobInfo
+        get() = ApplePrintJobInfo(attributes)
 
     fun hasStateReasons() = attributes.containsKey("job-state-reasons")
 
@@ -224,42 +229,32 @@ class IppJob(
     //---------------------------------------------------------
 
     fun cupsGetDocument(documentNumber: Int = 1): IppDocument {
-        if (attributes.contains("number-of-documents") && documentNumber > numberOfDocuments!!) {
-            log.warn { "job has only $numberOfDocuments document(s)" }
-        }
+        if (documentNumber > numberOfDocuments) log.warn { "job has only $numberOfDocuments document(s)" }
         val request = ippRequest(CupsGetDocument).apply {
             operationGroup.attribute("document-number", Integer, documentNumber)
         }
         return IppDocument(this, exchange(request))
     }
 
-    private fun printerDirectory() =
-        printer.printerDirectory(printerUri.toString().substringAfterLast("/"))
+    fun cupsGetDocuments() = (1..numberOfDocuments).map { cupsGetDocument(it) }
 
-    // Get and save all documents of this job (CUPS only)
     fun cupsGetAndSaveDocuments(
         directory: File = printerDirectory(),
         overwrite: Boolean = true,
         command: String? = null
-    ): Collection<File> {
-        val files = mutableListOf<File>()
-        for (documentNumber in (1..numberOfDocuments!!))
-            cupsGetDocument(documentNumber).save(directory, overwrite = overwrite).apply {
-                command?.let { Runtime.getRuntime().exec(arrayOf(it, absolutePath)) }
-                files.add(this)
-            }
-        return files
-    }
+    ): Collection<File> = cupsGetDocuments()
+        .map { document -> document.save(directory, overwrite = overwrite) }
+        .onEach { file -> command?.run { getRuntime().exec(arrayOf(command, file.absolutePath)) } }
 
-    // Delete all (previously saved) documents of this job
-    fun deleteDocuments(directory: File = printerDirectory()) {
-        for (documentNumber in (1..numberOfDocuments!!))
-            cupsGetDocument(documentNumber).delete(directory)
-    }
+    fun deleteDocuments(directory: File = printerDirectory()) =
+        cupsGetDocuments().forEach { document -> document.delete(directory) }
 
     //-----------------------
     // delegate to IppPrinter
     //-----------------------
+
+    private fun printerDirectory() =
+        printer.printerDirectory(printerUri.toString().substringAfterLast("/"))
 
     fun ippRequest(operation: IppOperation, requestedAttributes: List<String>? = null) =
         printer.ippRequest(operation, id, requestedAttributes)

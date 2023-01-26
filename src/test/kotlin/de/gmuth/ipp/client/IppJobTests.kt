@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2021 Gerhard Muth
+ * Copyright (c) 2021-2023 Gerhard Muth
  */
 
 import de.gmuth.http.HttpClientMock
@@ -186,7 +186,6 @@ class IppJobTests {
 
     @Test
     fun cupsGetDocument1() {
-        job.attributes.remove("number-of-documents")
         httpClient.ippResponse = cupsDocumentResponse("application/pdf")
         job.cupsGetDocument().apply {
             log.info { toString() }
