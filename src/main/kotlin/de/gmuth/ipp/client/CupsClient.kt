@@ -1,17 +1,14 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020-2022 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
 import de.gmuth.http.Http
-import de.gmuth.ipp.core.IppOperation
+import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppOperation.*
-import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
-import de.gmuth.ipp.core.IppTag
 import de.gmuth.ipp.core.IppTag.*
-import de.gmuth.ipp.core.toIppString
 import de.gmuth.log.Logging
 import java.io.File
 import java.io.InputStream
@@ -45,9 +42,14 @@ open class CupsClient(
             ippConfig.userName = value
         }
 
-    fun getPrinters() = exchange(ippRequest(CupsGetPrinters))
-        .getAttributesGroups(Printer)
-        .map { IppPrinter(it, ippClient) }
+    fun getPrinters() = try {
+        exchange(ippRequest(CupsGetPrinters))
+            .getAttributesGroups(Printer)
+            .map { IppPrinter(it, ippClient) }
+    } catch (ippExchangeException: IppExchangeException) {
+        if (ippExchangeException.isClientErrorNotFound()) emptyList()
+        else throw ippExchangeException
+    }
 
     fun getPrinter(printerName: String) =
         try {

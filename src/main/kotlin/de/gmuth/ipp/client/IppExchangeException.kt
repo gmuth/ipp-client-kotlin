@@ -1,5 +1,9 @@
 package de.gmuth.ipp.client
 
+/**
+ * Copyright (c) 2020-2023 Gerhard Muth
+ */
+
 import de.gmuth.ipp.core.IppException
 import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppResponse
@@ -8,10 +12,7 @@ import de.gmuth.log.Logging
 import java.io.File
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.pathString
-
-/**
- * Copyright (c) 2020-2022 Gerhard Muth
- */
+import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 
 class IppExchangeException(
     val request: IppRequest,
@@ -38,6 +39,8 @@ class IppExchangeException(
     }
 
     fun statusIs(status: IppStatus) = response?.status == status
+
+    fun isClientErrorNotFound() = statusIs(ClientErrorNotFound)
 
     fun logDetails() {
         if (httpStatus != null) log.info { "HTTP-STATUS: $httpStatus" }
