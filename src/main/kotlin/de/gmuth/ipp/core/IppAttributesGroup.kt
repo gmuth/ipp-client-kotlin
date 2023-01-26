@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2022 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
 import de.gmuth.log.Logging
@@ -43,6 +43,8 @@ open class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttrib
     @Suppress("UNCHECKED_CAST")
     fun <T> getValues(name: String) =
         get(name)?.values as T ?: throw IppException("attribute '$name' not found in group $tag")
+
+    fun getText(name: String) = getValue<IppString>(name).text
 
     fun put(attributesGroup: IppAttributesGroup) {
         log.debug { "put ${attributesGroup.size} attributes" }
