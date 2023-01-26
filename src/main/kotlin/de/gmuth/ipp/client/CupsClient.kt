@@ -21,7 +21,7 @@ import java.time.Duration
 // https://www.cups.org/doc/spec-ipp.html
 open class CupsClient(
     val cupsUri: URI = URI.create("ipp://localhost"),
-    ippConfig: IppConfig = IppConfig(),
+    val ippConfig: IppConfig = IppConfig(),
     httpClient: Http.Client = Http.defaultImplementation.createClient(Http.Config())
 ) {
     constructor(host: String = "localhost") : this(URI.create("ipp://$host"))
@@ -38,6 +38,12 @@ open class CupsClient(
     }
 
     val ippClient = IppClient(ippConfig, httpClient)
+
+    var userName: String?
+        get() = ippConfig.userName
+        set(value) {
+            ippConfig.userName = value
+        }
 
     fun getPrinters() = exchange(ippRequest(CupsGetPrinters))
         .getAttributesGroups(Printer)
