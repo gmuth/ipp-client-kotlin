@@ -14,8 +14,8 @@ data class ApplePrintJobInfo(
     val jobOwner: String
 ) {
     constructor(jobAttributes: IppAttributesGroup) : this(
-        jobAttributes.getText("com.apple.print.JobInfo.PMApplicationName"),
-        jobAttributes.getText("com.apple.print.JobInfo.PMJobName"),
-        jobAttributes.getText("com.apple.print.JobInfo.PMJobOwner")
+        jobAttributes.getTextValue("com.apple.print.JobInfo.PMApplicationName"),
+        jobAttributes.getTextValue("com.apple.print.JobInfo.PMJobName"),
+        jobAttributes.getTextValue("com.apple.print.JobInfo.PMJobOwner")
     )
 }

@@ -44,7 +44,7 @@ open class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttrib
     fun <T> getValues(name: String) =
         get(name)?.values as T ?: throw IppException("attribute '$name' not found in group $tag")
 
-    fun getText(name: String) = getValue<IppString>(name).text
+    fun getTextValue(name: String) = getValue<IppString>(name).text
 
     fun put(attributesGroup: IppAttributesGroup) {
         log.debug { "put ${attributesGroup.size} attributes" }
