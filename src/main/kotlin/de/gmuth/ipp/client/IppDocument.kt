@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2021-2022 Gerhard Muth
+ * Copyright (c) 2021-2023 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppException
@@ -45,8 +45,8 @@ class IppDocument(val job: IppJob, cupsGetDocumentResponse: IppResponse) {
         with(job) {
             append("job-$id")
             numberOfDocuments?.let { if (it > 1) append("-doc-$number") }
-            if (attributes.contains("job-originating-user-name")) append("-$originatingUserName")
-            if (attributes.contains("job-name")) {
+            if (attributes.containsKey("job-originating-user-name")) append("-$originatingUserName")
+            if (attributes.containsKey("job-name")) {
                 append("-${name.text}")
                 if (name.text.endsWith(".$suffix")) suffix = null
             }
@@ -72,7 +72,7 @@ class IppDocument(val job: IppJob, cupsGetDocumentResponse: IppResponse) {
     }
 
     override fun toString() = StringBuilder("document #$number ($format)").run {
-        if (attributes.contains("document-name")) append(" '$name'")
+        if (attributes.containsKey("document-name")) append(" '$name'")
         toString()
     }
 

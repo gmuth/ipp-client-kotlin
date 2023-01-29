@@ -155,8 +155,8 @@ class IppSubscription(
 
     override fun toString() = StringBuilder("subscription #$id:").run {
         if (hasJobId()) append(" job #$jobId")
-        if (attributes.contains("notify-events")) append(" events=${events.joinToString(",")}")
-        if (attributes.contains("notify-lease-duration")) {
+        if (attributes.containsKey("notify-events")) append(" events=${events.joinToString(",")}")
+        if (attributes.containsKey("notify-lease-duration")) {
             append(" lease-duration=$leaseDuration (expires at $expiresAt)")
         }
         toString()

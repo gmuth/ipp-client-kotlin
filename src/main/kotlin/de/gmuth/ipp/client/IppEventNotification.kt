@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2021-2022 Gerhard Muth
+ * Copyright (c) 2021-2023 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppAttributesGroup
@@ -64,12 +64,12 @@ class IppEventNotification(
         append("event #$sequenceNumber:")
         append(" [$subscribedEvent] $text")
         with(attributes) {
-            if (contains("notify-job-id")) append(", job #$jobId")
-            if (contains("job-state")) append(", job-state=$jobState")
-            if (contains("job-state-reasons")) append(" (reasons=${jobStateReasons.joinToString(",")})")
-            if (contains("printer-name")) append(", printer-name=$printerName")
-            if (contains("printer-state")) append(", printer-state=$printerState")
-            if (contains("printer-state-reasons")) append(" (reasons=${printerStateReasons.joinToString(",")})")
+            if (containsKey("notify-job-id")) append(", job #$jobId")
+            if (containsKey("job-state")) append(", job-state=$jobState")
+            if (containsKey("job-state-reasons")) append(" (reasons=${jobStateReasons.joinToString(",")})")
+            if (containsKey("printer-name")) append(", printer-name=$printerName")
+            if (containsKey("printer-state")) append(", printer-state=$printerState")
+            if (containsKey("printer-state-reasons")) append(" (reasons=${printerStateReasons.joinToString(",")})")
         }
         toString()
     }
