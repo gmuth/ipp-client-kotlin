@@ -113,7 +113,7 @@ open class IppClient(
     fun toHttpUri(ippUri: URI) = with(ippUri) {
         val scheme = scheme.replace("ipp", "http")
         val port = if (port == -1) 631 else port
-        URI.create("$scheme://$host:$port$path")
+        URI.create("$scheme://$host:$port$rawPath")
     }
 
     fun httpPostRequest(httpUri: URI, request: IppRequest) = httpClient.post(
