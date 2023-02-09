@@ -7,6 +7,7 @@ import de.gmuth.ipp.core.IppStatus.SuccessfulOk
 import de.gmuth.log.Logging
 import org.junit.Test
 import java.net.URI
+import kotlin.test.assertEquals
 
 class IppClientTests {
     companion object {
@@ -22,7 +23,9 @@ class IppClientTests {
 
     @Test
     fun sendRequestToURIWithEncodedWhitespaces() {
-        val request = ippClient.ippRequest(GetPrinterAttributes, URI.create("ipp://localhost/printers/PDF%20Printer"))
+        val request = ippClient.ippRequest(GetPrinterAttributes, URI.create("ipp://0/PDF%20Printer"))
         ippClient.exchange(request)
+        assertEquals("/PDF%20Printer", request.printerUri.rawPath)
+        assertEquals("/PDF Printer", request.printerUri.path)
     }
 }
