@@ -7,7 +7,6 @@ package de.gmuth.ipp.client
 import de.gmuth.http.Http
 import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppOperation.*
-import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.log.Logging
 import java.io.File
@@ -57,7 +56,7 @@ open class CupsClient(
                 workDirectory = File("cups-${cupsUri.host}")
             }
         } catch (exception: IppExchangeException) {
-            if (exception.statusIs(ClientErrorNotFound)) with(getPrinters()) {
+            if (exception.isClientErrorNotFound()) with(getPrinters()) {
                 if (isNotEmpty()) log.warn { "Available CUPS printers: ${map { it.name }}" }
             }
             throw exception
@@ -70,7 +69,7 @@ open class CupsClient(
         exchange(ippRequest(CupsSetDefault, cupsPrinterUri(printerName)))
 
     fun cupsPrinterUri(printerName: String) =
-        with(cupsUri) { URI("$scheme://$host/printers/$printerName") }
+        with(cupsUri) { URI("$scheme://$host:$port/printers/$printerName") }
 
     // https://www.cups.org/doc/spec-ipp.html#CUPS_ADD_MODIFY_PRINTER
     fun addModifyPrinter(
