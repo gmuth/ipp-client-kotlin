@@ -8,7 +8,7 @@ import de.gmuth.ipp.client.IppJobState.*
 import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppTag.*
-import de.gmuth.log.Logging
+import de.gmuth.log.Logging.getLogger
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
@@ -22,7 +22,7 @@ class IppJob(
 
 ) {
     companion object {
-        val log = Logging.getLogger {}
+        val log = getLogger {}
         var defaultDelayMillis: Long = 3000
     }
 
@@ -229,6 +229,7 @@ class IppJob(
     //---------------------------------------------------------
 
     fun cupsGetDocument(documentNumber: Int = 1): IppDocument {
+        log.debug { "cupsGetDocument #$documentNumber for job #$id" }
         if (documentNumber > numberOfDocuments) log.warn { "job has only $numberOfDocuments document(s)" }
         val request = ippRequest(CupsGetDocument).apply {
             operationGroup.attribute("document-number", Integer, documentNumber)
@@ -236,7 +237,9 @@ class IppJob(
         return IppDocument(this, exchange(request))
     }
 
-    fun cupsGetDocuments() = (1..numberOfDocuments).map { cupsGetDocument(it) }
+    fun cupsGetDocuments() = (1..numberOfDocuments).map { cupsGetDocument(it) }.apply {
+        if (size == 0) log.warn { "job #$id has no documents" }
+    }
 
     fun cupsGetAndSaveDocuments(
         directory: File = printerDirectory(),
