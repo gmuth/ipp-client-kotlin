@@ -15,6 +15,8 @@ import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.log.Logging
 import java.io.File
 import java.net.URI
+import java.time.Instant
+import java.time.LocalDate
 import java.util.concurrent.atomic.AtomicInteger
 
 typealias IppResponseInterceptor = (request: IppRequest, response: IppResponse) -> Unit
@@ -43,11 +45,11 @@ open class IppClient(
     companion object {
         val log = Logging.getLogger {}
         const val APPLICATION_IPP = "application/ipp"
-        const val version = "2.4-SNAPSHOT"
-        const val build = "2022"
+        const val version = "2.4"
+        const val build = "20230323"
 
         init {
-            println("IPP-Client: Version: $version, Build: $build, MIT License, (c) 2020-2022 Gerhard Muth")
+            println("IPP-Client: Version: $version, Build: $build, MIT License, (c) 2020-2023 Gerhard Muth")
         }
     }
 

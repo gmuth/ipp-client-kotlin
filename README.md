@@ -10,7 +10,7 @@ RFCs [8010](https://tools.ietf.org/html/rfc8010),
 [![Build](https://github.com/gmuth/ipp-client-kotlin/workflows/build/badge.svg)](https://github.com/gmuth/ipp-client-kotlin/actions?query=workflow%3Abuild)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=gmuth_ipp-client-kotlin&metric=alert_status)](https://sonarcloud.io/summary/overall?id=gmuth_ipp-client-kotlin)
 [![Sonar Coverage](https://img.shields.io/sonar/coverage/gmuth_ipp-client-kotlin?color=00AA00&server=https%3A%2F%2Fsonarcloud.io)](https://sonarcloud.io/component_measures?metric=Coverage&view=list&id=gmuth_ipp-client-kotlin)
-[![Maven Central](https://img.shields.io/maven-central/v/de.gmuth/ipp-client.svg?label=maven%20central)](https://central.sonatype.com/artifact/de.gmuth/ipp-client/2.3/versions)
+[![Maven Central](https://img.shields.io/maven-central/v/de.gmuth/ipp-client.svg?label=maven%20central)](https://central.sonatype.com/artifact/de.gmuth/ipp-client/2.4/overview)
 
 ## Usage
 
@@ -166,7 +166,7 @@ IppOutputStream.log.logLevel = Logging.LogLevel.TRACE
 A simple stdout console writer is enabled by default and can be disabled.
 
 ```kotlin
-Logging.consoleWriterEnabled = false
+Logging.disable()
 ```
 
 You can configure the library to use 
@@ -177,7 +177,7 @@ Then the log levels must be configured according to the underlaying implementati
 or [Slf4j-Android](http://www.slf4j.org/android/)).
 
 ```kotlin
-JulAdapter.configure("/ipp-client-logging.conf")
+JulAdapter.configure()
 Slf4jAdapter.configure()
 ```
 
@@ -206,12 +206,12 @@ The build produces the jar, sources and javadoc artifacts. They are available at
 
 - group: gmuth.de
 - artifact: ipp-client
-- version: 2.3
+- version: 2.4
 
 Add dependency:
 
 ```
-    implementation("de.gmuth:ipp-client:2.3")
+    implementation("de.gmuth:ipp-client:2.4")
 ```
 
 ## No Multiplatform support yet

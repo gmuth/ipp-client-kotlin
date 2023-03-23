@@ -13,7 +13,7 @@ plugins {
 }
 
 group = "de.gmuth"
-version = "2.4-SNAPSHOT"
+version = "2.4"
 
 repositories {
     mavenCentral()
@@ -69,16 +69,14 @@ tasks.compileJava {
 
 // ================= PUBLISHING ================
 
-// Github Packages:
-// do NOT publish from your developer host!
-// to release: 1. remove SNAPSHOT from version; 2. commit & push; 3. check github workflow results
-// if the workflow tries to publish the same release again you'll get: "Received status code 409 from server: Conflict"
-// Maven Central:
-// https://central.sonatype.org/publish/release/
 val repo = System.getProperty("repo")
 publishing {
     repositories {
         if (repo == "github") {
+            // Github Packages:
+            // do NOT publish from your developer host!
+            // to release: 1. remove SNAPSHOT from version; 2. commit & push; 3. check github workflow results
+            // if the workflow tries to publish the same release again you'll get: "Received status code 409 from server: Conflict"
             println("> maven repo github")
             maven {
                 name = "GitHubPackages" // Must match regex [A-Za-z0-9_\-.]+.
@@ -89,7 +87,12 @@ publishing {
                 }
             }
         }
-        // gradlew publish
+        // Maven Central:
+        // https://central.sonatype.org/publish/release/
+        // gradlew -Drepo=sonatype publish
+        // https://s01.oss.sonatype.org/#stagingRepositories (not Safari)
+        // "Close" and wait "for rule evalutaion"
+        // "Release"
         if (repo == "sonatype") {
             println("> maven repo sonatype")
             maven {
