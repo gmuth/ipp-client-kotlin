@@ -74,9 +74,7 @@ publishing {
     repositories {
         if (repo == "github") {
             // Github Packages:
-            // do NOT publish from your developer host!
-            // to release: 1. remove SNAPSHOT from version; 2. commit & push; 3. check github workflow results
-            // if the workflow tries to publish the same release again you'll get: "Received status code 409 from server: Conflict"
+            // gradlew -Drepo=github publish
             println("> maven repo github")
             maven {
                 name = "GitHubPackages" // Must match regex [A-Za-z0-9_\-.]+.

@@ -202,7 +202,7 @@ A Java Version 11 Runtime is only required if you want to use the Java 11 HttpCl
 ## Artifact coordinates
 
 The build produces the jar, sources and javadoc artifacts. They are available at
-[Maven Central Repository](https://search.maven.org/artifact/de.gmuth/ipp-client).
+[maven central repository](https://central.sonatype.com/namespace/de.gmuth).
 
 - group: gmuth.de
 - artifact: ipp-client
