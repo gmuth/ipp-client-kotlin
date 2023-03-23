@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020-2022 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
 import de.gmuth.http.Http
@@ -43,11 +43,11 @@ open class IppClient(
     companion object {
         val log = Logging.getLogger {}
         const val APPLICATION_IPP = "application/ipp"
-        const val version = "2.4-SNAPSHOT"
-        const val build = "2022"
+        const val version = "2.5-SNAPSHOT"
+        const val build = "2023"
 
         init {
-            println("IPP-Client: Version: $version, Build: $build, MIT License, (c) 2020-2022 Gerhard Muth")
+            println("IPP-Client: Version: $version, Build: $build, MIT License, (c) 2020-2023 Gerhard Muth")
         }
     }
 

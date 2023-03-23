@@ -44,7 +44,7 @@ class IppDocument(val job: IppJob, cupsGetDocumentResponse: IppResponse) {
         var suffix: String? = filenameSuffix()
         with(job) {
             append("job-$id")
-            numberOfDocuments?.let { if (it > 1) append("-doc-$number") }
+            numberOfDocuments.let { if (it > 1) append("-doc-$number") }
             if (attributes.containsKey("job-originating-user-name")) append("-$originatingUserName")
             if (attributes.containsKey("job-name")) {
                 append("-${name.text}")
