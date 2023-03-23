@@ -25,7 +25,8 @@ jobs:
       - name: Gradle build
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: build
+          gradle-version: 7.5.1
+          arguments: --console=plain build
       - name: Gradle publish
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
