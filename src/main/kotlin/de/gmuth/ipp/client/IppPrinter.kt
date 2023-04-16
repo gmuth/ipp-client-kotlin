@@ -45,7 +45,7 @@ open class IppPrinter(
                 if (ippExchangeException.statusIs(ClientErrorNotFound))
                     log.error { ippExchangeException.message }
                 else {
-                    log.log(ERROR, ippExchangeException, throwableMessagesOnly = true)
+                    log.logWithCauseMessages(ippExchangeException, ERROR)
                     log.error { "failed to get printer attributes on init" }
                     ippExchangeException.response?.let {
                         if (it.containsGroup(Printer)) log.info { "${it.printerGroup.size} attributes parsed" }
