@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020-2022 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
 import de.gmuth.log.Logging
@@ -38,9 +38,8 @@ class CupsMarker(
         UNKNOWN("?");
 
         companion object {
-            fun fromString(code: String): Color = values().find { it.code == code } ?: UNKNOWN.apply {
-                log.warn { "unknown color code: $code" }
-            }
+            fun fromString(code: String) = values().find { it.code == code }
+                ?: UNKNOWN.apply { log.warn { "unknown color code: $code" } }
         }
     }
 
