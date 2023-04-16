@@ -172,18 +172,20 @@ open class CupsClient(
         IppPrinter(cupsUri, ippClient = ippClient, getPrinterAttributesOnInit = false)
     }
 
-    fun createPrinterSubscription(
+    fun createPrinterSubscriptionx(
         // https://datatracker.ietf.org/doc/html/rfc3995#section-5.3.3.4.2
         notifyEvents: List<String>? = listOf("all"),
-        notifyLeaseDuration: Duration? = Duration.ofMinutes(10)
+        notifyLeaseDuration: Duration? = null,
+        notifyTimeInterval: Duration? = null
     ) =
-        ippPrinter.createPrinterSubscription(notifyEvents, notifyLeaseDuration)
+        ippPrinter.createPrinterSubscription(notifyEvents, notifyLeaseDuration, notifyTimeInterval)
 
     fun createPrinterSubscription(
         vararg notifyEvents: String = arrayOf("all"),
-        notifyLeaseDuration: Duration? = null
+        notifyLeaseDuration: Duration? = null,
+        notifyTimeInterval: Duration? = null
     ) =
-        createPrinterSubscription(notifyEvents.toList(), notifyLeaseDuration)
+        createPrinterSubscriptionx(notifyEvents.toList(), notifyLeaseDuration, notifyTimeInterval)
 
     //-----------------------------
     // Setup IPP Everywhere Printer

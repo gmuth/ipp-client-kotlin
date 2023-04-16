@@ -417,12 +417,14 @@ open class IppPrinter(
     //----------------------------
 
     fun createPrinterSubscription(
-        notifyEvents: List<String>? = listOf("all"), // https://datatracker.ietf.org/doc/html/rfc3995#section-5.3.3.4.2
-        notifyLeaseDuration: Duration? = null
+        // https://datatracker.ietf.org/doc/html/rfc3995#section-5.3.3.4.2
+        notifyEvents: List<String>? = listOf("all"),
+        notifyLeaseDuration: Duration? = null,
+        notifyTimeInterval: Duration? = null
     ): IppSubscription {
         val request = ippRequest(CreatePrinterSubscriptions).apply {
             checkNotifyEvents(notifyEvents)
-            createSubscriptionAttributesGroup(notifyEvents, notifyLeaseDuration)
+            createSubscriptionAttributesGroup(notifyEvents, notifyLeaseDuration, notifyTimeInterval)
         }
         val subscriptionAttributes = exchange(request).getSingleAttributesGroup(Subscription)
         return IppSubscription(this, subscriptionAttributes)
@@ -494,9 +496,9 @@ open class IppPrinter(
         return IppJob(this, response.jobGroup, subscriptionsAttributes)
     }
 
-// -------
-// Logging
-// -------
+    // -------
+    // Logging
+    // -------
 
     override fun toString() = StringBuilder("IppPrinter:").run {
         if (attributes.contains("printer-name")) append(" name=$name")
@@ -509,9 +511,9 @@ open class IppPrinter(
     fun logDetails() =
         attributes.logDetails(title = "PRINTER-$name ($makeAndModel), $state $stateReasons")
 
-// ------------------------------------------------------
-// attribute value checking based on printer capabilities
-// ------------------------------------------------------
+    // ------------------------------------------------------
+    // attribute value checking based on printer capabilities
+    // ------------------------------------------------------
 
     fun checkIfValueIsSupported(supportedAttributeName: String, value: Any) {
         if (attributes.size == 0) return
@@ -568,9 +570,9 @@ open class IppPrinter(
         return attributeValueIsSupported
     }
 
-// -----------------------
-// Save printer attributes
-// -----------------------
+    // -----------------------
+    // Save printer attributes
+    // -----------------------
 
     fun savePrinterAttributes(directory: String = ".") {
         val printerModel: String = makeAndModel.text.replace("\\s+".toRegex(), "_")

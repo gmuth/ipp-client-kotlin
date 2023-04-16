@@ -13,6 +13,7 @@ import de.gmuth.ipp.core.IppString
 import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.log.Logging
 import java.time.Duration
+import java.time.Duration.ofSeconds
 import java.time.LocalDateTime
 import java.time.LocalDateTime.now
 
@@ -38,7 +39,7 @@ class IppSubscription(
         get() = attributes.getValue("notify-subscription-id")
 
     val leaseDuration: Duration
-        get() = Duration.ofSeconds(attributes.getValue<Int>("notify-lease-duration").toLong())
+        get() = ofSeconds(attributes.getValue<Int>("notify-lease-duration").toLong())
 
     val events: List<String>
         get() = attributes.getValues("notify-events")
@@ -49,7 +50,10 @@ class IppSubscription(
     val subscriberUserName: IppString
         get() = attributes.getValue("notify-subscriber-user-name")
 
-    fun hasJobId() = attributes.contains("notify-job-id")
+    val timeInterval: Duration
+        get() = ofSeconds(attributes.getValue<Int>("notify-time-interval").toLong())
+
+    fun hasJobId() = attributes.containsKey("notify-job-id")
 
     //----------------------------
     // Get-Subscription-Attributes
@@ -156,6 +160,7 @@ class IppSubscription(
     override fun toString() = StringBuilder("subscription #$id:").run {
         if (hasJobId()) append(" job #$jobId")
         if (attributes.containsKey("notify-events")) append(" events=${events.joinToString(",")}")
+        if (attributes.containsKey("notify-time-interval")) append(" time-interval=$timeInterval")
         if (attributes.containsKey("notify-lease-duration")) {
             append(" lease-duration=$leaseDuration (expires at $expiresAt)")
         }
