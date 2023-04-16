@@ -424,7 +424,7 @@ open class IppPrinter(
     ): IppSubscription {
         val request = ippRequest(CreatePrinterSubscriptions).apply {
             checkNotifyEvents(notifyEvents)
-            createSubscriptionAttributesGroup(notifyEvents, notifyLeaseDuration, notifyTimeInterval)
+            createSubscriptionAttributesGroup(notifyEvents = notifyEvents, notifyLeaseDuration = notifyLeaseDuration, notifyTimeInterval = notifyTimeInterval)
         }
         val subscriptionAttributes = exchange(request).getSingleAttributesGroup(Subscription)
         return IppSubscription(this, subscriptionAttributes)
