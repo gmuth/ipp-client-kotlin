@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020-2022 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
 import de.gmuth.http.Http
@@ -12,6 +12,7 @@ import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.log.Logging
+import de.gmuth.log.Logging.LogLevel.ERROR
 import java.io.*
 import java.net.URI
 import java.time.Duration
@@ -44,7 +45,7 @@ open class IppPrinter(
                 if (ippExchangeException.statusIs(ClientErrorNotFound))
                     log.error { ippExchangeException.message }
                 else {
-                    log.logWithCauseMessages(ippExchangeException)
+                    log.log(ERROR, ippExchangeException, throwableMessagesOnly = true)
                     log.error { "failed to get printer attributes on init" }
                     ippExchangeException.response?.let {
                         if (it.containsGroup(Printer)) log.info { "${it.printerGroup.size} attributes parsed" }
@@ -194,26 +195,23 @@ open class IppPrinter(
     fun hasCapability(capability: CupsPrinterType.Capability) =
         printerType.contains(capability)
 
-    val markers: List<CupsMarker>
-        get() = mutableListOf<CupsMarker>().apply {
-            with(attributes) {
-                val levels = getValues<List<Int>>("marker-levels")
-                val lowLevels = getValues<List<Int>>("marker-low-levels")
-                val highLevels = getValues<List<Int>>("marker-high-levels")
-                val types = getValues<List<String>>("marker-types")
-                val names = getValues<List<IppString>>("marker-names")
-                val colors = getValues<List<IppString>>("marker-colors")
-                for ((index, type) in types.withIndex())
-                    add(
-                        CupsMarker(
-                            type,
-                            names[index].text,
-                            levels[index],
-                            lowLevels[index],
-                            highLevels[index],
-                            colors[index].text
-                        )
-                    )
+    val markers: Collection<CupsMarker>
+        get() = with(attributes) {
+            val types = getValues<List<String>>("marker-types")
+            val names = getValues<List<IppString>>("marker-names")
+            val levels = getValues<List<Int>>("marker-levels")
+            val lowLevels = getValues<List<Int>>("marker-low-levels")
+            val highLevels = getValues<List<Int>>("marker-high-levels")
+            val colors = getValues<List<IppString>>("marker-colors")
+            (0..types.size - 1).map {
+                CupsMarker(
+                    types[it],
+                    names[it].text,
+                    levels[it],
+                    lowLevels[it],
+                    highLevels[it],
+                    colors[it].text
+                )
             }
         }
 
@@ -252,15 +250,15 @@ open class IppPrinter(
     // Printer administration
     //-----------------------
 
-    fun pause() = exchange(ippRequest(PausePrinter))
-    fun resume() = exchange(ippRequest(ResumePrinter))
-    fun purgeJobs() = exchange(ippRequest(PurgeJobs))
-    fun enable() = exchange(ippRequest(EnablePrinter))
-    fun disable() = exchange(ippRequest(DisablePrinter))
-    fun holdNewJobs() = exchange(ippRequest(HoldNewJobs))
-    fun releaseHeldNewJobs() = exchange(ippRequest(ReleaseHeldNewJobs))
-    fun cancelJobs() = exchange(ippRequest(CancelJobs))
-    fun cancelMyJobs() = exchange(ippRequest(CancelMyJobs))
+    fun pause() = exchangeIppRequest(PausePrinter)
+    fun resume() = exchangeIppRequest(ResumePrinter)
+    fun purgeJobs() = exchangeIppRequest(PurgeJobs)
+    fun enable() = exchangeIppRequest(EnablePrinter)
+    fun disable() = exchangeIppRequest(DisablePrinter)
+    fun holdNewJobs() = exchangeIppRequest(HoldNewJobs)
+    fun releaseHeldNewJobs() = exchangeIppRequest(ReleaseHeldNewJobs)
+    fun cancelJobs() = exchangeIppRequest(CancelJobs)
+    fun cancelMyJobs() = exchangeIppRequest(CancelMyJobs)
 
     //------------------------------------------
     // Get-Printer-Attributes
@@ -475,15 +473,15 @@ open class IppPrinter(
     fun ippRequest(operation: IppOperation, jobId: Int? = null, requestedAttributes: List<String>? = null) =
         ippClient.ippRequest(operation, printerUri, jobId, requestedAttributes)
 
-    fun exchange(request: IppRequest): IppResponse {
-        return ippClient.exchange(request.apply {
-            checkIfValueIsSupported("ipp-versions-supported", version!!)
-            checkIfValueIsSupported("operations-supported", code!!.toInt())
-            checkIfValueIsSupported("charset-supported", attributesCharset)
-        })
-    }
+    fun exchange(request: IppRequest) = ippClient.exchange(request.apply {
+        checkIfValueIsSupported("ipp-versions-supported", version!!)
+        checkIfValueIsSupported("operations-supported", code!!.toInt())
+        checkIfValueIsSupported("charset-supported", attributesCharset)
+    })
 
-    fun exchangeForIppJob(request: IppRequest): IppJob {
+    protected fun exchangeIppRequest(operation: IppOperation) = exchange(ippRequest(operation))
+
+    protected fun exchangeForIppJob(request: IppRequest): IppJob {
         val response = exchange(request)
         if (request.containsGroup(Subscription) && !response.containsGroup(Subscription)) {
             request.logDetails("REQUEST: ")
@@ -496,9 +494,9 @@ open class IppPrinter(
         return IppJob(this, response.jobGroup, subscriptionsAttributes)
     }
 
-    // -------
-    // Logging
-    // -------
+// -------
+// Logging
+// -------
 
     override fun toString() = StringBuilder("IppPrinter:").run {
         if (attributes.contains("printer-name")) append(" name=$name")
@@ -511,9 +509,9 @@ open class IppPrinter(
     fun logDetails() =
         attributes.logDetails(title = "PRINTER-$name ($makeAndModel), $state $stateReasons")
 
-    // ------------------------------------------------------
-    // attribute value checking based on printer capabilities
-    // ------------------------------------------------------
+// ------------------------------------------------------
+// attribute value checking based on printer capabilities
+// ------------------------------------------------------
 
     fun checkIfValueIsSupported(supportedAttributeName: String, value: Any) {
         if (attributes.size == 0) return
@@ -570,9 +568,9 @@ open class IppPrinter(
         return attributeValueIsSupported
     }
 
-    // -----------------------
-    // Save printer attributes
-    // -----------------------
+// -----------------------
+// Save printer attributes
+// -----------------------
 
     fun savePrinterAttributes(directory: String = ".") {
         val printerModel: String = makeAndModel.text.replace("\\s+".toRegex(), "_")
