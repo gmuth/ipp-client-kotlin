@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2022 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppTag.*
@@ -48,11 +48,13 @@ class IppRequest : IppMessage {
     fun createSubscriptionAttributesGroup(
         notifyEvents: List<String>? = null,
         notifyLeaseDuration: Duration? = null,
+        notifyTimeInterval: Duration? = null,
         notifyJobId: Int? = null
     ) = createAttributesGroup(Subscription).apply {
         attribute("notify-pull-method", Keyword, "ippget")
         notifyJobId?.let { attribute("notify-job-id", Integer, it) }
         notifyEvents?.let { attribute("notify-events", Keyword, it) }
+        notifyTimeInterval?.let { attribute("notify-time-interval", Integer, it.toSeconds()) }
         notifyLeaseDuration?.let { attribute("notify-lease-duration", Integer, it.toSeconds()) }
     }
 }
