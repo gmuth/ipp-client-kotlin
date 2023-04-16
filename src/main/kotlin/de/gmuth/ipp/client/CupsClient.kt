@@ -50,6 +50,12 @@ open class CupsClient(
         else throw ippExchangeException
     }
 
+    fun getPrinterNames() =
+        getPrinters().map { it.name.toString() }
+
+    fun printerExists(printerName: String) =
+        getPrinterNames().contains(printerName)
+
     fun getPrinter(printerName: String) =
         try {
             IppPrinter(printerUri = cupsPrinterUri(printerName), ippClient = ippClient).apply {
@@ -66,8 +72,9 @@ open class CupsClient(
         exchange(ippRequest(CupsGetDefault)).printerGroup, ippClient
     )
 
-    fun setDefault(printerName: String) =
-        exchangeCupsPrinterRequest(CupsSetDefault, printerName)
+    fun setDefault(printerName: String) = exchange(
+        cupsPrinterRequest(CupsSetDefault, printerName)
+    )
 
     fun cupsPrinterUri(printerName: String) = with(cupsUri) {
         val optionalPort = if (port > 0) ":$port" else ""
@@ -83,21 +90,24 @@ open class CupsClient(
         printerInfo: String? = null,
         printerLocation: String? = null,
         ppdName: String? = null, // virtual PPD 'everywhere' is not supported by all CUPS versions
-        ppdInputStream: InputStream? = null,
-        printerIsTemporary: Boolean? = null
-    ) = exchangeCupsPrinterRequest(
-        CupsAddModifyPrinter,
-        printerName,
-        deviceUri,
-        ppdName,
-        printerInfo,
-        printerLocation,
-        ppdInputStream,
-        printerIsTemporary,
+        ppdInputStream: InputStream? = null
+    ) = exchange(
+        cupsPrinterRequest(
+            CupsAddModifyPrinter,
+            printerName,
+            deviceUri,
+            printerInfo,
+            printerLocation,
+            ppdName,
+            ppdInputStream
+        )
     )
 
-    fun deletePrinter(printerName: String) =
-        exchangeCupsPrinterRequest(CupsDeletePrinter, printerName)
+    fun deletePrinter(printerName: String) = exchange(
+        cupsPrinterRequest(CupsDeletePrinter, printerName)
+    ).apply {
+        log.info { "Printer deleted: $printerName" }
+    }
 
     // https://www.cups.org/doc/spec-ipp.html#CUPS_CREATE_LOCAL_PRINTER
     fun createLocalPrinter(
@@ -106,30 +116,30 @@ open class CupsClient(
         printerInfo: String?,
         printerLocation: String?,
         ppdName: String? // virtual PPD 'everywhere' is supported asynchronous
-    ) =
-        exchangeCupsPrinterRequest(
+    ) = exchange(
+        cupsPrinterRequest(
             CupsCreateLocalPrinter,
             printerName,
             deviceUri,
-            ppdName,
             printerInfo,
-            printerLocation
+            printerLocation,
+            ppdName
         )
+    )
 
-    // ---------------------------------------------------
-    // build and exchange requests for a named CupsPrinter
-    // ---------------------------------------------------
+    // -------------------------------------
+    // build request for a named CupsPrinter
+    // -------------------------------------
 
-    protected fun exchangeCupsPrinterRequest(
+    protected fun cupsPrinterRequest(
         operation: IppOperation,
         printerName: String,
         deviceUri: URI? = null,
-        ppdName: String? = null,
         printerInfo: String? = null,
         printerLocation: String? = null,
-        ppdInputStream: InputStream? = null,
-        printerIsTemporary: Boolean? = null,
-    ) = exchange(
+        ppdName: String? = null,
+        ppdInputStream: InputStream? = null
+    ) =
         ippRequest(operation, cupsPrinterUri(printerName)).apply {
             with(createAttributesGroup(Printer)) {
                 attribute("printer-name", NameWithoutLanguage, printerName.toIppString())
@@ -137,11 +147,9 @@ open class CupsClient(
                 ppdName?.let { attribute("ppd-name", NameWithoutLanguage, it.toIppString()) }
                 printerInfo?.let { attribute("printer-info", TextWithoutLanguage, it.toIppString()) }
                 printerLocation?.let { attribute("printer-location", TextWithoutLanguage, it.toIppString()) }
-                printerIsTemporary?.let { attribute("printer-is-temporary", IppTag.Boolean, printerIsTemporary) }
             }
             ppdInputStream?.let { documentInputStream = ppdInputStream }
         }
-    )
 
     //----------------------
     // delegate to IppClient
@@ -207,7 +215,13 @@ open class CupsClient(
             log.info { this }
 
             // make printer permanent
-            addModifyPrinter(printerName, printerIsTemporary = false)
+            exchange(
+                cupsPrinterRequest(CupsAddModifyPrinter, printerName).apply {
+                    createAttributesGroup(Printer).run {
+                        attribute("printer-is-temporary", IppTag.Boolean, false)
+                    }
+                }
+            )
 
             // make printer operational
             enable()
