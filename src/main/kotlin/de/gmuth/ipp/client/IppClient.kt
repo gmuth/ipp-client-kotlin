@@ -55,6 +55,9 @@ open class IppClient(
         with(httpConfig) { if (userAgent == null) userAgent = "ipp-client/$version" }
     }
 
+    private var httpServer: String? = null
+    fun getHttpServer() = httpServer
+
     //-----------------
     // build IppRequest
     //-----------------
@@ -90,6 +93,7 @@ open class IppClient(
         val httpResponse = httpPostRequest(httpUri, request)
         val response = decodeIppResponse(request, httpResponse)
         log.debug { "$ippUri: $request => $response" }
+        httpServer = httpResponse.server
 
         if (saveMessages) {
             val messageSubDirectory = File(saveMessagesDirectory, ippUri.host).apply {
