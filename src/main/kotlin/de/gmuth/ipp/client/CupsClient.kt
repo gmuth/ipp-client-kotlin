@@ -127,9 +127,9 @@ open class CupsClient(
         )
     )
 
-    // -------------------------------------
-    // build request for a named CupsPrinter
-    // -------------------------------------
+    // --------------------------------------
+    // build request for a named CUPS printer
+    // --------------------------------------
 
     protected fun cupsPrinterRequest(
         operation: IppOperation,
@@ -172,7 +172,7 @@ open class CupsClient(
         IppPrinter(cupsUri, ippClient = ippClient, getPrinterAttributesOnInit = false)
     }
 
-    fun createPrinterSubscriptionx(
+    fun createPrinterSubscription(
         // https://datatracker.ietf.org/doc/html/rfc3995#section-5.3.3.4.2
         notifyEvents: List<String>? = listOf("all"),
         notifyLeaseDuration: Duration? = null,
@@ -185,7 +185,7 @@ open class CupsClient(
         notifyLeaseDuration: Duration? = null,
         notifyTimeInterval: Duration? = null
     ) =
-        createPrinterSubscriptionx(notifyEvents.toList(), notifyLeaseDuration, notifyTimeInterval)
+        createPrinterSubscription(notifyEvents.toList(), notifyLeaseDuration, notifyTimeInterval)
 
     //-----------------------------
     // Setup IPP Everywhere Printer
@@ -199,7 +199,8 @@ open class CupsClient(
     ): IppPrinter {
 
         // validate ipp scheme
-        if (!deviceUri.scheme.startsWith("ipp")) throw IllegalArgumentException(deviceUri.toString())
+        if (!deviceUri.scheme.startsWith("ipp"))
+            throw IllegalArgumentException("uri scheme unsupported: $deviceUri")
 
         createLocalPrinter(printerName, deviceUri, printerInfo, printerLocation, ppdName = "everywhere").apply {
             log.info { "$statusMessage ${printerGroup.getValues<List<URI>>("printer-uri-supported")}" }
