@@ -101,7 +101,7 @@ open class IppPrinter(
 
     var getJobsRequestedAttributes = listOf(
         "job-id", "job-uri", "job-printer-uri", "job-state", "job-name",
-        "job-state-reasons", "job-originating-user-name"
+        "job-state-reasons", "job-originating-user-name", "number-of-documents"
     )
 
     //---------------
