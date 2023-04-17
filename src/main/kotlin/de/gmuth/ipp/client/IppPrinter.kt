@@ -99,10 +99,12 @@ open class IppPrinter(
     val ippConfig: IppConfig
         get() = ippClient.config
 
-    var getJobsRequestedAttributes = listOf(
+    var getJobsRequestedAttributes = mutableListOf(
         "job-id", "job-uri", "job-printer-uri", "job-state", "job-name",
-        "job-state-reasons", "job-originating-user-name", "number-of-documents"
-    )
+        "job-state-reasons", "job-originating-user-name"
+    ).apply {
+        if (isCups()) add("number-of-documents")
+    }
 
     //---------------
     // ipp attributes
