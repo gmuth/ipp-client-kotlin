@@ -51,8 +51,8 @@ enum class IppTag(
     EndCollection(0x37, "endCollection"),
 
     // Text
-    TextWithoutLanguage(0x41, "textWithoutLanguage", { it is IppString }),
-    NameWithoutLanguage(0x42, "nameWithoutLanguage", { it is IppString }),
+    TextWithoutLanguage(0x41, "textWithoutLanguage", { it is IppString || it is String }),
+    NameWithoutLanguage(0x42, "nameWithoutLanguage", { it is IppString || it is String }),
     Keyword(0x44, "keyword", { it is String }),
     Uri(0x45, "uri", { it is java.net.URI }),
     UriScheme(0x46, "uriScheme", { it is String }),

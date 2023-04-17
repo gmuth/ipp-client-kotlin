@@ -37,9 +37,8 @@ open class IppPrinter(
                 updateAttributes(requestedAttributesOnInit)
                 if (isStopped()) {
                     log.info { toString() }
-                    stateMessage?.let { log.info { it } }
-                    alert?.let { log.info { it } }
-                    alertDescription?.let { log.info { it } }
+                    alert?.let { log.info { "alert: $it" } }
+                    alertDescription?.let { log.info { "alert-description: $it" } }
                 }
             } catch (ippExchangeException: IppExchangeException) {
                 if (ippExchangeException.statusIs(ClientErrorNotFound))
@@ -503,10 +502,11 @@ open class IppPrinter(
     // -------
 
     override fun toString() = StringBuilder("IppPrinter:").run {
-        if (attributes.contains("printer-name")) append(" name=$name")
+        if (attributes.containsKey("printer-name")) append(" name=$name")
         append(", makeAndModel=$makeAndModel")
         append(", state=$state, stateReasons=$stateReasons")
-        if (attributes.contains("printer-is-accepting-jobs")) append(", isAcceptingJobs=$isAcceptingJobs")
+        stateMessage?.let { if (it.text.isNotEmpty()) append(", stateMessage=$stateMessage") }
+        if (attributes.containsKey("printer-is-accepting-jobs")) append(", isAcceptingJobs=$isAcceptingJobs")
         toString()
     }
 

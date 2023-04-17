@@ -10,7 +10,6 @@ import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppTag
 import de.gmuth.ipp.core.IppTag.*
-import de.gmuth.ipp.core.toIppString
 import de.gmuth.log.Logging
 import java.io.File
 import java.io.InputStream
@@ -139,11 +138,11 @@ open class CupsClient(
     ) =
         ippRequest(operation, cupsPrinterUri(printerName)).apply {
             with(createAttributesGroup(Printer)) {
-                attribute("printer-name", NameWithoutLanguage, printerName.toIppString())
+                attribute("printer-name", NameWithoutLanguage, printerName)
                 deviceUri?.let { attribute("device-uri", Uri, it) }
-                ppdName?.let { attribute("ppd-name", NameWithoutLanguage, it.toIppString()) }
-                printerInfo?.let { attribute("printer-info", TextWithoutLanguage, it.toIppString()) }
-                printerLocation?.let { attribute("printer-location", TextWithoutLanguage, it.toIppString()) }
+                ppdName?.let { attribute("ppd-name", NameWithoutLanguage, it) }
+                printerInfo?.let { attribute("printer-info", TextWithoutLanguage, it) }
+                printerLocation?.let { attribute("printer-location", TextWithoutLanguage, it) }
             }
             ppdInputStream?.let { documentInputStream = ppdInputStream }
         }
@@ -200,7 +199,11 @@ open class CupsClient(
             throw IllegalArgumentException("uri scheme unsupported: $deviceUri")
 
         createLocalPrinter(printerName, deviceUri, printerInfo, printerLocation, ppdName = "everywhere").apply {
-            log.info { "$statusMessage ${printerGroup.getValues<List<URI>>("printer-uri-supported")}" }
+            log.info {
+                "$statusMessage ${
+                    printerGroup.getValues<List<URI>>("printer-uri-supported").joinToString(",")
+                }"
+            }
         }
 
         return getPrinter(printerName).apply {
