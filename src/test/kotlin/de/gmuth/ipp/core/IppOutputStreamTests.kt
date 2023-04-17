@@ -140,7 +140,7 @@ class IppOutputStreamTest {
 
     @Test
     fun writeAttributeValueNameWithoutLanguageFails() {
-        assertFailsWith<ClassCastException> { ippOutputStream.writeAttributeValue(IppTag.NameWithoutLanguage, 0) }
+        assertFailsWith<IppException> { ippOutputStream.writeAttributeValue(IppTag.NameWithoutLanguage, 0) }
     }
 
     @Test

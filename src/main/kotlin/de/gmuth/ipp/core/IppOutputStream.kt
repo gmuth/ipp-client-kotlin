@@ -127,8 +127,10 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
             }
 
             TextWithoutLanguage,
-            NameWithoutLanguage -> with(value as IppString) {
-                writeString(value.text, attributesCharset)
+            NameWithoutLanguage -> when (value) {
+                is String -> writeString(value, attributesCharset)
+                is IppString -> writeString(value.text, attributesCharset)
+                else -> throw IppException("expected value of type String or IppString")
             }
 
             TextWithLanguage,
