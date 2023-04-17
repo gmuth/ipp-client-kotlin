@@ -1,14 +1,15 @@
 package de.gmuth.http
 
 /**
- * Copyright (c) 2020-2022 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
 import de.gmuth.http.Http.Implementation.JavaHttpURLConnection
 import java.io.InputStream
 import java.io.OutputStream
 import java.net.URI
-import java.util.Base64.getEncoder
+import java.nio.charset.Charset
+import java.util.*
 import javax.net.ssl.SSLContext
 
 interface Http {
@@ -26,15 +27,20 @@ interface Http {
         var acceptEncoding: String? = null,
         var debugLogging: Boolean = false
     ) {
-        fun trustAnyCertificate() {
+        fun trustAnyCertificateAndSSLHostname() {
             sslContext = SSLHelper.sslContextForAnyCertificate()
+            verifySSLHostname = false
         }
     }
 
-    data class BasicAuth(val user: String, val password: String) {
-        fun encodeBase64(): String = "$user:$password".run {
-            getEncoder().encodeToString(toByteArray())
-        }
+    // https://stackoverflow.com/questions/7242316/what-encoding-should-i-use-for-http-basic-authentication
+    data class BasicAuth(val user: String, val password: String, val charset: Charset = Charsets.UTF_8) {
+
+        fun encodeBase64(): String = Base64.getEncoder()
+            .encodeToString("$user:$password".toByteArray(charset))
+
+        fun authorization() =
+            "Basic " + encodeBase64()
     }
 
     data class Response(

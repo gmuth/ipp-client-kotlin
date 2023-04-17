@@ -30,10 +30,7 @@ open class CupsClient(
     }
 
     init {
-        if (cupsUri.scheme == "ipps") httpClient.config.apply {
-            verifySSLHostname = false
-            trustAnyCertificate()
-        }
+        if (cupsUri.scheme == "ipps") httpClient.config.trustAnyCertificateAndSSLHostname()
     }
 
     protected val ippClient = IppClient(ippConfig, httpClient)
