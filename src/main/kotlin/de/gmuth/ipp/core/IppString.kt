@@ -8,7 +8,7 @@ package de.gmuth.ipp.core
 
 data class IppString(val text: String, val language: String? = null) {
 
-    override fun toString() = "$text${if (language == null) "" else "[$language]"}"
+    override fun toString() = "${if (language == null) "" else "[$language] "}$text"
 
 }
 

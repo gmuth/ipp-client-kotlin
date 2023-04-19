@@ -19,7 +19,7 @@ class IppStringTests {
 
     @Test
     fun toStringWithLanguage() {
-        assertEquals("string-with-language[en]", withLanguage.toString())
+        assertEquals("[en] string-with-language", withLanguage.toString())
     }
 
     @Test
