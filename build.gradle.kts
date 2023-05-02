@@ -20,7 +20,7 @@ repositories {
 }
 
 // update gradle wrapper
-// ./gradlew wrapper --gradle-version 7.5.1
+// ./gradlew wrapper --gradle-version 7.6.1
 
 //java {
 //    registerFeature("slf4jSupport") {
