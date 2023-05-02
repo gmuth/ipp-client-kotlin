@@ -8,7 +8,6 @@ import java.io.File
 import java.net.URI
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class IppResponseTests {
@@ -50,18 +49,15 @@ class IppResponseTests {
     @Test
     fun invalidHpNameWithLanguageResponse() {
         // IppInputStream solution: first mark(2) then NameWithLanguage -> readShort().let { if (markSupported() && it < 6) reset() }
-        // ippClient.requestNaturalLanguage = "de" // triggers HP name with language bug
-        assertFailsWith<IppException> {
-            ippResponse.read(File("src/test/resources/invalidHpNameWithLanguage.response"))
-            ippResponse.logDetails()
-            with(ippResponse.jobGroup) {
-                assertEquals(IppString("A4-blank.pdf", "de"), getValue("job-name"))
-                assertEquals(993, getValue("job-id"))
-                assertEquals(7, getValue("job-state")) // canceled
-                assertEquals(listOf("none"), getValues("job-state-reasons"))
-                assertEquals(URI.create("ipp://ColorJet.local/ipp/printer/0993"), getValue("job-uri"))
-            }
-
+        // requestNaturalLanguage = "de" // triggers HP name with language bug
+        ippResponse.read(File("src/test/resources/invalidHpNameWithLanguage.response"))
+        ippResponse.logDetails()
+        with(ippResponse.jobGroup) {
+            assertEquals(IppString("A4-blank.pdf", "de"), getValue("job-name"))
+            assertEquals(993, getValue("job-id"))
+            assertEquals(7, getValue("job-state")) // canceled
+            assertEquals(listOf("none"), getValues("job-state-reasons"))
+            assertEquals(URI.create("ipp://ColorJet.local/ipp/printer/0993"), getValue("job-uri"))
         }
     }
 
