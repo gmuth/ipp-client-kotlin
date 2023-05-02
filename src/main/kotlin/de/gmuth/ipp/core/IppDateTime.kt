@@ -43,7 +43,7 @@ data class IppDateTime(
             zonedDateTime.hour,
             zonedDateTime.minute,
             zonedDateTime.second,
-            deciSeconds = zonedDateTime.get(ChronoField.MILLI_OF_SECOND) / 100,
+            deciSeconds = zonedDateTime[ChronoField.MILLI_OF_SECOND] / 100,
             offsetMinutes = zonedDateTime.zone.rules.getOffset(zonedDateTime.toLocalDateTime()).totalSeconds / 60
     )
 

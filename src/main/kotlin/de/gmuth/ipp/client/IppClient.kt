@@ -56,6 +56,7 @@ open class IppClient(
     }
 
     private var httpServer: String? = null
+    @SuppressWarnings("kotlin:S6512") // read only
     fun getHttpServer() = httpServer
 
     //-----------------
