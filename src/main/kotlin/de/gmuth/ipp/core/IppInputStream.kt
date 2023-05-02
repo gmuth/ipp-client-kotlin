@@ -135,7 +135,8 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
 
             TextWithLanguage,
             NameWithLanguage -> {
-                readShort()
+                mark(2)
+                readShort().let { if (it < 6) reset() } // HP M175nw: support invalid ipp response
                 IppString(
                     language = readString(attributesCharset),
                     text = readString(attributesCharset)
