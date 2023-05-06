@@ -51,6 +51,7 @@ class IppJob(
         get() = attributes.getValue("job-name")
 
     val originatingUserName: IppString
+        @SuppressWarnings("kotlin:S1192")
         get() = attributes.getValue("job-originating-user-name")
 
     val impressionsCompleted: Int
@@ -86,6 +87,12 @@ class IppJob(
 
     fun resourcesAreNotReady() =
         hasStateReasons() && stateReasons.contains("resources-are-not-ready")
+
+    fun getOriginatingUserNameOrAppleJobOwnerOrNull() = when {
+        attributes.containsKey("job-originating-user-name") -> originatingUserName.text
+        attributes.containsKey("com.apple.print.JobInfo.PMJobOwner") -> applePrintJobInfo.jobOwner
+        else -> null
+    }
 
     //-------------------
     // Get-Job-Attributes
@@ -200,7 +207,7 @@ class IppJob(
     ) = ippRequest(operation).apply {
         operationGroup.run {
             attribute("last-document", IppTag.Boolean, lastDocument)
-            documentName?.let { attribute("document-name", NameWithoutLanguage, it.toIppString()) }
+            documentName?.let { attribute("document-name", NameWithoutLanguage, it) }
             documentNaturalLanguage?.let { attribute("document-natural-language", NaturalLanguage, it) }
         }
     }
@@ -237,9 +244,12 @@ class IppJob(
         return IppDocument(this, exchange(request))
     }
 
-    fun cupsGetDocuments() = (1..numberOfDocuments).map { cupsGetDocument(it) }.apply {
-        if (size == 0) log.warn { "job #$id has no documents" }
-    }
+    fun cupsGetDocuments() = (1..numberOfDocuments)
+        .map { cupsGetDocument(it) }
+        .apply {
+            // PreserveJobFiles defaults to one day (https://www.cups.org/doc/man-cupsd.conf.html)
+            if (isEmpty()) log.info { "no documents available for job #$id" }
+        }
 
     fun cupsGetAndSaveDocuments(
         directory: File = printerDirectory(),
@@ -269,6 +279,7 @@ class IppJob(
     // Logging
     // -------
 
+    @SuppressWarnings("kotlin:S3776")
     override fun toString(): String = with(attributes) {
         StringBuffer().run {
             append("Job #$id:")
@@ -277,6 +288,7 @@ class IppJob(
             if (containsKey("job-name")) append(", name=$name")
             if (containsKey("job-originating-user-name")) append(", originating-user-name=$originatingUserName")
             if (containsKey("job-impressions-completed")) append(", impressions-completed=$impressionsCompleted")
+            if (containsKey("com.apple.print.JobInfo.PMJobName")) append(", $applePrintJobInfo")
             toString()
         }
     }
