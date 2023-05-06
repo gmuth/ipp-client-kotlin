@@ -18,8 +18,8 @@ open class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttrib
     }
 
     open fun put(attribute: IppAttribute<*>, onReplaceWarn: Boolean = false) =
-        put(attribute.name, attribute).apply {
-            if (this != null && onReplaceWarn) log.warn { "replaced '$this' with '${attribute.values.joinToString(",")}' in group $tag" }
+        put(attribute.name, attribute).also {
+            if (it != null && onReplaceWarn) log.warn { "replaced '$it' with '${attribute.values.joinToString(",")}' in group $tag" }
         }
 
     fun attribute(name: String, tag: IppTag, vararg values: Any) =
