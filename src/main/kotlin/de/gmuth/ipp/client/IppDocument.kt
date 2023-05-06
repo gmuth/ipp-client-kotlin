@@ -40,15 +40,22 @@ class IppDocument(val job: IppJob, cupsGetDocumentResponse: IppResponse) {
         else -> "bin"
     }
 
+    @SuppressWarnings("kotlin:S3776")
     fun filename() = StringBuilder().run {
         var suffix: String? = filenameSuffix()
         with(job) {
             append("job-$id")
             numberOfDocuments.let { if (it > 1) append("-doc-$number") }
-            if (attributes.containsKey("job-originating-user-name")) append("-$originatingUserName")
+            if (attributes.containsKey("job-originating-user-name")) {
+                append("-$originatingUserName")
+            } else if (attributes.containsKey("com.apple.print.JobInfo.PMJobOwner")) {
+                append("-${applePrintJobInfo.jobOwner}")
+            }
             if (attributes.containsKey("job-name")) {
                 append("-${name.text}")
                 if (name.text.endsWith(".$suffix")) suffix = null
+            } else if (attributes.containsKey("com.apple.print.JobInfo.PMJobName")) {
+                append("-${applePrintJobInfo.jobName}")
             }
         }
         suffix?.let { append(".$it") }
