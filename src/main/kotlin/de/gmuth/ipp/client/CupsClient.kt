@@ -195,8 +195,7 @@ open class CupsClient(
     ): IppPrinter {
 
         // validate ipp scheme
-        if (!deviceUri.scheme.startsWith("ipp"))
-            throw IllegalArgumentException("uri scheme unsupported: $deviceUri")
+        require(deviceUri.scheme.startsWith("ipp")) { "uri scheme unsupported: $deviceUri" }
 
         createLocalPrinter(printerName, deviceUri, printerInfo, printerLocation, ppdName = "everywhere").apply {
             log.info {
@@ -231,6 +230,49 @@ open class CupsClient(
             resume()
             updateAttributes()
             log.info { this }
+        }
+    }
+
+    // --------------------------------------
+    // Wait for print jobs and save documents
+    // --------------------------------------
+
+    fun waitForPrintJobsAndSaveDocuments(
+        workDirectory: File = File("cups-${cupsUri.host}"),
+        leaseDuration: Duration = Duration.ofMinutes(30),
+        autoRenewLease: Boolean = true,
+        command: String? = null, // e.g. "open" -> open <filename> with Preview
+        pretendToBeAppleJobOwner: Boolean = false // Apple CUPS, CVE-32360
+    ) {
+        ippPrinter.workDirectory = workDirectory
+        log.info { "workDirectory: $workDirectory" }
+        // https://www.rfc-editor.org/rfc/rfc3995.html#section-5.3.3.4.3
+        val jobStateChangedSubscription = createPrinterSubscription(
+            "job-state-changed",
+            notifyLeaseDuration = leaseDuration
+        )
+        jobStateChangedSubscription.getAndHandleNotifications(
+            Duration.ofSeconds(1),
+            autoRenewSubscription = autoRenewLease
+        ) {
+            with(it) {
+                log.info { "$subscribedEvent: $text" }
+                when (subscribedEvent) {
+                    "job-created" -> with(getJob()) {
+                        log.info { this }
+                        val configuredUserName = userName
+                        if (pretendToBeAppleJobOwner && attributes.containsKey("com.apple.print.JobInfo.PMJobOwner")) {
+                            userName = applePrintJobInfo.jobOwner
+                        }
+                        try {
+                            cupsGetAndSaveDocuments(command = command)
+                        } catch (throwable: Throwable) {
+                            log.error { "failed to get and save documents for job #$id: ${throwable.message}" }
+                        }
+                        userName = configuredUserName
+                    }
+                }
+            }
         }
     }
 }
