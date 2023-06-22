@@ -73,7 +73,7 @@ class IppDocument(val job: IppJob, cupsGetDocumentResponse: IppResponse) {
         log.info { "$action $this: $file" }
     }
 
-    override fun toString() = StringBuilder("document #$number ($format)").run {
+    override fun toString() = StringBuilder("document #$number ($format) of job #${job.id}").run {
         if (attributes.containsKey("document-name")) append(" '$name'")
         toString()
     }
