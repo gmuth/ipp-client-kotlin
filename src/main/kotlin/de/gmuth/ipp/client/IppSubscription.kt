@@ -73,10 +73,7 @@ class IppSubscription(
     // Get-Notifications
     //------------------
 
-    fun getNotifications(
-        onlyNewEvents: Boolean = true,
-        notifySequenceNumber: Int? = if (onlyNewEvents) lastSequenceNumber + 1 else null
-    ): List<IppEventNotification> {
+    fun getNotifications(notifySequenceNumber: Int? = lastSequenceNumber + 1): List<IppEventNotification> {
         val request = ippRequest(GetNotifications).apply {
             operationGroup.run {
                 attribute("notify-subscription-ids", Integer, id)
@@ -142,7 +139,7 @@ class IppSubscription(
             handleNotifications = true
             do {
                 if (expired()) log.warn { "subscription #$id has expired" }
-                getNotifications(onlyNewEvents = true).forEach { handleNotification(it) }
+                getNotifications().forEach { handleNotification(it) }
                 if (expiresAfterDelay() && autoRenewSubscription) renew(leaseDuration)
                 Thread.sleep(delay.toMillis())
             } while (handleNotifications)
