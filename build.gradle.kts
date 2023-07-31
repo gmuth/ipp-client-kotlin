@@ -38,8 +38,8 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 
     //"slf4jSupportImplementation"("org.slf4j:slf4j-api:1.7.32") // pom.xml: scope=compile, optional=true
-    compileOnly("org.slf4j:slf4j-api:1.7.32")
-    testRuntimeOnly("org.slf4j:slf4j-simple:1.7.32")
+    compileOnly("org.slf4j:slf4j-api:1.7.+")
+    testRuntimeOnly("org.slf4j:slf4j-simple:1.7.+")
 }
 
 // gradlew clean -x test build publishToMavenLocal
@@ -204,7 +204,9 @@ tasks.sonar {
     dependsOn(tasks.jacocoTestReport) // for coverage
 }
 
-tasks.create("fatJar", Jar::class) {
+tasks.register("fatJar", Jar::class) {
+    description = "Generates a fat jar for this project."
+    group = JavaBasePlugin.DOCUMENTATION_GROUP
     manifest.attributes["Main-Class"] = "CopyNewJobsKt"
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from(configurations.runtimeClasspath.get().map(::zipTree))
