@@ -57,7 +57,7 @@ object IppRegistrationsSection2 {
             syntax.contains("resolution") -> Resolution
             syntax.contains("collection") -> BegCollection
             syntax.isEmpty() -> null
-            else -> throw IllegalStateException("'$name' has unknown syntax '$syntax'")
+            else -> error("'$name' has unknown syntax '$syntax'")
         }
 
         // key for map (name is not unique)
@@ -69,7 +69,7 @@ object IppRegistrationsSection2 {
         fun collectionGroupTag() = when (collection) {
             "Operation" -> Operation
             "Job Template" -> Job
-            else -> throw IllegalArgumentException("no IppTag defined for $collection")
+            else -> error("no IppTag defined for $collection")
         }
 
     }
