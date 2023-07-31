@@ -28,6 +28,8 @@ repositories {
 //    }
 //}
 
+val slf4jVersion: String by project // -> gradle.properties
+
 dependencies {
     //implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
     //implementation("org.jetbrains.kotlin:kotlin-stdlib")
@@ -38,8 +40,8 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 
     //"slf4jSupportImplementation"("org.slf4j:slf4j-api:1.7.32") // pom.xml: scope=compile, optional=true
-    compileOnly("org.slf4j:slf4j-api:1.7.+")
-    testRuntimeOnly("org.slf4j:slf4j-simple:1.7.+")
+    compileOnly("org.slf4j:slf4j-api:$slf4jVersion")
+    testRuntimeOnly("org.slf4j:slf4j-simple:$slf4jVersion")
 }
 
 // gradlew clean -x test build publishToMavenLocal
