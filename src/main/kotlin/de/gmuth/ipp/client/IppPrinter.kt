@@ -27,12 +27,14 @@ open class IppPrinter(
     getPrinterAttributesOnInit: Boolean = true,
     requestedAttributesOnInit: List<String>? = null
 ) {
+    var workDirectory: File = File("work")
 
     init {
         log.debug { "create IppPrinter for $printerUri" }
+        if (printerUri.scheme == "ipps") httpConfig.trustAnyCertificateAndSSLHostname()
         if (!getPrinterAttributesOnInit) {
             log.info { "getPrinterAttributesOnInit disabled => no printer attributes available" }
-        } else if (attributes.size == 0) {
+        } else if (attributes.isEmpty()) {
             try {
                 updateAttributes(requestedAttributesOnInit)
                 if (isStopped()) {
@@ -58,6 +60,7 @@ open class IppPrinter(
                 }
                 throw ippExchangeException
             }
+            if (isCups()) workDirectory = File("cups-${printerUri.host}")
         }
     }
 
@@ -101,9 +104,7 @@ open class IppPrinter(
     var getJobsRequestedAttributes = mutableListOf(
         "job-id", "job-uri", "job-printer-uri", "job-state", "job-name",
         "job-state-reasons", "job-originating-user-name"
-    ).apply {
-        if (isCups()) add("number-of-documents")
-    }
+    )
 
     //---------------
     // ipp attributes
@@ -518,7 +519,7 @@ open class IppPrinter(
     // ------------------------------------------------------
 
     fun checkIfValueIsSupported(supportedAttributeName: String, value: Any) {
-        if (attributes.size == 0) return
+        if (attributes.isEmpty()) return
 
         if (!supportedAttributeName.endsWith("-supported"))
             throw IppException("attribute name not ending with '-supported'")
@@ -595,11 +596,9 @@ open class IppPrinter(
         }
     }
 
-    var workDirectory: File = File("work")
-
     fun printerDirectory(printerName: String = name.text.replace("\\s+".toRegex(), "_")) =
         File(workDirectory, printerName).apply {
-            if (!mkdirs() && !isDirectory) throw IppException("failed to create printer directory: $path")
+            if (!mkdirs() && !isDirectory) throw IOException("failed to create printer directory: $path")
         }
 
 }
