@@ -4,9 +4,9 @@ import org.jetbrains.dokka.gradle.DokkaTask
 // where is the jar? build/lib/ipp-client-kotlin...jar
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.7.21"
+    id("org.jetbrains.kotlin.jvm") version "1.7.22"
     id("org.jetbrains.dokka") version "1.7.20"
-    id("org.sonarqube") version "3.5.0.2730" // https://plugins.gradle.org/plugin/org.sonarqube
+    id("org.sonarqube") version "4.3.0.3225" // https://plugins.gradle.org/plugin/org.sonarqube
     id("maven-publish")
     id("signing")
     id("jacoco")
@@ -20,7 +20,7 @@ repositories {
 }
 
 // update gradle wrapper
-// ./gradlew wrapper --gradle-version 7.6.1
+// ./gradlew wrapper --gradle-version 7.6.2
 
 //java {
 //    registerFeature("slf4jSupport") {
@@ -45,6 +45,12 @@ dependencies {
 // gradlew clean -x test build publishToMavenLocal
 defaultTasks("assemble")
 
+//java {
+//    toolchain {
+//        languageVersion.set(JavaLanguageVersion.of(8))
+//    }
+//}
+
 tasks.compileKotlin {
     kotlinOptions {
         // If 1.6 is required you also have to configure gradle plugin org.jetbrains.kotlin.jvm version 1.6
@@ -59,6 +65,7 @@ tasks.compileTestKotlin {
     }
 }
 tasks.compileJava {
+    sourceCompatibility = tasks.compileKotlin.get().kotlinOptions.jvmTarget
     targetCompatibility = tasks.compileKotlin.get().kotlinOptions.jvmTarget
 }
 
@@ -195,4 +202,11 @@ sonar {
 
 tasks.sonar {
     dependsOn(tasks.jacocoTestReport) // for coverage
+}
+
+tasks.create("fatJar", Jar::class) {
+    manifest.attributes["Main-Class"] = "CopyNewJobsKt"
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from(configurations.runtimeClasspath.get().map(::zipTree))
+    with(tasks.jar.get())
 }
