@@ -286,9 +286,11 @@ class IppJob(
             if (containsKey("job-state")) append(" state=$state")
             if (hasStateReasons()) append(" (reasons=${stateReasons.joinToString(",")})")
             if (containsKey("job-name")) append(", name=$name")
-            if (containsKey("job-originating-user-name")) append(", originating-user-name=$originatingUserName")
             if (containsKey("job-impressions-completed")) append(", impressions-completed=$impressionsCompleted")
+            if (containsKey("job-originating-user-name")) append(", originating-user-name=$originatingUserName")
             if (containsKey("com.apple.print.JobInfo.PMJobName")) append(", $applePrintJobInfo")
+            if (containsKey("number-of-documents")) append(", number-of-documents=$numberOfDocuments")
+            if (containsKey("job-printer-uri")) append(", job-printer-uri=$printerUri")
             toString()
         }
     }

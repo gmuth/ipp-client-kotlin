@@ -165,6 +165,8 @@ class IppJobTests {
                 remove("job-name")
                 remove("job-originating-user-name")
                 remove("job-impressions-completed")
+                remove("number-of-documents")
+                remove("job-printer-uri")
             }
             assertEquals("Job #2366:", toString())
         }
