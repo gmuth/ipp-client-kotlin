@@ -47,14 +47,14 @@ class IppDocument(val job: IppJob, cupsGetDocumentResponse: IppResponse) {
             numberOfDocuments.let { if (it > 1) append("-doc-$number") }
             job.getOriginatingUserNameOrAppleJobOwnerOrNull()?.let { append("-$it") }
             if (attributes.containsKey("job-name")) {
-                append("-${name.text}")
+                append("-${name.text.take(100)}")
                 if (name.text.endsWith(".$suffix")) suffix = null
             } else if (attributes.containsKey("com.apple.print.JobInfo.PMJobName")) {
                 append("-${applePrintJobInfo.jobName}")
             }
         }
         suffix?.let { append(".$it") }
-        toString()
+        toString().replace('/', '_')
     }
 
     fun save(
