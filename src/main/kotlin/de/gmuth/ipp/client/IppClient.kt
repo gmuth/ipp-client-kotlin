@@ -136,6 +136,9 @@ open class IppClient(
             }
         }
         if (status != 200) exceptionMessage = "http request to $httpUri failed: status=$status"
+        if (status == 401) exceptionMessage = with(request) {
+            "user '$requestingUserName' is unauthorized for operation '$operation' (status=$status)"
+        }
         exceptionMessage?.run {
             config.logDetails()
             request.logDetails("IPP REQUEST: ")
