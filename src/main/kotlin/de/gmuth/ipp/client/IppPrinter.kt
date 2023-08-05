@@ -474,8 +474,13 @@ open class IppPrinter(
     // delegate to IppClient
     //----------------------
 
-    fun ippRequest(operation: IppOperation, jobId: Int? = null, requestedAttributes: List<String>? = null) =
-        ippClient.ippRequest(operation, printerUri, jobId, requestedAttributes)
+    fun ippRequest(
+        operation: IppOperation,
+        jobId: Int? = null,
+        requestedAttributes: List<String>? = null,
+        userName: String? = ippConfig.userName
+    ) = ippClient
+        .ippRequest(operation, printerUri, jobId, requestedAttributes, userName)
 
     fun exchange(request: IppRequest) = ippClient.exchange(request.apply {
         checkIfValueIsSupported("ipp-versions-supported", version!!)

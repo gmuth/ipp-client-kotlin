@@ -69,13 +69,14 @@ open class IppClient(
         operation: IppOperation,
         printerUri: URI,
         jobId: Int? = null,
-        requestedAttributes: List<String>? = null
+        requestedAttributes: List<String>? = null,
+        userName: String? = config.userName
     ) = IppRequest(
         operation,
         printerUri,
         jobId,
         requestedAttributes,
-        config.userName,
+        userName,
         config.ippVersion,
         requestCounter.getAndIncrement(),
         config.charset,
@@ -138,10 +139,10 @@ open class IppClient(
         exceptionMessage?.run {
             config.logDetails()
             request.logDetails("IPP REQUEST: ")
-            log.error { "http response status: $status" }
-            server?.let { log.error { "ipp-server: $it" } }
-            contentType?.let { log.error { "content-type: $it" } }
-            contentStream?.let { log.error { "content:\n" + it.bufferedReader().use { it.readText() } } }
+            log.warn { "http response status: $status" }
+            server?.let { log.warn { "ipp-server: $it" } }
+            contentType?.let { log.warn { "content-type: $it" } }
+            contentStream?.let { log.warn { "content:\n" + it.bufferedReader().use { it.readText() } } }
             throw IppExchangeException(request, null, status, message = exceptionMessage)
         }
     }
