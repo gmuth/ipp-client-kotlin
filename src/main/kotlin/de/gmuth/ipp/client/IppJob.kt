@@ -27,6 +27,7 @@ class IppJob(
     }
 
     var subscription: IppSubscription? = subscriptionAttributes?.let { IppSubscription(printer, it) }
+    val ippConfig = printer.ippConfig
 
     //--------------
     // IppAttributes
@@ -230,10 +231,13 @@ class IppJob(
         }
     }
 
-    //---------------------------------------------------------
+    //-------------------------------------------------------------------------------------
     // Cups-Get-Document
-    // https://www.cups.org/doc/spec-ipp.html#CUPS_GET_DOCUMENT
-    //---------------------------------------------------------
+    // https://www.cups.org/doc/spec-ipp.html#CUPS_GET_DOCUMENT (Apple CUPS)
+    // https://openprinting.github.io/cups/doc/spec-ipp.html#CUPS_GET_DOCUMENT
+    // PreserveJobFiles defaults to one day (https://www.cups.org/doc/man-cupsd.conf.html)
+    // Apple CUPS: CVE-2023-32360, no password is required on MacOS <13.4, <12.6.6, <11.7.7
+    //-------------------------------------------------------------------------------------
 
     fun cupsGetDocument(documentNumber: Int = 1): IppDocument {
         log.debug { "cupsGetDocument #$documentNumber for job #$id" }
@@ -244,33 +248,44 @@ class IppJob(
         return IppDocument(this, exchange(request))
     }
 
-    fun cupsGetDocuments() = (1..numberOfDocuments)
-        .map { cupsGetDocument(it) }
-        .apply {
-            // PreserveJobFiles defaults to one day (https://www.cups.org/doc/man-cupsd.conf.html)
-            if (isEmpty()) log.info { "no documents available for job #$id" }
-        }
+    fun cupsGetDocuments() =
+        (1..numberOfDocuments).map { cupsGetDocument(it) }
 
     fun cupsGetAndSaveDocuments(
         directory: File = printerDirectory(),
         overwrite: Boolean = true,
-        command: String? = null
-    ): Collection<File> = cupsGetDocuments()
-        .map { document -> document.save(directory, overwrite = overwrite) }
-        .onEach { file -> command?.run { getRuntime().exec(arrayOf(command, file.absolutePath)) } }
-
-    fun deleteDocuments(directory: File = printerDirectory()) =
-        cupsGetDocuments().forEach { document -> document.delete(directory) }
+        command: String? = null,
+        onIppExceptionThrow: Boolean = true
+    ): Collection<File> =
+        try {
+            cupsGetDocuments()
+                .map { document -> document.save(directory, overwrite = overwrite) }
+                .onEach { file -> command?.run { getRuntime().exec(arrayOf(command, file.absolutePath)) } }
+        } catch (ippException: IppException) {
+            if (onIppExceptionThrow) {
+                throw ippException
+            } else {
+                log.error { "Failed to get and save documents for job #$id: ${ippException.message}" }
+                emptyList()
+            }
+        }
 
     //-----------------------
-    // delegate to IppPrinter
+    // Delegate to IppPrinter
     //-----------------------
 
     private fun printerDirectory() =
         printer.printerDirectory(printerUri.toString().substringAfterLast("/"))
 
     fun ippRequest(operation: IppOperation, requestedAttributes: List<String>? = null) =
-        printer.ippRequest(operation, id, requestedAttributes)
+        printer.ippRequest(
+            operation, id, requestedAttributes,
+            userName = when {
+                ippConfig.ippJobUseJobOwnerAsUserName && attributes.containsKey("com.apple.print.JobInfo.PMJobOwner") -> applePrintJobInfo.jobOwner
+                ippConfig.ippJobUseJobOwnerAsUserName && attributes.containsKey("job-originating-user-name") -> originatingUserName.text
+                else -> ippConfig.userName
+            }
+        )
 
     fun exchange(request: IppRequest) =
         printer.exchange(request)

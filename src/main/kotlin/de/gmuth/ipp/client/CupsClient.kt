@@ -266,7 +266,7 @@ open class CupsClient(
             log.info { it }
             it.getJob().run {
                 log.info { this }
-                cupsGetAndSaveDocuments(command = command)
+                cupsGetAndSaveDocuments(command = command, onIppExceptionThrow = false)
             }
         }
     }

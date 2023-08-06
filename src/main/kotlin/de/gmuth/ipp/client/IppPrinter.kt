@@ -630,7 +630,7 @@ open class IppPrinter(
                 if (it.numberOfDocuments == 0) {
                     numberOfJobsWithoutDocuments++
                 } else {
-                    files.addAll(it.cupsGetAndSaveDocuments(command = command))
+                    files.addAll(it.cupsGetAndSaveDocuments(command = command, onIppExceptionThrow = false))
                 }
             }
         log.info { "$numberOfJobsWithoutDocuments jobs without documents" }
