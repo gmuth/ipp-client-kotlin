@@ -65,12 +65,6 @@ class IppDocument(
         log.info { "saved $this: $it (${it.length()} bytes)" }
     }
 
-    fun delete(directory: File) {
-        val file = File(directory, filename())
-        val action = if (file.delete()) "deleted" else "failed to delete"
-        log.info { "$action $this: $file" }
-    }
-
     override fun toString() = StringBuilder("document #$number ($format) of job #${job.id}").run {
         if (attributes.containsKey("document-name")) append(" '$name'")
         toString()
