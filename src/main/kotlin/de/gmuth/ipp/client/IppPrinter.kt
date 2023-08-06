@@ -33,7 +33,7 @@ open class IppPrinter(
         log.debug { "create IppPrinter for $printerUri" }
         if (printerUri.scheme == "ipps") httpConfig.trustAnyCertificateAndSSLHostname()
         if (!getPrinterAttributesOnInit) {
-            log.info { "getPrinterAttributesOnInit disabled => no printer attributes available" }
+            log.debug { "getPrinterAttributesOnInit disabled => no printer attributes available" }
         } else if (attributes.isEmpty()) {
             try {
                 updateAttributes(requestedAttributesOnInit)
@@ -606,4 +606,35 @@ open class IppPrinter(
             if (!mkdirs() && !isDirectory) throw IOException("failed to create printer directory: $path")
         }
 
+    // --------------------------------
+    // CUPS Get jobs and save documents
+    // --------------------------------
+
+    fun cupsGetJobsAndSaveDocuments(
+        whichJobs: IppWhichJobs = IppWhichJobs.All,
+        command: String? = null
+    ): Collection<File> {
+        log.info { "workDirectory: $workDirectory" }
+        val files = mutableListOf<File>()
+        var numberOfJobsWithoutDocuments = 0
+        getJobs(
+            whichJobs,
+            requestedAttributes = listOf(
+                "job-id", "job-uri", "job-printer-uri", "job-originating-user-name",
+                "job-name", "job-state", "job-state-reasons", "number-of-documents"
+            )
+        )
+            .apply { log.info { "$size jobs (which=$whichJobs)" } }
+            .forEach { // job
+                log.debug { "$it" }
+                if (it.numberOfDocuments == 0) {
+                    numberOfJobsWithoutDocuments++
+                } else {
+                    files.addAll(it.cupsGetAndSaveDocuments(command = command))
+                }
+            }
+        log.info { "$numberOfJobsWithoutDocuments jobs without documents" }
+        log.info { "Saved ${files.size} documents to directory $workDirectory" }
+        return files
+    }
 }

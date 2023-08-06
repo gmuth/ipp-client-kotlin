@@ -36,6 +36,7 @@ open class CupsClient(
     fun getIppServer() = ippClient.getHttpServer()
 
     var userName: String? by ippConfig::userName
+    val httpConfig: Http.Config by httpClient::config
 
     fun getPrinters() = try {
         exchange(ippRequest(CupsGetPrinters))
@@ -161,12 +162,21 @@ open class CupsClient(
         ippClient.basicAuth(user, password)
 
     //-----------------------
-    // delegate to IppPrinter
+    // Delegate to IppPrinter
     //-----------------------
 
     val ippPrinter: IppPrinter by lazy {
-        IppPrinter(cupsUri, ippClient = ippClient, getPrinterAttributesOnInit = false)
+        IppPrinter(cupsUri, ippClient = ippClient, getPrinterAttributesOnInit = false).apply {
+            workDirectory = File("cups-${cupsUri.host}")
+        }
     }
+
+    fun getJobsAndSaveDocuments(whichJobs: IppWhichJobs = IppWhichJobs.All, command: String? = null) =
+        ippPrinter.cupsGetJobsAndSaveDocuments(whichJobs, command)
+
+    //----------------------------
+    // Create printer subscription
+    //----------------------------
 
     fun createPrinterSubscription(
         // https://datatracker.ietf.org/doc/html/rfc3995#section-5.3.3.4.2
@@ -233,45 +243,30 @@ open class CupsClient(
         }
     }
 
-    // --------------------------------------
-    // Wait for print jobs and save documents
-    // --------------------------------------
+    // ------------------------------------------
+    // Subscribe 'job-created' and save documents
+    // ------------------------------------------
 
-    fun waitForPrintJobsAndSaveDocuments(
+    fun subscribeJobCreatedAndSaveDocuments(
         workDirectory: File = File("cups-${cupsUri.host}"),
         leaseDuration: Duration = Duration.ofMinutes(30),
         autoRenewLease: Boolean = true,
-        command: String? = null, // e.g. "open" -> open <filename> with Preview
-        pretendToBeAppleJobOwner: Boolean = false // Apple CUPS, CVE-32360
+        command: String? = null // e.g. "open" -> open <filename> with Preview
     ) {
         ippPrinter.workDirectory = workDirectory
         log.info { "workDirectory: $workDirectory" }
         // https://www.rfc-editor.org/rfc/rfc3995.html#section-5.3.3.4.3
-        val jobStateChangedSubscription = createPrinterSubscription(
-            "job-state-changed",
+        createPrinterSubscription(
+            "job-created",
             notifyLeaseDuration = leaseDuration
-        )
-        jobStateChangedSubscription.getAndHandleNotifications(
+        ).getAndHandleNotifications(
             Duration.ofSeconds(1),
             autoRenewSubscription = autoRenewLease
         ) {
-            with(it) {
-                log.info { "$subscribedEvent: $text" }
-                when (subscribedEvent) {
-                    "job-created" -> with(getJob()) {
-                        log.info { this }
-                        val configuredUserName = userName
-                        if (pretendToBeAppleJobOwner && attributes.containsKey("com.apple.print.JobInfo.PMJobOwner")) {
-                            userName = applePrintJobInfo.jobOwner
-                        }
-                        try {
-                            cupsGetAndSaveDocuments(command = command)
-                        } catch (throwable: Throwable) {
-                            log.error { "failed to get and save documents for job #$id: ${throwable.message}" }
-                        }
-                        userName = configuredUserName
-                    }
-                }
+            log.info { it }
+            it.getJob().run {
+                log.info { this }
+                cupsGetAndSaveDocuments(command = command)
             }
         }
     }
