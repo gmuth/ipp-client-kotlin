@@ -49,6 +49,7 @@ class IppJob(
         get() = attributes.getValues("job-state-reasons")
 
     val name: IppString
+        @SuppressWarnings("kotlin:S1192")
         get() = attributes.getValue("job-name")
 
     val originatingUserName: IppString
