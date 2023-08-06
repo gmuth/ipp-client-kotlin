@@ -44,13 +44,11 @@ class IppDocument(
         var suffix: String? = filenameSuffix()
         with(job) {
             append("job-$id")
-            numberOfDocuments.let { if (it > 1) append("-doc-$number") }
+            if (numberOfDocuments > 1) append("-doc-$number")
             job.getOriginatingUserNameOrAppleJobOwnerOrNull()?.let { append("-$it") }
-            if (attributes.containsKey("job-name")) {
-                append("-${name.text.take(100)}")
-                if (name.text.endsWith(".$suffix")) suffix = null
-            } else if (attributes.containsKey("com.apple.print.JobInfo.PMJobName")) {
-                append("-${applePrintJobInfo.jobName}")
+            job.getJobNameOrAppleJobNameOrDocumentNameSuppliedOrNull()?.let {
+                append("-${it.take(100)}")
+                if (it.endsWith(".$suffix")) suffix = null
             }
         }
         suffix?.let { append(".$it") }

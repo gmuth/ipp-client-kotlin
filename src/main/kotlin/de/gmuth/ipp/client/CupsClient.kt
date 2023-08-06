@@ -252,7 +252,7 @@ open class CupsClient(
         workDirectory: File = File("cups-${cupsUri.host}"),
         leaseDuration: Duration = Duration.ofMinutes(30),
         autoRenewLease: Boolean = true,
-        command: String? = null // e.g. "open" -> open <filename> with Preview
+        command: String? = null // e.g. "open" -> open <filename> with Preview on MacOS
     ) {
         ippPrinter.workDirectory = workDirectory
         log.info { "workDirectory: $workDirectory" }

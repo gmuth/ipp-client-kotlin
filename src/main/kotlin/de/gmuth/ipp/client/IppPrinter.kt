@@ -624,7 +624,7 @@ open class IppPrinter(
                 "job-name", "job-state", "job-state-reasons", "number-of-documents"
             )
         )
-            .apply { log.info { "$size jobs (which=$whichJobs)" } }
+            .apply { log.info { "Found $size jobs (which=$whichJobs)" } }
             .forEach { // job
                 log.debug { "$it" }
                 if (it.numberOfDocuments == 0) {
