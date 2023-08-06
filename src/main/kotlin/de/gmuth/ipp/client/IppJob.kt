@@ -233,10 +233,21 @@ class IppJob(
 
     //-------------------------------------------------------------------------------------
     // Cups-Get-Document
-    // https://www.cups.org/doc/spec-ipp.html#CUPS_GET_DOCUMENT (Apple CUPS)
+    //
+    // * Apple CUPS
+    // https://www.cups.org/doc/spec-ipp.html#CUPS_GET_DOCUMENT
+    // CVE-2023-32360, no password is required on MacOS <13.4, <12.6.6, <11.7.7
+    //
+    // * OpenPrinting CUPS
     // https://openprinting.github.io/cups/doc/spec-ipp.html#CUPS_GET_DOCUMENT
-    // PreserveJobFiles defaults to one day (https://www.cups.org/doc/man-cupsd.conf.html)
-    // Apple CUPS: CVE-2023-32360, no password is required on MacOS <13.4, <12.6.6, <11.7.7
+    // Security Advisory
+    // https://github.com/OpenPrinting/cups/security/advisories/GHSA-7pv4-hx8c-gr4g
+    // no password required for CUPS <2.4.3
+    // https://github.com/OpenPrinting/cups/commit/a0c8b9c9556882f00c68b9727a95a1b6d1452913
+    //
+    // * PreserveJobFiles configuration defaults to one day
+    // https://www.cups.org/doc/man-cupsd.conf.html
+    // https://openprinting.github.io/cups/doc/man-cupsd.conf.html
     //-------------------------------------------------------------------------------------
 
     fun cupsGetDocument(documentNumber: Int = 1): IppDocument {
