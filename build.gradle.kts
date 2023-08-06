@@ -7,6 +7,7 @@ plugins {
     id("org.jetbrains.kotlin.jvm") version "1.7.22"
     id("org.jetbrains.dokka") version "1.7.20"
     id("org.sonarqube") version "4.3.0.3225" // https://plugins.gradle.org/plugin/org.sonarqube
+    //id("org.sonarqube") version "3.5.0.2730" // supports java 8, dropped with 4.1
     id("maven-publish")
     id("signing")
     id("jacoco")

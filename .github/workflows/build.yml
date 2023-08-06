@@ -53,9 +53,9 @@ jobs:
 #          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
 #        run: ./gradlew publish
 
-      - name: Analyse with SonarQube
-#        run: ./gradlew test jacocoTestReport sonarqube
-        run: ./gradlew jacocoTestReport sonarqube
+      - name: Analyse with Sonar
+#        run: ./gradlew test jacocoTestReport sonar
+        run: ./gradlew jacocoTestReport sonar
 #        uses: gradle/gradle-build-action@v2
 #        with:
 #          gradle-version: 7.6.2
