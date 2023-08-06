@@ -23,8 +23,8 @@ class IppRequest : IppMessage {
     val attributesCharset: Charset
         get() = operationGroup.getValue("attributes-charset")
 
-    val requestingUserName: String
-        get() = operationGroup.getValue<IppString>("requesting-user-name").text
+    val requestingUserName: String?
+        get() = operationGroup.getValueOrNull<IppString?>("requesting-user-name")?.text
 
     constructor() : super()
 
