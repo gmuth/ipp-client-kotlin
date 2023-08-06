@@ -253,10 +253,10 @@ class IppJob(
     fun cupsGetDocument(documentNumber: Int = 1): IppDocument {
         log.debug { "cupsGetDocument #$documentNumber for job #$id" }
         if (documentNumber > numberOfDocuments) log.warn { "job has only $numberOfDocuments document(s)" }
-        val request = ippRequest(CupsGetDocument).apply {
+        val response = exchange(ippRequest(CupsGetDocument).apply {
             operationGroup.attribute("document-number", Integer, documentNumber)
-        }
-        return IppDocument(this, exchange(request))
+        })
+        return IppDocument(this, response.jobGroup, response.documentInputStream!!)
     }
 
     fun cupsGetDocuments() =

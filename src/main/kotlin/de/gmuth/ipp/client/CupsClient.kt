@@ -243,11 +243,12 @@ open class CupsClient(
         }
     }
 
-    // ------------------------------------------
-    // Subscribe 'job-created' and save documents
-    // ------------------------------------------
+    // -----------------------------------------------------------------
+    // Subscribe to 'job-created' events and then get and save documents
+    // https://www.rfc-editor.org/rfc/rfc3995.html#section-5.3.3.4.3
+    // -----------------------------------------------------------------
 
-    fun subscribeJobCreatedAndSaveDocuments(
+    fun subscribeToJobCreatedEventsAndThenGetAndSaveDocuments(
         workDirectory: File = File("cups-${cupsUri.host}"),
         leaseDuration: Duration = Duration.ofMinutes(30),
         autoRenewLease: Boolean = true,
@@ -255,19 +256,13 @@ open class CupsClient(
     ) {
         ippPrinter.workDirectory = workDirectory
         log.info { "workDirectory: $workDirectory" }
-        // https://www.rfc-editor.org/rfc/rfc3995.html#section-5.3.3.4.3
-        createPrinterSubscription(
-            "job-created",
-            notifyLeaseDuration = leaseDuration
-        ).getAndHandleNotifications(
-            Duration.ofSeconds(1),
-            autoRenewSubscription = autoRenewLease
-        ) {
-            log.info { it }
-            it.getJob().run {
-                log.info { this }
-                cupsGetAndSaveDocuments(command = command, onIppExceptionThrow = false)
+        createPrinterSubscription("job-created", notifyLeaseDuration = leaseDuration)
+            .getAndHandleNotifications(Duration.ofSeconds(1), autoRenewSubscription = autoRenewLease) {
+                log.info { it }
+                it.getJob().apply {
+                    log.info { this }
+                    cupsGetAndSaveDocuments(command = command, onIppExceptionThrow = false)
+                }
             }
-        }
     }
 }

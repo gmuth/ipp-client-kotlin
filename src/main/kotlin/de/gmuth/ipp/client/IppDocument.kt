@@ -4,22 +4,22 @@ package de.gmuth.ipp.client
  * Copyright (c) 2021-2023 Gerhard Muth
  */
 
+import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppException
-import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppString
 import de.gmuth.log.Logging
 import java.io.File
+import java.io.InputStream
 import kotlin.io.path.createTempDirectory
 
-class IppDocument(val job: IppJob, cupsGetDocumentResponse: IppResponse) {
-
+class IppDocument(
+    val job: IppJob,
+    val attributes: IppAttributesGroup,
+    val inputStream: InputStream
+) {
     companion object {
         val log = Logging.getLogger { }
     }
-
-    // https://www.cups.org/doc/spec-ipp.html#CUPS_GET_DOCUMENT
-    val attributes = cupsGetDocumentResponse.jobGroup
-    val inputStream = cupsGetDocumentResponse.documentInputStream!!
 
     val number: Int
         get() = attributes.getValue("document-number")
