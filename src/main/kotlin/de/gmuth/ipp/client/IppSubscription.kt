@@ -30,7 +30,7 @@ class IppSubscription(
 
     init {
         if (attributes.size <= 1) {
-            updateAllAttributes()
+            updateAttributes()
             log.info { toString() }
         }
     }
@@ -65,7 +65,7 @@ class IppSubscription(
     fun getSubscriptionAttributes(requestedAttributes: List<String>? = null) =
         exchange(ippRequest(GetSubscriptionAttributes, requestedAttributes = requestedAttributes))
 
-    fun updateAllAttributes() {
+    fun updateAttributes() {
         attributes = getSubscriptionAttributes().getSingleAttributesGroup(Subscription)
     }
 
@@ -101,7 +101,7 @@ class IppSubscription(
             createSubscriptionAttributesGroup(notifyLeaseDuration = leaseDuration)
         }).also {
             leaseStartedAt = now()
-            updateAllAttributes()
+            updateAttributes()
             log.info { "renewed $this" }
         }
 
@@ -134,7 +134,7 @@ class IppSubscription(
     ) {
         if (delay < Duration.ofSeconds(1) && autoRenewSubscription)
             log.warn { "autoRenewSubscription does not work reliably for delays of less than 1 second" }
-        fun expiresAfterDelay() = !leaseDuration.isZero && now().plus(delay).isAfter(expiresAt.minusSeconds(1))
+        fun expiresAfterDelay() = !leaseDuration.isZero && now().plus(delay).isAfter(expiresAt.minusSeconds(2))
         try {
             handleNotifications = true
             do {
