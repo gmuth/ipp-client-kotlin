@@ -66,7 +66,8 @@ class IppJob(
         get() = attributes.getValue("job-k-octets")
 
     val numberOfDocuments: Int
-        get() = attributes.getValue("number-of-documents")
+        get() = attributes.getValueOrNull("number-of-documents")
+            ?: attributes.getValue("document-count") // CUPS 1.x
 
     val documentNameSupplied: IppString
         get() = attributes.getValue("document-name-supplied")
@@ -84,11 +85,10 @@ class IppJob(
     fun isProcessingStopped() = state == ProcessingStopped
     fun isTerminated() = state.isTerminated()
 
-    fun isProcessingToStopPoint() =
-        hasStateReasons() && stateReasons.contains("processing-to-stop-point")
-
-    fun resourcesAreNotReady() =
-        hasStateReasons() && stateReasons.contains("resources-are-not-ready")
+    fun stateReasonsContain(reason: String) = hasStateReasons() && stateReasons.contains(reason)
+    fun isProcessingToStopPoint() = stateReasonsContain("processing-to-stop-point")
+    fun resourcesAreNotReady() = stateReasonsContain("resources-are-not-ready")
+    fun isIncoming() = stateReasonsContain("job-incoming")
 
     fun getOriginatingUserNameOrAppleJobOwnerOrNull() = when {
         attributes.containsKey("job-originating-user-name") -> originatingUserName.text
