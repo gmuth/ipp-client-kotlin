@@ -625,12 +625,14 @@ open class IppPrinter(
             )
         )
             .apply { log.info { "Found $size jobs (which=$whichJobs)" } }
-            .forEach { // job
-                log.debug { "$it" }
-                if (it.numberOfDocuments == 0) {
+            .forEach { job ->
+                job.updateAttributes()
+                log.debug { "$job" }
+                if (job.numberOfDocuments == 0) {
                     numberOfJobsWithoutDocuments++
                 } else {
-                    files.addAll(it.cupsGetAndSaveDocuments(command = command, onIppExceptionThrow = false))
+                    val documentFiles = job.cupsGetAndSaveDocuments(command = command, onIppExceptionThrow = false)
+                    files.addAll(documentFiles)
                 }
             }
         log.info { "$numberOfJobsWithoutDocuments jobs without documents" }
