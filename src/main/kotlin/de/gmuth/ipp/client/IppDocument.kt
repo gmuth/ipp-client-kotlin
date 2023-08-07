@@ -49,7 +49,7 @@ class IppDocument(
             if (attributes.containsKey("com.apple.print.JobInfo.PMApplicationName")) {
                 append("-${applePrintJobInfo.applicationName}")
             }
-            job.getJobNameOrAppleJobNameOrDocumentNameSuppliedOrNull()?.let {
+            job.getJobNameOrDocumentNameSuppliedOrAppleJobNameOrNull()?.let {
                 append("-${it.take(100)}")
                 if (it.endsWith(".$suffix")) suffix = null
             }

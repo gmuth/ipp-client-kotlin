@@ -96,7 +96,7 @@ class IppJob(
         else -> null
     }
 
-    fun getJobNameOrAppleJobNameOrDocumentNameSuppliedOrNull() = when {
+    fun getJobNameOrDocumentNameSuppliedOrAppleJobNameOrNull() = when {
         attributes.containsKey("job-name") -> name.text
         attributes.containsKey("document-name-supplied") -> documentNameSupplied.text
         attributes.containsKey("com.apple.print.JobInfo.PMJobName") -> applePrintJobInfo.jobName
