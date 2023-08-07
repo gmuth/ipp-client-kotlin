@@ -250,7 +250,7 @@ open class CupsClient(
 
     fun subscribeToJobCreatedEventsAndThenGetAndSaveDocuments(
         workDirectory: File = File("cups-${cupsUri.host}"),
-        leaseDuration: Duration = Duration.ofMinutes(30),
+        leaseDuration: Duration = Duration.ofMinutes(60),
         autoRenewLease: Boolean = true,
         command: String? = null // e.g. "open" -> open <filename> with Preview on MacOS
     ) {
@@ -260,7 +260,11 @@ open class CupsClient(
             .getAndHandleNotifications(Duration.ofSeconds(1), autoRenewSubscription = autoRenewLease) {
                 log.info { it }
                 it.getJob().apply {
-                    log.info { this }
+                    do { // wait for incoming documents
+                        log.info { this }
+                        Thread.sleep(1000)
+                        updateAttributes()
+                    } while (isIncoming())
                     cupsGetAndSaveDocuments(command = command, onIppExceptionThrow = false)
                 }
             }
