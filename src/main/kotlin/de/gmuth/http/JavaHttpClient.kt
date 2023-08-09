@@ -1,7 +1,7 @@
 package de.gmuth.http
 
 /**
- * Copyright (c) 2020-2021 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
 import de.gmuth.log.Logging
@@ -45,14 +45,19 @@ class JavaHttpClient(config: Http.Config = Http.Config()) : Http.Client(config) 
         }
     }
 
-    override fun post(uri: URI, contentType: String, writeContent: (OutputStream) -> Unit, chunked: Boolean): Http.Response {
+    override fun post(
+        uri: URI,
+        contentType: String,
+        writeContent: (OutputStream) -> Unit,
+        chunked: Boolean
+    ): Http.Response {
         val content = ByteArrayOutputStream().also { writeContent(it) }.toByteArray()
         val request = HttpRequest.newBuilder().run {
             with(config) {
                 timeout(Duration.ofMillis(timeout.toLong()))
                 userAgent?.let { header("User-Agent", it) }
                 acceptEncoding?.let { header("Accept-Encoding", it) }
-                basicAuth?.let { header("Authorization", "Basic ${it.encodeBase64()}") }
+                basicAuth?.let { header("Authorization", it.authorization()) }
             }
             header("Content-Type", contentType)
             POST(BodyPublishers.ofInputStream { ByteArrayInputStream(content) })
@@ -61,10 +66,10 @@ class JavaHttpClient(config: Http.Config = Http.Config()) : Http.Client(config) 
         }
         httpClient.send(request, BodyHandlers.ofInputStream()).run {
             return Http.Response(
-                    statusCode(),
-                    headers().firstValue("server").run { if (isPresent) get() else null },
-                    headers().firstValue("content-type").get(),
-                    body()
+                statusCode(),
+                headers().firstValue("server").run { if (isPresent) get() else null },
+                headers().firstValue("content-type").get(),
+                body()
             )
         }
     }
