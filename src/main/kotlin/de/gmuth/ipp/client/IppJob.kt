@@ -300,8 +300,8 @@ class IppJob(
         printer.ippRequest(
             operation, id, requestedAttributes,
             userName = when {
-                ippConfig.ippJobUseJobOwnerAsUserName && attributes.containsKey("com.apple.print.JobInfo.PMJobOwner") -> applePrintJobInfo.jobOwner
                 ippConfig.ippJobUseJobOwnerAsUserName && attributes.containsKey("job-originating-user-name") -> originatingUserName.text
+                ippConfig.ippJobUseJobOwnerAsUserName && attributes.containsKey("com.apple.print.JobInfo.PMJobOwner") -> applePrintJobInfo.jobOwner
                 else -> ippConfig.userName
             }
         )
