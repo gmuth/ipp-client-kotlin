@@ -612,7 +612,8 @@ open class IppPrinter(
 
     fun cupsGetJobsAndSaveDocuments(
         whichJobs: IppWhichJobs = IppWhichJobs.All,
-        command: String? = null
+        command: String? = null,
+        updateJobAttributes: Boolean = false
     ): Collection<File> {
         log.info { "workDirectory: $workDirectory" }
         val files = mutableListOf<File>()
@@ -626,8 +627,8 @@ open class IppPrinter(
         )
             .apply { log.info { "Found $size jobs (which=$whichJobs)" } }
             .forEach { job ->
-                job.updateAttributes()
-                log.debug { "$job" }
+                log.info { "$job" }
+                if(updateJobAttributes) job.updateAttributes()
                 if (job.numberOfDocuments == 0) {
                     numberOfJobsWithoutDocuments++
                 } else {
