@@ -1,9 +1,10 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File.createTempFile
 import kotlin.test.*
@@ -42,6 +43,7 @@ class IppMessageTests {
             version = "1.1"
             requestId = 5
             code = 0
+            documentInputStream = ByteArrayInputStream("01 02 03".toByteArray())
             val tmpFile = createTempFile("test", null)
             try {
                 write(tmpFile)
