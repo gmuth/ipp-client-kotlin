@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppResolution.Unit.DPI
@@ -16,7 +16,7 @@ import kotlin.test.assertTrue
 class IppInputStreamTest {
 
     companion object {
-        val log = Logging.getLogger(Logging.LogLevel.INFO) {}
+        val log = Logging.getLogger {}
     }
 
     private val message = object : IppMessage() {
@@ -157,12 +157,16 @@ class IppInputStreamTest {
     @Test
     fun readAttributeValueCollection() {
         val encoded = "00 00 4A 00 00 00 03 66 6F 6F 44 00 00 00 01 61 44 00 00 00 01 62 37 00 00 00 00"
-        assertEquals(IppCollection(IppAttribute("foo", IppTag.Keyword, "a", "b")), encoded.readAttributeValue(IppTag.BegCollection))
+        assertEquals(
+            IppCollection(IppAttribute("foo", IppTag.Keyword, "a", "b")),
+            encoded.readAttributeValue(IppTag.BegCollection)
+        )
     }
 
     @Test
     fun readMessage() {
-        val encoded = "02 01 00 0B 00 00 00 08 01 47 00 12 61 74 74 72 69 62 75 74 65 73 2D 63 68 61 72 73 65 74 00 05 75 74 66 2D 38 02 22 00 01 31 00 01 01 22 00 00 00 01 00 13 00 01 30 00 00 03"
+        val encoded =
+            "02 01 00 0B 00 00 00 08 01 47 00 12 61 74 74 72 69 62 75 74 65 73 2D 63 68 61 72 73 65 74 00 05 75 74 66 2D 38 02 22 00 01 31 00 01 01 22 00 00 00 01 00 13 00 01 30 00 00 03"
         IppInputStream.log.logLevel = Logging.LogLevel.TRACE
         encoded.toIppInputStream().readMessage(message)
         IppInputStream.log.logLevel = Logging.LogLevel.TRACE

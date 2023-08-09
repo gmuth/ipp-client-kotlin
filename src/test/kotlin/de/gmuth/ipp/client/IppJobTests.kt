@@ -23,7 +23,7 @@ import kotlin.test.assertTrue
 class IppJobTests {
 
     companion object {
-        val log = Logging.getLogger(Logging.LogLevel.INFO) {}
+        val log = Logging.getLogger {}
         val blankPdf = File("tool/A4-blank.pdf")
     }
 

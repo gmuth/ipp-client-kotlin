@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppTag.*
@@ -14,7 +14,7 @@ class IppAttributeTests {
     private val ippAttribute = IppAttribute("printer-state-reasons", Keyword, "none")
 
     companion object {
-        val log = Logging.getLogger(Logging.LogLevel.INFO) {}
+        val log = Logging.getLogger {}
     }
 
     @Test
@@ -46,7 +46,7 @@ class IppAttributeTests {
 
     @Test
     fun additionalValueFails2() {
-        assertFailsWith<IppException> {ippAttribute.additionalValue(IppAttribute<Unit>("", Keyword)) }
+        assertFailsWith<IppException> { ippAttribute.additionalValue(IppAttribute<Unit>("", Keyword)) }
     }
 
     @Test

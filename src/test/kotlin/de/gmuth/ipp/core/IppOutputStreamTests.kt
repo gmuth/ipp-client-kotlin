@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppResolution.Unit.DPI
@@ -15,7 +15,7 @@ import kotlin.test.assertFailsWith
 class IppOutputStreamTest {
 
     companion object {
-        val log = Logging.getLogger(Logging.LogLevel.INFO) {}
+        val log = Logging.getLogger {}
     }
 
     private val byteArrayOutputStream = ByteArrayOutputStream()

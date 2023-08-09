@@ -25,17 +25,17 @@ import de.gmuth.log.Logging.LogLevel.TRACE
 import java.io.File
 import java.io.FileInputStream
 import java.net.URI
+import kotlin.io.path.createTempDirectory
+import kotlin.io.path.pathString
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import kotlin.io.path.createTempDirectory
-import kotlin.io.path.pathString
 
 class IppPrinterTests {
 
     companion object {
-        val log = Logging.getLogger(Logging.LogLevel.INFO) {}
+        val log = Logging.getLogger {}
         val blankPdf = File("tool/A4-blank.pdf")
     }
 

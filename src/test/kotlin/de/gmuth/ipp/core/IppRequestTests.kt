@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2021 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
 import de.gmuth.log.Logging
@@ -14,7 +14,7 @@ import kotlin.test.assertNotNull
 class IppRequestTests {
 
     companion object {
-        val log = Logging.getLogger(Logging.LogLevel.INFO) {}
+        val log = Logging.getLogger {}
     }
 
     @Test
@@ -53,8 +53,8 @@ class IppRequestTests {
         IppMessage.log.logLevel = Logging.LogLevel.INFO
 
         val request = IppRequest(
-                IppOperation.PrintJob, URI.create("ipp://printer"),
-                0, listOf("one", "two"), "user"
+            IppOperation.PrintJob, URI.create("ipp://printer"),
+            0, listOf("one", "two"), "user"
         )
         request.documentInputStream = "pdl-content".byteInputStream()
         log.info { request.toString() }
