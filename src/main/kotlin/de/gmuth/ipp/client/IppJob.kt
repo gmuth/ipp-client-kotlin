@@ -12,7 +12,6 @@ import de.gmuth.log.Logging.getLogger
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
-import java.lang.Runtime.getRuntime
 import java.net.URI
 
 class IppJob(
@@ -24,6 +23,8 @@ class IppJob(
     companion object {
         val log = getLogger {}
         var defaultDelayMillis: Long = 3000
+        var useJobOwnerAsUserName: Boolean = false
+        var cupsGetDocumentsThrowOnIppException: Boolean = true
     }
 
     var subscription: IppSubscription? = subscriptionAttributes?.let { IppSubscription(printer, it) }
@@ -67,7 +68,8 @@ class IppJob(
 
     val numberOfDocuments: Int
         get() = attributes.getValueOrNull("number-of-documents")
-            ?: attributes.getValue("document-count") // CUPS 1.x
+            ?: attributes.getValueOrNull("document-count") // CUPS 1.x
+            ?: throw IppException("number-of-documents not supported")
 
     val documentNameSupplied: IppString
         get() = attributes.getValue("document-name-supplied")
@@ -85,10 +87,11 @@ class IppJob(
     fun isProcessingStopped() = state == ProcessingStopped
     fun isTerminated() = state.isTerminated()
 
+    // https://datatracker.ietf.org/doc/html/rfc8011#section-5.3.8
     fun stateReasonsContain(reason: String) = hasStateReasons() && stateReasons.contains(reason)
     fun isProcessingToStopPoint() = stateReasonsContain("processing-to-stop-point")
     fun resourcesAreNotReady() = stateReasonsContain("resources-are-not-ready")
-    fun isIncoming() = stateReasonsContain("job-incoming")
+    fun jobIsIncoming() = stateReasonsContain("job-incoming")
 
     fun getOriginatingUserNameOrAppleJobOwnerOrNull() = when {
         attributes.containsKey("job-originating-user-name") -> originatingUserName.text
@@ -241,6 +244,7 @@ class IppJob(
 
     //-------------------------------------------------------------------------------------
     // Cups-Get-Document
+    // Security aspects for this operation are configured in cupsd.conf!
     //
     // * Apple CUPS
     // https://www.cups.org/doc/spec-ipp.html#CUPS_GET_DOCUMENT
@@ -260,48 +264,43 @@ class IppJob(
 
     fun cupsGetDocument(documentNumber: Int = 1): IppDocument {
         log.debug { "cupsGetDocument #$documentNumber for job #$id" }
-        if (documentNumber > numberOfDocuments) log.warn { "job has only $numberOfDocuments document(s)" }
         val response = exchange(ippRequest(CupsGetDocument).apply {
             operationGroup.attribute("document-number", Integer, documentNumber)
         })
         return IppDocument(this, response.jobGroup, response.documentInputStream!!)
     }
 
-    fun cupsGetDocuments() =
-        (1..numberOfDocuments).map { cupsGetDocument(it) }
-
-    fun cupsGetAndSaveDocuments(
-        directory: File = printerDirectory(),
-        overwrite: Boolean = true,
-        command: String? = null,
-        onIppExceptionThrow: Boolean = true
-    ): Collection<File> =
+    fun cupsGetDocuments(save: Boolean = false, optionalCommandToHandleFile: String? = null) =
         try {
-            cupsGetDocuments()
-                .map { document -> document.save(directory, overwrite = overwrite) }
-                .onEach { file -> command?.run { getRuntime().exec(arrayOf(command, file.absolutePath)) } }
+            (1..numberOfDocuments).map { cupsGetDocument(it) }
         } catch (ippException: IppException) {
-            if (onIppExceptionThrow) {
+            if (cupsGetDocumentsThrowOnIppException) {
                 throw ippException
             } else {
-                log.error { "Failed to get and save documents for job #$id: ${ippException.message}" }
+                log.info { "Get documents for job #$id failed: ${ippException.message}" }
                 emptyList()
             }
         }
+            .onEach { document ->
+                if (save) with(document) {
+                    save(printerDirectory(), overwrite = true)
+                    optionalCommandToHandleFile?.let { runCommand(it) }
+                }
+            }
 
     //-----------------------
     // Delegate to IppPrinter
     //-----------------------
 
-    private fun printerDirectory() =
+    fun printerDirectory() =
         printer.printerDirectory(printerUri.toString().substringAfterLast("/"))
 
     fun ippRequest(operation: IppOperation, requestedAttributes: List<String>? = null) =
         printer.ippRequest(
             operation, id, requestedAttributes,
             userName = when {
-                ippConfig.ippJobUseJobOwnerAsUserName && attributes.containsKey("job-originating-user-name") -> originatingUserName.text
-                ippConfig.ippJobUseJobOwnerAsUserName && attributes.containsKey("com.apple.print.JobInfo.PMJobOwner") -> applePrintJobInfo.jobOwner
+                useJobOwnerAsUserName && attributes.containsKey("job-originating-user-name") -> originatingUserName.text
+                useJobOwnerAsUserName && attributes.containsKey("com.apple.print.JobInfo.PMJobOwner") -> applePrintJobInfo.jobOwner
                 else -> ippConfig.userName
             }
         )

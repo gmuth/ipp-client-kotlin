@@ -220,7 +220,7 @@ class IppJobTests {
     @Test
     fun cupsGetAndSaveDocuments() {
         httpClient.ippResponse = cupsDocumentResponse("application/postscript")
-        job.cupsGetAndSaveDocuments()
+        job.cupsGetDocuments(save = true)
     }
 
 }

@@ -12,7 +12,6 @@ class IppConfig(
     var ippVersion: String = "1.1",
     var charset: Charset = Charsets.UTF_8,
     var naturalLanguage: String = "en",
-    var ippJobUseJobOwnerAsUserName: Boolean = false
 ) {
     companion object {
         val log = Logging.getLogger {}
@@ -23,6 +22,5 @@ class IppConfig(
         log.info { "ippVersion: $ippVersion" }
         log.info { "charset: ${charset.name().lowercase()}" }
         log.info { "naturalLanguage: $naturalLanguage" }
-        if (ippJobUseJobOwnerAsUserName) log.info { "ippJobUseJobOwnerAsUserName: $ippJobUseJobOwnerAsUserName" }
     }
 }
