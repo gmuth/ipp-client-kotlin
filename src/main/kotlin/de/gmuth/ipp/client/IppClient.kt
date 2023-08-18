@@ -5,11 +5,13 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.http.Http
+import de.gmuth.ipp.client.IppExchangeException.ClientErrorNotFoundException
 import de.gmuth.ipp.core.IppException
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppStatus.ClientErrorBadRequest
+import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import de.gmuth.ipp.core.IppTag.Unsupported
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.log.Logging
@@ -56,6 +58,7 @@ open class IppClient(
     }
 
     private var httpServer: String? = null
+
     @SuppressWarnings("kotlin:S6512") // read only
     fun getHttpServer() = httpServer
 
@@ -111,7 +114,9 @@ open class IppClient(
 
         if (!response.isSuccessful()) {
             IppRegistrationsSection2.validate(request)
-            if (throwWhenNotSuccessful) throw IppExchangeException(request, response)
+            if (throwWhenNotSuccessful)
+                throw if (response.status == ClientErrorNotFound) ClientErrorNotFoundException(request, response)
+                else IppExchangeException(request, response)
         }
         return response
     }

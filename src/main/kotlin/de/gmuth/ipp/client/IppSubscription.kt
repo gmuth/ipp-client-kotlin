@@ -4,11 +4,11 @@ package de.gmuth.ipp.client
  * Copyright (c) 2021-2023 Gerhard Muth
  */
 
+import de.gmuth.ipp.client.IppExchangeException.ClientErrorNotFoundException
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppRequest
-import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import de.gmuth.ipp.core.IppString
 import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.log.Logging
@@ -128,11 +128,11 @@ class IppSubscription(
     fun expired() = !leaseDuration.isZero && now().isAfter(expiresAt)
 
     fun getAndHandleNotifications(
-        delay: Duration = Duration.ofSeconds(5),
+        delay: Duration = ofSeconds(5),
         autoRenewSubscription: Boolean = false,
         handleNotification: (event: IppEventNotification) -> Unit = { log.info { it } }
     ) {
-        if (delay < Duration.ofSeconds(1) && autoRenewSubscription)
+        if (delay < ofSeconds(1) && autoRenewSubscription)
             log.warn { "autoRenewSubscription does not work reliably for delays of less than 1 second" }
         fun expiresAfterDelay() = !leaseDuration.isZero && now().plus(delay).isAfter(expiresAt.minusSeconds(2))
         try {
@@ -143,10 +143,9 @@ class IppSubscription(
                 if (expiresAfterDelay() && autoRenewSubscription) renew(leaseDuration)
                 Thread.sleep(delay.toMillis())
             } while (handleNotifications)
-        } catch (exchangeException: IppExchangeException) {
+        } catch (clientErrorNotFoundException: ClientErrorNotFoundException) {
             handleNotifications = false
-            if (!exchangeException.statusIs(ClientErrorNotFound)) throw exchangeException
-            else log.info { exchangeException.response!!.statusMessage }
+            log.info { clientErrorNotFoundException.response!!.statusMessage }
         }
     }
 

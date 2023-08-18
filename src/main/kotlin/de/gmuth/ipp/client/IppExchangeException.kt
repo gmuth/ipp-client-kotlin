@@ -8,13 +8,13 @@ import de.gmuth.ipp.core.IppException
 import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppStatus
+import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import de.gmuth.log.Logging
 import java.io.File
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.pathString
-import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 
-class IppExchangeException(
+open class IppExchangeException(
     val request: IppRequest,
     val response: IppResponse? = null,
     val httpStatus: Int? = null,
@@ -22,6 +22,13 @@ class IppExchangeException(
     cause: Exception? = null
 
 ) : IppException(message, cause) {
+
+    class ClientErrorNotFoundException(request: IppRequest, response: IppResponse) :
+        IppExchangeException(request, response) {
+        init {
+            require(response.status == ClientErrorNotFound) { "ipp response status is not ClientErrorNotFound: ${response.status}" }
+        }
+    }
 
     companion object {
         val log = Logging.getLogger {}
@@ -39,8 +46,6 @@ class IppExchangeException(
     }
 
     fun statusIs(status: IppStatus) = response?.status == status
-
-    fun isClientErrorNotFound() = statusIs(ClientErrorNotFound)
 
     fun logDetails() {
         if (httpStatus != null) log.info { "HTTP-STATUS: $httpStatus" }

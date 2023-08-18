@@ -16,6 +16,7 @@ import java.io.InputStream
 import java.net.URI
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicInteger
+import de.gmuth.ipp.client.IppExchangeException.ClientErrorNotFoundException
 
 // https://www.cups.org/doc/spec-ipp.html
 open class CupsClient(
@@ -44,9 +45,8 @@ open class CupsClient(
         exchange(ippRequest(CupsGetPrinters))
             .getAttributesGroups(Printer)
             .map { IppPrinter(it, ippClient) }
-    } catch (ippExchangeException: IppExchangeException) {
-        if (ippExchangeException.isClientErrorNotFound()) emptyList()
-        else throw ippExchangeException
+    } catch (clientErrorNotFoundException: ClientErrorNotFoundException) {
+        emptyList()
     }
 
     fun getPrinterNames() =
@@ -60,11 +60,11 @@ open class CupsClient(
             IppPrinter(printerUri = cupsPrinterUri(printerName), ippClient = ippClient).apply {
                 workDirectory = cupsClientWorkDirectory
             }
-        } catch (exception: IppExchangeException) {
-            if (exception.isClientErrorNotFound()) with(getPrinters()) {
+        } catch (clientErrorNotFoundException: ClientErrorNotFoundException) {
+            with(getPrinters()) {
                 if (isNotEmpty()) log.warn { "Available CUPS printers: ${map { it.name }}" }
             }
-            throw exception
+            throw clientErrorNotFoundException
         }
 
     fun getDefault() = IppPrinter(
