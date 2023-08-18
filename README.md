@@ -67,6 +67,7 @@ val job = ippPrinter.getJob(4)
 job.hold()
 job.release()
 job.cancel()
+job.cupsGetDocuments() // CUPS only
 
 // print operator
 ippPrinter.pause()
@@ -132,6 +133,10 @@ val defaultPrinter = cupsClient.getDefault()
 if(defaultPrinter.hasCapability(Capability.CanPrintInColor)) {
     println("${defaultPrinter.name} can print in color")
 }
+
+// get canceled jobs and save documents
+cupsClient.getJobsAndSaveDocuments(IppWhichJobs.Canceled)
+
 ```
 
 ### Print jpeg to 2" label printer

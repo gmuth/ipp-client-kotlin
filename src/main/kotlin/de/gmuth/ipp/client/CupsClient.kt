@@ -5,6 +5,7 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.http.Http
+import de.gmuth.ipp.client.IppExchangeException.ClientErrorNotFoundException
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppRequest
@@ -16,7 +17,6 @@ import java.io.InputStream
 import java.net.URI
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicInteger
-import de.gmuth.ipp.client.IppExchangeException.ClientErrorNotFoundException
 
 // https://www.cups.org/doc/spec-ipp.html
 open class CupsClient(
@@ -242,13 +242,13 @@ open class CupsClient(
         }
     }
 
-    // -----------------------
-    // Get jobs with documents
-    // -----------------------
+    // ---------------------------
+    // Get jobs and save documents
+    // ---------------------------
 
     private val jobOwners = mutableSetOf<String>()
 
-    fun getJobsWithDocuments(
+    fun getJobsAndSaveDocuments(
         whichJobs: IppWhichJobs = IppWhichJobs.All,
         updateJobAttributes: Boolean = false,
         commandToHandleFile: String? = null
@@ -262,13 +262,16 @@ open class CupsClient(
                 "job-name", "job-state", "job-state-reasons", "number-of-documents"
             )
         )
-            .onEach { log.info { it } }
-            .onEach { job ->
+            .onEach { log.info { it } } // job overview
+            .onEach { job -> // update attributes and lookup job owners
                 if (updateJobAttributes) job.updateAttributes()
-                if (job.numberOfDocuments == 0) numberOfJobsWithoutDocuments.incrementAndGet()
                 job.getOriginatingUserNameOrAppleJobOwnerOrNull()?.let { jobOwners.add(it) }
-                val files = getAndSaveDocuments(job, optionalCommandToHandleFile = commandToHandleFile)
-                numberOfSavedDocuments.addAndGet(files.size)
+            }
+            .onEach { job -> // keep stats and save documents
+                if (job.numberOfDocuments == 0) numberOfJobsWithoutDocuments.incrementAndGet()
+                else getAndSaveDocuments(job, optionalCommandToHandleFile = commandToHandleFile).apply {
+                    numberOfSavedDocuments.addAndGet(size)
+                }
             }
             .apply {
                 with(jobOwners) { log.info { "Found $size job ${if (size <= 1) "owner" else "owners"}: ${joinToString(", ")}" } }
