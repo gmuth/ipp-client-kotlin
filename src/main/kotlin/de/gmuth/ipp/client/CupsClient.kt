@@ -315,7 +315,6 @@ open class CupsClient(
         optionalCommandToHandleFile: String? = null
     ): Collection<File> {
         var documents: Collection<IppDocument> = emptyList()
-        IppJob.cupsGetDocumentsThrowOnIppException = true
         var ippExchangeException: IppExchangeException? = null
         fun tryToGetDocuments() = try {
             documents = job.cupsGetDocuments()

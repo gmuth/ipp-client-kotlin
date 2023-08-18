@@ -24,7 +24,6 @@ class IppJob(
         val log = getLogger {}
         var defaultDelayMillis: Long = 3000
         var useJobOwnerAsUserName: Boolean = false
-        var cupsGetDocumentsThrowOnIppException: Boolean = true
     }
 
     var subscription: IppSubscription? = subscriptionAttributes?.let { IppSubscription(printer, it) }
@@ -270,17 +269,12 @@ class IppJob(
         return IppDocument(this, response.jobGroup, response.documentInputStream!!)
     }
 
-    fun cupsGetDocuments(save: Boolean = false, optionalCommandToHandleFile: String? = null) =
-        try {
-            (1..numberOfDocuments).map { cupsGetDocument(it) }
-        } catch (ippException: IppException) {
-            if (cupsGetDocumentsThrowOnIppException) {
-                throw ippException
-            } else {
-                log.info { "Get documents for job #$id failed: ${ippException.message}" }
-                emptyList()
-            }
-        }
+    fun cupsGetDocuments(
+        save: Boolean = false,
+        optionalCommandToHandleFile: String? = null
+    ) =
+        (1..numberOfDocuments)
+            .map { cupsGetDocument(it) }
             .onEach { document ->
                 if (save) with(document) {
                     save(printerDirectory(), overwrite = true)
