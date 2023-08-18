@@ -144,8 +144,9 @@ class IppSubscription(
                 Thread.sleep(delay.toMillis())
             } while (handleNotifications)
         } catch (clientErrorNotFoundException: ClientErrorNotFoundException) {
-            handleNotifications = false
             log.info { clientErrorNotFoundException.response!!.statusMessage }
+        } finally {
+            handleNotifications = false
         }
     }
 
