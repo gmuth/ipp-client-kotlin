@@ -15,6 +15,7 @@ import java.io.File
 import java.io.InputStream
 import java.net.URI
 import java.time.Duration
+import java.util.concurrent.atomic.AtomicInteger
 
 // https://www.cups.org/doc/spec-ipp.html
 open class CupsClient(
@@ -37,6 +38,7 @@ open class CupsClient(
 
     var userName: String? by ippConfig::userName
     val httpConfig: Http.Config by httpClient::config
+    var cupsClientWorkDirectory = File("cups-${cupsUri.host}")
 
     fun getPrinters() = try {
         exchange(ippRequest(CupsGetPrinters))
@@ -56,7 +58,7 @@ open class CupsClient(
     fun getPrinter(printerName: String) =
         try {
             IppPrinter(printerUri = cupsPrinterUri(printerName), ippClient = ippClient).apply {
-                workDirectory = File("cups-${cupsUri.host}")
+                workDirectory = cupsClientWorkDirectory
             }
         } catch (exception: IppExchangeException) {
             if (exception.isClientErrorNotFound()) with(getPrinters()) {
@@ -167,12 +169,9 @@ open class CupsClient(
 
     val ippPrinter: IppPrinter by lazy {
         IppPrinter(cupsUri, ippClient = ippClient, getPrinterAttributesOnInit = false).apply {
-            workDirectory = File("cups-${cupsUri.host}")
+            workDirectory = cupsClientWorkDirectory
         }
     }
-
-    fun getJobsAndSaveDocuments(whichJobs: IppWhichJobs = IppWhichJobs.All, command: String? = null) =
-        ippPrinter.cupsGetJobsAndSaveDocuments(whichJobs, command)
 
     //----------------------------
     // Create printer subscription
@@ -243,31 +242,102 @@ open class CupsClient(
         }
     }
 
-    // -----------------------------------------------------------------
-    // Subscribe to 'job-created' events and then get and save documents
-    // https://www.rfc-editor.org/rfc/rfc3995.html#section-5.3.3.4.3
-    // -----------------------------------------------------------------
+    // -----------------------
+    // Get jobs with documents
+    // -----------------------
 
-    fun subscribeToJobCreatedEventsAndThenGetAndSaveDocuments(
-        workDirectory: File = File("cups-${cupsUri.host}"),
+    private val jobOwners = mutableSetOf<String>()
+
+    fun getJobsWithDocuments(
+        whichJobs: IppWhichJobs = IppWhichJobs.All,
+        updateJobAttributes: Boolean = false,
+        commandToHandleFile: String? = null
+    ): Collection<IppJob> = with(ippPrinter) {
+        val numberOfJobsWithoutDocuments = AtomicInteger(0)
+        val numberOfSavedDocuments = AtomicInteger(0)
+        return getJobs(
+            whichJobs,
+            requestedAttributes = listOf(
+                "job-id", "job-uri", "job-printer-uri", "job-originating-user-name",
+                "job-name", "job-state", "job-state-reasons", "number-of-documents"
+            )
+        )
+            .onEach { log.info { it } }
+            .onEach { job ->
+                if (updateJobAttributes) job.updateAttributes()
+                if (job.numberOfDocuments == 0) numberOfJobsWithoutDocuments.incrementAndGet()
+                job.getOriginatingUserNameOrAppleJobOwnerOrNull()?.let { jobOwners.add(it) }
+                val files = getAndSaveDocuments(job, optionalCommandToHandleFile = commandToHandleFile)
+                numberOfSavedDocuments.addAndGet(files.size)
+            }
+            .apply {
+                with(jobOwners) { log.info { "Found $size job ${if (size <= 1) "owner" else "owners"}: ${joinToString(", ")}" } }
+                log.info { "Found $size jobs (which=$whichJobs) where $numberOfJobsWithoutDocuments jobs have no documents" }
+                log.info { "Saved $numberOfSavedDocuments documents of ${size.minus(numberOfJobsWithoutDocuments.toInt())} jobs with documents to directory: $workDirectory" }
+            }
+    }
+
+    // -------------------------------------------------------------
+    // Subscribe to job events and then get documents
+    // https://www.rfc-editor.org/rfc/rfc3995.html#section-5.3.3.4.3
+    // -------------------------------------------------------------
+
+    fun subscribeToJobEventsAndThenGetDocuments(
+        whichJobEvents: String = "job-created",
         leaseDuration: Duration = Duration.ofMinutes(60),
         autoRenewLease: Boolean = true,
-        command: String? = null // e.g. "open" -> open <filename> with Preview on MacOS
+        commandToHandleFile: String? = null // e.g. "open" -> open <filename> with Preview on MacOS
     ) {
-        ippPrinter.workDirectory = workDirectory
-        log.info { "workDirectory: $workDirectory" }
-        createPrinterSubscription("job-created", notifyLeaseDuration = leaseDuration)
-            .getAndHandleNotifications(Duration.ofSeconds(1), autoRenewSubscription = autoRenewLease) {
-                log.info { it }
-                it.getJob().apply {
-                    do { // wait for incoming documents
+        createPrinterSubscription(whichJobEvents, notifyLeaseDuration = leaseDuration)
+            .getAndHandleNotifications(Duration.ofSeconds(1), autoRenewSubscription = autoRenewLease) { event ->
+                log.info { event }
+                with(event.getJob()) {
+                    while (jobIsIncoming()) {
                         log.info { this }
                         Thread.sleep(1000)
                         updateAttributes()
-                    } while (isIncoming())
-                    cupsGetAndSaveDocuments(command = command, onIppExceptionThrow = false)
+                    }
+                    getAndSaveDocuments(this, optionalCommandToHandleFile = commandToHandleFile)
                 }
             }
+    }
+
+    // ------------------------------
+    // get and save documents for job
+    // ------------------------------
+
+    private fun getAndSaveDocuments(
+        job: IppJob,
+        onSuccessUpdateJobAttributes: Boolean = true,
+        optionalCommandToHandleFile: String? = null
+    ): Collection<File> {
+        var documents: Collection<IppDocument> = emptyList()
+        IppJob.cupsGetDocumentsThrowOnIppException = true
+        var ippExchangeException: IppExchangeException? = null
+        fun tryToGetDocuments() = try {
+            documents = job.cupsGetDocuments()
+            if (documents.isNotEmpty() && onSuccessUpdateJobAttributes) job.updateAttributes()
+            ippExchangeException = null
+        } catch (caughtIppExchangeException: IppExchangeException) {
+            log.info { "Get documents for job #${job.id} failed: ${caughtIppExchangeException.message}" }
+            ippExchangeException = caughtIppExchangeException
+        }
+        tryToGetDocuments()
+        if (ippExchangeException != null && ippExchangeException!!.httpStatus == 401) {
+            val configuredUserName = ippConfig.userName
+            val jobOwnersIterator = jobOwners.iterator()
+            while (jobOwnersIterator.hasNext() && ippExchangeException != null) {
+                ippConfig.userName = jobOwnersIterator.next()
+                log.debug { "set userName '${ippConfig.userName}'" }
+                tryToGetDocuments()
+            }
+            ippConfig.userName = configuredUserName
+        }
+        documents.onEach { document ->
+            document.save(job.printerDirectory(), overwrite = true)
+            optionalCommandToHandleFile?.let { document.runCommand(it) }
+        }
+        return documents.map { it.file!! }
     }
 
 }

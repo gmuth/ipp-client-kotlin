@@ -606,38 +606,4 @@ open class IppPrinter(
             if (!mkdirs() && !isDirectory) throw IOException("failed to create printer directory: $path")
         }
 
-    // --------------------------------
-    // CUPS Get jobs and save documents
-    // --------------------------------
-
-    fun cupsGetJobsAndSaveDocuments(
-        whichJobs: IppWhichJobs = IppWhichJobs.All,
-        command: String? = null,
-        updateJobAttributes: Boolean = false
-    ): Collection<File> {
-        log.info { "workDirectory: $workDirectory" }
-        val files = mutableListOf<File>()
-        var numberOfJobsWithoutDocuments = 0
-        getJobs(
-            whichJobs,
-            requestedAttributes = listOf(
-                "job-id", "job-uri", "job-printer-uri", "job-originating-user-name",
-                "job-name", "job-state", "job-state-reasons", "number-of-documents"
-            )
-        )
-            .apply { log.info { "Found $size jobs (which=$whichJobs)" } }
-            .forEach { job ->
-                log.info { "$job" }
-                if(updateJobAttributes) job.updateAttributes()
-                if (job.numberOfDocuments == 0) {
-                    numberOfJobsWithoutDocuments++
-                } else {
-                    val documentFiles = job.cupsGetAndSaveDocuments(command = command, onIppExceptionThrow = false)
-                    files.addAll(documentFiles)
-                }
-            }
-        log.info { "$numberOfJobsWithoutDocuments jobs without documents" }
-        log.info { "Saved ${files.size} documents to directory $workDirectory" }
-        return files
-    }
 }
