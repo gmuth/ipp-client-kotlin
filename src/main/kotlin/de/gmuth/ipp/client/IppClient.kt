@@ -23,19 +23,12 @@ typealias IppResponseInterceptor = (request: IppRequest, response: IppResponse) 
 
 open class IppClient(
     val config: IppConfig = IppConfig(),
-    val httpClient: Http.Client = Http.defaultImplementation.createClient(
-        Http.Config(
-            accept = APPLICATION_IPP, // avoid 'text/html' with sun.net.www.protocol.http.HttpURLConnection
-            acceptEncoding = "identity" // avoid 'gzip' with Androids OkHttp
-        )
-    )
+    val httpConfig: Http.Config = Http.Config(),
+    val httpClient: Http.Client = Http.defaultImplementation.createClient(httpConfig)
 ) {
     var saveMessages: Boolean = false
     var saveMessagesDirectory = File("ipp-messages")
     var responseInterceptor: IppResponseInterceptor? = null
-
-    val httpConfig: Http.Config
-        get() = httpClient.config
 
     fun basicAuth(user: String, password: String) {
         httpConfig.basicAuth = Http.BasicAuth(user, password)

@@ -23,8 +23,8 @@ interface Http {
         // use individual certificate: sslContext(loadCertificate(FileInputStream("printer.pem")))
         // use truststore: sslContext(loadKeyStore(FileInputStream("printer.jks"), "changeit"))
         var verifySSLHostname: Boolean = true,
-        var accept: String? = null,
-        var acceptEncoding: String? = null,
+        var accept: String? = "application/ipp", // avoid 'text/html' with sun.net.www.protocol.http.HttpURLConnection
+        var acceptEncoding: String? = "identity", // avoid 'gzip' with Androids OkHttp
         var debugLogging: Boolean = false
     ) {
         fun trustAnyCertificateAndSSLHostname() {

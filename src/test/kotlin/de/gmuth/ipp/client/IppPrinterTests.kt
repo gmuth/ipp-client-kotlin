@@ -49,7 +49,7 @@ class IppPrinterTests {
 
     val printer = IppPrinter(
         URI.create("ipp://printer"),
-        ippClient = IppClient(ippConfig, httpClient),
+        ippClient = IppClient(ippConfig, httpClient = httpClient),
         getPrinterAttributesOnInit = false
     ).apply {
         attributes = File("printers/Simulated_Laser_Printer/Get-Printer-Attributes.ipp")

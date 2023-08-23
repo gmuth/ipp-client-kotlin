@@ -30,16 +30,16 @@ open class CupsClient(
         val log = Logging.getLogger { }
     }
 
-    init {
-        if (cupsUri.scheme == "ipps") httpClient.config.trustAnyCertificateAndSSLHostname()
-    }
-
-    protected val ippClient = IppClient(ippConfig, httpClient)
-    fun getIppServer() = ippClient.getHttpServer()
-
     var userName: String? by ippConfig::userName
     val httpConfig: Http.Config by httpClient::config
     var cupsClientWorkDirectory = File("cups-${cupsUri.host}")
+    val ippClient = IppClient(ippConfig, httpClient = httpClient)
+
+    init {
+        if (cupsUri.scheme == "ipps") httpConfig.trustAnyCertificateAndSSLHostname()
+    }
+
+    fun getIppServer() = ippClient.getHttpServer()
 
     fun getPrinters() = try {
         exchange(ippRequest(CupsGetPrinters))

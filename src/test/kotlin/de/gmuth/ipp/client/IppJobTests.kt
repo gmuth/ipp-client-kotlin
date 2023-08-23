@@ -36,7 +36,7 @@ class IppJobTests {
         // mock ipp printer
         printer = IppPrinter(
             URI.create("ipp://printer"),
-            ippClient = IppClient(ippConfig, httpClient),
+            ippClient = IppClient(ippConfig, httpClient = httpClient),
             getPrinterAttributesOnInit = false
         ).apply {
             attributes = ippResponse("Get-Printer-Attributes.ipp").printerGroup
