@@ -117,36 +117,32 @@ class IppSubscription(
     fun exchange(request: IppRequest) = printer.exchange(request)
 
     //------------------------------------
-    // get and handle event notifications
+    // poll and handle event notifications
     //------------------------------------
 
-    var handleNotifications = false
+    var pollHandlesNotifications = false
 
     val expiresAt: LocalDateTime
         get() = leaseStartedAt.plus(leaseDuration)
 
     fun expired() = !leaseDuration.isZero && now().isAfter(expiresAt)
 
-    fun getAndHandleNotifications(
-        delay: Duration = ofSeconds(5),
+    fun pollAndHandleNotifications(
+        pollEvery: Duration = ofSeconds(5), // should be larger than 1s
         autoRenewSubscription: Boolean = false,
         handleNotification: (event: IppEventNotification) -> Unit = { log.info { it } }
     ) {
-        if (delay < ofSeconds(1) && autoRenewSubscription)
-            log.warn { "autoRenewSubscription does not work reliably for delays of less than 1 second" }
-        fun expiresAfterDelay() = !leaseDuration.isZero && now().plus(delay).isAfter(expiresAt.minusSeconds(2))
+        fun expiresAfterDelay() = !leaseDuration.isZero && now().plus(pollEvery).isAfter(expiresAt.minusSeconds(2))
         try {
-            handleNotifications = true
+            pollHandlesNotifications = true
             do {
                 if (expired()) log.warn { "subscription #$id has expired" }
                 getNotifications().forEach { handleNotification(it) }
                 if (expiresAfterDelay() && autoRenewSubscription) renew(leaseDuration)
-                Thread.sleep(delay.toMillis())
-            } while (handleNotifications)
+                Thread.sleep(pollEvery.toMillis())
+            } while (pollHandlesNotifications)
         } catch (clientErrorNotFoundException: ClientErrorNotFoundException) {
             log.info { clientErrorNotFoundException.response!!.statusMessage }
-        } finally {
-            handleNotifications = false
         }
     }
 

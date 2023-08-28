@@ -259,7 +259,7 @@ open class CupsClient(
             whichJobs,
             requestedAttributes = listOf(
                 "job-id", "job-uri", "job-printer-uri", "job-originating-user-name",
-                "job-name", "job-state", "job-state-reasons", "number-of-documents"
+                "job-name", "job-state", "job-state-reasons", "number-of-documents", "document-count"
             )
         )
             .onEach { log.info { it } } // job overview
@@ -289,10 +289,11 @@ open class CupsClient(
         whichJobEvents: String = "job-created",
         leaseDuration: Duration = Duration.ofMinutes(60),
         autoRenewLease: Boolean = true,
+        pollEvery: Duration = Duration.ofSeconds(1),
         commandToHandleFile: String? = null // e.g. "open" -> open <filename> with Preview on MacOS
     ) {
         createPrinterSubscription(whichJobEvents, notifyLeaseDuration = leaseDuration)
-            .getAndHandleNotifications(Duration.ofSeconds(1), autoRenewSubscription = autoRenewLease) { event ->
+            .pollAndHandleNotifications(pollEvery, autoRenewSubscription = autoRenewLease) { event ->
                 log.info { event }
                 with(event.getJob()) {
                     while (jobIsIncoming()) {
