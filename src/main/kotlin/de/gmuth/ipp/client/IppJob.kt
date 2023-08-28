@@ -56,6 +56,9 @@ class IppJob(
         @SuppressWarnings("kotlin:S1192")
         get() = attributes.getValue("job-originating-user-name")
 
+    val originatingHostName: IppString
+        get() = attributes.getValue("job-originating-host-name")
+
     val impressionsCompleted: Int
         get() = attributes.getValue("job-impressions-completed")
 
@@ -314,6 +317,7 @@ class IppJob(
             if (hasStateReasons()) append(" (reasons=${stateReasons.joinToString(",")})")
             if (containsKey("job-name")) append(", name=$name")
             if (containsKey("job-impressions-completed")) append(", impressions-completed=$impressionsCompleted")
+            if (containsKey("job-originating-host-name")) append(", originating-host-name=$originatingHostName")
             if (containsKey("job-originating-user-name")) append(", originating-user-name=$originatingUserName")
             if (containsKey("com.apple.print.JobInfo.PMJobName")) append(", $applePrintJobInfo")
             if (containsKey("number-of-documents")) append(", number-of-documents=$numberOfDocuments")

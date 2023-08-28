@@ -260,7 +260,7 @@ open class CupsClient(
         return getJobs(
             whichJobs,
             requestedAttributes = listOf(
-                "job-id", "job-uri", "job-printer-uri", "job-originating-user-name",
+                "job-id", "job-uri", "job-printer-uri", "job-originating-user-name", "job-originating-host-name",
                 "job-name", "job-state", "job-state-reasons", "number-of-documents", "document-count"
             )
         )

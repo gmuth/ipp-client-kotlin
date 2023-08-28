@@ -164,6 +164,7 @@ class IppJobTests {
                 remove("job-state-reasons")
                 remove("job-name")
                 remove("job-originating-user-name")
+                remove("job-originating-host-name")
                 remove("job-impressions-completed")
                 remove("number-of-documents")
                 remove("job-printer-uri")
