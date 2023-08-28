@@ -168,10 +168,12 @@ open class CupsClient(
     //-----------------------
 
     val ippPrinter: IppPrinter by lazy {
-        IppPrinter(cupsUri, ippClient = ippClient, getPrinterAttributesOnInit = false).apply {
-            workDirectory = cupsClientWorkDirectory
-        }
+        IppPrinter(cupsUri, ippClient = ippClient, getPrinterAttributesOnInit = false)
+            .apply { workDirectory = cupsClientWorkDirectory }
     }
+
+    fun getJobs(whichJobs: IppWhichJobs? = null, limit: Int? = null, requestedAttributes: List<String>? = null) =
+        ippPrinter.getJobs(whichJobs = whichJobs, limit = limit, requestedAttributes = requestedAttributes)
 
     //----------------------------
     // Create printer subscription
@@ -251,8 +253,8 @@ open class CupsClient(
     fun getJobsAndSaveDocuments(
         whichJobs: IppWhichJobs = IppWhichJobs.All,
         updateJobAttributes: Boolean = false,
-        commandToHandleFile: String? = null
-    ): Collection<IppJob> = with(ippPrinter) {
+        commandToHandleSavedFile: String? = null
+    ): Collection<IppJob> {
         val numberOfJobsWithoutDocuments = AtomicInteger(0)
         val numberOfSavedDocuments = AtomicInteger(0)
         return getJobs(
@@ -269,14 +271,14 @@ open class CupsClient(
             }
             .onEach { job -> // keep stats and save documents
                 if (job.numberOfDocuments == 0) numberOfJobsWithoutDocuments.incrementAndGet()
-                else getAndSaveDocuments(job, optionalCommandToHandleFile = commandToHandleFile).apply {
+                else getAndSaveDocuments(job, optionalCommandToHandleFile = commandToHandleSavedFile).apply {
                     numberOfSavedDocuments.addAndGet(size)
                 }
             }
             .apply {
                 with(jobOwners) { log.info { "Found $size job ${if (size <= 1) "owner" else "owners"}: ${joinToString(", ")}" } }
                 log.info { "Found $size jobs (which=$whichJobs) where $numberOfJobsWithoutDocuments jobs have no documents" }
-                log.info { "Saved $numberOfSavedDocuments documents of ${size.minus(numberOfJobsWithoutDocuments.toInt())} jobs with documents to directory: $workDirectory" }
+                log.info { "Saved $numberOfSavedDocuments documents of ${size.minus(numberOfJobsWithoutDocuments.toInt())} jobs with documents to directory: ${ippPrinter.workDirectory}" }
             }
     }
 
