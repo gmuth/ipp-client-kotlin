@@ -320,7 +320,7 @@ class IppJob(
             if (containsKey("job-originating-host-name")) append(", originating-host-name=$originatingHostName")
             if (containsKey("job-originating-user-name")) append(", originating-user-name=$originatingUserName")
             if (containsKey("com.apple.print.JobInfo.PMJobName")) append(", $applePrintJobInfo")
-            if (containsKey("number-of-documents")) append(", number-of-documents=$numberOfDocuments")
+            if (containsKey("number-of-documents") || containsKey("document-count")) append(", number-of-documents=$numberOfDocuments")
             if (containsKey("job-printer-uri")) append(", job-printer-uri=$printerUri")
             toString()
         }
