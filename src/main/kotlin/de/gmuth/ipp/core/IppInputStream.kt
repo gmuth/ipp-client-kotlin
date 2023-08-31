@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2022 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
 import de.gmuth.io.hexdump
@@ -120,7 +120,7 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
 
             Charset -> Charset.forName(readString())
 
-            Uri -> URI.create(readString())
+            Uri -> URI.create(readString().replace(" ", "%20"))
 
             // String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
             Keyword,
