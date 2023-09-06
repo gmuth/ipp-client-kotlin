@@ -1,6 +1,7 @@
 package de.gmuth.ipp.client
 
 import de.gmuth.http.HttpURLConnectionClient
+import de.gmuth.log.ConsoleLogger
 import de.gmuth.log.Logging
 import java.net.HttpURLConnection
 import java.net.URI
@@ -9,7 +10,7 @@ fun main() {
 
     val printerUri = URI.create("ipp://xero.local:631/ipp/print")
 
-    Logging.defaultLogLevel = Logging.LogLevel.DEBUG
+    ConsoleLogger.defaultLogLevel = Logging.LogLevel.DEBUG
     HttpURLConnectionClient.log.logLevel = Logging.LogLevel.TRACE
     val log = Logging.getLogger {}
     var ippPrinter: IppPrinter? = null

@@ -1,40 +1,33 @@
 package de.gmuth.log
 
 /**
- * Copyright (c) 2022 Gerhard Muth
+ * Copyright (c) 2021-2023 Gerhard Muth
  */
 
-import de.gmuth.log.Logging.LogLevel
 import java.io.PrintWriter
-import java.time.LocalTime.now
-import java.time.format.DateTimeFormatter
+import java.time.LocalDateTime.now
 
-class ConsoleLogger(name: String) : Logger(name, supportLevelConfiguration = true) {
-
-    private var level: LogLevel = Logging.defaultLogLevel
-
-    override var logLevel: LogLevel
-        get() = level
-        set(value) {
-            level = value
-        }
-
-    override fun isEnabled(level: LogLevel) = logLevel <= level
-
-    override fun publish(messageLogLevel: LogLevel, throwable: Throwable?, messageString: String?) {
-        val loggerName = if (simpleClassName) name.substringAfterLast(".") else name
-        val timestamp = if (logTimestamp) now().format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS ")) else ""
-        println(format.format(timestamp, loggerName, messageLogLevel, messageString))
-        throwable?.printStackTrace(PrintWriter(System.out, true))
-    }
+class ConsoleLogger(name: String) : Logger(name) {
 
     companion object {
-        var format: String = "%s%-25s %-5s %s" // timestamp, name, level, message
+        var defaultLogLevel = Logging.LogLevel.INFO
+        // %1=timestamp, %2=loggerName, %3=level, %4=message
+        var format: String = "%1\$tT.%1\$tL %2\$-25s %3\$-10s %4\$s%n"
         var simpleClassName = true
-        var logTimestamp = true
-
         fun configure() {
-            Logging.factory = Logging.Factory { ConsoleLogger(it) }
+            Logging.createLogger = ::ConsoleLogger
+        }
+    }
+
+    init {
+        logLevel = defaultLogLevel
+    }
+
+    override fun publish(logEvent: LogEvent) {
+        val loggerName = if (simpleClassName) name.substringAfterLast(".") else name
+        logEvent.run {
+            print(format.format(now(), loggerName, logLevel, messageString))
+            throwable?.printStackTrace(PrintWriter(System.out, true))
         }
     }
 }

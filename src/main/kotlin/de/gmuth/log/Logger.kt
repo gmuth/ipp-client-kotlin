@@ -1,7 +1,7 @@
 package de.gmuth.log
 
 /**
- * Copyright (c) 2022 Gerhard Muth
+ * Copyright (c) 2022-2023 Gerhard Muth
  */
 
 import de.gmuth.log.Logging.LogLevel
@@ -9,16 +9,11 @@ import de.gmuth.log.Logging.LogLevel.*
 
 typealias MessageProducer = () -> Any?
 
-@SuppressWarnings("kotlin:S108", "kotlin:S1186") // base logger that doesn't do anything
-open class Logger(val name: String, val supportLevelConfiguration: Boolean = false) {
+abstract class Logger(val name: String) {
 
-    open var logLevel: LogLevel
-        get() = OFF
-        set(value) {}
-
-    open fun isEnabled(level: LogLevel): Boolean = false
-
-    open fun publish(messageLogLevel: LogLevel, throwable: Throwable?, messageString: String?) {}
+    open var logLevel = OFF
+    open fun isEnabled(level: LogLevel) = logLevel != OFF && logLevel <= level
+    abstract fun publish(logEvent: LogEvent)
 
     @JvmOverloads
     fun trace(throwable: Throwable? = null, messageProducer: MessageProducer = { "" }) =
@@ -41,10 +36,14 @@ open class Logger(val name: String, val supportLevelConfiguration: Boolean = fal
         log(ERROR, throwable, messageProducer)
 
     @JvmOverloads
-    fun log(messageLogLevel: LogLevel, throwable: Throwable? = null, produceMessage: MessageProducer) {
-        if (isEnabled(messageLogLevel)) publish(messageLogLevel, throwable, produceMessage()?.toString())
+    fun log(messageLogLevel: LogLevel, throwable: Throwable? = null, produceMessage: MessageProducer) =
+        log(LogEvent(messageLogLevel, produceMessage, throwable))
+
+    fun log(logEvent: LogEvent) = logEvent.run {
+        if (isEnabled(logLevel)) publish(logEvent)
     }
 
+    @JvmOverloads
     fun logWithCauseMessages(throwable: Throwable, logLevel: LogLevel = ERROR) {
         throwable.cause?.let { logWithCauseMessages(it, logLevel) }
         log(logLevel) { "${throwable.javaClass.name}: ${throwable.message}" }
