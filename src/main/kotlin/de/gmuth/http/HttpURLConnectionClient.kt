@@ -1,12 +1,14 @@
 package de.gmuth.http
 
 /**
- * Copyright (c) 2020-2022 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
+import de.gmuth.log.JulAdapter
 import de.gmuth.log.JulHandler
 import de.gmuth.log.Logging
 import de.gmuth.log.Logging.LogLevel.*
+import de.gmuth.log.Logging.createLogger
 import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URI
@@ -21,11 +23,11 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
 
     init {
         log.debug { "HttpURLConnectionClient created" }
-        if (config.debugLogging && !Logging.factorySimpleClassNameStartsWith("JulAdapter")) {
+        if (config.debugLogging && createLogger != ::JulAdapter) {
             // The JulHandler forwards ALL jul message to Logging
-            JulHandler.addToJulLogger()
+            JulHandler.addToJulLogger("sun.net.www.protocol.http")
             // The JulHandler does NOT use the jul output config
-            Logging.configureLevel("sun.net.www.protocol.http.HttpURLConnection", TRACE, false)
+            Logging.getLogger("sun.net.www.protocol.http.HttpURLConnection").logLevel = TRACE
         }
     }
 
@@ -43,14 +45,19 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
                 readTimeout = timeout
                 accept?.let { setRequestProperty("Accept", it) }
                 acceptEncoding?.let { setRequestProperty("Accept-Encoding", it) }
-                basicAuth?.let { setRequestProperty("Authorization", "Basic ${it.encodeBase64()}") }
+                basicAuth?.let { setRequestProperty("Authorization", it.authorization()) }
                 userAgent?.let { setRequestProperty("User-Agent", it) }
             }
             setRequestProperty("Content-Type", contentType)
             if (chunked) setChunkedStreamingMode(0)
             writeContent(outputStream)
             for ((key, values) in headerFields) {
-                log.log(if (responseCode < 300) DEBUG else ERROR) { "$key = $values" }
+                val logLevel = when {
+                    responseCode < 300 -> DEBUG
+                    responseCode in 400..499 -> INFO
+                    else -> WARN
+                }
+                log.log(logLevel) { "$key = $values" }
             }
             val responseStream = try {
                 inputStream
