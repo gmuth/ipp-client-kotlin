@@ -19,7 +19,7 @@ class JulAdapter(name: String) : Logger(name) {
             createLogger = ::JulAdapter
         }
 
-        fun configureLogManager(configResource: String = "/ipp-client-logging.conf") =
+        fun configureLogManager(configResource: String = "/ippclient-logging.properties") =
             LogManager.getLogManager().readConfiguration(JulAdapter::class.java.getResourceAsStream(configResource))
     }
 
