@@ -29,7 +29,9 @@ repositories {
 //    }
 //}
 
-val slf4jVersion: String by project // -> gradle.properties
+// -> gradle.properties
+val slf4jVersion: String by project
+val androidVersion: String by project
 
 dependencies {
     //implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
@@ -42,7 +44,7 @@ dependencies {
 
     //"slf4jSupportImplementation"("org.slf4j:slf4j-api:1.7.32") // pom.xml: scope=compile, optional=true
     compileOnly("org.slf4j:slf4j-api:$slf4jVersion")
-    compileOnly("com.google.android:android:4.1.1.4") // android.util.Log
+    compileOnly("com.google.android:android:$androidVersion") // android.util.Log
 
     testRuntimeOnly("org.slf4j:slf4j-simple:$slf4jVersion")
     //testRuntimeOnly("ch.qos.logback:logback-classic:1.2.3")
