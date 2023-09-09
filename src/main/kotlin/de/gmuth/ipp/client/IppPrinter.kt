@@ -12,13 +12,10 @@ import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.log.*
-//import de.gmuth.log.Logger.Level.*
-import java.util.logging.Logger.getLogger
-//import de.gmuth.log.JavaUtilLogging.getLogger
 import java.io.*
 import java.net.URI
 import java.time.Duration
-import java.util.logging.Logger
+import java.util.logging.Logger.getLogger
 
 @SuppressWarnings("kotlin:S1192")
 class IppPrinter(
@@ -31,11 +28,9 @@ class IppPrinter(
     requestedAttributesOnInit: List<String>? = null
 ) {
     var workDirectory: File = File("work")
-    //val log = getLogger(javaClass.canonicalName)
     val log = getLogger(javaClass.name)
 
     companion object {
-        //val log = JUL2.getLogger {}
 
         val printerStateAttributes = listOf(
             "printer-is-accepting-jobs", "printer-state", "printer-state-reasons"

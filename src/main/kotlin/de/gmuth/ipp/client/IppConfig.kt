@@ -6,7 +6,6 @@ package de.gmuth.ipp.client
 
 import java.nio.charset.Charset
 import java.util.logging.Logger
-import java.util.logging.Logger.getLogger
 
 class IppConfig(
     var userName: String? = System.getProperty("user.name"),
@@ -14,8 +13,6 @@ class IppConfig(
     var charset: Charset = Charsets.UTF_8,
     var naturalLanguage: String = "en",
 ) {
-    //val log = getLogger(javaClass.name)
-
     fun log(log: Logger) = log.run {
         info { "userName: $userName" }
         info { "ippVersion: $ippVersion" }
