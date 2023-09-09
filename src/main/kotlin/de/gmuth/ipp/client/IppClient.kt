@@ -14,10 +14,13 @@ import de.gmuth.ipp.core.IppStatus.ClientErrorBadRequest
 import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import de.gmuth.ipp.core.IppTag.Unsupported
 import de.gmuth.ipp.iana.IppRegistrationsSection2
-import de.gmuth.log.Logging
+import de.gmuth.log.debug
+import de.gmuth.log.trace
+import de.gmuth.log.warn
 import java.io.File
 import java.net.URI
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.logging.Logger.getLogger
 
 typealias IppResponseInterceptor = (request: IppRequest, response: IppResponse) -> Unit
 
@@ -26,6 +29,7 @@ open class IppClient(
     val httpConfig: Http.Config = Http.Config(),
     val httpClient: Http.Client = Http.defaultImplementation.createClient(httpConfig)
 ) {
+    val log = getLogger(javaClass.name)
     var saveMessages: Boolean = false
     var saveMessagesDirectory = File("ipp-messages")
     var responseInterceptor: IppResponseInterceptor? = null
@@ -36,7 +40,6 @@ open class IppClient(
     }
 
     companion object {
-        val log = Logging.getLogger {}
         const val APPLICATION_IPP = "application/ipp"
         const val version = "2.5-SNAPSHOT"
         const val build = "2023"
@@ -138,7 +141,7 @@ open class IppClient(
             "user '$requestingUserName' is unauthorized for operation '$operation' (status=$status)"
         }
         exceptionMessage?.run {
-            config.logDetails()
+            config.log(log)
             request.logDetails("IPP REQUEST: ")
             log.warn { "http response status: $status" }
             server?.let { log.warn { "ipp-server: $it" } }

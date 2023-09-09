@@ -4,8 +4,8 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020-2023 Gerhard Muth
  */
 
-import de.gmuth.log.Logging
 import java.net.URI
+import java.util.logging.Logger.getLogger
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -13,9 +13,7 @@ import kotlin.test.assertNotNull
 
 class IppRequestTests {
 
-    companion object {
-        val log = Logging.getLogger {}
-    }
+    val log = getLogger(javaClass.name)
 
     @Test
     fun requestConstructor1() {
@@ -32,7 +30,6 @@ class IppRequestTests {
 
     @Test
     fun requestConstructor2() {
-        IppMessage.log.logLevel = Logging.LogLevel.DEBUG
         val request = IppRequest(IppOperation.StartupPrinter, URI.create("ipp://foo"))
         assertEquals(1, request.requestId)
         assertEquals("1.1", request.version)
@@ -43,15 +40,10 @@ class IppRequestTests {
         assertEquals("Startup-Printer", request.codeDescription)
         val requestEncoded = request.encode()
         assertEquals(97, requestEncoded.size)
-        IppMessage.log.logLevel = Logging.LogLevel.INFO
     }
 
     @Test
     fun printJobRequest() {
-        IppInputStream.log.logLevel = Logging.LogLevel.INFO
-        IppOutputStream.log.logLevel = Logging.LogLevel.INFO
-        IppMessage.log.logLevel = Logging.LogLevel.INFO
-
         val request = IppRequest(
             IppOperation.PrintJob, URI.create("ipp://printer"),
             0, listOf("one", "two"), "user"

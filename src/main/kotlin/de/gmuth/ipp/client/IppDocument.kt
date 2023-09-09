@@ -6,10 +6,11 @@ package de.gmuth.ipp.client
 
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppString
-import de.gmuth.log.Logging
+import de.gmuth.log.debug
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
+import java.util.logging.Logger.getLogger
 import kotlin.io.path.createTempDirectory
 
 class IppDocument(
@@ -17,9 +18,7 @@ class IppDocument(
     val attributes: IppAttributesGroup,
     val inputStream: InputStream
 ) {
-    companion object {
-        val log = Logging.getLogger { }
-    }
+    val log = getLogger(javaClass.name)
 
     val number: Int
         get() = attributes.getValue("document-number")

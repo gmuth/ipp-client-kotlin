@@ -4,14 +4,14 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020-2023 Gerhard Muth
  */
 
-import de.gmuth.log.Logging
+import de.gmuth.log.debug
+import de.gmuth.log.warn
 import java.io.File
+import java.util.logging.Logger.getLogger
 
 open class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*>>() {
 
-    companion object {
-        val log = Logging.getLogger {}
-    }
+    val log = getLogger(javaClass.name)
 
     init {
         if (!tag.isGroupTag()) throw IppException("'$tag' is not a group tag")

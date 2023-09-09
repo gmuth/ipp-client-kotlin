@@ -7,11 +7,14 @@ package de.gmuth.ipp.core
 import de.gmuth.io.ByteArraySavingInputStream
 import de.gmuth.io.ByteArraySavingOutputStream
 import de.gmuth.ipp.core.IppTag.*
-import de.gmuth.log.Logging
+import de.gmuth.log.debug
+import de.gmuth.log.warn
 import java.io.*
+import java.util.logging.Logger.getLogger
 
 abstract class IppMessage() {
 
+    val log = getLogger(javaClass.name)
     var code: Short? = null
     var requestId: Int? = null
     var version: String? = null
@@ -25,10 +28,6 @@ abstract class IppMessage() {
     var rawBytes: ByteArray? = null
 
     abstract val codeDescription: String // request operation or response status
-
-    companion object {
-        val log = Logging.getLogger {}
-    }
 
     constructor(version: String, requestId: Int, charset: java.nio.charset.Charset, naturalLanguage: String) : this() {
         this.version = version

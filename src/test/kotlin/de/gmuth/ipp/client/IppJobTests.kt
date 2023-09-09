@@ -10,11 +10,11 @@ import de.gmuth.ipp.core.IppStatus.SuccessfulOk
 import de.gmuth.ipp.core.IppTag
 import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.ipp.core.toIppString
-import de.gmuth.log.Logging
 import org.junit.Test
 import java.io.File
 import java.io.FileInputStream
 import java.net.URI
+import java.util.logging.Logger.getLogger
 import kotlin.io.path.createTempDirectory
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -22,10 +22,8 @@ import kotlin.test.assertTrue
 
 class IppJobTests {
 
-    companion object {
-        val log = Logging.getLogger {}
-        val blankPdf = File("tool/A4-blank.pdf")
-    }
+    val log = getLogger(javaClass.name)
+    val blankPdf = File("tool/A4-blank.pdf")
 
     val httpClient = HttpClientMock()
     val ippConfig = IppConfig()
@@ -205,7 +203,6 @@ class IppJobTests {
 
     @Test
     fun cupsGetDocument3() {
-        IppDocument.log.logLevel = Logging.LogLevel.DEBUG
         printer.attributes.remove("cups-version")
         httpClient.ippResponse = cupsDocumentResponse("application/octetstream").apply {
             jobGroup.remove("document-name")

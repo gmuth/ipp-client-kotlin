@@ -4,7 +4,8 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020-2023 Gerhard Muth
  */
 
-import de.gmuth.log.Logging
+import de.gmuth.log.warn
+import java.util.logging.Logger.getLogger
 
 // https://www.cups.org/doc/spec-ipp.html
 class CupsMarker(
@@ -15,10 +16,6 @@ class CupsMarker(
     val highLevel: Int,
     val colorCode: String
 ) {
-    companion object {
-        val log = Logging.getLogger {}
-    }
-
     val color: Color = Color.fromString(colorCode)
 
     fun levelPercent() = 100 * level / highLevel
@@ -38,6 +35,7 @@ class CupsMarker(
         UNKNOWN("?");
 
         companion object {
+            val log = getLogger(javaClass.name)
             fun fromString(code: String) = values().find { it.code == code }
                 ?: UNKNOWN.apply { log.warn { "unknown color code: $code" } }
         }

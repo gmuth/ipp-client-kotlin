@@ -8,11 +8,13 @@ import de.gmuth.ipp.client.IppJobState.*
 import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppTag.*
-import de.gmuth.log.Logging.getLogger
+import de.gmuth.log.debug
+import de.gmuth.log.warn
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
 import java.net.URI
+import java.util.logging.Logger.getLogger
 
 class IppJob(
     val printer: IppPrinter,
@@ -21,11 +23,12 @@ class IppJob(
 
 ) {
     companion object {
-        val log = getLogger {}
+
         var defaultDelayMillis: Long = 3000
         var useJobOwnerAsUserName: Boolean = false
     }
 
+    val log = getLogger(javaClass.name)
     var subscription: IppSubscription? = subscriptionAttributes?.let { IppSubscription(printer, it) }
     val ippConfig = printer.ippConfig
 

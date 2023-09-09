@@ -9,8 +9,9 @@ import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppStatus
 import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
-import de.gmuth.log.Logging
 import java.io.File
+import java.util.logging.Logger
+import java.util.logging.Logger.getLogger
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.pathString
 
@@ -30,8 +31,9 @@ open class IppExchangeException(
         }
     }
 
+    val log = getLogger(javaClass.name)
+
     companion object {
-        val log = Logging.getLogger {}
         fun defaultMessage(request: IppRequest, response: IppResponse?) = StringBuilder().apply {
             append("${request.operation} failed")
             response?.run {
@@ -47,8 +49,8 @@ open class IppExchangeException(
 
     fun statusIs(status: IppStatus) = response?.status == status
 
-    fun logDetails() {
-        if (httpStatus != null) log.info { "HTTP-STATUS: $httpStatus" }
+    fun log(logger: Logger) = logger.run {
+        if (httpStatus != null) info { "HTTP-STATUS: $httpStatus" }
         request.logDetails(" REQUEST: ")
         response?.logDetails("RESPONSE: ")
     }

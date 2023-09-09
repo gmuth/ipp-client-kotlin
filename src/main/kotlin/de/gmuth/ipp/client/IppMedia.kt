@@ -9,23 +9,28 @@ import de.gmuth.ipp.core.IppAttributeBuilder
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppCollection
 import de.gmuth.ipp.core.IppTag.*
-import de.gmuth.log.Logging
+import de.gmuth.log.debug
+import de.gmuth.log.warn
+import java.util.logging.Logger.getLogger
 
 object IppMedia {
 
-    val log = Logging.getLogger {}
+    val log = getLogger(javaClass.name)
 
     // unit: 1/100 mm, e.g. 2540 = 1 inch
     class Size(val xDimension: Int, val yDimension: Int) : IppAttributeBuilder {
 
         override fun buildIppAttribute(printerAttributes: IppAttributesGroup) =
-                IppAttribute("media-size", BegCollection, IppCollection(
-                        IppAttribute("x-dimension", Integer, xDimension),
-                        IppAttribute("y-dimension", Integer, yDimension)
-                ))
+            IppAttribute(
+                "media-size", BegCollection, IppCollection(
+                    IppAttribute("x-dimension", Integer, xDimension),
+                    IppAttribute("y-dimension", Integer, yDimension)
+                )
+            )
     }
 
-    class Margins(left: Int? = null, right: Int? = null, top: Int? = null, bottom: Int? = null) : ArrayList<IppAttribute<*>>() {
+    class Margins(left: Int? = null, right: Int? = null, top: Int? = null, bottom: Int? = null) :
+        ArrayList<IppAttribute<*>>() {
         constructor(margin: Int) : this(margin, margin, margin, margin)
 
         init {
@@ -38,23 +43,23 @@ object IppMedia {
 
     // PWG 5100.3, 3.13
     class Collection(
-            var size: Size? = null,
-            var margins: Margins? = null,
-            var source: String? = null,
-            var type: String? = null
+        var size: Size? = null,
+        var margins: Margins? = null,
+        var source: String? = null,
+        var type: String? = null
 
     ) : IppAttributeBuilder {
 
         override fun buildIppAttribute(printerAttributes: IppAttributesGroup) =
-                IppAttribute("media-col", BegCollection, IppCollection().apply {
-                    if (source != null) {
-                        checkIfSourceIsSupported(printerAttributes)
-                        addAttribute("media-source", Keyword, source!!)
-                    }
-                    type?.let { addAttribute("media-type", Keyword, it) }
-                    size?.let { add(it.buildIppAttribute(printerAttributes)) }
-                    margins?.let { addAll(it) }
-                })
+            IppAttribute("media-col", BegCollection, IppCollection().apply {
+                if (source != null) {
+                    checkIfSourceIsSupported(printerAttributes)
+                    addAttribute("media-source", Keyword, source!!)
+                }
+                type?.let { addAttribute("media-type", Keyword, it) }
+                size?.let { add(it.buildIppAttribute(printerAttributes)) }
+                margins?.let { addAll(it) }
+            })
 
         private fun checkIfSourceIsSupported(printerAttributes: IppAttributesGroup) {
             val mediaSourceSupported = printerAttributes["media-source-supported"]

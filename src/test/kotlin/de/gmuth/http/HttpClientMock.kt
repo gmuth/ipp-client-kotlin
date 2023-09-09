@@ -7,16 +7,13 @@ package de.gmuth.http
 import de.gmuth.io.ByteArray
 import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppStatus
-import de.gmuth.log.Logging
 import java.io.*
 import java.net.URI
+import java.util.logging.Logger.getLogger
 
 class HttpClientMock(config: Http.Config = Http.Config()) : Http.Client(config) {
 
-    companion object {
-        val log = Logging.getLogger {}
-    }
-
+    val log = getLogger(javaClass.name)
     lateinit var rawIppRequest: ByteArray
     var httpStatus: Int = 200
     var httpServer: String? = "HttpClientMock"

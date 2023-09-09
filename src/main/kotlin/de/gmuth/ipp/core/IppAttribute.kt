@@ -7,14 +7,13 @@ package de.gmuth.ipp.core
 import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.ipp.iana.IppRegistrationsSection2.attributeIs1setOf
 import de.gmuth.ipp.iana.IppRegistrationsSection6.getEnumName
-import de.gmuth.log.Logging
+import de.gmuth.log.warn
 import java.nio.charset.Charset
+import java.util.logging.Logger.getLogger
 
 data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppAttributeBuilder {
 
-    companion object {
-        val log = Logging.getLogger {}
-    }
+    val log = getLogger(javaClass.name)
 
     val values: MutableCollection<T> = mutableListOf()
 
@@ -68,7 +67,8 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
         else -> enumNameOrValue(value as Any).toString()
     }
 
-    fun enumNameOrValue(value: Any) = if (tag == IppTag.Enum) getEnumName(name, value) else value
+    fun enumNameOrValue(value: Any) =
+        if (tag == IppTag.Enum) getEnumName(name, value) else value
 
     fun logDetails(prefix: String = "") {
         val string = toString()

@@ -10,12 +10,16 @@ import de.gmuth.ipp.core.IppCollection
 import de.gmuth.ipp.core.IppMessage
 import de.gmuth.ipp.core.IppTag
 import de.gmuth.ipp.core.IppTag.*
-import de.gmuth.log.Logging
+import de.gmuth.log.trace
+import de.gmuth.log.warn
+import java.util.logging.Logger.getLogger
 
 /**
  * https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-2
  */
 object IppRegistrationsSection2 {
+
+    val log = getLogger(javaClass.name)
 
     data class Attribute(
             val collection: String,
@@ -73,8 +77,6 @@ object IppRegistrationsSection2 {
         }
 
     }
-
-    val log = Logging.getLogger {}
 
     // source: https://www.iana.org/assignments/ipp-registrations/ipp-registrations-2.csv
     val allAttributes = CSVTable("/ipp-registrations-2.csv", ::Attribute).rows

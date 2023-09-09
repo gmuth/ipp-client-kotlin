@@ -1,14 +1,15 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppAttribute
 import de.gmuth.ipp.core.IppAttributeBuilder
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppTag.Keyword
-import de.gmuth.log.Logging
+import de.gmuth.log.warn
+import java.util.logging.Logger.getLogger
 
 enum class IppColorMode(private val keyword: String) : IppAttributeBuilder {
 
@@ -16,9 +17,7 @@ enum class IppColorMode(private val keyword: String) : IppAttributeBuilder {
     Color("color"),
     Monochrome("monochrome");
 
-    companion object {
-        val log = Logging.getLogger {}
-    }
+    val log = getLogger(javaClass.name)
 
     override fun buildIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<String> {
         // use job-creation-attributes-supported? // 5100.11

@@ -5,17 +5,16 @@ package de.gmuth.ipp.core
  */
 
 import de.gmuth.ipp.core.IppTag.*
-import de.gmuth.log.Logging
+import de.gmuth.log.debug
 import java.io.DataOutputStream
 import java.io.OutputStream
 import java.net.URI
 import java.nio.charset.Charset
+import java.util.logging.Logger.getLogger
 
 class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStream) {
 
-    companion object {
-        val log = Logging.getLogger {}
-    }
+    val log = getLogger(javaClass.name)
 
     // charset for text and name attributes, rfc 8011 4.1.4.1
     internal lateinit var attributesCharset: Charset

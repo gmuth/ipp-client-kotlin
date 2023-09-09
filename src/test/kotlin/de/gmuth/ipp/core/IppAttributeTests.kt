@@ -5,17 +5,14 @@ package de.gmuth.ipp.core
  */
 
 import de.gmuth.ipp.core.IppTag.*
-import de.gmuth.log.Logging
 import java.io.File
+import java.util.logging.Logger.getLogger
 import kotlin.test.*
 
 class IppAttributeTests {
 
     private val ippAttribute = IppAttribute("printer-state-reasons", Keyword, "none")
-
-    companion object {
-        val log = Logging.getLogger {}
-    }
+    val log = getLogger(javaClass.name)
 
     @Test
     fun constructorFailsDueToDelimiterTag() {

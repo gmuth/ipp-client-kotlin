@@ -9,18 +9,14 @@ import de.gmuth.ipp.core.IppException
 import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import de.gmuth.ipp.core.IppStatus.SuccessfulOk
-import de.gmuth.log.Logging
 import org.junit.Test
 import java.net.URI
+import java.util.logging.Logger.getLogger
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class CupsClientTests {
-
-    companion object {
-        val log = Logging.getLogger { }
-    }
-
+    val log = getLogger(javaClass.name)
     val httpClient = HttpClientMock()
     val cupsClient = CupsClient(URI.create("ipps://cups"), httpClient = httpClient)
 
@@ -38,7 +34,7 @@ class CupsClientTests {
     @Test
     fun getPrinters() {
         httpClient.mockResponse("CUPS/Cups-Get-Printers.ipp")
-        cupsClient.getPrinters().forEach { log.info { it } }
+        cupsClient.getPrinters().forEach { log.info { it.toString() } }
     }
 
     @Test

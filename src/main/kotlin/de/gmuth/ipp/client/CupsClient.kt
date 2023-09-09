@@ -11,12 +11,14 @@ import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppTag
 import de.gmuth.ipp.core.IppTag.*
-import de.gmuth.log.Logging
+import de.gmuth.log.debug
+import de.gmuth.log.warn
 import java.io.File
 import java.io.InputStream
 import java.net.URI
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.logging.Logger.getLogger
 
 // https://www.cups.org/doc/spec-ipp.html
 open class CupsClient(
@@ -26,10 +28,7 @@ open class CupsClient(
 ) {
     constructor(host: String = "localhost") : this(URI.create("ipp://$host"))
 
-    companion object {
-        val log = Logging.getLogger { }
-    }
-
+    val log = getLogger(javaClass.name)
     var userName: String? by ippConfig::userName
     val httpConfig: Http.Config by httpClient::config
     var cupsClientWorkDirectory = File("cups-${cupsUri.host}")
@@ -220,12 +219,12 @@ open class CupsClient(
 
             // https://github.com/apple/cups/issues/5919
             log.info { "Waiting for CUPS to generate IPP Everywhere PPD." }
-            log.info { this }
+            log.info { this.toString() }
             do {
                 Thread.sleep(1000)
                 updateAttributes("printer-make-and-model")
             } while (!makeAndModel.text.lowercase().contains("everywhere"))
-            log.info { this }
+            log.info { this.toString() }
 
             // make printer permanent
             exchange(
@@ -240,7 +239,7 @@ open class CupsClient(
             enable()
             resume()
             updateAttributes()
-            log.info { this }
+            log.info { this.toString() }
         }
     }
 
@@ -264,7 +263,7 @@ open class CupsClient(
                 "job-name", "job-state", "job-state-reasons", "number-of-documents", "document-count"
             )
         )
-            .onEach { log.info { it } } // job overview
+            .onEach { log.info { it.toString() } } // job overview
             .onEach { job -> // update attributes and lookup job owners
                 if (updateJobAttributes) job.updateAttributes()
                 job.getOriginatingUserNameOrAppleJobOwnerOrNull()?.let { jobOwners.add(it) }
@@ -296,10 +295,10 @@ open class CupsClient(
     ) {
         createPrinterSubscription(whichJobEvents, notifyLeaseDuration = leaseDuration)
             .pollAndHandleNotifications(pollEvery, autoRenewSubscription = autoRenewLease) { event ->
-                log.info { event }
+                log.info { event.toString() }
                 with(event.getJob()) {
                     while (jobIsIncoming()) {
-                        log.info { this }
+                        log.info { toString() }
                         Thread.sleep(1000)
                         updateAttributes()
                     }

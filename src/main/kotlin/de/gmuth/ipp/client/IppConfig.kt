@@ -4,8 +4,9 @@ package de.gmuth.ipp.client
  * Copyright (c) 2021-2023 Gerhard Muth
  */
 
-import de.gmuth.log.Logging
 import java.nio.charset.Charset
+import java.util.logging.Logger
+import java.util.logging.Logger.getLogger
 
 class IppConfig(
     var userName: String? = System.getProperty("user.name"),
@@ -13,14 +14,12 @@ class IppConfig(
     var charset: Charset = Charsets.UTF_8,
     var naturalLanguage: String = "en",
 ) {
-    companion object {
-        val log = Logging.getLogger {}
-    }
+    //val log = getLogger(javaClass.name)
 
-    fun logDetails() {
-        log.info { "userName: $userName" }
-        log.info { "ippVersion: $ippVersion" }
-        log.info { "charset: ${charset.name().lowercase()}" }
-        log.info { "naturalLanguage: $naturalLanguage" }
+    fun log(log: Logger) = log.run {
+        info { "userName: $userName" }
+        info { "ippVersion: $ippVersion" }
+        info { "charset: ${charset.name().lowercase()}" }
+        info { "naturalLanguage: $naturalLanguage" }
     }
 }

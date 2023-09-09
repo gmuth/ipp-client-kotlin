@@ -11,14 +11,17 @@ import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.ipp.iana.IppRegistrationsSection2
-import de.gmuth.log.Logging
-import de.gmuth.log.Logging.LogLevel.ERROR
+import de.gmuth.log.*
+//import de.gmuth.log.Logger.Level.*
+import java.util.logging.Logger.getLogger
+//import de.gmuth.log.JavaUtilLogging.getLogger
 import java.io.*
 import java.net.URI
 import java.time.Duration
+import java.util.logging.Logger
 
 @SuppressWarnings("kotlin:S1192")
-open class IppPrinter(
+class IppPrinter(
     val printerUri: URI,
     var attributes: IppAttributesGroup = IppAttributesGroup(Printer),
     httpConfig: Http.Config = Http.Config(),
@@ -28,6 +31,32 @@ open class IppPrinter(
     requestedAttributesOnInit: List<String>? = null
 ) {
     var workDirectory: File = File("work")
+    //val log = getLogger(javaClass.canonicalName)
+    val log = getLogger(javaClass.name)
+
+    companion object {
+        //val log = JUL2.getLogger {}
+
+        val printerStateAttributes = listOf(
+            "printer-is-accepting-jobs", "printer-state", "printer-state-reasons"
+        )
+
+        val printerClassAttributes = listOf(
+            "printer-name",
+            "printer-make-and-model",
+            "printer-is-accepting-jobs",
+            "printer-state",
+            "printer-state-reasons",
+            "document-format-supported",
+            "operations-supported",
+            "color-supported",
+            "sides-supported",
+            "media-supported",
+            "media-ready",
+            "media-default",
+            "ipp-versions-supported"
+        )
+    }
 
     init {
         log.debug { "create IppPrinter for $printerUri" }
@@ -46,11 +75,11 @@ open class IppPrinter(
                 if (ippExchangeException.statusIs(ClientErrorNotFound))
                     log.error { ippExchangeException.message }
                 else {
-                    log.logWithCauseMessages(ippExchangeException, ERROR)
+                    //log.logWithCauseMessages(ippExchangeException, ERROR)
                     log.error { "failed to get printer attributes on init" }
                     ippExchangeException.response?.let {
                         if (it.containsGroup(Printer)) log.info { "${it.printerGroup.size} attributes parsed" }
-                        else log.warn { it }
+                        else log.warn { it.toString() }
                     }
                     try {
                         fetchRawPrinterAttributes("getPrinterAttributesFailed.bin")
@@ -73,30 +102,6 @@ open class IppPrinter(
     // constructors for java usage
     constructor(printerUri: String) : this(URI.create(printerUri))
     constructor(printerUri: String, ippConfig: IppConfig) : this(URI.create(printerUri), ippConfig = ippConfig)
-
-    companion object {
-        val log = Logging.getLogger {}
-
-        val printerStateAttributes = listOf(
-            "printer-is-accepting-jobs", "printer-state", "printer-state-reasons"
-        )
-
-        val printerClassAttributes = listOf(
-            "printer-name",
-            "printer-make-and-model",
-            "printer-is-accepting-jobs",
-            "printer-state",
-            "printer-state-reasons",
-            "document-format-supported",
-            "operations-supported",
-            "color-supported",
-            "sides-supported",
-            "media-supported",
-            "media-ready",
-            "media-default",
-            "ipp-versions-supported"
-        )
-    }
 
     val ippConfig: IppConfig
         get() = ippClient.config

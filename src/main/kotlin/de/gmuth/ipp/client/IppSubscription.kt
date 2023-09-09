@@ -11,19 +11,18 @@ import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppString
 import de.gmuth.ipp.core.IppTag.*
-import de.gmuth.log.Logging
+import de.gmuth.log.warn
 import java.time.Duration
 import java.time.Duration.ofSeconds
 import java.time.LocalDateTime
 import java.time.LocalDateTime.now
+import java.util.logging.Logger.getLogger
 
 class IppSubscription(
     val printer: IppPrinter,
     var attributes: IppAttributesGroup
 ) {
-    companion object {
-        val log = Logging.getLogger {}
-    }
+    val log = getLogger(javaClass.name)
 
     private var lastSequenceNumber: Int = 0
     private var leaseStartedAt = now()
@@ -130,7 +129,7 @@ class IppSubscription(
     fun pollAndHandleNotifications(
         pollEvery: Duration = ofSeconds(5), // should be larger than 1s
         autoRenewSubscription: Boolean = false,
-        handleNotification: (event: IppEventNotification) -> Unit = { log.info { it } }
+        handleNotification: (event: IppEventNotification) -> Unit = { log.info { it.toString() } }
     ) {
         fun expiresAfterDelay() = !leaseDuration.isZero && now().plus(pollEvery).isAfter(expiresAt.minusSeconds(2))
         try {
@@ -142,7 +141,7 @@ class IppSubscription(
                 Thread.sleep(pollEvery.toMillis())
             } while (pollHandlesNotifications)
         } catch (clientErrorNotFoundException: ClientErrorNotFoundException) {
-            log.info { clientErrorNotFoundException.response!!.statusMessage }
+            log.info { clientErrorNotFoundException.response!!.statusMessage.toString() }
         }
     }
 

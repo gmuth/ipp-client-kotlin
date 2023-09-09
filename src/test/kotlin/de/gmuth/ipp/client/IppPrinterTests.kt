@@ -20,11 +20,10 @@ import de.gmuth.ipp.client.IppTemplateAttributes.pageRanges
 import de.gmuth.ipp.client.IppTemplateAttributes.printerResolution
 import de.gmuth.ipp.client.IppWhichJobs.Completed
 import de.gmuth.ipp.core.IppOperation.GetPrinterAttributes
-import de.gmuth.log.Logging
-import de.gmuth.log.Logging.LogLevel.TRACE
 import java.io.File
 import java.io.FileInputStream
 import java.net.URI
+import java.util.logging.Logger.getLogger
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.pathString
 import kotlin.test.Test
@@ -34,16 +33,8 @@ import kotlin.test.assertTrue
 
 class IppPrinterTests {
 
-    companion object {
-        val log = Logging.getLogger {}
-        val blankPdf = File("tool/A4-blank.pdf")
-    }
-
-    init {
-        IppClient.log.logLevel = TRACE
-        IppPrinter.log.logLevel = TRACE
-    }
-
+    val log = getLogger(javaClass.name)
+    val blankPdf = File("tool/A4-blank.pdf")
     val httpClient = HttpClientMock()
     val ippConfig = IppConfig()
 
@@ -60,7 +51,6 @@ class IppPrinterTests {
     @Test
     fun printerAttributes() {
         printer.apply {
-            log.logLevel = TRACE
             log.info { toString() }
             assertTrue(isAcceptingJobs)
             assertTrue(documentFormatSupported.contains("application/pdf"))
@@ -83,7 +73,7 @@ class IppPrinterTests {
                 assertEquals(80, levelPercent())
                 assertEquals("#000000", colorCode)
                 assertFalse(levelIsLow())
-                log.info { this }
+                log.info { this.toString() }
             }
             assertTrue(isIdle())
             assertFalse(isProcessing())
@@ -97,7 +87,7 @@ class IppPrinterTests {
             communicationChannelsSupported.forEach {
                 log.info { "${it.uri}, ${it.security}, ${it.authentication}, $it" }
             }
-            ippConfig.logDetails()
+            ippConfig.log(log)
         }
     }
 

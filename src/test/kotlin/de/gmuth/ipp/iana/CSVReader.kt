@@ -4,10 +4,11 @@ package de.gmuth.ipp.iana
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.log.Logging
+import de.gmuth.log.debug
 import java.io.InputStream
 import java.io.OutputStream
 import java.io.PrintWriter
+import java.util.logging.Logger.getLogger
 import kotlin.math.log10
 
 // https://tools.ietf.org/html/rfc4180
@@ -17,6 +18,8 @@ class CSVReader<T>(private val rowMapper: RowMapper<T>) {
     interface RowMapper<T> {
         fun mapRow(columns: List<String>, rowNum: Int): T
     }
+
+    val log = getLogger(javaClass.name)
 
     fun readResource(resource: String, skipHeader: Boolean = true): List<T> {
         return read(javaClass.getResourceAsStream(resource), skipHeader)
@@ -77,8 +80,6 @@ class CSVReader<T>(private val rowMapper: RowMapper<T>) {
     // --- Utility for pretty printing ---
 
     companion object {
-
-        val log = Logging.getLogger {}
 
         fun prettyPrintResource(resource: String) {
             val rows = readRowsFromResource(resource)
