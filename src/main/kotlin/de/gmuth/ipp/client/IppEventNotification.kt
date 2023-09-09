@@ -6,15 +6,13 @@ package de.gmuth.ipp.client
 
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppString
-import de.gmuth.log.Logging
+import java.util.logging.Logger.getLogger
 
 class IppEventNotification(
     val subscription: IppSubscription,
     val attributes: IppAttributesGroup
 ) {
-    companion object {
-        val log = Logging.getLogger {}
-    }
+    val log = getLogger(javaClass.name)
 
     val sequenceNumber: Int
         get() = attributes.getValue("notify-sequence-number")

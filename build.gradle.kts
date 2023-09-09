@@ -14,7 +14,7 @@ plugins {
 }
 
 group = "de.gmuth"
-version = "2.5"
+version = "3.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -29,25 +29,8 @@ repositories {
 //    }
 //}
 
-// -> gradle.properties
-val slf4jVersion: String by project
-val androidVersion: String by project
-
 dependencies {
-    //implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
-    //implementation("org.jetbrains.kotlin:kotlin-stdlib")
-    //implementation("org.jetbrains.kotlin:kotlin-reflect")
-    //implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
-
-    testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
-
-    //"slf4jSupportImplementation"("org.slf4j:slf4j-api:1.7.32") // pom.xml: scope=compile, optional=true
-    compileOnly("org.slf4j:slf4j-api:$slf4jVersion")
-    compileOnly("com.google.android:android:$androidVersion") // android.util.Log
-
-    testRuntimeOnly("org.slf4j:slf4j-simple:$slf4jVersion")
-    //testRuntimeOnly("ch.qos.logback:logback-classic:1.2.3")
 }
 
 // gradlew clean -x test build publishToMavenLocal

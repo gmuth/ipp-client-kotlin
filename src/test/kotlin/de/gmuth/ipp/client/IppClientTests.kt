@@ -4,16 +4,11 @@ import de.gmuth.http.HttpClientMock
 import de.gmuth.ipp.core.IppOperation.GetPrinterAttributes
 import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppStatus.SuccessfulOk
-import de.gmuth.log.Logging
 import org.junit.Test
 import java.net.URI
 import kotlin.test.assertEquals
 
 class IppClientTests {
-    companion object {
-        val log = Logging.getLogger { }
-    }
-
     val httpClient = HttpClientMock()
     val ippClient = IppClient(httpClient = httpClient)
 

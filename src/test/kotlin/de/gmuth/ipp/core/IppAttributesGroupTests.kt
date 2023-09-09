@@ -5,7 +5,6 @@ package de.gmuth.ipp.core
  */
 
 import de.gmuth.ipp.core.IppTag.*
-import de.gmuth.log.Logging
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -38,7 +37,6 @@ class IppAttributesGroupTests {
 
     @Test
     fun putWithReplacementWarning() {
-        IppAttributesGroup.log.logLevel = Logging.LogLevel.INFO
         group.put(IppAttribute("number", Integer, 0))
         group.put(IppAttribute("number", Integer, 1, 2), true)
         assertEquals(1, group.size)

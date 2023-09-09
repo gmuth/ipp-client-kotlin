@@ -1,17 +1,15 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020-2021 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
-import de.gmuth.log.Logging
+import java.util.logging.Logger.getLogger
 
 // https://www.cups.org/doc/spec-ipp.html
 class CupsPrinterType(val value: Int) {
 
-    companion object {
-        val log = Logging.getLogger {}
-    }
+    val log = getLogger(javaClass.name)
 
     enum class Capability(val bit: Int, val description: String) {
         IsAPrinterClass(0, "Is a printer class."),
@@ -45,9 +43,9 @@ class CupsPrinterType(val value: Int) {
     }
 
     fun toSet(): Set<Capability> = Capability
-            .values()
-            .filter { (value shr it.bit) and 1 == 1 }
-            .toSet()
+        .values()
+        .filter { (value shr it.bit) and 1 == 1 }
+        .toSet()
 
     fun contains(capability: Capability) = toSet().contains(capability)
 

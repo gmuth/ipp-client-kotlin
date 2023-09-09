@@ -1,17 +1,15 @@
 package de.gmuth.ipp.core
 
+import java.util.logging.Logger.getLogger
+
 /**
  * Copyright (c) 2020-2022 Gerhard Muth
  */
 
-import de.gmuth.log.Logging
-
 // RFC8010 3.1.6.
 data class IppCollection(val members: MutableCollection<IppAttribute<*>> = mutableListOf()) {
 
-    companion object {
-        val log = Logging.getLogger {}
-    }
+    val log = getLogger(javaClass.name)
 
     constructor(vararg attributes: IppAttribute<*>) : this(attributes.toMutableList())
 

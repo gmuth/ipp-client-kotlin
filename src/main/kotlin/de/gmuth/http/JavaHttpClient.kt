@@ -4,7 +4,7 @@ package de.gmuth.http
  * Copyright (c) 2020-2023 Gerhard Muth
  */
 
-import de.gmuth.log.Logging
+import de.gmuth.log.debug
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
@@ -15,12 +15,13 @@ import java.net.http.HttpRequest
 import java.net.http.HttpRequest.BodyPublishers
 import java.net.http.HttpResponse.BodyHandlers
 import java.time.Duration
+import java.util.logging.Logger.getLogger
 
 // requires Java >=11
 class JavaHttpClient(config: Http.Config = Http.Config()) : Http.Client(config) {
 
     companion object {
-        val log = Logging.getLogger {}
+        val log = getLogger(JavaHttpClient::javaClass.name)
         fun isSupported() = try {
             HttpClient.newHttpClient()
             true

@@ -1,18 +1,17 @@
 package de.gmuth.ipp.client
 
-import de.gmuth.http.HttpURLConnectionClient
-import de.gmuth.log.ConsoleLogger
-import de.gmuth.log.Logging
+import de.gmuth.log.error
 import java.net.HttpURLConnection
 import java.net.URI
+import java.util.logging.Logger.getLogger
 
 fun main() {
 
     val printerUri = URI.create("ipp://xero.local:631/ipp/print")
 
-    ConsoleLogger.defaultLogLevel = Logging.LogLevel.DEBUG
-    HttpURLConnectionClient.log.logLevel = Logging.LogLevel.TRACE
-    val log = Logging.getLogger {}
+    //ConsoleLogger.defaultLogLevel = Logging.LogLevel.DEBUG
+    //HttpURLConnectionClient.log.logLevel = Logging.LogLevel.TRACE
+    val log = getLogger("issueNo3")
     var ippPrinter: IppPrinter? = null
 
     // httpConnect(printerUri)
@@ -20,7 +19,7 @@ fun main() {
 
     val ippConfig = IppConfig().apply {
         ippVersion = "1.1"
-        logDetails()
+        log(log)
     }
     try {
         log.info { "open ipp connection to $printerUri" }
@@ -49,7 +48,7 @@ fun main() {
 }
 
 fun httpConnect(printerUri: URI) {
-    val log = Logging.getLogger {}
+    val log = getLogger("httpConnect")
     val printerUrl = URI("http://${printerUri.host}:${printerUri.port}").toURL()
     try {
         log.info { "open http connection to $printerUrl" }

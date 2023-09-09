@@ -5,7 +5,6 @@ package de.gmuth.ipp.core
  */
 
 import de.gmuth.ipp.core.IppResolution.Unit.DPI
-import de.gmuth.log.Logging
 import java.io.ByteArrayOutputStream
 import java.net.URI
 import kotlin.test.Test
@@ -13,10 +12,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class IppOutputStreamTest {
-
-    companion object {
-        val log = Logging.getLogger {}
-    }
 
     private val byteArrayOutputStream = ByteArrayOutputStream()
     private val ippOutputStream = IppOutputStream(byteArrayOutputStream).apply { attributesCharset = Charsets.US_ASCII }
@@ -205,10 +200,7 @@ class IppOutputStreamTest {
                 attribute("0", IppTag.NoValue) // cover OutOfBand
             }
         }
-        IppOutputStream.log.logLevel = Logging.LogLevel.TRACE
         ippOutputStream.writeMessage(message)
-        IppOutputStream.log.logLevel = Logging.LogLevel.WARN
-
         assertEquals(
             "02 01 00 0B 00 00 00 08 01 47 00 12 61 74 74 72 69 62 75 74 65 73 2D 63 68 61 72 73 65 74 00 05 75 74 66 2D 38 02 22 00 01 31 00 01 01 22 00 00 00 01 00 13 00 01 30 00 00 03",
             byteArrayOutputStream.toHex()

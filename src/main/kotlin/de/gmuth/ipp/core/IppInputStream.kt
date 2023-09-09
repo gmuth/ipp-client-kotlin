@@ -6,20 +6,20 @@ package de.gmuth.ipp.core
 
 import de.gmuth.io.hexdump
 import de.gmuth.ipp.core.IppTag.*
-import de.gmuth.log.Logging
-import de.gmuth.log.Logging.LogLevel.DEBUG
-import de.gmuth.log.Logging.LogLevel.WARN
+import de.gmuth.log.debug
+import de.gmuth.log.trace
+import de.gmuth.log.warn
 import java.io.BufferedInputStream
 import java.io.DataInputStream
 import java.io.EOFException
 import java.net.URI
 import java.nio.charset.Charset
+import java.util.logging.Level
+import java.util.logging.Logger.getLogger
 
 class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputStream) {
 
-    companion object {
-        val log = Logging.getLogger {}
-    }
+    val log = getLogger(javaClass.name)
 
     // character encoding for text and name attributes, RFC 8011 4.1.4.1
     internal lateinit var attributesCharset: Charset
@@ -45,14 +45,14 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
                     tag.isGroupTag() -> {
                         currentGroup = message.createAttributesGroup(tag)
                     }
-
                     tag.isValueTag() -> {
                         val attribute = readAttribute(tag)
-                        log.debug { "$attribute" }
                         if (attribute.name.isNotEmpty()) {
+                            log.debug { attribute.toString() }
                             currentGroup.put(attribute, onReplaceWarn = true)
                             currentAttribute = attribute
                         } else { // name.isEmpty() -> 1setOf
+                            log.debug { IppAttribute(currentAttribute.name, attribute.tag, attribute.value).toString() }
                             currentAttribute.additionalValue(attribute)
                         }
                     }
@@ -173,7 +173,7 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
             else -> { // ByteArray - possibly empty
                 readLengthAndValue().apply {
                     if (isNotEmpty()) {
-                        val level = if (tag == Unsupported_) DEBUG else WARN
+                        val level = if (tag == Unsupported_) Level.FINE else Level.WARNING
                         log.log(level) { "ignore $size value bytes tagged '$tag'" }
                         hexdump { log.log(level) { it } }
                     }

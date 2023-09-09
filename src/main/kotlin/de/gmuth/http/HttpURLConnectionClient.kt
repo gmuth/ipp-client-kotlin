@@ -4,30 +4,30 @@ package de.gmuth.http
  * Copyright (c) 2020-2023 Gerhard Muth
  */
 
-import de.gmuth.log.JulAdapter
-import de.gmuth.log.JulHandler
-import de.gmuth.log.Logging
-import de.gmuth.log.Logging.LogLevel.*
-import de.gmuth.log.Logging.createLogger
+import de.gmuth.log.debug
+import de.gmuth.log.error
 import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URI
+import java.util.logging.Level
+import java.util.logging.Logger.getLogger
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.HttpsURLConnection
 
 class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client(config) {
 
-    companion object {
-        val log = Logging.getLogger {}
-    }
+    val log = getLogger(javaClass.name)
 
     init {
         log.debug { "HttpURLConnectionClient created" }
-        if (config.debugLogging && createLogger != ::JulAdapter) {
-            // The JulHandler forwards ALL jul message to Logging
-            JulHandler.addToJulLogger("sun.net.www.protocol.http")
-            // The JulHandler does NOT use the jul output config
-            Logging.getLogger("sun.net.www.protocol.http.HttpURLConnection").logLevel = TRACE
+        /** if (config.debugLogging && createLogger != ::JulAdapter) {
+        // The JulHandler forwards ALL jul message to Logging
+        JulRedirectHandler.addToJulLogger("sun.net.www.protocol.http")
+        // The JulHandler does NOT use the jul output config
+        Logging.getLogger("sun.net.www.protocol.http.HttpURLConnection").logLevel = TRACE
+        } **/
+        if (config.debugLogging) {
+            getLogger("sun.net.www.protocol.http.HttpURLConnection").level = Level.FINER
         }
     }
 
@@ -53,9 +53,9 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
             writeContent(outputStream)
             for ((key, values) in headerFields) {
                 val logLevel = when {
-                    responseCode < 300 -> DEBUG
-                    responseCode in 400..499 -> INFO
-                    else -> WARN
+                    responseCode < 300 -> Level.FINE
+                    responseCode in 400..499 -> Level.INFO
+                    else -> Level.WARNING
                 }
                 log.log(logLevel) { "$key = $values" }
             }
