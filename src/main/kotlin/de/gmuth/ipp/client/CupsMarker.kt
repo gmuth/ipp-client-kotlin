@@ -32,10 +32,10 @@ class CupsMarker(
         YELLOW("#FFFF00"),
         MAGENTA("#FF00FF"),
         TRI_COLOR("#00FFFF#FF00FF#FFFF00"), // Cyan, Magenta, Yellow
-        UNKNOWN("?");
+        UNKNOWN("#?");
 
         companion object {
-            val log = getLogger(javaClass.name)
+            val log = getLogger(Color::class.java.name)
             fun fromString(code: String) = values().find { it.code == code }
                 ?: UNKNOWN.apply { log.warn { "unknown color code: $code" } }
         }
