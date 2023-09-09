@@ -15,6 +15,7 @@ import de.gmuth.log.*
 import java.io.*
 import java.net.URI
 import java.time.Duration
+import java.util.logging.Level.SEVERE
 import java.util.logging.Logger.getLogger
 
 @SuppressWarnings("kotlin:S1192")
@@ -70,7 +71,7 @@ class IppPrinter(
                 if (ippExchangeException.statusIs(ClientErrorNotFound))
                     log.error { ippExchangeException.message }
                 else {
-                    //log.logWithCauseMessages(ippExchangeException, ERROR)
+                    log.logWithCauseMessages(ippExchangeException, SEVERE)
                     log.error { "failed to get printer attributes on init" }
                     ippExchangeException.response?.let {
                         if (it.containsGroup(Printer)) log.info { "${it.printerGroup.size} attributes parsed" }

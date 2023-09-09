@@ -5,6 +5,7 @@ package de.gmuth.log
  */
 
 import java.util.function.Supplier
+import java.util.logging.Level
 import java.util.logging.Level.*
 import java.util.logging.Logger
 
@@ -47,7 +48,7 @@ fun Logger.warn(thrown: Throwable? = null, msgSupplier: Supplier<String?> = Supp
 fun Logger.error(thrown: Throwable? = null, msgSupplier: Supplier<String?> = Supplier { "" }) =
     if (thrown == null) severe(msgSupplier) else severe(thrown, msgSupplier)
 
-fun Logger.logWithCauseMessages(throwable: Throwable) {
-    throwable.cause?.let { logWithCauseMessages(it) }
+fun Logger.logWithCauseMessages(throwable: Throwable, level: Level) {
+    throwable.cause?.let { logWithCauseMessages(it, level) }
     log(level) { "${throwable.javaClass.name}: ${throwable.message}" }
 }
