@@ -13,7 +13,7 @@ class IppConfig(
     var charset: Charset = Charsets.UTF_8,
     var naturalLanguage: String = "en",
 ) {
-    fun log(log: Logger) = log.run {
+    fun log(logger: Logger) = logger.run {
         info { "userName: $userName" }
         info { "ippVersion: $ippVersion" }
         info { "charset: ${charset.name().lowercase()}" }
