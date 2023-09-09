@@ -5,8 +5,8 @@
 name: build
 
 on:
-  workflow_dispatch
-  push
+  workflow_dispatch:
+  push:
 #    branches:
 #      - master
 #      - develop
