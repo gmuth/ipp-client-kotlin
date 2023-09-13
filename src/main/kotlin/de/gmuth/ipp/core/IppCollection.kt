@@ -1,5 +1,8 @@
 package de.gmuth.ipp.core
 
+import java.util.logging.Level
+import java.util.logging.Level.INFO
+import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
 
 /**
@@ -30,10 +33,10 @@ data class IppCollection(val members: MutableCollection<IppAttribute<*>> = mutab
         "${it.name}=${it.values.joinToString(",")}"
     }
 
-    fun logDetails(prefix: String = "") {
+    fun log(logger: Logger, level: Level = INFO, prefix: String = "") {
         val string = toString()
-        if (string.length < 160) log.info { "$prefix$string" }
-        else members.forEach { member -> member.logDetails(prefix) }
+        if (string.length < 160) logger.log(level) { "$prefix$string" }
+        else members.forEach { member -> member.log(logger, level, prefix) }
     }
 
 }

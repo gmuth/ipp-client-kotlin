@@ -5,12 +5,14 @@ package de.gmuth.ipp.core
  */
 
 import java.util.NoSuchElementException
+import java.util.logging.Logger.getLogger
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class IppCollectionTests {
 
+    val tlog = getLogger(javaClass.name)
     private val collection = IppCollection(IppAttribute("foo", IppTag.Keyword, "a", "b"))
 
     @Test
@@ -38,14 +40,14 @@ class IppCollectionTests {
     }
 
     @Test
-    fun logDetailsNarrow() {
-        collection.logDetails()
+    fun logNarrow() {
+        collection.log(tlog)
     }
 
     @Test
-    fun logDetailsWide() {
+    fun logWide() {
         collection.addAll(listOf(IppAttribute("bar", IppTag.Keyword, "c".repeat(160))))
-        collection.logDetails()
+        collection.log(tlog)
     }
 
 }

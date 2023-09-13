@@ -103,7 +103,7 @@ class IppAttributesGroupTests {
     }
 
     @Test
-    fun logDetails() {
+    fun log() {
         group.attribute("Commodore PET", Integer, 2001)
         group.log(log, prefix = "|", title = "title")
     }

@@ -57,7 +57,7 @@ class IppMessageTests {
             assertEquals(38, rawBytes!!.size)
             write(ByteArrayOutputStream()) // cover warning
             toString() // cover toString
-            log(log) // cover logDetails
+            log(log) // cover log
         }
     }
 
