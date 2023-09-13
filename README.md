@@ -159,32 +159,8 @@ printer.printJob(
 
 ## Logging
 
-Log levels can be changed globally or individually.
-The `defaultLogLevel` must be changed before any constructor of a logger is called.
-
-```kotlin
-Logging.defaultLogLevel = Logging.LogLevel.ERROR
-IppInputStream.log.logLevel = Logging.LogLevel.DEBUG
-IppOutputStream.log.logLevel = Logging.LogLevel.TRACE
-```
-
-A simple stdout console writer is enabled by default and can be disabled.
-
-```kotlin
-Logging.disable()
-```
-
-You can configure the library to use 
-[Java Util Logging](https://docs.oracle.com/en/java/javase/11/core/java-logging-overview.html)
-or [Slf4j](http://www.slf4j.org).
-Then the log levels must be configured according to the underlaying implementation 
-(e.g. [logback](http://logback.qos.ch/manual/configuration.html)
-or [Slf4j-Android](http://www.slf4j.org/android/)).
-
-```kotlin
-JulAdapter.configure()
-Slf4jAdapter.configure()
-```
+From version 3.0 onwards the library uses [java.util.logging](https://docs.oracle.com/javase/8/docs/technotes/guides/logging/overview.html) - configure as you like.
+Tests can use Logging.configure() to load logging.properties from test/resources.
 
 ## Build
 
