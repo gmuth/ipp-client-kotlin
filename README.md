@@ -159,8 +159,11 @@ printer.printJob(
 
 ## Logging
 
-From version 3.0 onwards the library uses [java.util.logging](https://docs.oracle.com/javase/8/docs/technotes/guides/logging/overview.html) - configure as you like.
+From version 3.0 onwards the library uses [Java Logging](https://docs.oracle.com/javase/8/docs/technotes/guides/logging/overview.html) - configure as you like.
 Tests can use Logging.configure() to load logging.properties from test/resources.
+
+The behaviour of the my previously used [ConsoleLogger](https://github.com/gmuth/logging-kotlin/blob/main/src/main/kotlin/de/gmuth/log/ConsoleLogger.kt) is now implemented by StdoutHandler and SimpleClassNameFormatter.
+I moved all of my custom logging code to it's own repository [logging-kotlin](https://github.com/gmuth/logging-kotlin/tree/main/src/main/kotlin/de/gmuth/log).
 
 ## Build
 
