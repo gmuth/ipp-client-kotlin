@@ -11,7 +11,6 @@ import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.ipp.iana.IppRegistrationsSection2
-import de.gmuth.log.*
 import java.io.*
 import java.net.URI
 import java.time.Duration
