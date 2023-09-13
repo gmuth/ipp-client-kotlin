@@ -12,7 +12,7 @@ import kotlin.test.*
 class IppAttributeTests {
 
     private val ippAttribute = IppAttribute("printer-state-reasons", Keyword, "none")
-    val log = getLogger(javaClass.name)
+    val tlog = getLogger(javaClass.name)
 
     @Test
     fun constructorFailsDueToDelimiterTag() {
@@ -103,9 +103,9 @@ class IppAttributeTests {
     }
 
     @Test
-    fun logDetails() {
+    fun log() {
         // cover an output with more than 160 characters and a collection value
-        IppAttribute("media-col".padEnd(160, '-'), BegCollection, IppCollection()).logDetails()
+        IppAttribute("media-col".padEnd(160, '-'), BegCollection, IppCollection()).log(tlog)
     }
 
     @Test

@@ -22,7 +22,7 @@ Repository [ipp-samples](https://github.com/gmuth/ipp-samples) contains examples
 ```kotlin
 // initialize printer connection and show printer attributes
 val ippPrinter = IppPrinter(URI.create("ipp://colorjet.local/ipp/printer"))
-ippPrinter.attributes.logDetails()
+ippPrinter.attributes.log(logger)
 
 // marker levels
 ippPrinter.markers.forEach { println(it) }
@@ -47,7 +47,6 @@ val job = ippPrinter.printJob(
     mediaColSource("tray-1"),
     notifyEvents = listOf("job-state-changed", "job-stopped", "job-completed") // CUPS
 )
-job.logDetails()
 job.subscription?.processEvents { println(it) }
 
 // print remote file, make printer pull document from remote server

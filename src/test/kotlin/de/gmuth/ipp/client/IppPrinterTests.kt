@@ -33,7 +33,7 @@ import kotlin.test.assertTrue
 
 class IppPrinterTests {
 
-    val log = getLogger(javaClass.name)
+    val tlog = getLogger(javaClass.name)
     val blankPdf = File("tool/A4-blank.pdf")
     val httpClient = HttpClientMock()
     val ippConfig = IppConfig()
@@ -50,8 +50,8 @@ class IppPrinterTests {
 
     @Test
     fun printerAttributes() {
-        printer.apply {
-            log.info { toString() }
+        printer.run {
+            tlog.info { toString() }
             assertTrue(isAcceptingJobs)
             assertTrue(documentFormatSupported.contains("application/pdf"))
             assertTrue(supportsOperations(GetPrinterAttributes))
@@ -81,13 +81,13 @@ class IppPrinterTests {
             assertFalse(isMediaNeeded())
             assertFalse(isCups())
             printerType.apply {
-                log.info { toString() }
-                logDetails()
+                tlog.info { toString() }
+                log(tlog)
             }
             communicationChannelsSupported.forEach {
-                log.info { "${it.uri}, ${it.security}, ${it.authentication}, $it" }
+                tlog.info { "${it.uri}, ${it.security}, ${it.authentication}, $it" }
             }
-            ippConfig.log(log)
+            ippConfig.log(tlog)
         }
     }
 
@@ -102,7 +102,7 @@ class IppPrinterTests {
         httpClient.mockResponse("Simulated_Laser_Printer/Get-Printer-Attributes.ipp")
         printer.apply {
             updateAttributes()
-            log(log)
+            log(tlog)
             assertEquals(122, attributes.size)
         }
     }

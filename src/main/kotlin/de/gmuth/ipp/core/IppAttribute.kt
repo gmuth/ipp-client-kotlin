@@ -8,6 +8,9 @@ import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.ipp.iana.IppRegistrationsSection2.attributeIs1setOf
 import de.gmuth.ipp.iana.IppRegistrationsSection6.getEnumName
 import java.nio.charset.Charset
+import java.util.logging.Level
+import java.util.logging.Level.INFO
+import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
 
 data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppAttributeBuilder {
@@ -69,17 +72,17 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
     fun enumNameOrValue(value: Any) =
         if (tag == IppTag.Enum) getEnumName(name, value) else value
 
-    fun logDetails(prefix: String = "") {
+    fun log(logger: Logger, level: Level = INFO, prefix: String = "") = logger.run {
         val string = toString()
         if (string.length < 160) {
-            log.info { "$prefix$string" }
+            log(level) { "$prefix$string" }
         } else {
-            log.info { "$prefix$name ($tag) =" }
+            log(level) { "$prefix$name ($tag) =" }
             for (value in values) {
                 if (value is IppCollection) {
-                    value.logDetails("$prefix  ")
+                    (value as IppCollection).log(logger, level, "$prefix  ")
                 } else {
-                    log.info { "$prefix  ${enumNameOrValue(value as Any)}" }
+                    log(level) { "$prefix  ${enumNameOrValue(value as Any)}" }
                 }
             }
         }

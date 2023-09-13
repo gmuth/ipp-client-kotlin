@@ -4,6 +4,9 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020-2023 Gerhard Muth
  */
 
+import java.util.logging.Level
+import java.util.logging.Level.INFO
+import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
 
 // https://www.cups.org/doc/spec-ipp.html
@@ -51,10 +54,10 @@ class CupsPrinterType(val value: Int) {
 
     override fun toString() = "$value (${toSet().joinToString(",")})"
 
-    fun logDetails() {
-        log.info { "PRINTER-TYPE 0x%08X capabilities:".format(value) }
+    fun log(logger: Logger, level: Level = INFO) = logger.run {
+        log(level) { "PRINTER-TYPE 0x%08X capabilities:".format(value) }
         for (capability in toSet()) {
-            log.info { "* ${capability.description}" }
+            log(level) { "* ${capability.description}" }
         }
     }
 
