@@ -10,6 +10,8 @@ import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppStatus
 import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import java.io.File
+import java.util.logging.Level
+import java.util.logging.Level.INFO
 import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
 import kotlin.io.path.createTempDirectory
@@ -27,7 +29,8 @@ open class IppExchangeException(
     class ClientErrorNotFoundException(request: IppRequest, response: IppResponse) :
         IppExchangeException(request, response) {
         init {
-            require(response.status == ClientErrorNotFound) { "ipp response status is not ClientErrorNotFound: ${response.status}" }
+            require(response.status == ClientErrorNotFound)
+            { "ipp response status is not ClientErrorNotFound: ${response.status}" }
         }
     }
 
@@ -49,10 +52,10 @@ open class IppExchangeException(
 
     fun statusIs(status: IppStatus) = response?.status == status
 
-    fun log(logger: Logger) = logger.run {
-        if (httpStatus != null) info { "HTTP-STATUS: $httpStatus" }
-        request.logDetails(" REQUEST: ")
-        response?.logDetails("RESPONSE: ")
+    fun log(logger: Logger, level: Level = INFO) = logger.run {
+        if (httpStatus != null) log(level) { "HTTP-STATUS: $httpStatus" }
+        request.log(log, level, prefix = " REQUEST: ")
+        response?.log(log, level, prefix = "RESPONSE: ")
     }
 
     fun saveMessages(

@@ -6,6 +6,7 @@ package de.gmuth.ipp.client
 
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppString
+import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
 
 class IppEventNotification(
@@ -72,7 +73,7 @@ class IppEventNotification(
         toString()
     }
 
-    fun logDetails() =
-        attributes.logDetails(title = "event notification #$sequenceNumber $subscribedEvent")
+    fun log(logger: Logger) =
+        attributes.log(logger, title = "event notification #$sequenceNumber $subscribedEvent")
 
 }

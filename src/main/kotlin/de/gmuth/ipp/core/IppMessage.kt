@@ -7,9 +7,10 @@ package de.gmuth.ipp.core
 import de.gmuth.io.ByteArraySavingInputStream
 import de.gmuth.io.ByteArraySavingOutputStream
 import de.gmuth.ipp.core.IppTag.*
-import de.gmuth.log.debug
-import de.gmuth.log.warn
 import java.io.*
+import java.util.logging.Level
+import java.util.logging.Level.INFO
+import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
 
 abstract class IppMessage() {
@@ -71,10 +72,10 @@ abstract class IppMessage() {
             IppOutputStream(byteArraySavingOutputStream).writeMessage(this)
         } finally {
             rawBytes = byteArraySavingOutputStream.toByteArray()
-            log.debug { "wrote raw ipp message: ${rawBytes!!.size} bytes" }
+            log.fine { "wrote raw ipp message: ${rawBytes!!.size} bytes" }
             byteArraySavingOutputStream.saveBytes = false // stop saving document bytes
         }
-        if(hasDocument()) copyDocumentStream(byteArraySavingOutputStream)
+        if (hasDocument()) copyDocumentStream(byteArraySavingOutputStream)
     }
 
     fun write(file: File) =
@@ -83,7 +84,7 @@ abstract class IppMessage() {
     fun encode(): ByteArray =
         with(ByteArrayOutputStream()) {
             write(this)
-            log.debug { "ByteArrayOutputStream size: ${this.size()} bytes" }
+            log.fine { "ByteArrayOutputStream size: ${this.size()} bytes" }
             toByteArray()
         }
 
@@ -102,17 +103,17 @@ abstract class IppMessage() {
             documentInputStream = bufferedInputStream
         } finally {
             rawBytes = byteArraySavingInputStream.toByteArray()
-            log.debug { "read ${rawBytes!!.size} raw bytes" }
+            log.fine { "read ${rawBytes!!.size} raw bytes" }
         }
     }
 
     fun read(file: File) {
-        log.debug { "read file ${file.absolutePath}: ${file.length()} bytes" }
+        log.fine { "read file ${file.absolutePath}: ${file.length()} bytes" }
         read(FileInputStream(file))
     }
 
     fun decode(byteArray: ByteArray) {
-        log.debug { "decode ${byteArray.size} bytes" }
+        log.fine { "decode ${byteArray.size} bytes" }
         read(ByteArrayInputStream(byteArray))
     }
 
@@ -121,9 +122,9 @@ abstract class IppMessage() {
     // ------------------------
 
     protected fun copyDocumentStream(outputStream: OutputStream): Long {
-        if (documentInputStreamIsConsumed) log.warn { "documentInputStream is consumed" }
+        if (documentInputStreamIsConsumed) log.warning { "documentInputStream is consumed" }
         return documentInputStream!!.copyTo(outputStream).apply {
-            log.debug { "consumed documentInputStream: $this bytes" }
+            log.fine { "consumed documentInputStream: $this bytes" }
             documentInputStreamIsConsumed = true
         }
     }
@@ -135,7 +136,7 @@ abstract class IppMessage() {
 
     fun saveRawBytes(file: File) =
         if (rawBytes == null) {
-            log.warn { "no raw bytes to save. you must call read/decode or write/encode before." }
+            log.warning { "no raw bytes to save. you must call read/decode or write/encode before." }
         } else {
             file.writeBytes(rawBytes!!)
             log.info { "saved ${file.path} (${file.length()} bytes)" }
@@ -151,13 +152,13 @@ abstract class IppMessage() {
         if (rawBytes == null) "" else " (${rawBytes!!.size} bytes)"
     )
 
-    fun logDetails(prefix: String = "") {
-        if (rawBytes != null) log.info { "${prefix}${rawBytes!!.size} raw ipp bytes" }
-        log.info { "${prefix}version = $version" }
-        log.info { "${prefix}$codeDescription" }
-        log.info { "${prefix}request-id = $requestId" }
+    fun log(logger: Logger, level: Level = INFO, prefix: String = "") {
+        if (rawBytes != null) logger.log(level) { "${prefix}${rawBytes!!.size} raw ipp bytes" }
+        logger.log(level) { "${prefix}version = $version" }
+        logger.log(level) { "${prefix}$codeDescription" }
+        logger.log(level) { "${prefix}request-id = $requestId" }
         for (group in attributesGroups) {
-            group.logDetails(prefix)
+            group.log(logger, level, prefix = prefix)
         }
     }
 

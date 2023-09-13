@@ -9,8 +9,6 @@ import de.gmuth.ipp.core.IppAttributeBuilder
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppCollection
 import de.gmuth.ipp.core.IppTag.*
-import de.gmuth.log.debug
-import de.gmuth.log.warn
 import java.util.logging.Logger.getLogger
 
 object IppMedia {
@@ -64,11 +62,11 @@ object IppMedia {
         private fun checkIfSourceIsSupported(printerAttributes: IppAttributesGroup) {
             val mediaSourceSupported = printerAttributes["media-source-supported"]
             if (mediaSourceSupported == null) {
-                log.debug { "printer does not provide attribute 'media-source-supported'" }
+                log.fine { "printer does not provide attribute 'media-source-supported'" }
             } else {
                 if (!mediaSourceSupported.values.contains(source)) {
-                    log.warn { "media-source '$source' not supported by printer" }
-                    log.warn { mediaSourceSupported.toString() }
+                    log.warning { "media-source '$source' not supported by printer" }
+                    log.warning { mediaSourceSupported.toString() }
                 }
             }
         }

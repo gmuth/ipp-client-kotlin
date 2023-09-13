@@ -1,17 +1,19 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
 import java.io.File
 import java.net.URI
+import java.util.logging.Logger.getLogger
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class IppResponseTests {
 
+    val log = getLogger(javaClass.name)
     private val ippResponse = IppResponse()
 
     @Test
@@ -37,7 +39,7 @@ class IppResponseTests {
     @Test
     fun invalidXeroxMediaColResponse() {
         ippResponse.read(File("src/test/resources/invalidXeroxMediaCol.response"))
-        ippResponse.logDetails()
+        ippResponse.log(log)
         with(ippResponse.jobGroup) {
             assertEquals(598, getValue("job-id"))
             assertEquals(4, getValue("job-state")) // pending-held
@@ -51,7 +53,7 @@ class IppResponseTests {
         // IppInputStream solution: first mark(2) then NameWithLanguage -> readShort().let { if (markSupported() && it < 6) reset() }
         // requestNaturalLanguage = "de" // triggers HP name with language bug
         ippResponse.read(File("src/test/resources/invalidHpNameWithLanguage.response"))
-        ippResponse.logDetails()
+        ippResponse.log(log)
         with(ippResponse.jobGroup) {
             assertEquals(IppString("A4-blank.pdf", "de"), getValue("job-name"))
             assertEquals(993, getValue("job-id"))

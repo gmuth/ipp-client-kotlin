@@ -14,12 +14,11 @@ import de.gmuth.ipp.core.IppStatus.ClientErrorBadRequest
 import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import de.gmuth.ipp.core.IppTag.Unsupported
 import de.gmuth.ipp.iana.IppRegistrationsSection2
-import de.gmuth.log.debug
-import de.gmuth.log.trace
-import de.gmuth.log.warn
 import java.io.File
 import java.net.URI
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.logging.Level.FINE
+import java.util.logging.Level.WARNING
 import java.util.logging.Logger.getLogger
 
 typealias IppResponseInterceptor = (request: IppRequest, response: IppResponse) -> Unit
@@ -41,8 +40,8 @@ open class IppClient(
 
     companion object {
         const val APPLICATION_IPP = "application/ipp"
-        const val version = "2.5-SNAPSHOT"
-        const val build = "2023"
+        const val version = "3.0-SNAPSHOT"
+        const val build = "09-2023"
 
         init {
             println("IPP-Client: Version: $version, Build: $build, MIT License, (c) 2020-2023 Gerhard Muth")
@@ -89,11 +88,11 @@ open class IppClient(
     open fun exchange(request: IppRequest, throwWhenNotSuccessful: Boolean = true): IppResponse {
         val ippUri: URI = request.printerUri
         val httpUri = toHttpUri(ippUri)
-        log.trace { "send '${request.operation}' request to $ippUri" }
+        log.finer { "send '${request.operation}' request to $ippUri" }
 
         val httpResponse = httpPostRequest(httpUri, request)
         val response = decodeIppResponse(request, httpResponse)
-        log.debug { "$ippUri: $request => $response" }
+        log.fine { "$ippUri: $request => $response" }
         httpServer = httpResponse.server
 
         if (saveMessages) {
@@ -130,7 +129,7 @@ open class IppClient(
     ).apply {
         var exceptionMessage: String? = null
         if (contentType == null) {
-            log.debug { "missing content-type in http response (should be '$APPLICATION_IPP')" }
+            log.fine { "missing content-type in http response (should be '$APPLICATION_IPP')" }
         } else {
             if (!contentType.startsWith(APPLICATION_IPP)) {
                 exceptionMessage = "invalid content-type: $contentType (expecting '$APPLICATION_IPP')"
@@ -141,12 +140,12 @@ open class IppClient(
             "user '$requestingUserName' is unauthorized for operation '$operation' (status=$status)"
         }
         exceptionMessage?.run {
-            config.log(log)
-            request.logDetails("IPP REQUEST: ")
-            log.warn { "http response status: $status" }
-            server?.let { log.warn { "ipp-server: $it" } }
-            contentType?.let { log.warn { "content-type: $it" } }
-            contentStream?.let { log.warn { "content:\n" + it.bufferedReader().use { it.readText() } } }
+            config.log(log, WARNING)
+            request.log(log, WARNING, prefix = "IPP REQUEST: ")
+            log.warning { "http response status: $status" }
+            server?.let { log.warning { "ipp-server: $it" } }
+            contentType?.let { log.warning { "content-type: $it" } }
+            contentStream?.let { log.warning { "content:\n" + it.bufferedReader().use { it.readText() } } }
             throw IppExchangeException(request, null, status, message = exceptionMessage)
         }
     }
@@ -161,11 +160,11 @@ open class IppClient(
                 saveMessages("decoding_ipp_response_${request.requestId}_failed")
             }
         }
-        if (status == ClientErrorBadRequest) request.logDetails("BAD-REQUEST: ")
-        if (!status.isSuccessful()) log.debug { "status: $status" }
-        if (hasStatusMessage()) log.debug { "status-message: $statusMessage" }
+        if (status == ClientErrorBadRequest) request.log(log, FINE, prefix="BAD-REQUEST: ")
+        if (!status.isSuccessful()) log.fine { "status: $status" }
+        if (hasStatusMessage()) log.fine { "status-message: $statusMessage" }
         if (containsGroup(Unsupported)) unsupportedGroup.values.forEach {
-            log.warn { "unsupported: $it" }
+            log.warning { "unsupported: $it" }
         }
     }
 }

@@ -11,11 +11,13 @@ import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppString
 import de.gmuth.ipp.core.IppTag.*
-import de.gmuth.log.warn
 import java.time.Duration
 import java.time.Duration.ofSeconds
 import java.time.LocalDateTime
 import java.time.LocalDateTime.now
+import java.util.logging.Level
+import java.util.logging.Level.INFO
+import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
 
 class IppSubscription(
@@ -135,7 +137,7 @@ class IppSubscription(
         try {
             pollHandlesNotifications = true
             do {
-                if (expired()) log.warn { "subscription #$id has expired" }
+                if (expired()) log.warning { "subscription #$id has expired" }
                 getNotifications().forEach { handleNotification(it) }
                 if (expiresAfterDelay() && autoRenewSubscription) renew(leaseDuration)
                 Thread.sleep(pollEvery.toMillis())
@@ -159,6 +161,7 @@ class IppSubscription(
         toString()
     }
 
-    fun logDetails() = attributes.logDetails(title = "subscription #$id")
+    fun log(logger: Logger, level: Level = INFO) =
+        attributes.log(logger, level, title = "subscription #$id")
 
 }

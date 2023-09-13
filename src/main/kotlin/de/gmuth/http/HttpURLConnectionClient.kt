@@ -4,8 +4,6 @@ package de.gmuth.http
  * Copyright (c) 2020-2023 Gerhard Muth
  */
 
-import de.gmuth.log.debug
-import de.gmuth.log.error
 import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URI
@@ -19,13 +17,7 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
     val log = getLogger(javaClass.name)
 
     init {
-        log.debug { "HttpURLConnectionClient created" }
-        /** if (config.debugLogging && createLogger != ::JulAdapter) {
-        // The JulHandler forwards ALL jul message to Logging
-        JulRedirectHandler.addToJulLogger("sun.net.www.protocol.http")
-        // The JulHandler does NOT use the jul output config
-        Logging.getLogger("sun.net.www.protocol.http.HttpURLConnection").logLevel = TRACE
-        } **/
+        log.fine { "HttpURLConnectionClient created" }
         if (config.debugLogging) {
             getLogger("sun.net.www.protocol.http.HttpURLConnection").level = Level.FINER
         }
@@ -62,7 +54,7 @@ class HttpURLConnectionClient(config: Http.Config = Http.Config()) : Http.Client
             val responseStream = try {
                 inputStream
             } catch (exception: Exception) {
-                log.error { "http exception: $responseCode $responseMessage" }
+                log.severe { "http exception: $responseCode $responseMessage" }
                 errorStream
             }
             return Http.Response(

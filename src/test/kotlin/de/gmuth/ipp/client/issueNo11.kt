@@ -1,8 +1,8 @@
 package de.gmuth.ipp.client
 
 import de.gmuth.http.Http
-import de.gmuth.log.error
 import java.net.URI
+import java.util.logging.Level.SEVERE
 import java.util.logging.Logger.getLogger
 
 fun main() {
@@ -29,6 +29,6 @@ fun main() {
             markers.forEach { log.info { it.toString() } }
         }
     } catch (exception: Exception) {
-        log.error(exception) { "failed to connect to $printerUri" }
+        log.log(SEVERE, exception, { "failed to connect to $printerUri" })
     }
 }

@@ -6,10 +6,10 @@ package de.gmuth.ipp.client
 
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppString
-import de.gmuth.log.debug
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
+import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
 import kotlin.io.path.createTempDirectory
 
@@ -32,7 +32,7 @@ class IppDocument(
     var file: File? = null
 
     fun readBytes() = inputStream.readBytes().also {
-        log.debug { "read ${it.size} bytes of $this" }
+        log.fine { "read ${it.size} bytes of $this" }
     }
 
     fun filenameSuffix() = when (format) {
@@ -82,7 +82,7 @@ class IppDocument(
         toString()
     }
 
-    fun logDetails() =
-        attributes.logDetails(title = "DOCUMENT-$number")
+    fun log(logger: Logger) =
+        attributes.log(logger, title = "DOCUMENT-$number")
 
 }

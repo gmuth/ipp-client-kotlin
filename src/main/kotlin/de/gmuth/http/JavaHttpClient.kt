@@ -4,7 +4,6 @@ package de.gmuth.http
  * Copyright (c) 2020-2023 Gerhard Muth
  */
 
-import de.gmuth.log.debug
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
@@ -15,6 +14,7 @@ import java.net.http.HttpRequest
 import java.net.http.HttpRequest.BodyPublishers
 import java.net.http.HttpResponse.BodyHandlers
 import java.time.Duration
+import java.util.logging.Level
 import java.util.logging.Logger.getLogger
 
 // requires Java >=11
@@ -26,15 +26,15 @@ class JavaHttpClient(config: Http.Config = Http.Config()) : Http.Client(config) 
             HttpClient.newHttpClient()
             true
         } catch (exception: ClassNotFoundException) {
-            log.debug(exception) { "HttpClient not found" }
+            log.log(Level.FINER, exception, { "HttpClient not found" })
             false
         }.apply {
-            log.debug { "Java HttpClient supported: $this" }
+            log.fine { "Java HttpClient supported: $this" }
         }
     }
 
     init {
-        log.debug { "JavaHttpClient created" }
+        log.fine { "JavaHttpClient created" }
         if (!config.verifySSLHostname)
             setProperty("jdk.internal.httpclient.disableHostnameVerification", true.toString())
     }
