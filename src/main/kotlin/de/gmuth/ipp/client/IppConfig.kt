@@ -5,6 +5,8 @@ package de.gmuth.ipp.client
  */
 
 import java.nio.charset.Charset
+import java.util.logging.Level
+import java.util.logging.Level.INFO
 import java.util.logging.Logger
 
 class IppConfig(
@@ -13,10 +15,10 @@ class IppConfig(
     var charset: Charset = Charsets.UTF_8,
     var naturalLanguage: String = "en",
 ) {
-    fun log(logger: Logger) = logger.run {
-        info { "userName: $userName" }
-        info { "ippVersion: $ippVersion" }
-        info { "charset: ${charset.name().lowercase()}" }
-        info { "naturalLanguage: $naturalLanguage" }
+    fun log(logger: Logger, level: Level = INFO) = logger.run {
+        log(level) { "userName: $userName" }
+        log(level) { "ippVersion: $ippVersion" }
+        log(level) { "charset: ${charset.name().lowercase()}" }
+        log(level) { "naturalLanguage: $naturalLanguage" }
     }
 }

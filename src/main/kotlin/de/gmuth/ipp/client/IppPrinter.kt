@@ -15,7 +15,9 @@ import de.gmuth.log.*
 import java.io.*
 import java.net.URI
 import java.time.Duration
-import java.util.logging.Level.SEVERE
+import java.util.logging.Level
+import java.util.logging.Level.*
+import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
 
 @SuppressWarnings("kotlin:S1192")
@@ -55,10 +57,10 @@ class IppPrinter(
     }
 
     init {
-        log.debug { "create IppPrinter for $printerUri" }
+        log.fine { "create IppPrinter for $printerUri" }
         if (printerUri.scheme == "ipps") httpConfig.trustAnyCertificateAndSSLHostname()
         if (!getPrinterAttributesOnInit) {
-            log.debug { "getPrinterAttributesOnInit disabled => no printer attributes available" }
+            log.fine { "getPrinterAttributesOnInit disabled => no printer attributes available" }
         } else if (attributes.isEmpty()) {
             try {
                 updateAttributes(requestedAttributesOnInit)
@@ -69,18 +71,17 @@ class IppPrinter(
                 }
             } catch (ippExchangeException: IppExchangeException) {
                 if (ippExchangeException.statusIs(ClientErrorNotFound))
-                    log.error { ippExchangeException.message }
+                    log.severe { ippExchangeException.message }
                 else {
-                    log.logWithCauseMessages(ippExchangeException, SEVERE)
-                    log.error { "failed to get printer attributes on init" }
+                    log.log(SEVERE, ippExchangeException, { "failed to get printer attributes on init" })
                     ippExchangeException.response?.let {
                         if (it.containsGroup(Printer)) log.info { "${it.printerGroup.size} attributes parsed" }
-                        else log.warn { it.toString() }
+                        else log.warning { it.toString() }
                     }
                     try {
                         fetchRawPrinterAttributes("getPrinterAttributesFailed.bin")
                     } catch (exception: Exception) {
-                        log.error(exception) { "failed to fetch raw printer attributes" }
+                        log.log(SEVERE, exception, { "failed to fetch raw printer attributes" })
                     }
                 }
                 throw ippExchangeException
@@ -275,10 +276,10 @@ class IppPrinter(
         getPrinterAttributes(requestedAttributes.toList())
 
     fun updateAttributes(requestedAttributes: List<String>? = null) {
-        log.debug { "update attributes: $requestedAttributes" }
+        log.fine { "update attributes: $requestedAttributes" }
         getPrinterAttributes(requestedAttributes).run {
             if (containsGroup(Printer)) attributes.put(printerGroup)
-            else log.warn { "no printerGroup in response for requested attributes: $requestedAttributes" }
+            else log.warning { "no printerGroup in response for requested attributes: $requestedAttributes" }
         }
     }
 
@@ -372,7 +373,7 @@ class IppPrinter(
             // put attribute in operation or job group?
             val groupTag = IppRegistrationsSection2.selectGroupForAttribute(attribute.name) ?: Job
             if (!containsGroup(groupTag)) createAttributesGroup(groupTag)
-            log.trace { "$groupTag put $attribute" }
+            log.finer { "$groupTag put $attribute" }
             getSingleAttributesGroup(groupTag).put(attribute)
         }
     }
@@ -494,7 +495,7 @@ class IppPrinter(
     protected fun exchangeForIppJob(request: IppRequest): IppJob {
         val response = exchange(request)
         if (request.containsGroup(Subscription) && !response.containsGroup(Subscription)) {
-            request.logDetails("REQUEST: ")
+            request.log(log, WARNING, prefix = "REQUEST: ")
             val events: List<String> = request.getSingleAttributesGroup(Subscription).getValues("notify-events")
             throw IppException("printer/server did not create subscription for events: ${events.joinToString(",")}")
         }
@@ -517,8 +518,8 @@ class IppPrinter(
         toString()
     }
 
-    fun logDetails() =
-        attributes.logDetails(title = "PRINTER-$name ($makeAndModel), $state $stateReasons")
+    fun log(logger: Logger, level: Level = INFO) =
+        attributes.log(logger, level, title = "PRINTER-$name ($makeAndModel), $state $stateReasons")
 
     // ------------------------------------------------------
     // attribute value checking based on printer capabilities
@@ -549,7 +550,7 @@ class IppPrinter(
             IppTag.Enum, Charset, NaturalLanguage, MimeMediaType, Keyword, Resolution -> when (supportedAttributeName) {
                 "media-col-supported" -> with(value as IppCollection) {
                     members.filter { !supportedAttribute.values.contains(it.name) }
-                        .forEach { log.warn { "member unsupported: $it" } }
+                        .forEach { log.warning { "member unsupported: $it" } }
                     // all member names must be supported
                     supportedAttribute.values.containsAll(members.map { it.name })
                 }
@@ -569,11 +570,11 @@ class IppPrinter(
             else -> null
         }
         when (attributeValueIsSupported) {
-            null -> log.warn { "unable to check if value '$value' is supported by $supportedAttribute" }
-            true -> log.debug { "$supportedAttributeName: $value" }
+            null -> log.warning { "unable to check if value '$value' is supported by $supportedAttribute" }
+            true -> log.fine { "$supportedAttributeName: $value" }
             false -> {
-                log.warn { "according to printer attributes value '${supportedAttribute.enumNameOrValue(value)}' is not supported." }
-                log.warn { "$supportedAttribute" }
+                log.warning { "according to printer attributes value '${supportedAttribute.enumNameOrValue(value)}' is not supported." }
+                log.warning { "$supportedAttribute" }
             }
         }
         return attributeValueIsSupported

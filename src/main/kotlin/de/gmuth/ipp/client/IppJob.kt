@@ -8,22 +8,21 @@ import de.gmuth.ipp.client.IppJobState.*
 import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppTag.*
-import de.gmuth.log.debug
-import de.gmuth.log.warn
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
 import java.net.URI
+import java.util.logging.Level
+import java.util.logging.Level.INFO
+import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
 
 class IppJob(
     val printer: IppPrinter,
     var attributes: IppAttributesGroup,
     subscriptionAttributes: IppAttributesGroup? = null
-
 ) {
     companion object {
-
         var defaultDelayMillis: Long = 3000
         var useJobOwnerAsUserName: Boolean = false
     }
@@ -165,8 +164,8 @@ class IppJob(
     fun restart() = exchange(ippRequest(RestartJob)).also { updateAttributes() }
 
     fun cancel(messageForOperator: String? = null): IppResponse { // RFC 8011 4.3.3
-        if (isCanceled()) log.warn { "job #$id is already 'canceled'" }
-        if (isProcessingToStopPoint()) log.warn { "job #$id is already 'processing-to-stop-point'" }
+        if (isCanceled()) log.warning { "job #$id is already 'canceled'" }
+        if (isProcessingToStopPoint()) log.warning { "job #$id is already 'processing-to-stop-point'" }
         val request = ippRequest(CancelJob).apply {
             messageForOperator?.let { operationGroup.attribute("message", TextWithoutLanguage, it.toIppString()) }
         }
@@ -242,7 +241,7 @@ class IppJob(
         return IppSubscription(printer, subscriptionAttributes).apply {
             subscription = this
             if (notifyEvents != null && !events.containsAll(notifyEvents)) {
-                log.warn { "server ignored some notifyEvents $notifyEvents, subscribed events: $events" }
+                log.warning { "server ignored some notifyEvents $notifyEvents, subscribed events: $events" }
             }
         }
     }
@@ -268,7 +267,7 @@ class IppJob(
     //-------------------------------------------------------------------------------------
 
     fun cupsGetDocument(documentNumber: Int = 1): IppDocument {
-        log.debug { "cupsGetDocument #$documentNumber for job #$id" }
+        log.fine { "cupsGetDocument #$documentNumber for job #$id" }
         val response = exchange(ippRequest(CupsGetDocument).apply {
             operationGroup.attribute("document-number", Integer, documentNumber)
         })
@@ -329,5 +328,6 @@ class IppJob(
         }
     }
 
-    fun logDetails() = attributes.logDetails(title = "JOB-$id")
+    fun log(logger: Logger, level: Level = INFO) =
+        attributes.log(logger, level, title = "JOB-$id")
 }

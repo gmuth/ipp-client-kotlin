@@ -6,9 +6,6 @@ package de.gmuth.ipp.core
 
 import de.gmuth.io.hexdump
 import de.gmuth.ipp.core.IppTag.*
-import de.gmuth.log.debug
-import de.gmuth.log.trace
-import de.gmuth.log.warn
 import java.io.BufferedInputStream
 import java.io.DataInputStream
 import java.io.EOFException
@@ -27,13 +24,13 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
     fun readMessage(message: IppMessage) {
         with(message) {
             version = "${readUnsignedByte()}.${readUnsignedByte()}"
-            log.debug { "version = $version" }
+            log.fine { "version = $version" }
 
             code = readShort()
-            log.debug { "code = $code ($codeDescription)" }
+            log.fine { "code = $code ($codeDescription)" }
 
             requestId = readInt()
-            log.debug { "requestId = $requestId" }
+            log.fine { "requestId = $requestId" }
         }
 
         lateinit var currentGroup: IppAttributesGroup
@@ -48,11 +45,11 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
                     tag.isValueTag() -> {
                         val attribute = readAttribute(tag)
                         if (attribute.name.isNotEmpty()) {
-                            log.debug { attribute.toString() }
+                            log.fine { attribute.toString() }
                             currentGroup.put(attribute, onReplaceWarn = true)
                             currentAttribute = attribute
                         } else { // name.isEmpty() -> 1setOf
-                            log.debug { IppAttribute(currentAttribute.name, attribute.tag, attribute.value).toString() }
+                            log.fine { IppAttribute(currentAttribute.name, attribute.tag, attribute.value).toString() }
                             currentAttribute.additionalValue(attribute)
                         }
                     }
@@ -61,8 +58,8 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
         } catch (exception: Exception) {
             readBytes().apply {
                 if (isNotEmpty()) {
-                    log.warn { "skipped $size unparsed bytes" }
-                    hexdump { log.warn { it } }
+                    log.warning { "skipped $size unparsed bytes" }
+                    hexdump { log.warning { it } }
                 }
             }
             throw exception
@@ -71,7 +68,7 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
 
     internal fun readTag() =
         IppTag.fromByte(readByte()).apply {
-            if (isDelimiterTag()) log.debug { "--- $this ---" }
+            if (isDelimiterTag()) log.fine { "--- $this ---" }
         }
 
     internal fun readAttribute(tag: IppTag): IppAttribute<Any> {
@@ -164,7 +161,7 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
                     readCollection()
                 } else {
                     // Xerox B210: workaround for invalid 'media-col' without members
-                    log.warn { "invalid value length for IppCollection, trying to recover" }
+                    log.warning { "invalid value length for IppCollection, trying to recover" }
                     IppCollection()
                 }
             }
@@ -210,7 +207,7 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
     // avoid Java-11-readNBytes(length) for compatibility with older jvms
     internal fun readBytes(length: Int) =
         ByteArray(length).apply {
-            log.trace { "read $length bytes" }
+            log.finer { "read $length bytes" }
             readFully(this)
         }
 
@@ -221,7 +218,7 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
             if (!this) { // unexpected value length
                 reset() // revert 'readShort()'
                 with("expected value length of $expected bytes but found $length") {
-                    if (throwException) throw IppException(this) else log.warn { this }
+                    if (throwException) throw IppException(this) else log.warning { this }
                 }
             }
         }

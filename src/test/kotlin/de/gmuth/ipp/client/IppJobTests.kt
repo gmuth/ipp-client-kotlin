@@ -53,7 +53,7 @@ class IppJobTests {
     fun jobAttributes() {
         job.apply {
             log.info { toString() }
-            logDetails()
+            log(log)
             assertEquals("ipp://localhost:631/jobs/2366", uri.toString())
             assertEquals(0, mediaSheetsCompleted)
             assertEquals(2, kOctets)
@@ -78,7 +78,7 @@ class IppJobTests {
         httpClient.ippResponse = ippResponse("Get-Job-Attributes.ipp")
         job.apply {
             updateAttributes()
-            logDetails()
+            log(log)
             assertEquals(31, attributes.size)
         }
     }
@@ -190,7 +190,7 @@ class IppJobTests {
         httpClient.ippResponse = cupsDocumentResponse("application/pdf")
         job.cupsGetDocument().apply {
             log.info { toString() }
-            logDetails()
+            log(log)
             save().delete()
         }
     }

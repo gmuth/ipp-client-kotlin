@@ -1,10 +1,9 @@
 package de.gmuth.ipp.iana
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2023 Gerhard Muth
  */
 
-import de.gmuth.log.debug
 import java.io.InputStream
 import java.io.OutputStream
 import java.io.PrintWriter
@@ -34,7 +33,7 @@ class CSVReader<T>(private val rowMapper: RowMapper<T>) {
             val row = rowMapper.mapRow(columns, ++rowNum)
             mappedRows.add(row)
         }
-        log.debug { "rows read: ${mappedRows.size}" }
+        log.fine { "rows read: ${mappedRows.size}" }
         return mappedRows
     }
 

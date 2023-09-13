@@ -102,7 +102,7 @@ class IppPrinterTests {
         httpClient.mockResponse("Simulated_Laser_Printer/Get-Printer-Attributes.ipp")
         printer.apply {
             updateAttributes()
-            logDetails()
+            log(log)
             assertEquals(122, attributes.size)
         }
     }

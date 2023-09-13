@@ -8,8 +8,10 @@ import java.io.InputStream
 import java.io.Reader
 import java.net.URI
 import java.nio.charset.Charset
+import java.util.logging.Logger.getLogger
 
 class IppTool {
+    val log = getLogger(javaClass.name)
     var verbose: Boolean = false
     var uri: URI? = null
     var filename: String? = null
@@ -33,7 +35,7 @@ class IppTool {
             val lineItems = line.trim().split("\\s+".toRegex())
             if (lineItems.size > 1) interpretLine(lineItems)
         }
-        executeIppRequest().logDetails()
+        executeIppRequest().log(log)
     }
 
     private fun interpretLine(lineItems: List<String>) {

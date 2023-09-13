@@ -6,6 +6,7 @@ package de.gmuth.ipp.core
 
 import de.gmuth.ipp.core.IppTag.*
 import java.io.File
+import java.util.logging.Logger.getLogger
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -13,6 +14,7 @@ import kotlin.test.assertTrue
 
 class IppAttributesGroupTests {
 
+    val log = getLogger(javaClass.name)
     private val group = IppAttributesGroup(Operation)
 
     @Test
@@ -103,7 +105,7 @@ class IppAttributesGroupTests {
     @Test
     fun logDetails() {
         group.attribute("Commodore PET", Integer, 2001)
-        group.logDetails("|", "title")
+        group.log(log, prefix = "|", title = "title")
     }
 
     @Test

@@ -1,13 +1,12 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2022 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.ipp.iana.IppRegistrationsSection2.attributeIs1setOf
 import de.gmuth.ipp.iana.IppRegistrationsSection6.getEnumName
-import de.gmuth.log.warn
 import java.nio.charset.Charset
 import java.util.logging.Logger.getLogger
 
@@ -30,14 +29,14 @@ data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppA
 
     val value: T
         get() = values.single().apply {
-            if (attributeIs1setOf(name) == true) log.warn { "'$name' is registered as '1setOf', use 'values' instead" }
+            if (attributeIs1setOf(name) == true) log.warning { "'$name' is registered as '1setOf', use 'values' instead" }
         }
 
     @Suppress("UNCHECKED_CAST")
     fun additionalValue(attribute: IppAttribute<*>): Any = when {
         attribute.name.isNotEmpty() -> throw IppException("for additional '$name' values attribute name must be empty")
         attribute.values.size != 1 -> throw IppException("expected 1 additional value, not ${attribute.values.size}")
-        attribute.tag != tag -> log.warn { "$name: ignore additional value \"$attribute\" - tag is not '$tag'" }
+        attribute.tag != tag -> log.warning { "$name: ignore additional value \"$attribute\" - tag is not '$tag'" }
         else -> {
             validateValueClass(attribute.value as Any)
             values.add(attribute.value as T)

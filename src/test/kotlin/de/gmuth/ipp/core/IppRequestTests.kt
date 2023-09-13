@@ -20,7 +20,7 @@ class IppRequestTests {
         IppRequest().run {
             code = 5
             log.info { toString() }
-            logDetails()
+            log(log)
             assertEquals(null, version)
             assertEquals(IppOperation.CreateJob, operation)
             createAttributesGroup(IppTag.Operation)
@@ -50,7 +50,7 @@ class IppRequestTests {
         )
         request.documentInputStream = "pdl-content".byteInputStream()
         log.info { request.toString() }
-        request.logDetails()
+        request.log(log)
         val requestEncoded = request.encode()
         log.info { "encoded ${requestEncoded.size} bytes" }
         val requestDecoded = IppRequest()

@@ -1,8 +1,8 @@
 package de.gmuth.ipp.client
 
-import de.gmuth.log.error
 import java.net.HttpURLConnection
 import java.net.URI
+import java.util.logging.Level.SEVERE
 import java.util.logging.Logger.getLogger
 
 fun main() {
@@ -26,7 +26,7 @@ fun main() {
         ippPrinter = IppPrinter(printerUri, ippConfig = ippConfig, getPrinterAttributesOnInit = true)
         log.info { "successfully connected $printerUri" }
     } catch (exception: Exception) {
-        log.error(exception) { "failed to connect to $printerUri" }
+        log.log(SEVERE, exception, { "failed to connect to $printerUri" })
     }
 
     if (ippPrinter != null) ippPrinter.run {
@@ -35,14 +35,14 @@ fun main() {
                 savePrinterAttributes()
                 log.info { "saved printer attributes" }
             } catch (exception: Exception) {
-                log.error(exception) { "failed to save printer attributes" }
+                log.log(SEVERE, exception, { "failed to save printer attributes" })
             }
         }
         try {
             log.info { "documentFormatSupported:" }
             documentFormatSupported.forEach { log.info { " $it" } }
         } catch (exception: Exception) {
-            log.error(exception) { "failed to read documentFormatSupported" }
+            log.log(SEVERE, exception, { "failed to read documentFormatSupported" })
         }
     }
 }
@@ -63,6 +63,6 @@ fun httpConnect(printerUri: URI) {
             log.info { "content: ${contentBytes.size} bytes of type '$contentType'" }
         }
     } catch (exception: Exception) {
-        log.error(exception) { "http connection failed to $printerUrl" }
+        log.log(SEVERE, exception, { "http connection failed to $printerUrl" })
     }
 }

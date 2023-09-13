@@ -4,7 +4,6 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020-2023 Gerhard Muth
  */
 
-import de.gmuth.log.warn
 import java.util.logging.Logger.getLogger
 
 // https://www.cups.org/doc/spec-ipp.html
@@ -37,7 +36,7 @@ class CupsMarker(
         companion object {
             val log = getLogger(Color::class.java.name)
             fun fromString(code: String) = values().find { it.code == code }
-                ?: UNKNOWN.apply { log.warn { "unknown color code: $code" } }
+                ?: UNKNOWN.apply { log.warning { "unknown color code: $code" } }
         }
     }
 

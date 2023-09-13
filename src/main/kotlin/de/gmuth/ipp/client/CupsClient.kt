@@ -11,8 +11,6 @@ import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppTag
 import de.gmuth.ipp.core.IppTag.*
-import de.gmuth.log.debug
-import de.gmuth.log.warn
 import java.io.File
 import java.io.InputStream
 import java.net.URI
@@ -61,7 +59,7 @@ open class CupsClient(
             }
         } catch (clientErrorNotFoundException: ClientErrorNotFoundException) {
             with(getPrinters()) {
-                if (isNotEmpty()) log.warn { "Available CUPS printers: ${map { it.name }}" }
+                if (isNotEmpty()) log.warning { "Available CUPS printers: ${map { it.name }}" }
             }
             throw clientErrorNotFoundException
         }
@@ -78,7 +76,7 @@ open class CupsClient(
         val optionalPort = if (port > 0) ":$port" else ""
         URI("$scheme://$host$optionalPort/printers/$printerName")
     }.apply {
-        log.debug { "cupsPrinterUri($printerName) -> $this" }
+        log.fine { "cupsPrinterUri($printerName) -> $this" }
     }
 
     // https://www.cups.org/doc/spec-ipp.html#CUPS_ADD_MODIFY_PRINTER
@@ -332,7 +330,7 @@ open class CupsClient(
             val jobOwnersIterator = jobOwners.iterator()
             while (jobOwnersIterator.hasNext() && ippExchangeException != null) {
                 ippConfig.userName = jobOwnersIterator.next()
-                log.debug { "set userName '${ippConfig.userName}'" }
+                log.fine { "set userName '${ippConfig.userName}'" }
                 tryToGetDocuments()
             }
             ippConfig.userName = configuredUserName
