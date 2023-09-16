@@ -4,7 +4,7 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020 Gerhard Muth
  */
 
-// [RFC 8010] and [RFC 3380]
+// [RFC 8010] and [RFC 3380]
 enum class IppTag(
     val code: Byte,
     val registeredName: String,

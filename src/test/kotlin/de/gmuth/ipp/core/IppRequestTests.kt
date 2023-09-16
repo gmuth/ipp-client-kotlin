@@ -4,7 +4,9 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020-2023 Gerhard Muth
  */
 
+import de.gmuth.ipp.core.IppOperation.CreateJobSubscriptions
 import java.net.URI
+import java.time.Duration
 import java.util.logging.Logger.getLogger
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -65,9 +67,27 @@ class IppRequestTests {
             assertEquals(URI.create("ipp://printer"), getValue("printer-uri"))
             assertEquals(0, getValue("job-id"))
             assertEquals(listOf("one", "two"), getValues("requested-attributes"))
-            assertEquals("user".toIppString(), getValue("requesting-user-name"))
+            //assertEquals("user".toIppString(), getValue("requesting-user-name"))
         }
+        assertEquals("user", requestDecoded.requestingUserName)
         assertEquals("pdl-content", String(requestDecoded.documentInputStream!!.readBytes()))
+    }
+
+    @Test
+    fun createSubscriptionAttributesGroup() {
+        IppRequest(CreateJobSubscriptions, URI.create("ipp://foo"))
+            .createSubscriptionAttributesGroup(
+                listOf("all"),
+                Duration.ofHours(1),
+                Duration.ofMinutes(1),
+                999
+            )
+    }
+
+    @Test
+    fun createSubscriptionAttributesGroupWithNullDefaults() {
+        IppRequest(CreateJobSubscriptions, URI.create("ipp://null"))
+            .createSubscriptionAttributesGroup()
     }
 
 }

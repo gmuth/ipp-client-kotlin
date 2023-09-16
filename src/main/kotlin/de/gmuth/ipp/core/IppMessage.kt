@@ -88,9 +88,6 @@ abstract class IppMessage() {
             toByteArray()
         }
 
-    fun encodeAsInputStream() =
-        ByteArrayInputStream(encode())
-
     // --------
     // DECODING
     // --------

@@ -55,14 +55,14 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
                     }
                 }
             } while (tag != End)
-        } catch (exception: Exception) {
-            readBytes().apply {
+        } catch (throwable: Throwable) {
+            if (throwable !is EOFException) readBytes().apply {
                 if (isNotEmpty()) {
                     log.warning { "skipped $size unparsed bytes" }
                     hexdump { log.warning { it } }
                 }
             }
-            throw exception
+            throw throwable
         }
     }
 
@@ -75,9 +75,8 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
         val name = readString()
         val value = try {
             readAttributeValue(tag)
-        } catch (exception: Exception) {
-            if (exception !is EOFException) readBytes().hexdump { log.info { it } }
-            throw IppException("failed to read attribute value of '$name' ($tag)", exception)
+        } catch (throwable: Throwable) {
+            throw IppException("failed to read attribute value of '$name' ($tag)", throwable)
         }
         // remember attributes-charset for name and text value decoding
         if (name == "attributes-charset") attributesCharset = value as Charset
