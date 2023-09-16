@@ -5,6 +5,7 @@ package de.gmuth.ipp.core
  */
 
 import de.gmuth.ipp.core.IppResolution.Unit.DPI
+import de.gmuth.log.Logging
 import java.io.ByteArrayInputStream
 import java.net.URI
 import java.util.logging.Logger
@@ -14,6 +15,10 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class IppInputStreamTest {
+
+    init {
+        Logging.configure()
+    }
 
     private val message = object : IppMessage() {
         override val codeDescription: String
@@ -179,6 +184,14 @@ class IppInputStreamTest {
                 }
             }
         }
+    }
+
+    @Test
+    fun readMessageFails() {
+        val encoded = "01 01 00 0B 00 00 00 08 01 47 00 01 61 00 01 66 0A 0B 0C 0D"
+       assertFailsWith<IppException> {
+            encoded.toIppInputStream().readMessage(message)
+       }
     }
 
     @Test

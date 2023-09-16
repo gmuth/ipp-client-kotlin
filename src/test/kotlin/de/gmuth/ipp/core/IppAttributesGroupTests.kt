@@ -73,6 +73,12 @@ class IppAttributesGroupTests {
     }
 
     @Test
+    fun getTextValue() {
+        group.attribute("foo", TextWithoutLanguage, "bar".toIppString())
+        assertEquals("bar", group.getTextValue("foo"))
+    }
+
+    @Test
     fun getValueOrNull() {
         group.attribute("foo0", Keyword, "bar0")
         assertEquals("bar0", group.getValueOrNull("foo0"))

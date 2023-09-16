@@ -63,4 +63,11 @@ class IppResponseTests {
         }
     }
 
+    @Test
+    fun createReponse() {
+        IppResponse(IppStatus.SuccessfulOk).run {
+            assertTrue(isSuccessful())
+        }
+    }
+
 }
