@@ -1,4 +1,4 @@
-package de.gmuth.http
+package de.gmuth.ipp.client
 
 /**
  * Copyright (c) 2020-2023 Gerhard Muth

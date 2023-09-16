@@ -52,9 +52,10 @@ tasks.compileKotlin {
 // avoid warnings "jvm target compatibility should be set to the same Java version."
 tasks.compileTestKotlin {
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "1.8"
     }
 }
+
 tasks.compileJava {
     sourceCompatibility = tasks.compileKotlin.get().kotlinOptions.jvmTarget
     targetCompatibility = tasks.compileKotlin.get().kotlinOptions.jvmTarget

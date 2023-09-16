@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2021 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppTag.Printer
@@ -24,7 +24,7 @@ class IppResponse : IppMessage {
         get() = operationGroup.getValue("status-message")
 
     fun hasStatusMessage() =
-            operationGroup.containsKey("status-message")
+        operationGroup.containsKey("status-message")
 
     val printerGroup: IppAttributesGroup
         get() = getSingleAttributesGroup(Printer)
@@ -37,11 +37,11 @@ class IppResponse : IppMessage {
     constructor() : super()
 
     constructor(
-            status: IppStatus,
-            version: String = "1.1",
-            requestId: Int = 1,
-            charset: Charset = Charsets.UTF_8,
-            naturalLanguage: String = "en"
+        status: IppStatus,
+        version: String = "1.1",
+        requestId: Int = 1,
+        charset: Charset = Charsets.UTF_8,
+        naturalLanguage: String = "en"
     ) : super(version, requestId, charset, naturalLanguage) {
         code = status.code
     }

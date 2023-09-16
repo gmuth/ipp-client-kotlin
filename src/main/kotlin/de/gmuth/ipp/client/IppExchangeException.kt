@@ -10,6 +10,7 @@ import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppStatus
 import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import java.io.File
+import java.io.InputStream
 import java.util.logging.Level
 import java.util.logging.Level.INFO
 import java.util.logging.Logger
@@ -21,9 +22,10 @@ open class IppExchangeException(
     val request: IppRequest,
     val response: IppResponse? = null,
     val httpStatus: Int? = null,
+    val httpHeaderFields: Map<String?, List<String>>? = null,
+    val httpStream: InputStream? = null,
     message: String = defaultMessage(request, response),
-    cause: Exception? = null
-
+    cause: Throwable? = null,
 ) : IppException(message, cause) {
 
     class ClientErrorNotFoundException(request: IppRequest, response: IppResponse) :
@@ -37,13 +39,14 @@ open class IppExchangeException(
     val log = getLogger(javaClass.name)
 
     companion object {
-        fun defaultMessage(request: IppRequest, response: IppResponse?) = StringBuilder().apply {
+        fun defaultMessage(request: IppRequest, response: IppResponse?) = StringBuilder().run {
             append("${request.operation} failed")
             response?.run {
                 append(": '$status'")
                 if (hasStatusMessage()) append(", $statusMessage")
             }
-        }.toString()
+            toString()
+        }
     }
 
     init {
@@ -53,9 +56,12 @@ open class IppExchangeException(
     fun statusIs(status: IppStatus) = response?.status == status
 
     fun log(logger: Logger, level: Level = INFO) = logger.run {
-        if (httpStatus != null) log(level) { "HTTP-STATUS: $httpStatus" }
-        request.log(log, level, prefix = " REQUEST: ")
+        log(level) { message }
+        request.log(log, level, prefix = "REQUEST: ")
         response?.log(log, level, prefix = "RESPONSE: ")
+        httpStatus?.let { log(level) { "HTTP-Status: $it" } }
+        httpHeaderFields?.let { for ((key: String?, value) in it) log(level) { "HTTP: $key = $value" } }
+        httpStream?.let { log.log(level) { "HTTP-Content:\n" + it.bufferedReader().use { it.readText() } } }
     }
 
     fun saveMessages(

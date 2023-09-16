@@ -5,20 +5,47 @@ package de.gmuth.ipp.client
  */
 
 import java.nio.charset.Charset
+import java.time.Duration
+import java.util.Base64.getEncoder
 import java.util.logging.Level
 import java.util.logging.Level.INFO
 import java.util.logging.Logger
+import javax.net.ssl.SSLContext
 
 class IppConfig(
+
+    // core IPP config options
     var userName: String? = System.getProperty("user.name"),
     var ippVersion: String = "1.1",
     var charset: Charset = Charsets.UTF_8,
     var naturalLanguage: String = "en",
+
+    // HTTP config options
+    var timeout: Duration = Duration.ofSeconds(30),
+    var userAgent: String? = "ipp-client/3.0",
+    var password: String? = null,
+    var sslContext: SSLContext? = null,
+    // trust any certificate: sslContextForAnyCertificate()
+    // use individual certificate: sslContext(loadCertificate(FileInputStream("printer.pem")))
+    // use truststore: sslContext(loadKeyStore(FileInputStream("printer.jks"), "changeit"))
+    var verifySSLHostname: Boolean = true
+
 ) {
+    fun authorization() =
+        "Basic " + getEncoder().encodeToString("$userName:$password".toByteArray(Charsets.UTF_8))
+
+    fun trustAnyCertificateAndSSLHostname() {
+        sslContext = SSLHelper.sslContextForAnyCertificate()
+        verifySSLHostname = false
+    }
+
     fun log(logger: Logger, level: Level = INFO) = logger.run {
         log(level) { "userName: $userName" }
         log(level) { "ippVersion: $ippVersion" }
         log(level) { "charset: ${charset.name().lowercase()}" }
         log(level) { "naturalLanguage: $naturalLanguage" }
+        log(level) { "timeout: $timeout" }
+        log(level) { "userAgent: $userAgent" }
+        log(level) { "verifySSLHostname: $verifySSLHostname" }
     }
 }

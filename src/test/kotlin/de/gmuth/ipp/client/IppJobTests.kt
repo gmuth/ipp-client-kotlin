@@ -4,7 +4,6 @@ package de.gmuth.ipp.client
  * Copyright (c) 2021-2023 Gerhard Muth
  */
 
-import de.gmuth.http.HttpClientMock
 import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppStatus.SuccessfulOk
 import de.gmuth.ipp.core.IppTag
@@ -15,7 +14,6 @@ import java.io.File
 import java.io.FileInputStream
 import java.net.URI
 import java.util.logging.Logger.getLogger
-import kotlin.io.path.createTempDirectory
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -25,29 +23,19 @@ class IppJobTests {
     val log = getLogger(javaClass.name)
     val blankPdf = File("tool/A4-blank.pdf")
 
-    val httpClient = HttpClientMock()
-    val ippConfig = IppConfig()
-    val printer: IppPrinter
-    val job: IppJob
+    val ippClientMock = IppClientMock("printers/CUPS_HP_LaserJet_100_color_MFP_M175")
 
-    init {
-        // mock ipp printer
-        printer = IppPrinter(
-            URI.create("ipp://printer"),
-            ippClient = IppClient(ippConfig, httpClient = httpClient),
-            getPrinterAttributesOnInit = false
-        ).apply {
-            attributes = ippResponse("Get-Printer-Attributes.ipp").printerGroup
-            workDirectory = createTempDirectory().toFile()
+    val printer = IppPrinter(
+        URI.create("ipp://printer-for-job-tests"),
+        ippClient = ippClientMock.apply { mockResponse("Get-Printer-Attributes.ipp") }
+    )
+
+    val job: IppJob = printer.run {
+        ippClientMock.mockResponse("Get-Job-Attributes.ipp")
+        getJob(2366).apply {
+            attributes.attribute("document-name-supplied", NameWithLanguage, "blank.pdf".toIppString())
         }
-        // mock ipp job
-        job = IppJob(printer, ippResponse("Get-Job-Attributes.ipp").jobGroup.apply {
-            attribute("document-name-supplied", NameWithLanguage, "blank.pdf".toIppString())
-        })
     }
-
-    fun ippResponse(fileName: String, directory: String = "printers/CUPS_HP_LaserJet_100_color_MFP_M175") =
-        IppResponse().apply { read(File(directory, fileName)) }
 
     @Test
     fun jobAttributes() {
@@ -69,13 +57,11 @@ class IppJobTests {
 
     @Test
     fun getAttributes() {
-        httpClient.ippResponse = ippResponse("Get-Job-Attributes.ipp")
         job.getJobAttributes()
     }
 
     @Test
     fun updateAttributes() {
-        httpClient.ippResponse = ippResponse("Get-Job-Attributes.ipp")
         job.apply {
             updateAttributes()
             log(log)
@@ -85,31 +71,26 @@ class IppJobTests {
 
     @Test
     fun hold() {
-        httpClient.ippResponse = ippResponse("Get-Job-Attributes.ipp")
         job.hold()
     }
 
     @Test
     fun release() {
-        httpClient.ippResponse = ippResponse("Get-Job-Attributes.ipp")
         job.release()
     }
 
     @Test
     fun restart() {
-        httpClient.ippResponse = ippResponse("Get-Job-Attributes.ipp")
         job.restart()
     }
 
     @Test
     fun cancel() {
-        httpClient.ippResponse = ippResponse("Get-Job-Attributes.ipp")
         job.cancel()
     }
 
     @Test
     fun cancelWithMessage() {
-        httpClient.ippResponse = ippResponse("Get-Job-Attributes.ipp")
         job.cancel("message")
     }
 
@@ -137,20 +118,19 @@ class IppJobTests {
             assertFalse(isProcessingToStopPoint())
             attributes.attribute("job-state-reasons", Keyword, "processing-to-stop-point")
             assertTrue(isProcessingToStopPoint())
-            httpClient.ippResponse = ippResponse("Get-Job-Attributes.ipp")
             cancel()
         }
     }
 
     @Test
     fun sendDocument() {
-        httpClient.mockResponse("Simulated_Laser_Printer/Print-Job.ipp")
+        ippClientMock.mockResponse("Print-Job.ipp")
         job.sendDocument(FileInputStream(blankPdf))
     }
 
     @Test
     fun sendUri() {
-        httpClient.mockResponse("Simulated_Laser_Printer/Print-Job.ipp")
+        ippClientMock.mockResponse("Print-Job.ipp")
         job.sendUri(URI.create("ftp://no.doc"))
     }
 
@@ -187,7 +167,7 @@ class IppJobTests {
 
     @Test
     fun cupsGetDocument1() {
-        httpClient.ippResponse = cupsDocumentResponse("application/pdf")
+        ippClientMock.mockResponse(cupsDocumentResponse("application/pdf"))
         job.cupsGetDocument().apply {
             log.info { toString() }
             log(log)
@@ -197,16 +177,16 @@ class IppJobTests {
 
     @Test
     fun cupsGetDocument2() {
-        httpClient.ippResponse = cupsDocumentResponse("application/postscript")
+        ippClientMock.mockResponse(cupsDocumentResponse("application/postscript"))
         job.cupsGetDocument().filename()
     }
 
     @Test
     fun cupsGetDocument3() {
         printer.attributes.remove("cups-version")
-        httpClient.ippResponse = cupsDocumentResponse("application/octetstream").apply {
+        ippClientMock.mockResponse(cupsDocumentResponse("application/octetstream").apply {
             jobGroup.remove("document-name")
-        }
+        })
         job.cupsGetDocument(2).apply {
             log.info { toString() }
             log.info { "${filename()} (${readBytes().size} bytes)" }
@@ -217,7 +197,7 @@ class IppJobTests {
 
     @Test
     fun cupsGetAndSaveDocuments() {
-        httpClient.ippResponse = cupsDocumentResponse("application/postscript")
+        ippClientMock.mockResponse(cupsDocumentResponse("application/postscript"))
         job.cupsGetDocuments(save = true)
     }
 
