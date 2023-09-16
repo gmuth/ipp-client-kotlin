@@ -1,4 +1,4 @@
-# ipp-client 
+# ipp-client
 
 A client implementation of the ipp protocol for java and kotlin.
 RFCs [8010](https://tools.ietf.org/html/rfc8010),
@@ -15,10 +15,12 @@ RFCs [8010](https://tools.ietf.org/html/rfc8010),
 ## Usage
 
 You may use ```ippfind``` or other ZeroConf tools for printer discovery.
-The [CupsClient](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/CupsClient.kt) supports printer lookup by queue name.
+The [CupsClient](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/CupsClient.kt)
+supports printer lookup by queue name.
 Repository [ipp-samples](https://github.com/gmuth/ipp-samples) contains examples how to use jmDNS.
 
 ### [IppPrinter](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppPrinter.kt) and [IppJob](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppJob.kt)
+
 ```kotlin
 // initialize printer connection and show printer attributes
 val ippPrinter = IppPrinter(URI.create("ipp://colorjet.local/ipp/printer"))
@@ -75,11 +77,13 @@ ippPrinter.sound() // identify printer
 
 // subscribe and log events (e.g. from CUPS) for 1 minute
 ippPrinter.createPrinterSubscription(60)
-          .processEvents()
+    .processEvents()
 ```
+
 ### Printer Capabilities
 
 `IppPrinter` checks, if attribute values are supported by looking into `'...-supported'` printer attributes.
+
 ```
 documentFormat("application/pdf")
 
@@ -95,9 +99,9 @@ val file = File("A4-blank.pdf")
 
 val ippClient = IppClient()
 val request = IppRequest(IppOperation.PrintJob, uri).apply {
-  // constructor adds 'attributes-charset', 'attributes-natural-language' and 'printer-uri'
-  operationGroup.attribute("document-format", IppTag.MimeMediaType, "application/pdf")
-  documentInputStream  = FileInputStream(file)
+    // constructor adds 'attributes-charset', 'attributes-natural-language' and 'printer-uri'
+    operationGroup.attribute("document-format", IppTag.MimeMediaType, "application/pdf")
+    documentInputStream = FileInputStream(file)
 }
 val response = ippClient.exchange(request)
 println(response.jobGroup["job-id"])
@@ -116,20 +120,20 @@ val cupsClient = CupsClient()
 cupsClient.basicAuth("admin", "secret")
 
 // list all queues
-cupsClient.getPrinters().forEach { 
+cupsClient.getPrinters().forEach {
     println("${it.name} -> ${it.printerUri}")
 }
 
 // list all completed jobs for queue
 cupsClient.getPrinter("ColorJet_HP")
-          .getJobs(IppWhichJobs.Completed)
-          .forEach { println(it) }
+    .getJobs(IppWhichJobs.Completed)
+    .forEach { println(it) }
 
 // default printer
 val defaultPrinter = cupsClient.getDefault()
 
 // check capability
-if(defaultPrinter.hasCapability(Capability.CanPrintInColor)) {
+if (defaultPrinter.hasCapability(Capability.CanPrintInColor)) {
     println("${defaultPrinter.name} can print in color")
 }
 
@@ -146,7 +150,7 @@ val width = 2540 * 2 // hundreds of mm
 
 val jpegFile = File("label.jpg")
 val image = javax.imageio.ImageIO.read(jpegFile)
-            
+
 printer.printJob(
     jpegFile, documentFormat("image/jpeg"),
     IppMedia.Collection(
@@ -158,16 +162,21 @@ printer.printJob(
 
 ## Logging
 
-From version 3.0 onwards the library uses [Java Logging](https://docs.oracle.com/javase/8/docs/technotes/guides/logging/overview.html) - configure as you like.
+From version 3.0 onwards the library
+uses [Java Logging](https://docs.oracle.com/javase/8/docs/technotes/guides/logging/overview.html) - configure as you
+like.
 Tests can use Logging.configure() to load logging.properties from test/resources.
 
-The behaviour of the my previously used [ConsoleLogger](https://github.com/gmuth/logging-kotlin/blob/main/src/main/kotlin/de/gmuth/log/ConsoleLogger.kt) is now implemented by StdoutHandler and SimpleClassNameFormatter.
-I moved all of my custom logging code to it's own repository [logging-kotlin](https://github.com/gmuth/logging-kotlin/tree/main/src/main/kotlin/de/gmuth/log).
+The behaviour of my previously
+used [ConsoleLogger](https://github.com/gmuth/logging-kotlin/blob/main/src/main/kotlin/de/gmuth/log/ConsoleLogger.kt) is
+now implemented by StdoutHandler and SimpleClassNameFormatter.
+I moved all of my custom logging code to it's own
+repository [logging-kotlin](https://github.com/gmuth/logging-kotlin/tree/main/src/main/kotlin/de/gmuth/log).
 
 ## Build
 
 To build the jar make sure you have JDK 11 installed.
-The default tasks build the jar in `build/libs`. 
+The default tasks build the jar in `build/libs`.
 
     ./gradlew
 
@@ -189,28 +198,13 @@ The build produces the jar, sources and javadoc artifacts. They are available at
 
 - group: gmuth.de
 - artifact: ipp-client
-- version: 2.5
+- version: 3.0
 
 Add dependency:
 
 ```
-    implementation("de.gmuth:ipp-client:2.5")
+    implementation("de.gmuth:ipp-client:3.0")
 ```
-
-## No Multiplatform support yet
-
-IPP is based on the exchange of binary messages via HTTP.
-For reading and writing binary data
-[DataInputStream](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/io/DataInputStream.html)
-and [DataOutputStream](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/io/DataOutputStream.html) are used.
-
-For the transport layer I've created a
-[HTTP interface](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/Http.kt).
-By default implementation [HttpURLConnectionClient](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/HttpURLConnectionClient.kt)
-is used which in turn uses javas [HttpURLConnection](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/net/HttpURLConnection.html).
-
-Only java runtimes (including Android) provide implementations of these classes.
-The java standard libraries also provide [support for SSL/TLS](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/javax/net/ssl/SSLContext.html).
 
 ## Source packages
 
@@ -226,8 +220,21 @@ Package
 [`de.gmuth.ipp.client`](https://github.com/gmuth/ipp-client-kotlin/tree/master/src/main/kotlin/de/gmuth/ipp/client)
 contains the
 [IppClient](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppClient.kt)
-which requires a
-[Http.Client](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/Http.kt)
-that implements HTTP:
-e.g. [HttpURLConnectionClient](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/HttpURLConnectionClient.kt)
-or [JavaHttpClient](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/http/JavaHttpClient.kt)
+and implementations of higher level IPP objects like
+[IppPrinter]((https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppPrinter.kt)),
+[IppJob]((https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppJob.kt)),
+[IppSubscription]((https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppSubscription.kt)) and
+[IppEventNotification]((https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppEventNotification.kt))
+
+## No Multiplatform support
+
+IPP is based on the exchange of binary messages via HTTP.
+For reading and writing binary data
+[DataInputStream](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/io/DataInputStream.html)
+and [DataOutputStream](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/io/DataOutputStream.html) are
+used. For message transportation IppClient uses [HttpURLConnection](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/net/HttpURLConnection.html).
+
+Only Java runtimes (including Android) provide implementations of these classes.
+The Java standard libraries also
+provide [support for SSL/TLS](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/javax/net/ssl/SSLContext.html)
+.
