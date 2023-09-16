@@ -1,6 +1,5 @@
 package de.gmuth.ipp.client
 
-import de.gmuth.http.Http
 import java.net.URI
 import java.util.logging.Level.SEVERE
 import java.util.logging.Logger.getLogger
@@ -20,7 +19,7 @@ fun main() {
         with(
             IppPrinter(
                 printerUri,
-                httpConfig = Http.Config(debugLogging = true),
+                //httpConfig = HttpClient.Config(debugLogging = true),
                 //getPrinterAttributesOnInit = false
             )
         ) {

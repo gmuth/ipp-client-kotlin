@@ -1,11 +1,9 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2021-2022 Gerhard Muth
+ * Copyright (c) 2021-2023 Gerhard Muth
  */
 
-import de.gmuth.http.HttpClientMock
-import de.gmuth.io.toIppResponse
 import de.gmuth.ipp.client.CupsPrinterType.Capability.CanPunchOutput
 import de.gmuth.ipp.client.IppFinishing.Punch
 import de.gmuth.ipp.client.IppFinishing.Staple
@@ -35,18 +33,11 @@ class IppPrinterTests {
 
     val tlog = getLogger(javaClass.name)
     val blankPdf = File("tool/A4-blank.pdf")
-    val httpClient = HttpClientMock()
-    val ippConfig = IppConfig()
-
+    val ippClientMock = IppClientMock("printers/Simulated_Laser_Printer")
     val printer = IppPrinter(
-        URI.create("ipp://printer"),
-        ippClient = IppClient(ippConfig, httpClient = httpClient),
-        getPrinterAttributesOnInit = false
-    ).apply {
-        attributes = File("printers/Simulated_Laser_Printer/Get-Printer-Attributes.ipp")
-            .toIppResponse()
-            .printerGroup
-    }
+        URI.create("ipp://printer-for-printer-tests"),
+        ippClient = ippClientMock.apply { mockResponse("Get-Printer-Attributes.ipp") }
+    )
 
     @Test
     fun printerAttributes() {
@@ -93,14 +84,14 @@ class IppPrinterTests {
 
     @Test
     fun savePrinterAttributes() {
-        httpClient.mockResponse("Simulated_Laser_Printer/Get-Printer-Attributes.ipp")
+        ippClientMock.mockResponse("Get-Printer-Attributes.ipp")
         printer.savePrinterAttributes(createTempDirectory().pathString)
     }
 
     @Test
     fun updateAttributes() {
-        httpClient.mockResponse("Simulated_Laser_Printer/Get-Printer-Attributes.ipp")
-        printer.apply {
+        ippClientMock.mockResponse("Get-Printer-Attributes.ipp")
+        printer.run {
             updateAttributes()
             log(tlog)
             assertEquals(122, attributes.size)
@@ -117,7 +108,7 @@ class IppPrinterTests {
 
     @Test
     fun printJobFile() {
-        httpClient.mockResponse("Simulated_Laser_Printer/Print-Job.ipp")
+        ippClientMock.mockResponse("Print-Job.ipp")
         printer.printJob(
             File("tool/A4-blank.pdf"),
             jobName("A4.pdf"),
@@ -149,53 +140,57 @@ class IppPrinterTests {
 
     @Test
     fun printJobInputStream() {
-        httpClient.mockResponse("Simulated_Laser_Printer/Print-Job.ipp")
-        printer.printJob(FileInputStream(blankPdf))
+        ippClientMock.mockResponse("Print-Job.ipp")
+        printer.printJob(FileInputStream(blankPdf)).run {
+            log(tlog)
+            assertEquals(461881017, id)
+            assertEquals(IppJobState.Pending, state)
+            assertEquals(listOf("none"), stateReasons)
+            assertEquals("ipp://SpaceBook-2.local.:8632/jobs/461881017", uri.toString())
+        }
     }
 
     @Test
     fun printJobByteArray() {
-        httpClient.mockResponse("Simulated_Laser_Printer/Print-Job.ipp")
+        ippClientMock.mockResponse("Print-Job.ipp")
         printer.printJob(blankPdf.readBytes())
     }
 
     @Test
     fun printUri() {
-        httpClient.mockResponse("Simulated_Laser_Printer/Print-Job.ipp")
+        ippClientMock.mockResponse("Print-Job.ipp")
         printer.printUri(URI.create("http://server/document.pdf"))
     }
 
     @Test
     fun createJob() {
-        httpClient.mockResponse("Simulated_Laser_Printer/Print-Job.ipp")
-        printer.createJob().apply {
-            httpClient.mockResponse("Simulated_Laser_Printer/Print-Job.ipp")
+        ippClientMock.mockResponse("Print-Job.ipp")
+        printer.createJob().run {
             sendDocument(FileInputStream(blankPdf), true, "blank.pdf", "en")
-            httpClient.mockResponse("Simulated_Laser_Printer/Print-Job.ipp")
             sendUri(URI.create("http://server/document.pdf"), true, "black.pdf", "en")
         }
     }
 
     @Test
     fun getJob() {
-        httpClient.mockResponse("Simulated_Laser_Printer/Get-Job-Attributes.ipp")
-        printer.getJob(11).apply {
+        ippClientMock.mockResponse("Get-Job-Attributes.ipp")
+        printer.getJob(11).run {
             assertEquals(21, attributes.size)
         }
     }
 
     @Test
     fun getJobsWithDefaultParameters() {
-        httpClient.mockResponse("Simulated_Laser_Printer/Get-Jobs.ipp")
-        printer.getJobs().apply {
+        ippClientMock.mockResponse("Get-Jobs.ipp")
+        printer.getJobs().run {
             assertEquals(1, size)
         }
     }
 
     @Test
     fun getJobsWithParameters() {
-        httpClient.mockResponse("Simulated_Laser_Printer/Get-Jobs.ipp")
-        printer.getJobs(Completed, myJobs = true, limit = 10).apply {
+        ippClientMock.mockResponse("Get-Jobs.ipp")
+        printer.getJobs(Completed, myJobs = true, limit = 10).run {
             assertEquals(1, size)
         }
     }

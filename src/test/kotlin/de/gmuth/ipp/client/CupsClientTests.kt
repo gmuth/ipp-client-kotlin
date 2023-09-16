@@ -1,46 +1,49 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020-2021 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
-import de.gmuth.http.HttpClientMock
 import de.gmuth.ipp.core.IppException
-import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
-import de.gmuth.ipp.core.IppStatus.SuccessfulOk
 import org.junit.Test
 import java.net.URI
 import java.util.logging.Logger.getLogger
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class CupsClientTests {
     val log = getLogger(javaClass.name)
-    val httpClient = HttpClientMock()
-    val cupsClient = CupsClient(URI.create("ipps://cups"), httpClient = httpClient)
-
-    init {
-        httpClient.ippResponse = IppResponse(SuccessfulOk) // default mocked response
-    }
+    val ippClientMock = IppClientMock("printers/CUPS")
+    val cupsClient = CupsClient(URI.create("ipps://cups"), ippClient = ippClientMock)
 
     @Test
     fun constructors() {
         CupsClient()
         CupsClient("host")
-        CupsClient(ippConfig = IppConfig())
     }
 
     @Test
     fun getPrinters() {
-        httpClient.mockResponse("CUPS/Cups-Get-Printers.ipp")
-        cupsClient.getPrinters().forEach { log.info { it.toString() } }
+        ippClientMock.mockResponse("Cups-Get-Printers.ipp")
+        cupsClient.getPrinters().run {
+            forEach { log.info { it.toString() } }
+            assertEquals(12, size)
+        }
     }
 
     @Test
     fun getPrinter() {
-        httpClient.mockResponse("CUPS_HP_LaserJet_100_color_MFP_M175/Get-Printer-Attributes.ipp")
-        cupsClient.getPrinter("ColorJet_HP")
+        ippClientMock.mockResponse("Get-Printer-Attributes.ipp", "printers/CUPS_HP_LaserJet_100_color_MFP_M175")
+        cupsClient.getPrinter("ColorJet_HP").run {
+            log(log)
+            assertEquals("HP LaserJet 100 color MFP M175", makeAndModel.text)
+            assertEquals(IppPrinterState.Idle, state)
+            assertEquals(5, markers.size)
+            assertTrue(isAcceptingJobs)
+            assertTrue(isCups())
+        }
     }
 
     @Test
@@ -52,14 +55,16 @@ class CupsClientTests {
 
     @Test
     fun getDefault() {
-        httpClient.mockResponse("CUPS/Cups-Get-Default.ipp")
-        cupsClient.getDefault()
+        ippClientMock.mockResponse("Cups-Get-Default.ipp")
+        cupsClient.getDefault().run {
+            assertEquals("ColorJet_HP", name.text)
+        }
     }
 
     @Test
     fun getDefaultFails() {
         val exception = assertFailsWith<IppExchangeException> {
-            httpClient.mockResponse("CUPS/Cups-Get-Default-Error.ipp")
+            ippClientMock.mockResponse("Cups-Get-Default-Error.ipp")
             cupsClient.getDefault()
         }
         assertTrue(exception.statusIs(ClientErrorNotFound))

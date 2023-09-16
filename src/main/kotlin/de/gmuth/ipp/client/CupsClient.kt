@@ -4,7 +4,6 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020-2023 Gerhard Muth
  */
 
-import de.gmuth.http.Http
 import de.gmuth.ipp.client.IppExchangeException.ClientErrorNotFoundException
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppOperation.*
@@ -21,22 +20,18 @@ import java.util.logging.Logger.getLogger
 // https://www.cups.org/doc/spec-ipp.html
 open class CupsClient(
     val cupsUri: URI = URI.create("ipp://localhost"),
-    val ippConfig: IppConfig = IppConfig(),
-    httpClient: Http.Client = Http.defaultImplementation.createClient(Http.Config())
+    val ippClient: IppClient = IppClient()
 ) {
     constructor(host: String = "localhost") : this(URI.create("ipp://$host"))
 
     val log = getLogger(javaClass.name)
-    var userName: String? by ippConfig::userName
-    val httpConfig: Http.Config by httpClient::config
+    val config: IppConfig by ippClient::config
+    var userName: String? by config::userName
     var cupsClientWorkDirectory = File("cups-${cupsUri.host}")
-    val ippClient = IppClient(ippConfig, httpClient = httpClient)
 
     init {
-        if (cupsUri.scheme == "ipps") httpConfig.trustAnyCertificateAndSSLHostname()
+        if (cupsUri.scheme == "ipps") config.trustAnyCertificateAndSSLHostname()
     }
-
-    fun getIppServer() = ippClient.getHttpServer()
 
     fun getPrinters() = try {
         exchange(ippRequest(CupsGetPrinters))
@@ -326,14 +321,14 @@ open class CupsClient(
         }
         tryToGetDocuments()
         if (ippExchangeException != null && ippExchangeException!!.httpStatus == 401) {
-            val configuredUserName = ippConfig.userName
+            val configuredUserName = config.userName
             val jobOwnersIterator = jobOwners.iterator()
             while (jobOwnersIterator.hasNext() && ippExchangeException != null) {
-                ippConfig.userName = jobOwnersIterator.next()
-                log.fine { "set userName '${ippConfig.userName}'" }
+                config.userName = jobOwnersIterator.next()
+                log.fine { "set userName '${config.userName}'" }
                 tryToGetDocuments()
             }
-            ippConfig.userName = configuredUserName
+            config.userName = configuredUserName
         }
         documents.onEach { document ->
             document.save(job.printerDirectory(), overwrite = true)

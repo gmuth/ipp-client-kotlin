@@ -4,7 +4,6 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020-2023 Gerhard Muth
  */
 
-import de.gmuth.http.Http
 import de.gmuth.ipp.client.IppPrinterState.*
 import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppOperation.*
@@ -18,19 +17,19 @@ import java.util.logging.Level
 import java.util.logging.Level.*
 import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
+import kotlin.io.path.createTempDirectory
 
 @SuppressWarnings("kotlin:S1192")
-class IppPrinter(
+open class IppPrinter(
     val printerUri: URI,
     var attributes: IppAttributesGroup = IppAttributesGroup(Printer),
-    httpConfig: Http.Config = Http.Config(),
     ippConfig: IppConfig = IppConfig(),
-    val ippClient: IppClient = IppClient(ippConfig, httpConfig),
+    val ippClient: IppClient = IppClient(ippConfig),
     getPrinterAttributesOnInit: Boolean = true,
     requestedAttributesOnInit: List<String>? = null
 ) {
-    var workDirectory: File = File("work")
     val log = getLogger(javaClass.name)
+    var workDirectory: File = createTempDirectory().toFile()
 
     companion object {
 
@@ -41,9 +40,12 @@ class IppPrinter(
         val printerClassAttributes = listOf(
             "printer-name",
             "printer-make-and-model",
+            "printer-info",
+            "printer-location",
             "printer-is-accepting-jobs",
             "printer-state",
             "printer-state-reasons",
+            "printer-state-message",
             "document-format-supported",
             "operations-supported",
             "color-supported",
@@ -57,7 +59,7 @@ class IppPrinter(
 
     init {
         log.fine { "create IppPrinter for $printerUri" }
-        if (printerUri.scheme == "ipps") httpConfig.trustAnyCertificateAndSSLHostname()
+        if (printerUri.scheme == "ipps") ippConfig.trustAnyCertificateAndSSLHostname()
         if (!getPrinterAttributesOnInit) {
             log.fine { "getPrinterAttributesOnInit disabled => no printer attributes available" }
         } else if (attributes.isEmpty()) {
@@ -76,11 +78,6 @@ class IppPrinter(
                     ippExchangeException.response?.let {
                         if (it.containsGroup(Printer)) log.info { "${it.printerGroup.size} attributes parsed" }
                         else log.warning { it.toString() }
-                    }
-                    try {
-                        fetchRawPrinterAttributes("getPrinterAttributesFailed.bin")
-                    } catch (exception: Exception) {
-                        log.log(SEVERE, exception, { "failed to fetch raw printer attributes" })
                     }
                 }
                 throw ippExchangeException
@@ -588,17 +585,6 @@ class IppPrinter(
         getPrinterAttributes().run {
             saveRawBytes(File(directory, "$printerModel.bin"))
             printerGroup.saveText(File(directory, "$printerModel.txt"))
-        }
-    }
-
-    fun fetchRawPrinterAttributes(filename: String = "printer-attributes.bin") {
-        ippClient.run {
-            val httpResponse = httpPostRequest(toHttpUri(printerUri), ippRequest(GetPrinterAttributes))
-            log.info { "http status: ${httpResponse.status}, content-type: ${httpResponse.contentType}" }
-            File(filename).apply {
-                httpResponse.contentStream!!.copyTo(outputStream())
-                log.info { "saved ${length()} bytes: $path" }
-            }
         }
     }
 

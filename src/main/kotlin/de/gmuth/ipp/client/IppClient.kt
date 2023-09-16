@@ -4,7 +4,6 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020-2023 Gerhard Muth
  */
 
-import de.gmuth.http.Http
 import de.gmuth.ipp.client.IppExchangeException.ClientErrorNotFoundException
 import de.gmuth.ipp.core.IppException
 import de.gmuth.ipp.core.IppOperation
@@ -15,47 +14,31 @@ import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import de.gmuth.ipp.core.IppTag.Unsupported
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import java.io.File
+import java.net.HttpURLConnection
 import java.net.URI
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.logging.Level.FINE
-import java.util.logging.Level.WARNING
+import java.util.logging.Level.SEVERE
 import java.util.logging.Logger.getLogger
+import javax.net.ssl.HostnameVerifier
+import javax.net.ssl.HttpsURLConnection
 
 typealias IppResponseInterceptor = (request: IppRequest, response: IppResponse) -> Unit
 
-open class IppClient(
-    val config: IppConfig = IppConfig(),
-    val httpConfig: Http.Config = Http.Config(),
-    val httpClient: Http.Client = Http.defaultImplementation.createClient(httpConfig)
-) {
+open class IppClient(val config: IppConfig = IppConfig()) {
     val log = getLogger(javaClass.name)
     var saveMessages: Boolean = false
     var saveMessagesDirectory = File("ipp-messages")
     var responseInterceptor: IppResponseInterceptor? = null
+    //var server: String? = null
 
     fun basicAuth(user: String, password: String) {
-        httpConfig.basicAuth = Http.BasicAuth(user, password)
         config.userName = user
+        config.password = password
     }
 
     companion object {
         const val APPLICATION_IPP = "application/ipp"
-        const val version = "3.0-SNAPSHOT"
-        const val build = "09-2023"
-
-        init {
-            println("IPP-Client: Version: $version, Build: $build, MIT License, (c) 2020-2023 Gerhard Muth")
-        }
     }
-
-    init {
-        with(httpConfig) { if (userAgent == null) userAgent = "ipp-client/$version" }
-    }
-
-    private var httpServer: String? = null
-
-    @SuppressWarnings("kotlin:S6512") // read only
-    fun getHttpServer() = httpServer
 
     //-----------------
     // build IppRequest
@@ -87,13 +70,10 @@ open class IppClient(
 
     open fun exchange(request: IppRequest, throwWhenNotSuccessful: Boolean = true): IppResponse {
         val ippUri: URI = request.printerUri
-        val httpUri = toHttpUri(ippUri)
         log.finer { "send '${request.operation}' request to $ippUri" }
 
-        val httpResponse = httpPostRequest(httpUri, request)
-        val response = decodeIppResponse(request, httpResponse)
+        val response = postRequest(toHttpUri(ippUri), request)
         log.fine { "$ippUri: $request => $response" }
-        httpServer = httpResponse.server
 
         if (saveMessages) {
             val messageSubDirectory = File(saveMessagesDirectory, ippUri.host).apply {
@@ -107,11 +87,15 @@ open class IppClient(
 
         responseInterceptor?.invoke(request, response)
 
-        if (!response.isSuccessful()) {
-            IppRegistrationsSection2.validate(request)
-            if (throwWhenNotSuccessful)
-                throw if (response.status == ClientErrorNotFound) ClientErrorNotFoundException(request, response)
-                else IppExchangeException(request, response)
+        with(response) {
+            if (status == ClientErrorBadRequest) request.log(log, SEVERE, prefix = "BAD-REQUEST: ")
+            if (containsGroup(Unsupported)) unsupportedGroup.values.forEach { log.warning() { "unsupported: $it" } }
+            if (!isSuccessful()) {
+                IppRegistrationsSection2.validate(request)
+                if (throwWhenNotSuccessful)
+                    throw if (status == ClientErrorNotFound) ClientErrorNotFoundException(request, response)
+                    else IppExchangeException(request, response)
+            }
         }
         return response
     }
@@ -122,49 +106,65 @@ open class IppClient(
         URI.create("$scheme://$host:$port$rawPath")
     }
 
-    fun httpPostRequest(httpUri: URI, request: IppRequest) = httpClient.post(
-        httpUri, APPLICATION_IPP,
-        { httpPostStream -> request.write(httpPostStream) },
-        chunked = request.hasDocument()
-    ).apply {
-        var exceptionMessage: String? = null
-        if (contentType == null) {
-            log.fine { "missing content-type in http response (should be '$APPLICATION_IPP')" }
-        } else {
-            if (!contentType.startsWith(APPLICATION_IPP)) {
-                exceptionMessage = "invalid content-type: $contentType (expecting '$APPLICATION_IPP')"
+    open fun postRequest(httpUri: URI, request: IppRequest): IppResponse {
+        with(httpUri.toURL().openConnection() as HttpURLConnection) {
+            if (this is HttpsURLConnection && config.sslContext != null) {
+                sslSocketFactory = config.sslContext!!.socketFactory
+                if (!config.verifySSLHostname) hostnameVerifier = HostnameVerifier { _, _ -> true }
             }
-        }
-        if (status != 200) exceptionMessage = "http request to $httpUri failed: status=$status"
-        if (status == 401) exceptionMessage = with(request) {
-            "user '$requestingUserName' is unauthorized for operation '$operation' (status=$status)"
-        }
-        exceptionMessage?.run {
-            config.log(log, WARNING)
-            request.log(log, WARNING, prefix = "IPP REQUEST: ")
-            log.warning { "http response status: $status" }
-            server?.let { log.warning { "ipp-server: $it" } }
-            contentType?.let { log.warning { "content-type: $it" } }
-            contentStream?.let { log.warning { "content:\n" + it.bufferedReader().use { it.readText() } } }
-            throw IppExchangeException(request, null, status, message = exceptionMessage)
-        }
-    }
+            config.run {
+                connectTimeout = timeout.toMillis().toInt()
+                readTimeout = timeout.toMillis().toInt()
+                userAgent?.let { setRequestProperty("User-Agent", it) }
+                if (password != null) setRequestProperty("Authorization", authorization())
+            }
+            doOutput = true // POST
+            setRequestProperty("Content-Type", APPLICATION_IPP)
+            setRequestProperty("Accept", APPLICATION_IPP)
+            setRequestProperty("Accept-Encoding", "identity") // avoid 'gzip' with Androids OkHttp
+            if (request.hasDocument()) setChunkedStreamingMode(0) // send document in chunks
+            request.write(outputStream)
+            val responseContentStream = try {
+                inputStream
+            } catch (throwable: Throwable) {
+                errorStream
+            }
 
-    fun decodeIppResponse(request: IppRequest, httpResponse: Http.Response) = IppResponse().apply {
-        try {
-            read(httpResponse.contentStream!!)
-        } catch (exception: Exception) {
-            throw IppExchangeException(
-                request, this, httpResponse.status, "failed to decode ipp response", exception
-            ).apply {
-                saveMessages("decoding_ipp_response_${request.requestId}_failed")
+            // error handling
+            when {
+                responseCode == 401 -> with(request) {
+                    "User '$requestingUserName' is unauthorized for operation '$operation'"
+                }
+                responseCode != 200 -> {
+                    "HTTP request to $httpUri failed: $responseCode, $responseMessage"
+                }
+                contentType != null && !contentType.startsWith(APPLICATION_IPP) -> {
+                    "Invalid Content-Type: $contentType"
+                }
+                else -> null
+            }?.let {
+                throw IppExchangeException(
+                    request,
+                    response = null,
+                    responseCode,
+                    httpHeaderFields = headerFields,
+                    httpStream = responseContentStream,
+                    message = it
+                )
             }
-        }
-        if (status == ClientErrorBadRequest) request.log(log, FINE, prefix="BAD-REQUEST: ")
-        if (!status.isSuccessful()) log.fine { "status: $status" }
-        if (hasStatusMessage()) log.fine { "status-message: $statusMessage" }
-        if (containsGroup(Unsupported)) unsupportedGroup.values.forEach {
-            log.warning { "unsupported: $it" }
+
+            // decode ipp message
+            return IppResponse().apply {
+                try {
+                    read(responseContentStream)
+                } catch (throwable: Throwable) {
+                    throw IppExchangeException(
+                        request, this, responseCode, message = "failed to decode ipp response", cause = throwable
+                    ).apply {
+                        saveMessages("decoding_ipp_response_${request.requestId}_failed")
+                    }
+                }
+            }
         }
     }
 }
