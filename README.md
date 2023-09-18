@@ -211,12 +211,12 @@ The build produces the jar, sources and javadoc artifacts. They are available at
 
 - group: gmuth.de
 - artifact: ipp-client
-- version: 2.4
+- version: 2.5
 
 Add dependency:
 
 ```
-    implementation("de.gmuth:ipp-client:2.4")
+    implementation("de.gmuth:ipp-client:2.5")
 ```
 
 ## No Multiplatform support yet
