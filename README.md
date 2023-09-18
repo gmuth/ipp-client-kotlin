@@ -189,7 +189,6 @@ This software has **no dependencies** to
 [CUPS](https://www.cups.org) or
 [ipptool](https://www.cups.org/doc/man-ipptool.html).
 Operation has mostly been tested for target `jvm`. Android is supported since v1.6.
-A Java Version 11 Runtime is only required if you want to use the Java 11 HttpClient.
 
 ## Artifact coordinates
 
