@@ -259,7 +259,6 @@ open class CupsClient(
             // job-originating-user-name is missing when document-count or job-originating-host-name ist requested
             // once hidden in response, wait for one minute and user-name should show up again
         )
-            .onEach { log.info { it } } // job overview
             .onEach { job -> // update attributes and lookup job owners
                 if (updateJobAttributes) { // update could remove job-origination-user-name
                     // important: no requested-attributes is different to group "all"
