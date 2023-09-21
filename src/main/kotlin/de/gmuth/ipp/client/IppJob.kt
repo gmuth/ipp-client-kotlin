@@ -73,7 +73,7 @@ class IppJob(
     val numberOfDocuments: Int
         get() = attributes.getValueOrNull("number-of-documents")
             ?: attributes.getValueOrNull("document-count") // CUPS 1.x
-            ?: throw IppException("number-of-documents not supported")
+            ?: throw IppException("number-of-documents or document-count not found")
 
     val documentNameSupplied: IppString
         get() = attributes.getValue("document-name-supplied")
