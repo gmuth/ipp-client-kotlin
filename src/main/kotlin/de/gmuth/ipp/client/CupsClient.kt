@@ -5,6 +5,7 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.ipp.client.IppExchangeException.ClientErrorNotFoundException
+import de.gmuth.ipp.client.IppWhichJobs.All
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppRequest
@@ -66,6 +67,13 @@ open class CupsClient(
     fun setDefault(printerName: String) = exchange(
         cupsPrinterRequest(CupsSetDefault, printerName)
     )
+
+    val version: String by lazy {
+        getPrinters().run {
+            if (isNotEmpty()) last()
+            else IppPrinter(getJobs(All).last().printerUri)
+        }.cupsVersion
+    }
 
     fun cupsPrinterUri(printerName: String) = with(cupsUri) {
         val optionalPort = if (port > 0) ":$port" else ""
@@ -164,7 +172,11 @@ open class CupsClient(
             .apply { workDirectory = cupsClientWorkDirectory }
     }
 
-    fun getJobs(whichJobs: IppWhichJobs? = null, limit: Int? = null, requestedAttributes: List<String>? = null) =
+    fun getJobs(
+        whichJobs: IppWhichJobs? = null,
+        limit: Int? = null,
+        requestedAttributes: List<String>? = ippPrinter.getJobsRequestedAttributes
+    ) =
         ippPrinter.getJobs(whichJobs = whichJobs, limit = limit, requestedAttributes = requestedAttributes)
 
     //----------------------------
@@ -243,7 +255,7 @@ open class CupsClient(
     private val jobOwners = mutableSetOf<String>()
 
     fun getJobsAndSaveDocuments(
-        whichJobs: IppWhichJobs = IppWhichJobs.All,
+        whichJobs: IppWhichJobs = All,
         updateJobAttributes: Boolean = false,
         commandToHandleSavedFile: String? = null
     ): Collection<IppJob> {
@@ -253,7 +265,8 @@ open class CupsClient(
             whichJobs,
             requestedAttributes = listOf(
                 "job-id", "job-uri", "job-printer-uri", "job-originating-user-name",
-                "job-name", "job-state", "job-state-reasons", "number-of-documents"
+                "job-name", "job-state", "job-state-reasons",
+                if(version < "1.6.0") "document-count" else "number-of-documents"
             )
             // wired: do not modify above set
             // job-originating-user-name is missing when document-count or job-originating-host-name ist requested
@@ -308,12 +321,12 @@ open class CupsClient(
     }
 
     // ------------------------------
-    // get and save documents for job
+    // Get and save documents for job
     // ------------------------------
 
     private fun getAndSaveDocuments(
         job: IppJob,
-        onSuccessUpdateJobAttributes: Boolean = true,
+        onSuccessUpdateJobAttributes: Boolean = false,
         optionalCommandToHandleFile: String? = null
     ): Collection<File> {
         var documents: Collection<IppDocument> = emptyList()
@@ -326,15 +339,16 @@ open class CupsClient(
             ippExchangeException.httpStatus!! != 401
         }
 
-        val configuredUserName = config.userName
-        if (configuredUserName != null) getDocuments()
-        val jobOwnersIterator = jobOwners.iterator()
-        while (jobOwnersIterator.hasNext()) {
-            config.userName = jobOwnersIterator.next()
-            log.fine { "set userName '${config.userName}'" }
-            if (getDocuments()) break
+        if(!getDocuments()) {
+            val configuredUserName = config.userName
+            jobOwners.forEach {
+                config.userName = it
+                log.fine { "set userName '${config.userName}'" }
+                if (getDocuments()) return@forEach
+            }
+            config.userName = configuredUserName
         }
-        config.userName = configuredUserName
+
         documents.onEach { document ->
             document.save(job.printerDirectory(), overwrite = true)
             optionalCommandToHandleFile?.let { document.runCommand(it) }

@@ -217,6 +217,9 @@ open class IppPrinter(
 
     fun marker(color: CupsMarker.Color) = markers.single { it.color == color }
 
+    val cupsVersion: String
+        get() = attributes.getTextValue("cups-version")
+
     //-----------------
 
     fun isIdle() = state == Idle
@@ -394,6 +397,7 @@ open class IppPrinter(
         limit: Int? = null,
         requestedAttributes: List<String>? = getJobsRequestedAttributes
     ): Collection<IppJob> {
+        log.fine { "getJobs(whichJobs=$whichJobs, requestedAttributes=$requestedAttributes)"}
         val request = ippRequest(GetJobs, requestedAttributes = requestedAttributes).apply {
             operationGroup.run {
                 whichJobs?.keyword?.let {
