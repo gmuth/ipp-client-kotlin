@@ -43,7 +43,14 @@ class CupsClientTests {
             assertEquals(5, markers.size)
             assertTrue(isAcceptingJobs)
             assertTrue(isCups())
+            assertEquals("2.2.5", cupsVersion)
         }
+    }
+
+    @Test
+    fun getCupsVersion() {
+        ippClientMock.mockResponse("Get-Printer-Attributes.ipp", "printers/CUPS_HP_LaserJet_100_color_MFP_M175")
+        assertEquals("2.2.5", cupsClient.version)
     }
 
     @Test
