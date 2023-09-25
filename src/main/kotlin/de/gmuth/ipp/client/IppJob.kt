@@ -167,7 +167,7 @@ class IppJob(
         if (isCanceled()) log.warning { "job #$id is already 'canceled'" }
         if (isProcessingToStopPoint()) log.warning { "job #$id is already 'processing-to-stop-point'" }
         val request = ippRequest(CancelJob).apply {
-            messageForOperator?.let { operationGroup.attribute("message", TextWithoutLanguage, it.toIppString()) }
+            messageForOperator?.let { operationGroup.attribute("message", TextWithoutLanguage, it) }
         }
         log.info { "cancel job#$id" }
         return exchange(request).also { updateAttributes() }

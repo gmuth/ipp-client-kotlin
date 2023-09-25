@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020-21 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppAttribute
@@ -10,7 +10,6 @@ import de.gmuth.ipp.core.IppResolution.Unit
 import de.gmuth.ipp.core.IppResolution.Unit.DPI
 import de.gmuth.ipp.core.IppTag
 import de.gmuth.ipp.core.IppTag.*
-import de.gmuth.ipp.core.toIppString
 
 /**
  * create common job attributes
@@ -25,7 +24,7 @@ object IppTemplateAttributes {
 
     @JvmStatic
     fun jobName(name: String) =
-        IppAttribute("job-name", NameWithoutLanguage, name.toIppString())
+        IppAttribute("job-name", NameWithoutLanguage, name)
 
     // for job group
 
