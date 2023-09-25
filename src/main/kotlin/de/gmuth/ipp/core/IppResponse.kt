@@ -35,11 +35,12 @@ class IppResponse : IppMessage {
 
     constructor(
         status: IppStatus,
-        version: String = "1.1",
+        version: String = "2.0",
         requestId: Int = 1,
         charset: Charset = Charsets.UTF_8,
         naturalLanguage: String = "en"
     ) : super(version, requestId, charset, naturalLanguage) {
         code = status.code
     }
+
 }

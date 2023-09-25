@@ -23,8 +23,8 @@ class IppRequest : IppMessage {
     val attributesCharset: Charset
         get() = operationGroup.getValue("attributes-charset")
 
-    val requestingUserName: String?
-        get() = operationGroup.getValueOrNull<IppString?>("requesting-user-name")?.text
+    val requestingUserName: String
+        get() = operationGroup.getTextValue("requesting-user-name")
 
     constructor() : super()
 
@@ -34,7 +34,7 @@ class IppRequest : IppMessage {
         jobId: Int? = null,
         requestedAttributes: List<String>? = null,
         requestingUserName: String? = null,
-        version: String = "1.1",
+        version: String = "2.0",
         requestId: Int = 1,
         charset: Charset = Charsets.UTF_8,
         naturalLanguage: String = "en"
@@ -44,7 +44,7 @@ class IppRequest : IppMessage {
             jobId?.let { attribute("job-id", Integer, it) }
             printerUri?.let { attribute("printer-uri", Uri, it) }
             requestedAttributes?.let { attribute("requested-attributes", Keyword, it) }
-            requestingUserName?.let { attribute("requesting-user-name", NameWithoutLanguage, it) }
+            requestingUserName?.let { attribute("requesting-user-name", NameWithoutLanguage, IppString(it)) }
         }
     }
 
@@ -60,4 +60,5 @@ class IppRequest : IppMessage {
         notifyTimeInterval?.let { attribute("notify-time-interval", Integer, it.toMillis() / 1000) }
         notifyLeaseDuration?.let { attribute("notify-lease-duration", Integer, it.toMillis() / 1000) }
     }
+
 }

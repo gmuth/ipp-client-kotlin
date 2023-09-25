@@ -34,7 +34,7 @@ class IppRequestTests {
     fun requestConstructor2() {
         val request = IppRequest(IppOperation.StartupPrinter, URI.create("ipp://foo"))
         assertEquals(1, request.requestId)
-        assertEquals("1.1", request.version)
+        assertEquals("2.0", request.version)
         assertEquals(IppOperation.StartupPrinter, request.operation)
         assertEquals(Charsets.UTF_8, request.attributesCharset)
         assertEquals("en", request.operationGroup.getValue("attributes-natural-language"))
@@ -57,7 +57,7 @@ class IppRequestTests {
         log.info { "encoded ${requestEncoded.size} bytes" }
         val requestDecoded = IppRequest()
         requestDecoded.decode(requestEncoded)
-        assertEquals("1.1", requestDecoded.version)
+        assertEquals("2.0", requestDecoded.version)
         assertEquals(IppOperation.PrintJob, requestDecoded.operation)
         assertEquals(1, requestDecoded.requestId)
         assertNotNull(requestDecoded.operationGroup)
