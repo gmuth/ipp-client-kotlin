@@ -15,7 +15,7 @@ import java.util.logging.Logger.getLogger
 
 data class IppAttribute<T> constructor(val name: String, val tag: IppTag) : IppAttributeBuilder {
 
-    val log = getLogger(javaClass.name)
+    private val log = getLogger(javaClass.name)
 
     val values: MutableCollection<T> = mutableListOf()
 

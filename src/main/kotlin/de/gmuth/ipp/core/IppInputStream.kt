@@ -16,7 +16,7 @@ import java.util.logging.Logger.getLogger
 
 class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputStream) {
 
-    val log = getLogger(javaClass.name)
+    private val log = getLogger(javaClass.name)
 
     // character encoding for text and name attributes, RFC 8011 4.1.4.1
     internal lateinit var attributesCharset: Charset

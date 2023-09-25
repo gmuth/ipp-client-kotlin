@@ -12,7 +12,7 @@ import java.util.logging.Logger.getLogger
 
 open class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*>>() {
 
-    val log = getLogger(javaClass.name)
+    private val log = getLogger(javaClass.name)
 
     init {
         if (!tag.isGroupTag()) throw IppException("'$tag' is not a group tag")
