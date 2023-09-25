@@ -43,7 +43,7 @@ open class IppExchangeException(
             append("${request.operation} failed")
             response?.run {
                 append(": '$status'")
-                if (hasStatusMessage()) append(", $statusMessage")
+                if (operationGroup.containsKey("status-message")) append(", $statusMessage")
             }
             toString()
         }
