@@ -172,13 +172,16 @@ class IppJobTests {
             log.info { toString() }
             log(log)
             save().delete()
+            assertEquals("job-2366-gmuth-A4-blank.pdf", filename())
         }
     }
 
     @Test
     fun cupsGetDocument2() {
         ippClientMock.mockResponse(cupsDocumentResponse("application/postscript"))
-        job.cupsGetDocument().filename()
+        job.cupsGetDocument().run {
+            assertEquals("ps", filenameSuffix())
+        }
     }
 
     @Test
@@ -192,6 +195,7 @@ class IppJobTests {
             log.info { "${filename()} (${readBytes().size} bytes)" }
             job.attributes.remove("document-name-supplied")
             log.info { filename() }
+            assertEquals("bin", filenameSuffix())
         }
     }
 

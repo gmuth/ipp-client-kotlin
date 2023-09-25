@@ -36,11 +36,12 @@ class IppDocument(
     }
 
     fun filenameSuffix() = when (format) {
+        "application/octetstream" -> "bin"
         "application/postscript" -> "ps"
         "application/pdf" -> "pdf"
         "image/jpeg" -> "jpg"
         "text/plain" -> "txt"
-        else -> "bin"
+        else -> format.split("/").get(1)
     }
 
     fun filename() = StringBuilder().run {
@@ -54,7 +55,7 @@ class IppDocument(
             }
             job.getJobNameOrDocumentNameSuppliedOrAppleJobNameOrNull()?.let {
                 append("-${it.take(100)}")
-                if (it.endsWith(".$suffix")) suffix = null
+                if (it.lowercase().endsWith(".$suffix")) suffix = null
             }
         }
         suffix?.let { append(".$it") }
