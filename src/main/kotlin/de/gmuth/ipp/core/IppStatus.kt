@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
 // https://www.rfc-editor.org/rfc/rfc8011.html#appendix-B
@@ -60,22 +60,19 @@ enum class IppStatus(val code: Short) {
     ServerErrorMultipleDocumentJobsNotSupported(0x0509),
     ServerErrorPrinterIsDeactivated(0x050A), // https://datatracker.ietf.org/doc/html/rfc3998#page-23
     ServerErrorTooManyJobs(0x050B), // https://ftp.pwg.org/pub/pwg/candidates/cs-ippjobext20-20190816-5100.7.pdf
-    ServerErrorTooManyDocuments(0x050C),
-
-    // placeholder for all unknown status code
-    UnknownStatusCode(-1);
+    ServerErrorTooManyDocuments(0x050C);
 
     fun isSuccessful() = (0x0000..0x00FF).contains(code)
     fun isClientError() = (0x0400..0x04FF).contains(code)
     fun isServerError() = (0x0500..0x05FF).contains(code)
 
     override fun toString() = name
-            .replace(Regex("[A-Z]+")) { "-" + it.value.lowercase() }
-            .replace(Regex("^-"), "")
+        .replace(Regex("[A-Z]+")) { "-" + it.value.lowercase() }
+        .replace(Regex("^-"), "")
 
     companion object {
         fun fromShort(code: Short): IppStatus =
-                values().find { it.code == code } ?: UnknownStatusCode
+            values().find { it.code == code } ?: throw IppException("Unknown status code %04x".format(code))
     }
 
 }

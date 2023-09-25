@@ -31,14 +31,9 @@ class IppStatusTests {
         assertEquals(IppStatus.ClientErrorDocumentFormatNotSupported, IppStatus.fromShort(0x40A))
     }
 
-    //@Test
-    fun fromShortFails() {
-        assertFailsWith<IllegalArgumentException> { IppStatus.fromShort(10) }
-    }
-
     @Test
-    fun unknownStatusCode() {
-        assertEquals(IppStatus.UnknownStatusCode, IppStatus.fromShort(0x333))
+    fun fromShortFails() {
+        assertFailsWith<IppException> { IppStatus.fromShort(10) }
     }
 
 }
