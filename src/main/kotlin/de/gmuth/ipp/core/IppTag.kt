@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
 // [RFC 8010] and [RFC 3380]
@@ -10,8 +10,7 @@ enum class IppTag(
     val registeredName: String,
     val valueHasValidClass: (Any) -> kotlin.Boolean = { true }
 ) {
-
-    // delimiter tags
+    // Delimiter tags
     // https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-7
     Operation(0x01, "operation-attributes-tag"),
     Job(0x02, "job-attributes-tag"),
@@ -24,7 +23,7 @@ enum class IppTag(
     Document(0x09, "document-attributes-tag"),
     System(0x0A, "system-attributes-tag"),
 
-    // out-of-band tags
+    // Out-of-band tags
     // https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-8
     Unsupported_(0x10, "unsupported"),
     Unknown(0x12, "unknown"),
@@ -82,6 +81,7 @@ enum class IppTag(
             values().singleOrNull { it.code == code } ?: throw IppException("Unknown tag 0x%02X".format(code))
 
         fun fromString(name: String): IppTag =
-            values().single { it.registeredName == name }
+            values().singleOrNull { it.registeredName == name } ?: throw IppException("Unknown tag name '$name'")
     }
+
 }

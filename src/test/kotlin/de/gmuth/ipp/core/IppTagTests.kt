@@ -11,13 +11,13 @@ class IppTagTests {
     @Test
     fun validateTextWithLanguage() {
         assertFalse(IppTag.TextWithoutLanguage.valueHasValidClass(0))
-        assertTrue(IppTag.TextWithoutLanguage.valueHasValidClass("ipp-string".toIppString()))
+        assertTrue(IppTag.TextWithoutLanguage.valueHasValidClass("string"))
     }
 
     @Test
     fun validateNameWithLanguage() {
         assertFalse(IppTag.NameWithoutLanguage.valueHasValidClass(0))
-        assertTrue(IppTag.NameWithoutLanguage.valueHasValidClass("ipp-string".toIppString()))
+        assertTrue(IppTag.NameWithoutLanguage.valueHasValidClass("string"))
     }
 
     @Test
@@ -41,7 +41,7 @@ class IppTagTests {
 
     @Test
     fun fromStringFails() {
-        assertFailsWith<NoSuchElementException> { IppTag.fromString("invalid-tag-name") }
+        assertFailsWith<IppException> { IppTag.fromString("invalid-tag-name") }
     }
 
     @Test
