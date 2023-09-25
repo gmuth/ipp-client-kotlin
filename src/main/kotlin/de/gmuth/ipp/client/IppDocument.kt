@@ -41,7 +41,7 @@ class IppDocument(
         "application/pdf" -> "pdf"
         "image/jpeg" -> "jpg"
         "text/plain" -> "txt"
-        else -> format.split("/").get(1)
+        else -> format.split("/")[1]
     }
 
     fun filename() = StringBuilder().run {
