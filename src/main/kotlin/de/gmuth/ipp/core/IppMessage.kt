@@ -15,13 +15,13 @@ import java.util.logging.Logger.getLogger
 
 abstract class IppMessage() {
 
-    val log = getLogger(javaClass.name)
+    private val log = getLogger(javaClass.name)
     var code: Short? = null
     var requestId: Int? = null
     var version: String? = null
         set(value) { // validate version
             if (Regex("""^\d\.\d$""").matches(value!!)) field = value
-            else throw IppException("invalid version string: $value")
+            else throw IppException("Invalid version string: $value")
         }
     val attributesGroups = mutableListOf<IppAttributesGroup>()
     var documentInputStream: InputStream? = null
@@ -48,8 +48,8 @@ abstract class IppMessage() {
     fun getAttributesGroups(tag: IppTag) =
         attributesGroups.filter { it.tag == tag }
 
-    fun getSingleAttributesGroup(tag: IppTag) = with(getAttributesGroups(tag)) {
-        if (isEmpty()) throw IppException("no group found with tag '$tag' in $attributesGroups")
+    fun getSingleAttributesGroup(tag: IppTag) = getAttributesGroups(tag).run {
+        if (isEmpty()) throw IppException("No group found with tag '$tag' in $attributesGroups")
         single()
     }
 
@@ -81,12 +81,10 @@ abstract class IppMessage() {
     fun write(file: File) =
         write(FileOutputStream(file))
 
-    fun encode(): ByteArray =
-        with(ByteArrayOutputStream()) {
-            write(this)
-            log.fine { "ByteArrayOutputStream size: ${this.size()} bytes" }
-            toByteArray()
-        }
+    fun encode(): ByteArray = ByteArrayOutputStream().run {
+        write(this)
+        toByteArray()
+    }
 
     // --------
     // DECODING
@@ -133,7 +131,7 @@ abstract class IppMessage() {
 
     fun saveRawBytes(file: File) =
         if (rawBytes == null) {
-            log.warning { "no raw bytes to save. you must call read/decode or write/encode before." }
+            throw IppException("No raw bytes to save. You must call read/decode or write/encode before.")
         } else {
             file.writeBytes(rawBytes!!)
             log.info { "saved ${file.path} (${file.length()} bytes)" }
