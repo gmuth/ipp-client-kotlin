@@ -11,12 +11,13 @@ import java.util.logging.Level
 import java.util.logging.Level.INFO
 import java.util.logging.Logger
 import javax.net.ssl.SSLContext
+import kotlin.text.Charsets.UTF_8
 
 class IppConfig(
 
     // core IPP config options
     var userName: String? = System.getProperty("user.name"),
-    var ippVersion: String = "1.1",
+    var ippVersion: String = "2.0",
     var charset: Charset = Charsets.UTF_8,
     var naturalLanguage: String = "en",
 
@@ -32,7 +33,7 @@ class IppConfig(
 
 ) {
     fun authorization() =
-        "Basic " + getEncoder().encodeToString("$userName:$password".toByteArray(Charsets.UTF_8))
+        "Basic " + getEncoder().encodeToString("$userName:$password".toByteArray(UTF_8))
 
     fun trustAnyCertificateAndSSLHostname() {
         sslContext = SSLHelper.sslContextForAnyCertificate()
