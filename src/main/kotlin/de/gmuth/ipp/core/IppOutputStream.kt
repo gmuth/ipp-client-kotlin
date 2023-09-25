@@ -13,7 +13,7 @@ import java.util.logging.Logger.getLogger
 
 class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStream) {
 
-    val log = getLogger(javaClass.name)
+    private val log = getLogger(javaClass.name)
 
     // charset for text and name attributes, rfc 8011 4.1.4.1
     internal lateinit var attributesCharset: Charset

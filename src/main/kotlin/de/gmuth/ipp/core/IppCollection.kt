@@ -3,7 +3,6 @@ package de.gmuth.ipp.core
 import java.util.logging.Level
 import java.util.logging.Level.INFO
 import java.util.logging.Logger
-import java.util.logging.Logger.getLogger
 
 /**
  * Copyright (c) 2020-2022 Gerhard Muth
@@ -11,8 +10,6 @@ import java.util.logging.Logger.getLogger
 
 // RFC8010 3.1.6.
 data class IppCollection(val members: MutableCollection<IppAttribute<*>> = mutableListOf()) {
-
-    val log = getLogger(javaClass.name)
 
     constructor(vararg attributes: IppAttribute<*>) : this(attributes.toMutableList())
 
