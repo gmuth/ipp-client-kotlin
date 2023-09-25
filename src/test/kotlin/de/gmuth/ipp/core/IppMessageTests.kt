@@ -90,13 +90,8 @@ class IppMessageTests {
     fun withoutRawBytes() {
         assertEquals("codeDescription []", message.toString())
         message.log(log)
-        // missing raw bytes
-        with(createTempFile("test", null)) {
-            try {
-                message.saveRawBytes(this)
-            } finally {
-                this.delete()
-            }
+        assertFailsWith<IppException> { // missing raw bytes
+            message.saveRawBytes(createTempFile("test", null))
         }
     }
 
