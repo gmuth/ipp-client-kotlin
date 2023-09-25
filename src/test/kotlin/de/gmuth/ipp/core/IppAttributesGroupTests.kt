@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2022 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppTag.*
@@ -75,7 +75,7 @@ class IppAttributesGroupTests {
 
     @Test
     fun getTextValue() {
-        group.attribute("foo", TextWithoutLanguage, "bar".toIppString())
+        group.attribute("foo", TextWithoutLanguage, IppString("bar"))
         assertEquals("bar", group.getTextValue("foo"))
     }
 

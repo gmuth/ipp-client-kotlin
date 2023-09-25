@@ -6,9 +6,9 @@ package de.gmuth.ipp.client
 
 import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppStatus.SuccessfulOk
+import de.gmuth.ipp.core.IppString
 import de.gmuth.ipp.core.IppTag
 import de.gmuth.ipp.core.IppTag.*
-import de.gmuth.ipp.core.toIppString
 import org.junit.Test
 import java.io.File
 import java.io.FileInputStream
@@ -33,7 +33,7 @@ class IppJobTests {
     val job: IppJob = printer.run {
         ippClientMock.mockResponse("Get-Job-Attributes.ipp")
         getJob(2366).apply {
-            attributes.attribute("document-name-supplied", NameWithLanguage, "blank.pdf".toIppString())
+            attributes.attribute("document-name-supplied", NameWithoutLanguage, IppString("blank.pdf"))
         }
     }
 
@@ -160,7 +160,7 @@ class IppJobTests {
         createAttributesGroup(Job).apply {
             attribute("document-format", MimeMediaType, format)
             attribute("document-number", Integer, 1)
-            attribute("document-name", NameWithoutLanguage, "cups-doc".toIppString())
+            attribute("document-name", NameWithoutLanguage, "cups-doc")
         }
         documentInputStream = FileInputStream(blankPdf)
     }

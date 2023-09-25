@@ -1,11 +1,12 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class IppStringTests {
 
@@ -24,12 +25,14 @@ class IppStringTests {
 
     @Test
     fun toIppStringExtension() {
-        assertEquals("some-text", "some-text".toIppString().text)
+        assertEquals("string-without-language", withoutLanguage.text)
+        assertNull(withoutLanguage.language)
     }
 
     @Test
     fun toIppStringExtensionWithLanguage() {
-        assertEquals(withLanguage, "string-with-language".toIppString("en"))
+        assertEquals("string-with-language", withLanguage.text)
+        assertEquals("en", withLanguage.language)
     }
 
 }
