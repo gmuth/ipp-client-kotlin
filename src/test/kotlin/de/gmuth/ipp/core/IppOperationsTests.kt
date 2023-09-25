@@ -1,17 +1,19 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
 import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class IppOperationsTests {
 
     @Test
-    fun unknownOperationCode() {
-        assertEquals(IppOperation.UnknownOperationCode, IppOperation.fromShort(0))
+    fun unknownOperationCodeFails() {
+        assertFailsWith<IppException> {
+            IppOperation.fromShort(0)
+        }
     }
 
 }

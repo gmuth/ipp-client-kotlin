@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
 // https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-6
@@ -131,20 +131,17 @@ enum class IppOperation(val code: Short) {
     CupsAuthenticateJob(0x400E),
     CupsGetPPD(0x400F),
     CupsGetDocument(0x4027),
-    CupsCreateLocalPrinter(0x4028),
-
-    // improve resilience
-    UnknownOperationCode(-1);
+    CupsCreateLocalPrinter(0x4028);
 
     override fun toString(): String = registeredName()
 
     fun registeredName() = name
-            .replace(Regex("[A-Z]+")) { "-" + it.value }
-            .replace(Regex("^-"), "")
+        .replace(Regex("[A-Z]+")) { "-" + it.value }
+        .replace(Regex("^-"), "")
 
     companion object {
         fun fromShort(code: Short): IppOperation =
-                values().find { it.code == code } ?: UnknownOperationCode
+            values().find { it.code == code } ?: throw IppException("Unknown operation code %04x".format(code))
     }
 
 }
