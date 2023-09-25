@@ -36,7 +36,7 @@ class IppDocument(
     }
 
     fun filenameSuffix() = when (format) {
-        "application/octetstream" -> "bin"
+        "application/octet-stream" -> "bin"
         "application/postscript" -> "ps"
         "application/pdf" -> "pdf"
         "image/jpeg" -> "jpg"
