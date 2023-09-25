@@ -28,7 +28,7 @@ open class CupsClient(
     val log = getLogger(javaClass.name)
     val config: IppConfig by ippClient::config
     var userName: String? by config::userName
-    var cupsClientWorkDirectory = File("cups-${cupsUri.host}")
+    var cupsClientWorkDirectory = File("CUPS/${cupsUri.host}")
 
     init {
         if (cupsUri.scheme == "ipps") config.trustAnyCertificateAndSSLHostname()
