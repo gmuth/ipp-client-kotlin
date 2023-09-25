@@ -187,7 +187,7 @@ class IppJobTests {
     @Test
     fun cupsGetDocument3() {
         printer.attributes.remove("cups-version")
-        ippClientMock.mockResponse(cupsDocumentResponse("application/octetstream").apply {
+        ippClientMock.mockResponse(cupsDocumentResponse("application/octet-stream").apply {
             jobGroup.remove("document-name")
         })
         job.cupsGetDocument(2).apply {
