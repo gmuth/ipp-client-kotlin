@@ -40,7 +40,8 @@ class IppAttributesGroupTests {
     @Test
     fun putWithReplacementWarning() {
         group.put(IppAttribute("number", Integer, 0))
-        group.put(IppAttribute("number", Integer, 1, 2), true)
+        group.onReplaceWarn = true
+        group.put(IppAttribute("number", Integer, 1, 2))
         assertEquals(1, group.size)
         assertEquals(group["number"]!!.values.size, 2)
     }
