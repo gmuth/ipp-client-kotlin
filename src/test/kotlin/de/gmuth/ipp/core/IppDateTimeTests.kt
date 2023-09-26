@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
 import java.text.SimpleDateFormat
@@ -9,7 +9,6 @@ import java.time.ZonedDateTime
 import java.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
-
 
 class IppDateTimeTests {
 
@@ -48,8 +47,8 @@ class IppDateTimeTests {
     }
 
     @Test
-    fun toCalendar() {
-        with(ippDateTime3HoursEast.toCalendar()) {
+    fun toCalendarEast() {
+        ippDateTime3HoursEast.toCalendar().run {
             assertEquals(2020, get(Calendar.YEAR))
             assertEquals(12 - 1, get(Calendar.MONTH))
             assertEquals(13, get(Calendar.DAY_OF_MONTH))
@@ -62,7 +61,21 @@ class IppDateTimeTests {
     }
 
     @Test
-    fun calendarConstructor() {
+    fun toCalendarWest() {
+        ippDateTime1HourWest.toCalendar().run {
+            assertEquals(2020, get(Calendar.YEAR))
+            assertEquals(12 - 1, get(Calendar.MONTH))
+            assertEquals(13, get(Calendar.DAY_OF_MONTH))
+            assertEquals(9, get(Calendar.HOUR_OF_DAY))
+            assertEquals(22, get(Calendar.MINUTE))
+            assertEquals(33, get(Calendar.SECOND))
+            assertEquals(400, get(Calendar.MILLISECOND))
+            assertEquals("GMT-01:00", timeZone.id)
+        }
+    }
+
+    @Test
+    fun calendarWestConstructor() {
         val calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT-01:00")).apply {
             set(Calendar.YEAR, 2020)
             set(Calendar.MONTH, 12 - 1)
@@ -105,7 +118,7 @@ class IppDateTimeTests {
 
     @Test
     fun toDate() {
-        with(GregorianCalendar(TimeZone.getTimeZone("UTC"))) {
+        GregorianCalendar(TimeZone.getTimeZone("UTC")).run {
             time = ippDateTime3HoursEast.toDate()
             assertEquals(2020, get(Calendar.YEAR))
             assertEquals(12 - 1, get(Calendar.MONTH))
@@ -120,7 +133,7 @@ class IppDateTimeTests {
 
     @Test
     fun dateConstructor() {
-        with(IppDateTime(javaDateUtc)) {
+        IppDateTime(javaDateUtc).run {
             assertEquals(2020, year)
             assertEquals(12, month)
             assertEquals(13, day)
