@@ -203,12 +203,10 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
     internal fun readLengthAndValue() =
         readBytes(readShort().toInt())
 
-    // avoid Java-11-readNBytes(length) for compatibility with older jvms
-    internal fun readBytes(length: Int) =
-        ByteArray(length).apply {
-            log.finer { "read $length bytes" }
-            readFully(this)
-        }
+    // avoid readNBytes(length) for compatibility with JREs < 11
+    internal fun readBytes(length: Int) = ByteArray(length).apply {
+        readFully(this)
+    }
 
     internal fun readExpectedValueLength(expected: Int, throwException: Boolean = true): Boolean {
         mark(2)
