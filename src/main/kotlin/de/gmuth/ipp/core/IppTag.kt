@@ -61,11 +61,11 @@ enum class IppTag(
     MemberAttrName(0x4A, "memberAttrName", { it is String });
 
     fun isDelimiterTag() = code < 0x10
-    fun isGroupTag() = code < 0x10 && code != End.code
+    fun isGroupTag() = code < 0x10 && this != End
     fun isValueTag() = 0x10 <= code
     fun isOutOfBandTag() = code in 0x10..0x1f
-    fun isMemberAttrName() = code == MemberAttrName.code
-    fun isMemberAttrValue() = 0x10 <= code && code != MemberAttrName.code && code != EndCollection.code
+    fun isMemberAttrName() = this == MemberAttrName
+    fun isMemberAttrValue() = this != MemberAttrName && isValueTag() && this != EndCollection
 
     override fun toString() = registeredName
 
