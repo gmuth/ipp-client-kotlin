@@ -7,7 +7,6 @@ package de.gmuth.ipp.attributes
 import de.gmuth.ipp.core.IppAttribute
 import de.gmuth.ipp.core.IppAttributeBuilder
 import de.gmuth.ipp.core.IppAttributesGroup
-import de.gmuth.ipp.core.IppTag
 import de.gmuth.ipp.core.IppTag.MimeMediaType
 
 open class DocumentFormat(val mediaMimeType: String) : IppAttributeBuilder {

@@ -9,7 +9,6 @@ import de.gmuth.ipp.attributes.PrinterState
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppString
 import java.util.logging.Logger
-import java.util.logging.Logger.getLogger
 
 class IppEventNotification(
     val subscription: IppSubscription,
