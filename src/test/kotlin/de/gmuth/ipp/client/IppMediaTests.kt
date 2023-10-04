@@ -4,6 +4,9 @@ package de.gmuth.ipp.client
  * Copyright (c) 2021 Gerhard Muth
  */
 
+import de.gmuth.ipp.attributes.MediaCollection
+import de.gmuth.ipp.attributes.MediaMargin
+import de.gmuth.ipp.attributes.MediaSource
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppTag
@@ -14,13 +17,13 @@ class IppMediaTests {
 
     @Test
     fun defaultConstructor() {
-        IppMedia.Collection().buildIppAttribute(IppAttributesGroup(IppTag.Printer))
+        MediaCollection().buildIppAttribute(IppAttributesGroup(IppTag.Printer))
     }
 
     @Test
-    fun margins() {
-        IppMedia.Margins()
-        IppMedia.Margins(0)
+    fun margin() {
+        MediaMargin()
+        MediaMargin(0)
     }
 
     @Test
@@ -28,12 +31,12 @@ class IppMediaTests {
         val attributes = IppResponse().apply {
             read(File("printers/Simulated_Laser_Printer/Get-Printer-Attributes.ipp"))
         }.printerGroup
-        IppMedia.Collection(source = "invalid").buildIppAttribute(attributes)
+        MediaCollection(source = MediaSource("invalid")).buildIppAttribute(attributes)
     }
 
     @Test
     fun notProvided() {
-        IppMedia.Collection(source = "main").buildIppAttribute(IppAttributesGroup(IppTag.Printer))
+        MediaCollection(source = MediaSource("main")).buildIppAttribute(IppAttributesGroup(IppTag.Printer))
     }
 
 }

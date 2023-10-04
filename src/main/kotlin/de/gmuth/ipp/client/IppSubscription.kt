@@ -24,7 +24,7 @@ class IppSubscription(
     val printer: IppPrinter,
     var attributes: IppAttributesGroup
 ) {
-    val log = getLogger(javaClass.name)
+    private val log = getLogger(javaClass.name)
 
     private var lastSequenceNumber: Int = 0
     private var leaseStartedAt = now()
@@ -67,7 +67,7 @@ class IppSubscription(
         exchange(ippRequest(GetSubscriptionAttributes, requestedAttributes = requestedAttributes))
 
     fun updateAttributes() {
-        attributes = getSubscriptionAttributes().getSingleAttributesGroup(Subscription)
+        attributes.put(getSubscriptionAttributes().getSingleAttributesGroup(Subscription))
     }
 
     //------------------

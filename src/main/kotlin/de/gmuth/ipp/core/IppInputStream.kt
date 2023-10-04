@@ -4,11 +4,8 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020-2023 Gerhard Muth
  */
 
-import de.gmuth.io.hexdump
 import de.gmuth.ipp.core.IppTag.*
-import java.io.BufferedInputStream
-import java.io.DataInputStream
-import java.io.EOFException
+import java.io.*
 import java.net.URI
 import java.nio.charset.Charset
 import java.util.logging.Level
@@ -24,13 +21,13 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
     fun readMessage(message: IppMessage) {
         with(message) {
             version = "${readUnsignedByte()}.${readUnsignedByte()}"
-            log.fine { "version = $version" }
+            log.finest { "version = $version" }
 
-            code = readShort()
-            log.fine { "code = $code ($codeDescription)" }
+            code = readUnsignedShort()
+            log.finest { "code = $code ($codeDescription)" }
 
             requestId = readInt()
-            log.fine { "requestId = $requestId" }
+            log.finest { "requestId = $requestId" }
         }
 
         lateinit var currentGroup: IppAttributesGroup
@@ -42,14 +39,14 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
                     tag.isGroupTag() -> {
                         currentGroup = message.createAttributesGroup(tag)
                     }
+
                     tag.isValueTag() -> {
                         val attribute = readAttribute(tag)
+                        log.finest { attribute.toString() }
                         if (attribute.name.isNotEmpty()) {
-                            log.fine { attribute.toString() }
                             currentGroup.put(attribute)
                             currentAttribute = attribute
                         } else { // name.isEmpty() -> 1setOf
-                            log.fine { IppAttribute(currentAttribute.name, attribute.tag, attribute.value).toString() }
                             currentAttribute.additionalValue(attribute)
                         }
                     }
@@ -58,29 +55,26 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
         } catch (throwable: Throwable) {
             if (throwable !is EOFException) readBytes().apply {
                 if (isNotEmpty()) {
-                    log.warning { "skipped $size unparsed bytes" }
-                    hexdump { log.warning { it } }
+                    log.warning { "Skipped $size unparsed bytes" }
+                    hexdump { log.finest { it } }
                 }
             }
-            throw throwable
+            throw IppException("Failed to read ipp message", throwable)
         }
     }
 
-    internal fun readTag() =
-        IppTag.fromByte(readByte()).apply {
-            if (isDelimiterTag()) log.fine { "--- $this ---" }
-        }
+    internal fun readTag() = IppTag.fromByte(readByte()).apply {
+        if (isDelimiterTag()) log.finest { "--- $this ---" }
+    }
 
-    internal fun readAttribute(tag: IppTag): IppAttribute<Any> {
-        val name = readString()
-        val value = try {
-            readAttributeValue(tag)
+    internal fun readAttribute(tag: IppTag) = IppAttribute<Any>(name = readString(), tag).apply {
+        try {
+            values.add(readAttributeValue(tag))
         } catch (throwable: Throwable) {
-            throw IppException("failed to read attribute value of '$name' ($tag)", throwable)
+            throw IppException("Failed to read attribute value for '$name' ($tag)", throwable)
         }
         // remember attributes-charset for name and text value decoding
         if (name == "attributes-charset") attributesCharset = value as Charset
-        return IppAttribute(name, tag, value)
     }
 
     internal fun readAttributeValue(tag: IppTag): Any =
@@ -114,9 +108,13 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
                 )
             }
 
-            Charset -> Charset.forName(readString())
+            Charset -> {
+                Charset.forName(readString())
+            }
 
-            Uri -> URI.create(readString().replace(" ", "%20"))
+            Uri -> {
+                URI.create(readString().replace(" ", "%20"))
+            }
 
             // String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
             Keyword,
@@ -124,10 +122,14 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
             OctetString,
             MimeMediaType,
             MemberAttrName,
-            NaturalLanguage -> readString()
+            NaturalLanguage -> {
+                readString()
+            }
 
             TextWithoutLanguage,
-            NameWithoutLanguage -> IppString(readString(attributesCharset))
+            NameWithoutLanguage -> {
+                IppString(readString(attributesCharset))
+            }
 
             TextWithLanguage,
             NameWithLanguage -> {
@@ -160,7 +162,7 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
                     readCollection()
                 } else {
                     // Xerox B210: workaround for invalid 'media-col' without members
-                    log.warning { "invalid value length for IppCollection, trying to recover" }
+                    log.warning { "Invalid value length for IppCollection, trying to recover" }
                     IppCollection()
                 }
             }
@@ -169,8 +171,8 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
             else -> { // ByteArray - possibly empty
                 readLengthAndValue().apply {
                     if (isNotEmpty()) {
-                        val level = if (tag == Unsupported_) Level.FINE else Level.WARNING
-                        log.log(level) { "ignore $size value bytes tagged '$tag'" }
+                        val level = if (tag == Unsupported_) Level.FINEST else Level.WARNING
+                        log.log(level) { "Ignore $size value bytes tagged '$tag'" }
                         hexdump { log.log(level) { it } }
                     }
                 }
@@ -201,7 +203,7 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
         String(readLengthAndValue(), charset)
 
     internal fun readLengthAndValue() =
-        readBytes(readShort().toInt())
+        readBytes(readUnsignedShort())
 
     // avoid readNBytes(length) for compatibility with JREs < 11
     internal fun readBytes(length: Int) = ByteArray(length).apply {
@@ -210,15 +212,31 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
 
     internal fun readExpectedValueLength(expected: Int, throwException: Boolean = true): Boolean {
         mark(2)
-        val length = readShort().toInt()
+        val length = readUnsignedShort()
         return (length == expected).apply {
             if (!this) { // unexpected value length
                 reset() // revert 'readShort()'
-                with("expected value length of $expected bytes but found $length") {
+                with("Expected value length of $expected bytes but found $length") {
                     if (throwException) throw IppException(this) else log.warning { this }
                 }
             }
         }
+    }
+
+    fun ByteArray.hexdump(maxRows: Int = 32, dump: (String) -> Unit) {
+        val hexStringBuilder = StringBuilder()
+        val charStringBuilder = StringBuilder()
+        fun dumpLine() = dump("%-${maxRows * 3}s  '%s'".format(hexStringBuilder, charStringBuilder))
+        for ((index, b) in withIndex()) {
+            hexStringBuilder.append("%02X ".format(b))
+            charStringBuilder.append(b.toInt().toChar())
+            if ((index + 1) % maxRows == 0) {
+                dumpLine()
+                hexStringBuilder.clear()
+                charStringBuilder.clear()
+            }
+        }
+        if (isNotEmpty()) dumpLine()
     }
 
 }

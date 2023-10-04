@@ -25,9 +25,8 @@ class IppAttributeTests {
     }
 
     @Test
-    fun valueIsSet() {
-        // coverage for warning
-        assertEquals("none", ippAttribute.value)
+    fun accessingSetAsValueFails() {
+        assertFailsWith<IppException> { ippAttribute.value }
     }
 
     @Test
@@ -116,6 +115,11 @@ class IppAttributeTests {
     @Test
     fun isNotCollection() {
         assertFalse(IppAttribute("some-integer", Integer, 0).isCollection())
+    }
+
+    @Test
+    fun attributeToString() {
+        assertEquals("foo (1setOf integer) = 1,2,3", IppAttribute("foo", Integer, 1, 2, 3).toString())
     }
 
 }

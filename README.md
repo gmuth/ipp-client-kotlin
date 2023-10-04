@@ -10,7 +10,7 @@ RFCs [8010](https://tools.ietf.org/html/rfc8010),
 [![Build](https://github.com/gmuth/ipp-client-kotlin/workflows/build/badge.svg)](https://github.com/gmuth/ipp-client-kotlin/actions?query=workflow%3Abuild)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=gmuth_ipp-client-kotlin&metric=alert_status)](https://sonarcloud.io/summary/overall?id=gmuth_ipp-client-kotlin)
 [![Sonar Coverage](https://img.shields.io/sonar/coverage/gmuth_ipp-client-kotlin?color=00AA00&server=https%3A%2F%2Fsonarcloud.io)](https://sonarcloud.io/component_measures?metric=Coverage&view=list&id=gmuth_ipp-client-kotlin)
-[![Maven Central](https://img.shields.io/maven-central/v/de.gmuth/ipp-client.svg?label=maven%20central)](https://central.sonatype.com/artifact/de.gmuth/ipp-client/2.4/overview)
+[![Maven Central](https://img.shields.io/maven-central/v/de.gmuth/ipp-client.svg?label=maven%20central)](https://central.sonatype.com/artifact/de.gmuth/ipp-client/2.5/overview)
 
 ## Usage
 
@@ -34,22 +34,22 @@ println("black: ${ippPrinter.marker(BLACK).levelPercent()} %")
 val file = File("A4-ten-pages.pdf")
 val job = ippPrinter.printJob(
     file,
-    jobName(file.name),
-    jobPriority(30),
-    documentFormat("application/pdf"),
     copies(2),
     numberUp(2),
+    jobPriority(30),
+    jobName(file.name),
+    DocumentFormat.PDF,
     pageRanges(2..3, 8..10),
-    printerResolution(300),
     finishings(Punch, Staple),
-    IppPrintQuality.High,
-    IppColorMode.Monochrome,
-    IppSides.TwoSidedLongEdge,
-    media("iso_a4_210x297mm"),
-    mediaColSource("tray-1"),
+    printerResolution(300, DPI),
+    Sides.TwoSidedLongEdge,
+    ColorMode.Monochrome,
+    PrintQuality.High,
+    Media.ISO_A4,
+    mediaColWithSource("tray-1"),
     notifyEvents = listOf("job-state-changed", "job-stopped", "job-completed") // CUPS
 )
-job.subscription?.processEvents { println(it) }
+job.subscription?.pollAndHandleNotifications { println(it) }
 
 // print remote file, make printer pull document from remote server
 val remoteFile = URI.create("http://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf")
@@ -62,7 +62,7 @@ job.waitForTermination()
 
 // manage jobs
 ippPrinter.getJobs().forEach { println(it) }
-ippPrinter.getJobs(IppWhichJobs.Completed)
+ippPrinter.getJobs(WhichJobs.Completed)
 
 val job = ippPrinter.getJob(4)
 job.hold()
@@ -75,9 +75,10 @@ ippPrinter.pause()
 ippPrinter.resume()
 ippPrinter.sound() // identify printer
 
-// subscribe and log events (e.g. from CUPS) for 1 minute
-ippPrinter.createPrinterSubscription(60)
-    .processEvents()
+// subscribe and handle/log events (e.g. from CUPS) for 5 minutes
+ippPrinter
+    .createPrinterSubscription(notifyLeaseDuration=Duration.ofMinutes(5))
+    .pollAndHandleNotifications()
 ```
 
 ### Printer Capabilities
@@ -85,10 +86,10 @@ ippPrinter.createPrinterSubscription(60)
 `IppPrinter` checks, if attribute values are supported by looking into `'...-supported'` printer attributes.
 
 ```
-documentFormat("application/pdf")
+DocumentFormat("application/pcl")
 
-WARN: according to printer attributes value 'application/pdf' is not supported.
-document-format-supported (1setOf mimeMediaType) = application/PCL,application/postscript
+WARN: according to printer attributes value 'application/pcl' is not supported.
+document-format-supported (1setOf mimeMediaType) = application/pdf,application/postscript
 ```
 
 ### exchange [IppRequest](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppRequest.kt) for [IppResponse](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppResponse.kt)
@@ -126,7 +127,7 @@ cupsClient.getPrinters().forEach {
 
 // list all completed jobs for queue
 cupsClient.getPrinter("ColorJet_HP")
-    .getJobs(IppWhichJobs.Completed)
+    .getJobs(WhichJobs.Completed)
     .forEach { println(it) }
 
 // default printer
@@ -146,17 +147,15 @@ cupsClient.getJobsAndSaveDocuments(IppWhichJobs.Canceled)
 
 ```kotlin
 val printer = IppPrinter(URI.create("ipp://192.168.2.64"))
-val width = 2540 * 2 // hundreds of mm
-
-val jpegFile = File("label.jpg")
+val jpegFile = File("label.jpeg")
 val image = javax.imageio.ImageIO.read(jpegFile)
+val width = 2540 * 2 // hundreds of mm
+val margin = 300 // 3 mm
 
 printer.printJob(
-    jpegFile, documentFormat("image/jpeg"),
-    IppMedia.Collection(
-        size = IppMedia.Size(width, width * image.height / image.width),
-        margins = IppMedia.Margins(0)
-    )
+    jpegFile,
+    DocumentFormat.JPEG,
+    mediaColWithSize(width, width*image.height/image.width).withMargin(margin)
 )
 ```
 

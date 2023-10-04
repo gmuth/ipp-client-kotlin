@@ -15,20 +15,20 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
 
     private val log = getLogger(javaClass.name)
 
-    // charset for text and name attributes, rfc 8011 4.1.4.1
+    // Charset for text and name attributes, RFC 8011 4.1.4.1
     internal lateinit var attributesCharset: Charset
 
     fun writeMessage(message: IppMessage) = message.run {
         attributesCharset = operationGroup.getValue("attributes-charset")
 
         writeVersion(version ?: throw IppException("missing version"))
-        log.fine { "version = $version" }
+        log.finest { "version = $version" }
 
-        writeShort(code?.toInt() ?: throw IppException("missing operation or status code"))
-        log.fine { "code = $code ($codeDescription)" }
+        writeShort(code ?: throw IppException("missing operation or status code"))
+        log.finest { "code = $code ($codeDescription)" }
 
         writeInt(requestId ?: throw IppException("missing requestId"))
-        log.fine { "requestId = $requestId" }
+        log.finest { "requestId = $requestId" }
 
         for (group in attributesGroups) {
             writeTag(group.tag)
@@ -51,7 +51,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
     }
 
     internal fun writeTag(tag: IppTag) {
-        if (tag.isDelimiterTag()) log.fine { "--- $tag ---" }
+        if (tag.isDelimiterTag()) log.finest { "--- $tag ---" }
         writeByte(tag.code.toInt())
     }
 
@@ -63,7 +63,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
     }
 
     internal fun writeAttribute(attribute: IppAttribute<*>) {
-        log.fine { "$attribute" }
+        log.finest { "$attribute" }
         with(attribute) {
             if (values.isEmpty() || tag.isOutOfBandTag()) {
                 writeTag(tag)
@@ -128,12 +128,12 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
             NameWithoutLanguage -> when (value) {
                 is String -> writeString(value, attributesCharset)
                 is IppString -> writeString(value.text, attributesCharset)
-                else -> throw IppException("expected value of type String or IppString")
+                else -> throw IppException("expecting value class String or IppString")
             }
 
             TextWithLanguage,
             NameWithLanguage -> with(value as IppString) {
-                if (language == null) throw IppException("expected IppString with language")
+                if (language == null) throw IppException("expecting IppString with language")
                 writeShort(4 + text.length + language.length)
                 writeString(language, attributesCharset)
                 writeString(text, attributesCharset)
@@ -164,7 +164,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
                 writeAttribute(IppAttribute<Unit>("", EndCollection))
             }
 
-            else -> throw IppException("unknown tag 0x%02X %s".format(tag.code, tag))
+            else -> throw IppException("Unknown tag 0x%02X %s".format(tag.code, tag))
         }
     }
 }

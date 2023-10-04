@@ -15,13 +15,13 @@ import kotlin.text.Charsets.UTF_8
 
 class IppConfig(
 
-    // core IPP config options
+    // IPP config
     var userName: String? = System.getProperty("user.name"),
     var ippVersion: String = "2.0",
     var charset: Charset = Charsets.UTF_8,
     var naturalLanguage: String = "en",
 
-    // HTTP config options
+    // HTTP config
     var timeout: Duration = Duration.ofSeconds(30),
     var userAgent: String? = "ipp-client/3.0",
     var password: String? = null,

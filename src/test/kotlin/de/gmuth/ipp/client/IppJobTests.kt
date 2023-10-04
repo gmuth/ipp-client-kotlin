@@ -4,6 +4,8 @@ package de.gmuth.ipp.client
  * Copyright (c) 2021-2023 Gerhard Muth
  */
 
+import de.gmuth.ipp.attributes.JobState
+import de.gmuth.ipp.attributes.PrinterState
 import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppStatus.SuccessfulOk
 import de.gmuth.ipp.core.IppString
@@ -63,9 +65,10 @@ class IppJobTests {
     @Test
     fun updateAttributes() {
         job.apply {
+            attributes.onReplaceWarn = true
             updateAttributes()
             log(log)
-            assertEquals(31, attributes.size)
+            assertEquals(32, attributes.size)
         }
     }
 
@@ -97,7 +100,7 @@ class IppJobTests {
     @Test
     fun isProcessing() {
         job.apply {
-            attributes.attribute("job-state", IppTag.Enum, IppJobState.Processing.code)
+            attributes.attribute("job-state", IppTag.Enum, JobState.Processing.code)
             assertTrue(isProcessing())
             assertFalse(isTerminated())
         }
@@ -106,7 +109,7 @@ class IppJobTests {
     @Test
     fun isProcessingStopped() {
         job.apply {
-            attributes.attribute("job-state", IppTag.Enum, IppJobState.ProcessingStopped.code)
+            attributes.attribute("job-state", IppTag.Enum, JobState.ProcessingStopped.code)
             assertTrue(isProcessingStopped())
         }
     }
@@ -153,7 +156,7 @@ class IppJobTests {
 
     @Test
     fun printerState() {
-        assertEquals(IppPrinterState.Idle, job.printer.state)
+        assertEquals(PrinterState.Idle, job.printer.state)
     }
 
     fun cupsDocumentResponse(format: String) = IppResponse(SuccessfulOk).apply {

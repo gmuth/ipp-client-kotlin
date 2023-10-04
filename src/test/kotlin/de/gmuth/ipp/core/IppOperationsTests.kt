@@ -12,7 +12,7 @@ class IppOperationsTests {
     @Test
     fun unknownOperationCodeFails() {
         assertFailsWith<IppException> {
-            IppOperation.fromShort(0)
+            IppOperation.fromInt(0)
         }
     }
 

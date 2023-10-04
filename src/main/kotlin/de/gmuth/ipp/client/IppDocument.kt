@@ -18,7 +18,7 @@ class IppDocument(
     val attributes: IppAttributesGroup,
     val inputStream: InputStream
 ) {
-    val log = getLogger(javaClass.name)
+    private val log = getLogger(javaClass.name)
 
     val number: Int
         get() = attributes.getValue("document-number")
@@ -51,7 +51,7 @@ class IppDocument(
             if (numberOfDocuments > 1) append("-doc-$number")
             job.getOriginatingUserNameOrAppleJobOwnerOrNull()?.let { append("-$it") }
             if (attributes.containsKey("com.apple.print.JobInfo.PMApplicationName")) {
-                append("-${applePrintJobInfo.applicationName}")
+                append("-${attributes.getTextValue("com.apple.print.JobInfo.PMApplicationName")}")
             }
             job.getJobNameOrDocumentNameSuppliedOrAppleJobNameOrNull()?.let {
                 append("-${it.take(100)}")

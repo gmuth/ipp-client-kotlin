@@ -4,6 +4,8 @@ package de.gmuth.ipp.client
  * Copyright (c) 2021-2023 Gerhard Muth
  */
 
+import de.gmuth.ipp.attributes.JobState
+import de.gmuth.ipp.attributes.PrinterState
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppString
 import java.util.logging.Logger
@@ -13,8 +15,6 @@ class IppEventNotification(
     val subscription: IppSubscription,
     val attributes: IppAttributesGroup
 ) {
-    val log = getLogger(javaClass.name)
-
     val sequenceNumber: Int
         get() = attributes.getValue("notify-sequence-number")
 
@@ -30,8 +30,8 @@ class IppEventNotification(
     val jobId: Int
         get() = attributes.getValue("notify-job-id")
 
-    val jobState: IppJobState
-        get() = IppJobState.fromInt(attributes.getValue("job-state"))
+    val jobState: JobState
+        get() = JobState.fromAttributes(attributes)
 
     val jobStateReasons: List<String>
         get() = attributes.getValues("job-state-reasons")
@@ -42,8 +42,8 @@ class IppEventNotification(
     val printerName: IppString
         get() = attributes.getValue("printer-name")
 
-    val printerState: IppPrinterState
-        get() = IppPrinterState.fromInt(attributes.getValue("printer-state"))
+    val printerState: PrinterState
+        get() = PrinterState.fromAttributes(attributes)
 
     val printerStateReasons: List<String>
         get() = attributes.getValues("printer-state-reasons")

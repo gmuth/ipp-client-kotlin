@@ -18,7 +18,7 @@ class IppRequest : IppMessage {
         get() = operation.toString()
 
     val operation: IppOperation
-        get() = IppOperation.fromShort(code!!)
+        get() = IppOperation.fromInt(code!!)
 
     val attributesCharset: Charset
         get() = operationGroup.getValue("attributes-charset")
@@ -32,7 +32,7 @@ class IppRequest : IppMessage {
         operation: IppOperation,
         printerUri: URI? = null,
         jobId: Int? = null,
-        requestedAttributes: List<String>? = null,
+        requestedAttributes: Collection<String>? = null,
         requestingUserName: String? = null,
         version: String = "2.0",
         requestId: Int = 1,

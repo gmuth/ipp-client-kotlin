@@ -1,16 +1,20 @@
-package de.gmuth.ipp.client
+package de.gmuth.ipp.attributes
 
 /**
  * Copyright (c) 2020-2023 Gerhard Muth
  */
 
+import de.gmuth.ipp.core.IppAttribute
+import de.gmuth.ipp.core.IppAttributeBuilder
+import de.gmuth.ipp.core.IppAttributesGroup
+import de.gmuth.ipp.core.IppTag
 import java.util.logging.Level
 import java.util.logging.Level.INFO
 import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
 
 // https://www.cups.org/doc/spec-ipp.html
-class CupsPrinterType(val value: Int) {
+class PrinterType(val value: Int) : IppAttributeBuilder {
 
     val log = getLogger(javaClass.name)
 
@@ -59,6 +63,14 @@ class CupsPrinterType(val value: Int) {
         for (capability in toSet()) {
             log(level) { "* ${capability.description}" }
         }
+    }
+
+    override fun buildIppAttribute(printerAttributes: IppAttributesGroup) =
+        IppAttribute("printer-type", IppTag.Enum, value)
+
+    companion object {
+        fun fromAttributes(attributes: IppAttributesGroup) =
+            PrinterType(attributes.getValue("printer-type"))
     }
 
 }

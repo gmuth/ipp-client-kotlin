@@ -1,12 +1,12 @@
 package de.gmuth.ipp.core
 
+/**
+ * Copyright (c) 2020-2023 Gerhard Muth
+ */
+
 import java.util.logging.Level
 import java.util.logging.Level.INFO
 import java.util.logging.Logger
-
-/**
- * Copyright (c) 2020-2022 Gerhard Muth
- */
 
 // RFC8010 3.1.6.
 data class IppCollection(val members: MutableCollection<IppAttribute<*>> = mutableListOf()) {

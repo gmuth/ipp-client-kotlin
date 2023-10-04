@@ -4,20 +4,20 @@ package de.gmuth.ipp.client
  * Copyright (c) 2021-2023 Gerhard Muth
  */
 
-import de.gmuth.ipp.client.CupsPrinterType.Capability.CanPunchOutput
-import de.gmuth.ipp.client.IppFinishing.Punch
-import de.gmuth.ipp.client.IppFinishing.Staple
-import de.gmuth.ipp.client.IppTemplateAttributes.copies
-import de.gmuth.ipp.client.IppTemplateAttributes.documentFormat
-import de.gmuth.ipp.client.IppTemplateAttributes.finishings
-import de.gmuth.ipp.client.IppTemplateAttributes.jobName
-import de.gmuth.ipp.client.IppTemplateAttributes.jobPriority
-import de.gmuth.ipp.client.IppTemplateAttributes.media
-import de.gmuth.ipp.client.IppTemplateAttributes.numberUp
-import de.gmuth.ipp.client.IppTemplateAttributes.pageRanges
-import de.gmuth.ipp.client.IppTemplateAttributes.printerResolution
-import de.gmuth.ipp.client.IppWhichJobs.Completed
+import de.gmuth.ipp.attributes.*
+import de.gmuth.ipp.attributes.Finishing.Punch
+import de.gmuth.ipp.attributes.Finishing.Staple
+import de.gmuth.ipp.attributes.PrinterType.Capability.CanPunchOutput
+import de.gmuth.ipp.attributes.TemplateAttributes.copies
+import de.gmuth.ipp.attributes.TemplateAttributes.finishings
+import de.gmuth.ipp.attributes.TemplateAttributes.jobName
+import de.gmuth.ipp.attributes.TemplateAttributes.jobPriority
+import de.gmuth.ipp.attributes.TemplateAttributes.numberUp
+import de.gmuth.ipp.attributes.TemplateAttributes.pageRanges
+import de.gmuth.ipp.attributes.TemplateAttributes.printerResolution
+import de.gmuth.ipp.client.WhichJobs.Completed
 import de.gmuth.ipp.core.IppOperation.GetPrinterAttributes
+import de.gmuth.ipp.attributes.Marker
 import java.io.File
 import java.io.FileInputStream
 import java.net.URI
@@ -31,7 +31,7 @@ import kotlin.test.assertTrue
 
 class IppPrinterTests {
 
-    val tlog = getLogger(javaClass.name)
+    val log = getLogger(javaClass.name)
     val blankPdf = File("tool/A4-blank.pdf")
     val ippClientMock = IppClientMock("printers/Simulated_Laser_Printer")
     val printer = IppPrinter(
@@ -42,7 +42,7 @@ class IppPrinterTests {
     @Test
     fun printerAttributes() {
         printer.run {
-            tlog.info { toString() }
+            log.info { toString() }
             assertTrue(isAcceptingJobs)
             assertTrue(documentFormatSupported.contains("application/pdf"))
             assertTrue(supportsOperations(GetPrinterAttributes))
@@ -55,7 +55,7 @@ class IppPrinterTests {
             assertTrue(supportsVersion("1.1"))
             assertEquals(URI.create("urf:///20"), deviceUri)
             assertTrue(hasCapability(CanPunchOutput))
-            marker(CupsMarker.Color.BLACK).apply {
+            marker(Marker.Color.BLACK).apply {
                 assertEquals(80, level)
                 assertEquals(10, lowLevel)
                 assertEquals(100, highLevel)
@@ -72,13 +72,13 @@ class IppPrinterTests {
             assertFalse(isMediaNeeded())
             assertFalse(isCups())
             printerType.apply {
-                tlog.info { toString() }
-                log(tlog)
+                log.info { toString() }
+                log(log)
             }
             communicationChannelsSupported.forEach {
-                tlog.info { "${it.uri}, ${it.security}, ${it.authentication}, $it" }
+                log.info { "${it.uri}, ${it.security}, ${it.authentication}, $it" }
             }
-            ippConfig.log(tlog)
+            ippConfig.log(log)
         }
     }
 
@@ -93,7 +93,7 @@ class IppPrinterTests {
         ippClientMock.mockResponse("Get-Printer-Attributes.ipp")
         printer.run {
             updateAttributes()
-            log(tlog)
+            log(log)
             assertEquals(122, attributes.size)
         }
     }
@@ -101,8 +101,8 @@ class IppPrinterTests {
     @Test
     fun validateJob() {
         printer.validateJob(
-            documentFormat("application/pdf"),
-            media("iso_a4_210x297mm"),
+            DocumentFormat.PDF,
+            Media.ISO_A4
         )
     }
 
@@ -112,27 +112,27 @@ class IppPrinterTests {
         printer.printJob(
             File("tool/A4-blank.pdf"),
             jobName("A4.pdf"),
-            documentFormat("application/pdf"),
-            media("iso_a4_210x297mm"),
+            DocumentFormat("application/pdf"),
+            Media("iso_a4_210x297mm"),
             jobPriority(30),
             copies(1),
             numberUp(1),
             pageRanges(1..5),
             printerResolution(600),
-            IppOrientationRequested.Portrait,
-            IppColorMode.Monochrome,
-            IppSides.TwoSidedLongEdge,
-            IppPrintQuality.High,
+            OrientationRequested.Portrait,
+            ColorMode.Monochrome,
+            Sides.TwoSidedLongEdge,
+            PrintQuality.High,
             finishings(Staple, Punch),
-            IppMedia.Collection(
-                size = IppMedia.Size(20, 30),
-                margins = IppMedia.Margins(10, 10, 10, 10),
-                source = "main",
+            MediaCollection(
+                size = MediaSize(20, 30),
+                margin = MediaMargin(10, 10, 10, 10),
+                source = MediaSource("main"),
                 type = "stationery"
             )
         ).apply {
             assertEquals(461881017, id)
-            assertEquals(IppJobState.Pending, state)
+            assertEquals(JobState.Pending, state)
             assertEquals("pending", state.toString())
             assertTrue(stateReasons.contains("none"))
         }
@@ -142,9 +142,9 @@ class IppPrinterTests {
     fun printJobInputStream() {
         ippClientMock.mockResponse("Print-Job.ipp")
         printer.printJob(FileInputStream(blankPdf)).run {
-            log(tlog)
+            log(log)
             assertEquals(461881017, id)
-            assertEquals(IppJobState.Pending, state)
+            assertEquals(JobState.Pending, state)
             assertEquals(listOf("none"), stateReasons)
             assertEquals("ipp://SpaceBook-2.local.:8632/jobs/461881017", uri.toString())
         }
