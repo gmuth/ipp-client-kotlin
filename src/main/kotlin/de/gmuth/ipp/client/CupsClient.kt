@@ -4,8 +4,8 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020-2023 Gerhard Muth
  */
 
+import de.gmuth.ipp.client.WhichJobs.All
 import de.gmuth.ipp.client.IppExchangeException.ClientErrorNotFoundException
-import de.gmuth.ipp.client.IppWhichJobs.All
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppRequest
@@ -19,13 +19,13 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.logging.Logger.getLogger
 
 // https://www.cups.org/doc/spec-ipp.html
-open class CupsClient(
+class CupsClient(
     val cupsUri: URI = URI.create("ipp://localhost"),
     val ippClient: IppClient = IppClient()
 ) {
     constructor(host: String = "localhost") : this(URI.create("ipp://$host"))
 
-    val log = getLogger(javaClass.name)
+    private val log = getLogger(javaClass.name)
     val config: IppConfig by ippClient::config
     var userName: String? by config::userName
     var cupsClientWorkDirectory = File("CUPS/${cupsUri.host}")
@@ -75,7 +75,7 @@ open class CupsClient(
         }.cupsVersion
     }
 
-    fun cupsPrinterUri(printerName: String) = with(cupsUri) {
+    internal fun cupsPrinterUri(printerName: String) = with(cupsUri) {
         val optionalPort = if (port > 0) ":$port" else ""
         URI("$scheme://$host$optionalPort/printers/$printerName")
     }.apply {
@@ -127,10 +127,10 @@ open class CupsClient(
     )
 
     // --------------------------------------
-    // build request for a named CUPS printer
+    // Build request for a named CUPS printer
     // --------------------------------------
 
-    protected fun cupsPrinterRequest(
+    internal fun cupsPrinterRequest(
         operation: IppOperation,
         printerName: String,
         deviceUri: URI? = null,
@@ -151,13 +151,13 @@ open class CupsClient(
         }
 
     //----------------------
-    // delegate to IppClient
+    // Delegate to IppClient
     //----------------------
 
-    fun ippRequest(operation: IppOperation, printerURI: URI = cupsUri) =
+    internal fun ippRequest(operation: IppOperation, printerURI: URI = cupsUri) =
         ippClient.ippRequest(operation, printerURI)
 
-    fun exchange(ippRequest: IppRequest) =
+    internal fun exchange(ippRequest: IppRequest) =
         ippClient.exchange(ippRequest)
 
     fun basicAuth(user: String, password: String) =
@@ -167,13 +167,13 @@ open class CupsClient(
     // Delegate to IppPrinter
     //-----------------------
 
-    val ippPrinter: IppPrinter by lazy {
+    internal val ippPrinter: IppPrinter by lazy {
         IppPrinter(cupsUri, ippClient = ippClient, getPrinterAttributesOnInit = false)
             .apply { workDirectory = cupsClientWorkDirectory }
     }
 
     fun getJobs(
-        whichJobs: IppWhichJobs? = null,
+        whichJobs: WhichJobs? = null,
         limit: Int? = null,
         requestedAttributes: List<String>? = ippPrinter.getJobsRequestedAttributes
     ) =
@@ -224,12 +224,12 @@ open class CupsClient(
 
             // https://github.com/apple/cups/issues/5919
             log.info { "Waiting for CUPS to generate IPP Everywhere PPD." }
-            log.info { this.toString() }
+            log.info { toString() }
             do {
                 Thread.sleep(1000)
                 updateAttributes("printer-make-and-model")
             } while (!makeAndModel.text.lowercase().contains("everywhere"))
-            log.info { this.toString() }
+            log.info { toString() }
 
             // make printer permanent
             exchange(
@@ -244,7 +244,7 @@ open class CupsClient(
             enable()
             resume()
             updateAttributes()
-            log.info { this.toString() }
+            log.info { toString() }
         }
     }
 
@@ -255,7 +255,7 @@ open class CupsClient(
     private val jobOwners = mutableSetOf<String>()
 
     fun getJobsAndSaveDocuments(
-        whichJobs: IppWhichJobs = All,
+        whichJobs: WhichJobs = All,
         updateJobAttributes: Boolean = false,
         commandToHandleSavedFile: String? = null
     ): Collection<IppJob> {
@@ -266,18 +266,14 @@ open class CupsClient(
             requestedAttributes = listOf(
                 "job-id", "job-uri", "job-printer-uri", "job-originating-user-name",
                 "job-name", "job-state", "job-state-reasons",
-                if(version < "1.6.0") "document-count" else "number-of-documents"
+                if (version < "1.6.0") "document-count" else "number-of-documents"
             )
             // wired: do not modify above set
             // job-originating-user-name is missing when document-count or job-originating-host-name ist requested
             // once hidden in response, wait for one minute and user-name should show up again
         )
             .onEach { job -> // update attributes and lookup job owners
-                if (updateJobAttributes) { // update could remove job-origination-user-name
-                    // important: no requested-attributes is different to group "all"
-                    // job updateAttributes "all"
-                    job.attributes = job.getJobAttributes().jobGroup
-                }
+                if (updateJobAttributes) job.updateAttributes()
                 log.info { job.toString() }
                 job.getOriginatingUserNameOrAppleJobOwnerOrNull()?.let { jobOwners.add(it) }
             }
@@ -310,7 +306,7 @@ open class CupsClient(
             .pollAndHandleNotifications(pollEvery, autoRenewSubscription = autoRenewLease) { event ->
                 log.info { event.toString() }
                 with(event.getJob()) {
-                    while (jobIsIncoming()) {
+                    while (isIncoming()) {
                         log.info { toString() }
                         Thread.sleep(1000)
                         updateAttributes()
@@ -324,7 +320,7 @@ open class CupsClient(
     // Get and save documents for job
     // ------------------------------
 
-    private fun getAndSaveDocuments(
+    internal fun getAndSaveDocuments(
         job: IppJob,
         onSuccessUpdateJobAttributes: Boolean = false,
         optionalCommandToHandleFile: String? = null
@@ -339,7 +335,7 @@ open class CupsClient(
             ippExchangeException.httpStatus!! != 401
         }
 
-        if(!getDocuments()) {
+        if (!getDocuments()) {
             val configuredUserName = config.userName
             jobOwners.forEach {
                 config.userName = it

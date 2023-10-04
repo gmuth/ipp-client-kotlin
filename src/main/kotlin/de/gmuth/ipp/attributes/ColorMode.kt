@@ -1,4 +1,4 @@
-package de.gmuth.ipp.client
+package de.gmuth.ipp.attributes
 
 /**
  * Copyright (c) 2020-2023 Gerhard Muth
@@ -9,7 +9,7 @@ import de.gmuth.ipp.core.IppAttributeBuilder
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppTag.Keyword
 
-enum class IppColorMode(private val keyword: String) : IppAttributeBuilder {
+enum class ColorMode(private val keyword: String) : IppAttributeBuilder {
 
     Auto("auto"),
     Color("color"),

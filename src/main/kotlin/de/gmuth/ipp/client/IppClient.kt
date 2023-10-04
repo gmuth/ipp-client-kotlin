@@ -24,9 +24,12 @@ import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.HttpsURLConnection
 
 open class IppClient(val config: IppConfig = IppConfig()) {
-    val log = getLogger(javaClass.name)
+    protected val log = getLogger(javaClass.name)
+
     var saveMessages: Boolean = false
     var saveMessagesDirectory = File("ipp-messages")
+    var onExceptionSaveMessages: Boolean = false
+    var throwWhenNotSuccessful: Boolean = true
 
     fun basicAuth(user: String, password: String) {
         config.userName = user
@@ -41,13 +44,13 @@ open class IppClient(val config: IppConfig = IppConfig()) {
     // build IppRequest
     //-----------------
 
-    private val requestCounter = AtomicInteger(1)
+    protected val requestCounter = AtomicInteger(1)
 
     fun ippRequest(
         operation: IppOperation,
         printerUri: URI,
         jobId: Int? = null,
-        requestedAttributes: List<String>? = null,
+        requestedAttributes: Collection<String>? = null,
         userName: String? = config.userName
     ) = IppRequest(
         operation,
@@ -62,23 +65,23 @@ open class IppClient(val config: IppConfig = IppConfig()) {
     )
 
     //------------------------------------
-    // exchange IppRequest for IppResponse
+    // Exchange IppRequest for IppResponse
     //------------------------------------
 
     fun exchange(request: IppRequest): IppResponse {
         val ippUri: URI = request.printerUri
         log.finer { "send '${request.operation}' request to $ippUri" }
-        val response = postRequest(toHttpUri(ippUri), request)
+        val response = httpPost(toHttpUri(ippUri), request)
         log.fine { "$ippUri: $request => $response" }
         if (saveMessages) saveMessages(ippUri, request, response)
-        validateResponse(request, response, throwWhenNotSuccessful = true)
+        validateResponse(request, response)
         return response
     }
 
     //----------------------------------------------
-    // http post IPP request and decode IPP response
+    // HTTP post IPP request and decode IPP response
     //----------------------------------------------
-    open fun postRequest(httpUri: URI, request: IppRequest): IppResponse {
+    open fun httpPost(httpUri: URI, request: IppRequest): IppResponse {
         with(httpUri.toURL().openConnection() as HttpURLConnection) {
             if (this is HttpsURLConnection && config.sslContext != null) {
                 sslSocketFactory = config.sslContext!!.socketFactory
@@ -96,7 +99,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
         }
     }
 
-    private fun saveMessages(ippUri: URI, request: IppRequest, response: IppResponse) {
+    protected fun saveMessages(ippUri: URI, request: IppRequest, response: IppResponse) {
         val messageSubDirectory = File(saveMessagesDirectory, ippUri.host).apply {
             if (!mkdirs() && !isDirectory) throw IppException("failed to create directory: $path")
         }
@@ -106,26 +109,27 @@ open class IppClient(val config: IppConfig = IppConfig()) {
         response.saveRawBytes(file("response"))
     }
 
-    private fun validateResponse(request: IppRequest, response: IppResponse, throwWhenNotSuccessful: Boolean = true) {
+    protected fun validateResponse(request: IppRequest, response: IppResponse) {
         with(response) {
             if (status == ClientErrorBadRequest) request.log(log, SEVERE, prefix = "BAD-REQUEST: ")
             if (containsGroup(Unsupported)) unsupportedGroup.values.forEach { log.warning() { "unsupported: $it" } }
             if (!isSuccessful()) {
                 IppRegistrationsSection2.validate(request)
-                if (throwWhenNotSuccessful)
+                if (throwWhenNotSuccessful) {
                     throw if (status == ClientErrorNotFound) ClientErrorNotFoundException(request, response)
                     else IppExchangeException(request, response)
+                }
             }
         }
     }
 
-    private fun toHttpUri(ippUri: URI): URI = with(ippUri) {
+    protected fun toHttpUri(ippUri: URI): URI = with(ippUri) {
         val scheme = scheme.replace("ipp", "http")
         val port = if (port == -1) 631 else port
         URI.create("$scheme://$host:$port$rawPath")
     }
 
-    private fun HttpURLConnection.configure(chunked: Boolean) {
+    protected fun HttpURLConnection.configure(chunked: Boolean) {
         config.run {
             connectTimeout = timeout.toMillis().toInt()
             readTimeout = timeout.toMillis().toInt()
@@ -139,17 +143,20 @@ open class IppClient(val config: IppConfig = IppConfig()) {
         setRequestProperty("Accept-Encoding", "identity") // avoid 'gzip' with Androids OkHttp
     }
 
-    private fun HttpURLConnection.validateResponse(request: IppRequest, contentStream: InputStream) =
+    protected fun HttpURLConnection.validateResponse(request: IppRequest, contentStream: InputStream) =
         when {
             responseCode == 401 -> with(request) {
                 "User '$requestingUserName' is unauthorized for operation '$operation'"
             }
+
             responseCode != 200 -> {
                 "HTTP request failed: $responseCode, $responseMessage"
             }
+
             contentType != null && !contentType.startsWith(APPLICATION_IPP) -> {
                 "Invalid Content-Type: $contentType"
             }
+
             else -> null
         }?.let {
             throw IppExchangeException(
@@ -162,11 +169,10 @@ open class IppClient(val config: IppConfig = IppConfig()) {
             )
         }
 
-    private fun decodeContentStream(
+    protected fun decodeContentStream(
         request: IppRequest,
         httpStatus: Int,
-        contentStream: InputStream,
-        onExceptionSaveMessages: Boolean = true
+        contentStream: InputStream
     ) = IppResponse().apply {
         try {
             read(contentStream)

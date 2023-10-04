@@ -76,6 +76,10 @@ enum class IppTag(
         else -> registeredName
     }
 
+    fun validateValueClass(value: Any) {
+        if (!valueHasValidClass(value)) throw IppException("Value class ${value::class.java.name} not valid for tag $this")
+    }
+
     companion object {
         fun fromByte(code: Byte): IppTag =
             values().singleOrNull { it.code == code } ?: throw IppException("Unknown tag 0x%02X".format(code))

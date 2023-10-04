@@ -1,16 +1,16 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2021 Gerhard Muth
+ * Copyright (c) 2021-2023 Gerhard Muth
  */
 
 // PWG Job, Printer and shared Infrastructure Extensions
-enum class IppWhichJobs(val keyword: String) {
+enum class WhichJobs(val keyword: String) {
     // RFC 8011
     Completed("completed"),
     NotCompleted("not-completed"),
 
-    // PWG5100.7
+    // PWG 5100.7
     All("all"),
     Aborted("aborted"),
     Canceled("canceled"),
@@ -19,10 +19,10 @@ enum class IppWhichJobs(val keyword: String) {
     PendingHeld("pending-held"),
     ProcessingStopped("processing-stopped"),
 
-    // PWG5100.11
+    // PWG 5100.11
     ProofPrint("proof-print"),
     Saved("saved"),
 
-    // PWG5100.18
+    // PWG 5100.18
     Fetchable("fetchable")
 }

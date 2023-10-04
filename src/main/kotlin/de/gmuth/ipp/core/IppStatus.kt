@@ -7,7 +7,7 @@ package de.gmuth.ipp.core
 // https://www.rfc-editor.org/rfc/rfc8011.html#appendix-B
 // https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-11
 
-enum class IppStatus(val code: Short) {
+enum class IppStatus(val code: Int) {
 
     SuccessfulOk(0x0000),
     SuccessfulOkIgnoredOrSubstitutedAttributes(0x0001),
@@ -71,7 +71,7 @@ enum class IppStatus(val code: Short) {
         .replace(Regex("^-"), "")
 
     companion object {
-        fun fromShort(code: Short): IppStatus =
+        fun fromInt(code: Int): IppStatus =
             values().find { it.code == code } ?: throw IppException("Unknown status code %04x".format(code))
     }
 

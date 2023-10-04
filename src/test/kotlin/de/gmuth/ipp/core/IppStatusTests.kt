@@ -28,12 +28,12 @@ class IppStatusTests {
 
     @Test
     fun fromShort() {
-        assertEquals(IppStatus.ClientErrorDocumentFormatNotSupported, IppStatus.fromShort(0x40A))
+        assertEquals(IppStatus.ClientErrorDocumentFormatNotSupported, IppStatus.fromInt(0x40A))
     }
 
     @Test
     fun fromShortFails() {
-        assertFailsWith<IppException> { IppStatus.fromShort(10) }
+        assertFailsWith<IppException> { IppStatus.fromInt(10) }
     }
 
 }

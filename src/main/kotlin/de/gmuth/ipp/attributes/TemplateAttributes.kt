@@ -1,4 +1,4 @@
-package de.gmuth.ipp.client
+package de.gmuth.ipp.attributes
 
 /**
  * Copyright (c) 2020-2023 Gerhard Muth
@@ -12,15 +12,11 @@ import de.gmuth.ipp.core.IppTag
 import de.gmuth.ipp.core.IppTag.*
 
 /**
- * create common job attributes
+ * Create usual job attributes
  */
-object IppTemplateAttributes {
+object TemplateAttributes {
 
     // for operation group
-
-    @JvmStatic
-    fun documentFormat(format: String) =
-        IppAttribute("document-format", MimeMediaType, format)
 
     @JvmStatic
     fun jobName(name: String) =
@@ -49,16 +45,20 @@ object IppTemplateAttributes {
         IppAttribute("page-ranges", RangeOfInteger, ranges)
 
     @JvmStatic
-    fun media(keyword: String) =
-        IppAttribute("media", Keyword, keyword)
+    fun finishings(values: Collection<Finishing>) =
+        IppAttribute("finishings", IppTag.Enum, values.map { it.code })
 
     @JvmStatic
-    fun finishings(finishings: Collection<IppFinishing>) =
-        IppAttribute("finishings", IppTag.Enum, finishings.map { it.code })
+    fun mediaSource(keyword: String) =
+        IppAttribute("media-source", Keyword, keyword)
 
     @JvmStatic // input tray
-    fun mediaColSource(value: String) =
-        IppMedia.Collection(source = value)
+    fun mediaColWithSource(keyword: String) =
+        MediaCollection(source = MediaSource(keyword))
+
+    @JvmStatic // unit: hundreds of mm
+    fun mediaColWithSize(xDimension: Int, yDimension: Int) =
+        MediaCollection(size = MediaSize(xDimension, yDimension))
 
     // support vararg parameter for convenience
 
@@ -66,6 +66,6 @@ object IppTemplateAttributes {
     fun pageRanges(vararg ranges: IntRange) = pageRanges(ranges.toList())
 
     @JvmStatic
-    fun finishings(vararg finishings: IppFinishing) = finishings(finishings.toList())
+    fun finishings(vararg finishings: Finishing) = finishings(finishings.toList())
 
 }

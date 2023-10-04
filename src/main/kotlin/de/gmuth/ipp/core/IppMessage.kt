@@ -4,8 +4,6 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020-2023 Gerhard Muth
  */
 
-import de.gmuth.io.ByteArraySavingInputStream
-import de.gmuth.io.ByteArraySavingOutputStream
 import de.gmuth.ipp.core.IppTag.*
 import java.io.*
 import java.util.logging.Level
@@ -16,7 +14,7 @@ import java.util.logging.Logger.getLogger
 abstract class IppMessage() {
 
     private val log = getLogger(javaClass.name)
-    var code: Short? = null
+    var code: Int? = null // unsigned short (16 bits)
     var requestId: Int? = null
     var version: String? = null
         set(value) { // validate version
@@ -67,15 +65,17 @@ abstract class IppMessage() {
     // --------
 
     fun write(outputStream: OutputStream) {
-        val byteArraySavingOutputStream = ByteArraySavingOutputStream(outputStream)
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        val byteArraySavingOutputStream = object : OutputStream() {
+            override fun write(byte: Int) = outputStream.write(byte)
+                .also { byteArrayOutputStream.write(byte) }
+        }
         try {
             IppOutputStream(byteArraySavingOutputStream).writeMessage(this)
         } finally {
-            rawBytes = byteArraySavingOutputStream.toByteArray()
-            log.fine { "wrote raw ipp message: ${rawBytes!!.size} bytes" }
-            byteArraySavingOutputStream.saveBytes = false // stop saving document bytes
+            rawBytes = byteArrayOutputStream.toByteArray()
         }
-        if (hasDocument()) copyDocumentStream(byteArraySavingOutputStream)
+        if (hasDocument()) copyDocumentStream(outputStream)
     }
 
     fun write(file: File) =
@@ -91,24 +91,27 @@ abstract class IppMessage() {
     // --------
 
     fun read(inputStream: InputStream) {
-        val byteArraySavingInputStream = ByteArraySavingInputStream(inputStream)
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        val byteArraySavingInputStream = object : InputStream() {
+            override fun read() = inputStream.read()
+                .also { if (it != -1) byteArrayOutputStream.write(it) }
+        }
         val bufferedInputStream = byteArraySavingInputStream.buffered()
         try {
             IppInputStream(bufferedInputStream).readMessage(this)
             documentInputStream = bufferedInputStream
         } finally {
-            rawBytes = byteArraySavingInputStream.toByteArray()
-            log.fine { "read ${rawBytes!!.size} raw bytes" }
+            rawBytes = byteArrayOutputStream.toByteArray()
         }
     }
 
     fun read(file: File) {
-        log.fine { "read file ${file.absolutePath}: ${file.length()} bytes" }
+        log.fine { "Read file ${file.absolutePath}: ${file.length()} bytes" }
         read(FileInputStream(file))
     }
 
     fun decode(byteArray: ByteArray) {
-        log.fine { "decode ${byteArray.size} bytes" }
+        log.fine { "Decode ${byteArray.size} bytes" }
         read(ByteArrayInputStream(byteArray))
     }
 
@@ -134,7 +137,7 @@ abstract class IppMessage() {
             throw IppException("No raw bytes to save. You must call read/decode or write/encode before.")
         } else {
             file.writeBytes(rawBytes!!)
-            log.info { "saved ${file.path} (${file.length()} bytes)" }
+            log.info { "Saved ${file.path} (${file.length()} bytes)" }
         }
 
     // -------

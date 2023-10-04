@@ -1,8 +1,13 @@
-package de.gmuth.ipp.client
+package de.gmuth.ipp.attributes
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
+
+import de.gmuth.ipp.core.IppAttribute
+import de.gmuth.ipp.core.IppAttributeBuilder
+import de.gmuth.ipp.core.IppAttributesGroup
+import de.gmuth.ipp.core.IppTag
 
 // "job-state": type1 enum [RFC8011]
 //                                                    +----> canceled
@@ -13,7 +18,7 @@ package de.gmuth.ipp.client
 //     |         v                   v               /
 //     +----> pending-held    processing-stopped ---+
 
-enum class IppJobState(val code: Int, private val registeredName: String) {
+enum class JobState(val code: Int, private val registeredName: String) : IppAttributeBuilder {
 
     Pending(3, "pending"),
     PendingHeld(4, "pending-held"),
@@ -23,13 +28,15 @@ enum class IppJobState(val code: Int, private val registeredName: String) {
     Aborted(8, "aborted"),
     Completed(9, "completed");
 
-    fun isTerminated() = this in listOf(Canceled, Aborted, Completed)
-
     // https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-6
     override fun toString() = registeredName
 
+    override fun buildIppAttribute(printerAttributes: IppAttributesGroup) =
+        IppAttribute("job-state", IppTag.Enum, code)
+
     companion object {
-        fun fromInt(code: Int) = values().single { it.code == code }
+        private fun fromInt(code: Int) = values().single { it.code == code }
+        fun fromAttributes(attributes: IppAttributesGroup) = fromInt(attributes.getValue("job-state"))
     }
 
 }

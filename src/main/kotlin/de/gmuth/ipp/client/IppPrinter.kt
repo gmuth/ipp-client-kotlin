@@ -4,10 +4,14 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020-2023 Gerhard Muth
  */
 
-import de.gmuth.ipp.client.IppPrinterState.*
+import de.gmuth.ipp.attributes.*
+import de.gmuth.ipp.attributes.CommunicationChannel.Companion.getCommunicationChannelsSupported
+import de.gmuth.ipp.attributes.Marker.Companion.getMarkers
+import de.gmuth.ipp.attributes.PrinterState.*
 import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
+import de.gmuth.ipp.core.IppStatus.SuccessfulOk
 import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import java.io.*
@@ -28,7 +32,7 @@ open class IppPrinter(
     getPrinterAttributesOnInit: Boolean = true,
     requestedAttributesOnInit: List<String>? = null
 ) {
-    val log = getLogger(javaClass.name)
+    private val log = getLogger(javaClass.name)
     var workDirectory: File = createTempDirectory().toFile()
 
     companion object {
@@ -74,10 +78,10 @@ open class IppPrinter(
                 if (ippExchangeException.statusIs(ClientErrorNotFound))
                     log.severe { ippExchangeException.message }
                 else {
-                    log.log(SEVERE, ippExchangeException, { "failed to get printer attributes on init" })
+                    log.severe { "Failed to get printer attributes on init. Workaround: getPrinterAttributesOnInit=false" }
                     ippExchangeException.response?.let {
                         if (it.containsGroup(Printer)) log.info { "${it.printerGroup.size} attributes parsed" }
-                        else log.warning { it.toString() }
+                        else log.warning { "RESPONSE: $it" }
                     }
                 }
                 throw ippExchangeException
@@ -105,7 +109,7 @@ open class IppPrinter(
     )
 
     //---------------
-    // ipp attributes
+    // IPP attributes
     //---------------
 
     val name: IppString
@@ -123,8 +127,8 @@ open class IppPrinter(
     val isAcceptingJobs: Boolean
         get() = attributes.getValue("printer-is-accepting-jobs")
 
-    val state: IppPrinterState
-        get() = IppPrinterState.fromInt(attributes.getValue("printer-state"))
+    val state: PrinterState
+        get() = PrinterState.fromAttributes(attributes)
 
     val stateReasons: List<String>
         get() = attributes.getValues("printer-state-reasons")
@@ -136,9 +140,7 @@ open class IppPrinter(
         get() = attributes.getValues("document-format-supported")
 
     val operationsSupported: List<IppOperation>
-        get() = attributes.getValues<List<Int>>("operations-supported").map {
-            IppOperation.fromShort(it.toShort())
-        }
+        get() = attributes.getValues<List<Int>>("operations-supported").map { IppOperation.fromInt(it) }
 
     val colorSupported: Boolean
         get() = attributes.getValue("color-supported")
@@ -155,25 +157,14 @@ open class IppPrinter(
     val mediaDefault: String
         get() = attributes.getValue("media-default")
 
+    val mediaSourceSupported: List<String>
+        get() = attributes.getValues("media-source-supported")
+
     val versionsSupported: List<String>
         get() = attributes.getValues("ipp-versions-supported")
 
-    val communicationChannelsSupported: List<IppCommunicationChannel>
-        get() = mutableListOf<IppCommunicationChannel>().apply {
-            with(attributes) {
-                val printerUriSupportedList = getValues<List<URI>>("printer-uri-supported")
-                val uriSecuritySupportedList = getValues<List<String>>("uri-security-supported")
-                val uriAuthenticationSupportedList = getValues<List<String>>("uri-authentication-supported")
-                for ((index, printerUriSupported) in printerUriSupportedList.withIndex())
-                    add(
-                        IppCommunicationChannel(
-                            printerUriSupported,
-                            uriSecuritySupportedList[index],
-                            uriAuthenticationSupportedList[index]
-                        )
-                    )
-            }
-        }
+    val communicationChannelsSupported: List<CommunicationChannel>
+        get() = getCommunicationChannelsSupported(attributes)
 
     val alert: List<String>? // PWG 5100.9
         get() = attributes.getValuesOrNull("printer-alert")
@@ -182,49 +173,39 @@ open class IppPrinter(
         get() = attributes.getValuesOrNull("printer-alert-description")
 
     // ----------------------------------------------
-    // extensions supported by cups and some printers
+    // Extensions supported by cups and some printers
     // https://www.cups.org/doc/spec-ipp.html
     // ----------------------------------------------
+
+    val markers: Collection<Marker>
+        get() = getMarkers(attributes)
+
+    fun marker(color: Marker.Color) =
+        markers.single { it.color == color }
 
     val deviceUri: URI
         get() = attributes.getValue("device-uri")
 
-    val printerType: CupsPrinterType
-        get() = CupsPrinterType(attributes.getValue("printer-type"))
+    val printerType: PrinterType
+        get() = PrinterType.fromAttributes(attributes)
 
-    fun hasCapability(capability: CupsPrinterType.Capability) =
+    fun hasCapability(capability: PrinterType.Capability) =
         printerType.contains(capability)
-
-    val markers: Collection<CupsMarker>
-        get() = with(attributes) {
-            val types = getValues<List<String>>("marker-types")
-            val names = getValues<List<IppString>>("marker-names")
-            val levels = getValues<List<Int>>("marker-levels")
-            val lowLevels = getValues<List<Int>>("marker-low-levels")
-            val highLevels = getValues<List<Int>>("marker-high-levels")
-            val colors = getValues<List<IppString>>("marker-colors")
-            (0..types.size - 1).map {
-                CupsMarker(
-                    types[it],
-                    names[it].text,
-                    levels[it],
-                    lowLevels[it],
-                    highLevels[it],
-                    colors[it].text
-                )
-            }
-        }
-
-    fun marker(color: CupsMarker.Color) = markers.single { it.color == color }
 
     val cupsVersion: String
         get() = attributes.getTextValue("cups-version")
 
-    //-----------------
+    val supportedAttributes: Collection<IppAttribute<*>> = attributes.values
+            .filter { it.name.endsWith("-supported") }
+            .sortedBy { it.name }
+
+    //-------------------------------------------------------
 
     fun isIdle() = state == Idle
     fun isStopped() = state == Stopped
     fun isProcessing() = state == Processing
+    fun isMediaJam() = stateReasons.contains("media-jam")
+    fun isMediaLow() = stateReasons.contains("media-low")
     fun isMediaEmpty() = stateReasons.contains("media-empty")
     fun isMediaNeeded() = stateReasons.contains("media-needed")
     fun isDuplexSupported() = sidesSupported.any { it.startsWith("two-sided") }
@@ -268,19 +249,14 @@ open class IppPrinter(
     // names of attribute groups: RFC 8011 4.2.5
     //------------------------------------------
 
-    fun getPrinterAttributes(requestedAttributes: List<String>? = null) =
-        exchange(ippRequest(GetPrinterAttributes, requestedAttributes = requestedAttributes))
+    fun getPrinterAttributes(requestedAttributes: Collection<String>? = null) =
+        exchange(ippRequest(GetPrinterAttributes, requestedAttributes = requestedAttributes)).printerGroup
 
     fun getPrinterAttributes(vararg requestedAttributes: String) =
         getPrinterAttributes(requestedAttributes.toList())
 
-    fun updateAttributes(requestedAttributes: List<String>? = null) {
-        log.fine { "update attributes: $requestedAttributes" }
-        getPrinterAttributes(requestedAttributes).run {
-            if (containsGroup(Printer)) attributes.put(printerGroup)
-            else log.warning { "no printerGroup in response for requested attributes: $requestedAttributes" }
-        }
-    }
+    fun updateAttributes(requestedAttributes: List<String>? = null) =
+        attributes.put(getPrinterAttributes(requestedAttributes))
 
     fun updateAttributes(vararg requestedAttributes: String) =
         updateAttributes(requestedAttributes.toList())
@@ -381,23 +357,21 @@ open class IppPrinter(
     // Get-Job-Attributes (as IppJob)
     //-------------------------------
 
-    fun getJob(jobId: Int): IppJob {
-        val request = ippRequest(GetJobAttributes, jobId)
-        return exchangeForIppJob(request)
-    }
+    fun getJob(jobId: Int) =
+        exchangeForIppJob(ippRequest(GetJobAttributes, jobId))
 
-    //---------------------------
-    // Get-Jobs (as List<IppJob>)
-    //---------------------------
+    //---------------------------------
+    // Get-Jobs (as Collection<IppJob>)
+    //---------------------------------
 
     @JvmOverloads
     fun getJobs(
-        whichJobs: IppWhichJobs? = null,
+        whichJobs: WhichJobs? = null,
         myJobs: Boolean? = null,
         limit: Int? = null,
         requestedAttributes: List<String>? = getJobsRequestedAttributes
     ): Collection<IppJob> {
-        log.fine { "getJobs(whichJobs=$whichJobs, requestedAttributes=$requestedAttributes)"}
+        log.fine { "getJobs(whichJobs=$whichJobs, requestedAttributes=$requestedAttributes)" }
         val request = ippRequest(GetJobs, requestedAttributes = requestedAttributes).apply {
             operationGroup.run {
                 whichJobs?.keyword?.let {
@@ -413,7 +387,7 @@ open class IppPrinter(
             .map { IppJob(this, it) }
     }
 
-    fun getJobs(whichJobs: IppWhichJobs? = null, vararg requestedAttributes: String) =
+    fun getJobs(whichJobs: WhichJobs? = null, vararg requestedAttributes: String) =
         getJobs(whichJobs, requestedAttributes = requestedAttributes.toList())
 
     //----------------------------
@@ -479,7 +453,7 @@ open class IppPrinter(
     fun ippRequest(
         operation: IppOperation,
         jobId: Int? = null,
-        requestedAttributes: List<String>? = null,
+        requestedAttributes: Collection<String>? = null,
         userName: String? = ippConfig.userName
     ) = ippClient
         .ippRequest(operation, printerUri, jobId, requestedAttributes, userName)
@@ -494,6 +468,7 @@ open class IppPrinter(
 
     protected fun exchangeForIppJob(request: IppRequest): IppJob {
         val response = exchange(request)
+        if (response.status != SuccessfulOk) log.warning { "Job response status: ${response.status}" }
         if (request.containsGroup(Subscription) && !response.containsGroup(Subscription)) {
             request.log(log, WARNING, prefix = "REQUEST: ")
             val events: List<String> = request.getSingleAttributesGroup(Subscription).getValues("notify-events")
@@ -586,7 +561,7 @@ open class IppPrinter(
 
     fun savePrinterAttributes(directory: String = ".") {
         val printerModel: String = makeAndModel.text.replace("\\s+".toRegex(), "_")
-        getPrinterAttributes().run {
+        exchange(ippRequest(GetPrinterAttributes)).run {
             saveRawBytes(File(directory, "$printerModel.bin"))
             printerGroup.saveText(File(directory, "$printerModel.txt"))
         }

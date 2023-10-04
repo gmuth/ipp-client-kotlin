@@ -4,6 +4,7 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020-2023 Gerhard Muth
  */
 
+import de.gmuth.ipp.attributes.PrinterState
 import de.gmuth.ipp.core.IppException
 import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import org.junit.Test
@@ -39,7 +40,7 @@ class CupsClientTests {
         cupsClient.getPrinter("ColorJet_HP").run {
             log(log)
             assertEquals("HP LaserJet 100 color MFP M175", makeAndModel.text)
-            assertEquals(IppPrinterState.Idle, state)
+            assertEquals(PrinterState.Idle, state)
             assertEquals(5, markers.size)
             assertTrue(isAcceptingJobs)
             assertTrue(isCups())

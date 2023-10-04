@@ -49,10 +49,6 @@ open class IppExchangeException(
         }
     }
 
-    init {
-        if (httpStatus == 400) saveMessages("http_400")
-    }
-
     fun statusIs(status: IppStatus) = response?.status == status
 
     fun log(logger: Logger, level: Level = INFO) = logger.run {
@@ -65,7 +61,7 @@ open class IppExchangeException(
     }
 
     fun saveMessages(
-        fileNameWithoutSuffix: String = "ipp_exchange_exception",
+        fileNameWithoutSuffix: String = "ipp_exchange_exception_$httpStatus",
         directory: String = createTempDirectory("ipp-client-").pathString
     ) {
         request.saveRawBytes(File(directory, "$fileNameWithoutSuffix.request"))

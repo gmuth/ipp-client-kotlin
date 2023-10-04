@@ -1,10 +1,10 @@
-package de.gmuth.ipp.client
+package de.gmuth.ipp.attributes
 
 /**
- * Copyright (c) 2021 Gerhard Muth
+ * Copyright (c) 2021-2023 Gerhard Muth
  */
 
-enum class IppFinishing(val code: Int) {
+enum class Finishing(val code: Int) {
     None(3),
     Staple(4),
     Punch(5),

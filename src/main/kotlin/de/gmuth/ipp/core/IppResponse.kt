@@ -14,7 +14,7 @@ class IppResponse : IppMessage {
         get() = status.toString()
 
     var status: IppStatus
-        get() = IppStatus.fromShort(code!!)
+        get() = IppStatus.fromInt(code!!)
         set(ippStatus) {
             code = ippStatus.code
         }

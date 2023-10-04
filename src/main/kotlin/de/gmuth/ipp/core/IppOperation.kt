@@ -6,7 +6,7 @@ package de.gmuth.ipp.core
 
 // https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-6
 
-enum class IppOperation(val code: Short) {
+enum class IppOperation(val code: Int) {
 
     // RFC 8011
     PrintJob(0x0002),
@@ -140,7 +140,7 @@ enum class IppOperation(val code: Short) {
         .replace(Regex("^-"), "")
 
     companion object {
-        fun fromShort(code: Short): IppOperation =
+        fun fromInt(code: Int): IppOperation =
             values().find { it.code == code } ?: throw IppException("Unknown operation code %04x".format(code))
     }
 

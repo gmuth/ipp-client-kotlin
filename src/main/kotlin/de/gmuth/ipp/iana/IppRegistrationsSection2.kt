@@ -4,7 +4,6 @@ package de.gmuth.ipp.iana
  * Copyright (c) 2020-2023 Gerhard Muth
  */
 
-import de.gmuth.csv.CSVTable
 import de.gmuth.ipp.core.IppAttribute
 import de.gmuth.ipp.core.IppCollection
 import de.gmuth.ipp.core.IppMessage
@@ -12,9 +11,7 @@ import de.gmuth.ipp.core.IppTag
 import de.gmuth.ipp.core.IppTag.*
 import java.util.logging.Logger.getLogger
 
-/**
- * https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-2
- */
+// https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-2
 object IppRegistrationsSection2 {
 
     val log = getLogger(javaClass.name)
@@ -71,33 +68,38 @@ object IppRegistrationsSection2 {
         fun collectionGroupTag() = when (collection) {
             "Operation" -> Operation
             "Job Template" -> Job
-            else -> error("no IppTag defined for $collection")
+            else -> error("No IppTag defined for $collection")
         }
 
     }
 
-    // source: https://www.iana.org/assignments/ipp-registrations/ipp-registrations-2.csv
-    val allAttributes = CSVTable("/ipp-registrations-2.csv", ::Attribute).rows
+    private val attributesMap: Map<String, Attribute>
+    private val aliasMap: Map<String, String>
 
-    val attributesMap = allAttributes.associateBy(Attribute::key)
+    init {
+        // source: https://www.iana.org/assignments/ipp-registrations/ipp-registrations-2.csv
+        val allAttributes = CSVTable("/ipp-registrations-2.csv", ::Attribute).rows
 
-    //  alias example: Printer Description,media-col-default,"<Member attributes are the same as the ""media-col"" Job Template attribute>"
-    val aliasMap = mutableMapOf<String, String>().apply {
-        allAttributes
-            .filter { it.memberAttribute.lowercase().contains("same as") }
-            .forEach { put(it.name, it.memberAttribute.replace("^.*\"(.+)\".*$".toRegex(), "$1")) }
-        // apple cups extension 'output-mode' was standardized to 'print-color-mode'
-        put("output-mode-default", "print-color-mode-default")
-        put("output-mode-supported", "print-color-mode-supported")
-        // 'media-col-default' resolves to 'media-col' and 'media-source-feed-...' values are registered for 'media-col-ready'
-        put(
-            "media-col/media-source-properties/media-source-feed-direction",
-            "media-col-ready/media-source-properties/media-source-feed-direction"
-        )
-        put(
-            "media-col/media-source-properties/media-source-feed-orientation",
-            "media-col-ready/media-source-properties/media-source-feed-orientation"
-        )
+        attributesMap = allAttributes.associateBy(Attribute::key)
+
+        //  alias example: Printer Description,media-col-default,"<Member attributes are the same as the ""media-col"" Job Template attribute>"
+        aliasMap = mutableMapOf<String, String>().apply {
+            allAttributes
+                .filter { it.memberAttribute.lowercase().contains("same as") }
+                .forEach { put(it.name, it.memberAttribute.replace("^.*\"(.+)\".*$".toRegex(), "$1")) }
+            // apple cups extension 'output-mode' was standardized to 'print-color-mode'
+            put("output-mode-default", "print-color-mode-default")
+            put("output-mode-supported", "print-color-mode-supported")
+            // 'media-col-default' resolves to 'media-col' and 'media-source-feed-...' values are registered for 'media-col-ready'
+            put(
+                "media-col/media-source-properties/media-source-feed-direction",
+                "media-col-ready/media-source-properties/media-source-feed-direction"
+            )
+            put(
+                "media-col/media-source-properties/media-source-feed-orientation",
+                "media-col-ready/media-source-properties/media-source-feed-orientation"
+            )
+        }
     }
 
     fun resolveAlias(name: String) = (aliasMap[name] ?: name).also {

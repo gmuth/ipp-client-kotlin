@@ -1,7 +1,7 @@
-package de.gmuth.csv
+package de.gmuth.ipp.iana
 
 /**
- * Copyright (c) 2021 Gerhard Muth
+ * Copyright (c) 2021-2023 Gerhard Muth
  */
 
 import java.io.InputStream

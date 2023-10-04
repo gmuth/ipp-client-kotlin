@@ -4,7 +4,8 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020-2023 Gerhard Muth
  */
 
-import de.gmuth.ipp.client.IppJobState.*
+import de.gmuth.ipp.attributes.JobState
+import de.gmuth.ipp.attributes.JobState.*
 import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppTag.*
@@ -12,6 +13,8 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
 import java.net.URI
+import java.time.Duration
+import java.time.ZonedDateTime
 import java.util.logging.Level
 import java.util.logging.Level.INFO
 import java.util.logging.Logger
@@ -22,12 +25,13 @@ class IppJob(
     var attributes: IppAttributesGroup,
     subscriptionAttributes: IppAttributesGroup? = null
 ) {
+
     companion object {
-        var defaultDelayMillis: Long = 3000
+        var defaultDelay: Duration = Duration.ofSeconds(1)
         var useJobOwnerAsUserName: Boolean = false
     }
 
-    val log = getLogger(javaClass.name)
+    private val log = getLogger(javaClass.name)
     var subscription: IppSubscription? = subscriptionAttributes?.let { IppSubscription(printer, it) }
     val ippConfig = printer.ippConfig
 
@@ -44,8 +48,8 @@ class IppJob(
     val printerUri: URI
         get() = attributes.getValue("job-printer-uri")
 
-    val state: IppJobState
-        get() = IppJobState.fromInt(attributes.getValue("job-state"))
+    val state: JobState
+        get() = JobState.fromAttributes(attributes)
 
     val stateReasons: List<String>
         get() = attributes.getValues("job-state-reasons")
@@ -78,9 +82,17 @@ class IppJob(
     val documentNameSupplied: IppString
         get() = attributes.getValue("document-name-supplied")
 
-    // only supported by Apple CUPS
-    val applePrintJobInfo: ApplePrintJobInfo
-        get() = ApplePrintJobInfo(attributes)
+    val timeAtCreation: ZonedDateTime
+        get() = attributes.getTimeValue("time-at-creation")
+
+    val timeAtProcessing: ZonedDateTime
+        get() = attributes.getTimeValue("time-at-processing")
+
+    val timeAtCompleted: ZonedDateTime
+        get() = attributes.getTimeValue("time-at-completed")
+
+    val appleJobOwner: String // only supported by Apple CUPS
+        get() = attributes.getTextValue("com.apple.print.JobInfo.PMJobOwner")
 
     fun hasStateReasons() = attributes.containsKey("job-state-reasons")
 
@@ -89,24 +101,24 @@ class IppJob(
     fun isCanceled() = state == Canceled
     fun isProcessing() = state == Processing
     fun isProcessingStopped() = state == ProcessingStopped
-    fun isTerminated() = state.isTerminated()
+    fun isTerminated() = state in listOf(Canceled, Aborted, Completed)
 
     // https://datatracker.ietf.org/doc/html/rfc8011#section-5.3.8
     fun stateReasonsContain(reason: String) = hasStateReasons() && stateReasons.contains(reason)
     fun isProcessingToStopPoint() = stateReasonsContain("processing-to-stop-point")
     fun resourcesAreNotReady() = stateReasonsContain("resources-are-not-ready")
-    fun jobIsIncoming() = stateReasonsContain("job-incoming")
+    fun isIncoming() = stateReasonsContain("job-incoming")
 
     fun getOriginatingUserNameOrAppleJobOwnerOrNull() = when {
         attributes.containsKey("job-originating-user-name") -> originatingUserName.text
-        attributes.containsKey("com.apple.print.JobInfo.PMJobOwner") -> applePrintJobInfo.jobOwner
+        attributes.containsKey("com.apple.print.JobInfo.PMJobOwner") -> appleJobOwner
         else -> null
     }
 
     fun getJobNameOrDocumentNameSuppliedOrAppleJobNameOrNull() = when {
         attributes.containsKey("job-name") -> name.text
         attributes.containsKey("document-name-supplied") -> documentNameSupplied.text
-        attributes.containsKey("com.apple.print.JobInfo.PMJobName") -> applePrintJobInfo.jobName
+        attributes.containsKey("com.apple.print.JobInfo.PMJobName") -> attributes.getTextValue("com.apple.print.JobInfo.PMJobName")
         else -> null
     }
 
@@ -115,30 +127,30 @@ class IppJob(
     //-------------------
 
     //  RFC 8011 4.3.4 groups: 'all', 'job-template', 'job-description'
-
-    @JvmOverloads
     fun getJobAttributes(requestedAttributes: List<String>? = null) =
-        exchange(ippRequest(GetJobAttributes, requestedAttributes))
+        exchange(ippRequest(GetJobAttributes, requestedAttributes)).jobGroup
 
     fun getJobAttributes(vararg requestedAttribute: String) =
         getJobAttributes(requestedAttribute.toList())
 
-    fun updateAttributes(jobAttributeGroupName: String = "all") {
-        attributes = getJobAttributes(jobAttributeGroupName).jobGroup
-    }
+    fun updateAttributes(requestedAttributes: List<String>? = null) =
+        attributes.put(getJobAttributes(requestedAttributes))
+
+    fun updateAttributes(vararg requestedAttributes: String) =
+        updateAttributes(requestedAttributes.toList())
 
     //------------------------------------------
     // Wait for terminal state (RFC 8011 5.3.7.)
     //------------------------------------------
 
     @JvmOverloads
-    fun waitForTermination(delayMillis: Long = defaultDelayMillis) {
-        log.info { "wait for termination of job #$id" }
+    fun waitForTermination(delay: Duration = defaultDelay) {
+        log.info { "Wait for termination of job #$id" }
         var lastPrinterString = ""
         var lastJobString = toString()
         log.info { lastJobString }
         while (!isTerminated()) {
-            Thread.sleep(delayMillis)
+            Thread.sleep(delay.toMillis())
             updateAttributes()
             if (toString() != lastJobString) {
                 lastJobString = toString()
@@ -146,6 +158,7 @@ class IppJob(
             }
             if (isProcessingStopped() || lastPrinterString.isNotEmpty()) {
                 printer.updatePrinterStateAttributes()
+                printer.updateAttributes()
                 if (printer.toString() != lastPrinterString) {
                     lastPrinterString = printer.toString()
                     log.info { lastPrinterString }
@@ -159,18 +172,19 @@ class IppJob(
     // Job administration
     //-------------------
 
-    fun hold() = exchange(ippRequest(HoldJob)).also { updateAttributes() }
-    fun release() = exchange(ippRequest(ReleaseJob)).also { updateAttributes() }
-    fun restart() = exchange(ippRequest(RestartJob)).also { updateAttributes() }
+    fun hold() = exchange(ippRequest(HoldJob))
+    fun release() = exchange(ippRequest(ReleaseJob))
+    fun restart() = exchange(ippRequest(RestartJob))
 
-    fun cancel(messageForOperator: String? = null): IppResponse { // RFC 8011 4.3.3
-        if (isCanceled()) log.warning { "job #$id is already 'canceled'" }
-        if (isProcessingToStopPoint()) log.warning { "job #$id is already 'processing-to-stop-point'" }
+    @JvmOverloads
+    fun cancel(messageForOperator: String? = null, updateAttributes: Boolean = true): IppResponse { // RFC 8011 4.3.3
+        if (isCanceled()) log.warning { "Job #$id is already 'canceled'" }
+        if (isProcessingToStopPoint()) log.warning { "Job #$id is already 'processing-to-stop-point'" }
         val request = ippRequest(CancelJob).apply {
             messageForOperator?.let { operationGroup.attribute("message", TextWithoutLanguage, it) }
         }
-        log.info { "cancel job#$id" }
-        return exchange(request).also { updateAttributes() }
+        log.info { "Cancel job #$id" }
+        return exchange(request).also { if (updateAttributes) updateAttributes() }
     }
 
     //--------------
@@ -274,6 +288,7 @@ class IppJob(
         return IppDocument(this, response.jobGroup, response.documentInputStream!!)
     }
 
+    @JvmOverloads
     fun cupsGetDocuments(
         save: Boolean = false,
         optionalCommandToHandleFile: String? = null
@@ -299,7 +314,7 @@ class IppJob(
             operation, id, requestedAttributes,
             userName = when {
                 useJobOwnerAsUserName && attributes.containsKey("job-originating-user-name") -> originatingUserName.text
-                useJobOwnerAsUserName && attributes.containsKey("com.apple.print.JobInfo.PMJobOwner") -> applePrintJobInfo.jobOwner
+                useJobOwnerAsUserName && attributes.containsKey("com.apple.print.JobInfo.PMJobOwner") -> appleJobOwner
                 else -> ippConfig.userName
             }
         )
@@ -321,9 +336,9 @@ class IppJob(
             if (containsKey("job-impressions-completed")) append(", impressions-completed=$impressionsCompleted")
             if (containsKey("job-originating-host-name")) append(", originating-host-name=$originatingHostName")
             if (containsKey("job-originating-user-name")) append(", originating-user-name=$originatingUserName")
-            if (containsKey("com.apple.print.JobInfo.PMJobName")) append(", $applePrintJobInfo")
+            if (containsKey("com.apple.print.JobInfo.PMJobOwner")) append(", appleJobOwner=$appleJobOwner")
             if (containsKey("number-of-documents") || containsKey("document-count")) append(", number-of-documents=$numberOfDocuments")
-            if (containsKey("job-printer-uri")) append(", job-printer-uri=$printerUri")
+            if (containsKey("job-printer-uri")) append(", printer-uri=$printerUri")
             toString()
         }
     }
