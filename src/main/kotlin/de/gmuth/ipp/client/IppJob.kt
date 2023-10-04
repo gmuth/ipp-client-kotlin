@@ -92,6 +92,7 @@ class IppJob(
         get() = attributes.getTimeValue("time-at-completed")
 
     val appleJobOwner: String // only supported by Apple CUPS
+        @SuppressWarnings("kotlin:S1192")
         get() = attributes.getTextValue("com.apple.print.JobInfo.PMJobOwner")
 
     fun hasStateReasons() = attributes.containsKey("job-state-reasons")
