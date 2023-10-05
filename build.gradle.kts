@@ -14,7 +14,7 @@ plugins {
 }
 
 group = "de.gmuth"
-version = "3.0-SNAPSHOT"
+version = "3.0"
 
 repositories {
     mavenCentral()
@@ -43,23 +43,30 @@ defaultTasks("assemble")
 //    }
 //}
 
+val javaVersion = "1.8"
+
 tasks.compileKotlin {
     kotlinOptions {
         // If 1.6 is required you also have to configure gradle plugin org.jetbrains.kotlin.jvm version 1.6
-        jvmTarget = "1.8"
+        jvmTarget = javaVersion
     }
 }
 
 // avoid warnings "jvm target compatibility should be set to the same Java version."
 tasks.compileTestKotlin {
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = javaVersion
     }
 }
 
 tasks.compileJava {
     sourceCompatibility = tasks.compileKotlin.get().kotlinOptions.jvmTarget
     targetCompatibility = tasks.compileKotlin.get().kotlinOptions.jvmTarget
+}
+
+tasks.compileTestJava {
+    sourceCompatibility = tasks.compileTestKotlin.get().kotlinOptions.jvmTarget
+    targetCompatibility = tasks.compileTestKotlin.get().kotlinOptions.jvmTarget
 }
 
 //tasks.withType<Jar> {

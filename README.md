@@ -19,6 +19,9 @@ The [CupsClient](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main
 supports printer lookup by queue name.
 Repository [ipp-samples](https://github.com/gmuth/ipp-samples) contains examples how to use jmDNS.
 
+```
+implementation("de.gmuth:ipp-client:3.0")
+```
 ### [IppPrinter](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppPrinter.kt) and [IppJob](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppJob.kt)
 
 ```kotlin
@@ -139,7 +142,7 @@ if (defaultPrinter.hasCapability(Capability.CanPrintInColor)) {
 }
 
 // get canceled jobs and save documents
-cupsClient.getJobsAndSaveDocuments(IppWhichJobs.Canceled)
+cupsClient.getJobsAndSaveDocuments(WhichJobs.Canceled)
 
 ```
 
@@ -172,7 +175,7 @@ now implemented by StdoutHandler and SimpleClassNameFormatter.
 I moved all of my custom logging code to it's own
 repository [logging-kotlin](https://github.com/gmuth/logging-kotlin/tree/main/src/main/kotlin/de/gmuth/log).
 
-## Build
+## Build sources
 
 To build the jar make sure you have JDK 11 installed.
 The default tasks build the jar in `build/libs`.
@@ -183,28 +186,11 @@ To install the artifact to your local maven repository run
 
     ./gradlew publishToMavenLocal
 
-This software has **no dependencies** to
+The build produces the jar, sources and javadoc artifacts. This software has **no dependencies** to
 [javax.print](https://docs.oracle.com/javase/7/docs/technotes/guides/jps/),
 [CUPS](https://www.cups.org) or
 [ipptool](https://www.cups.org/doc/man-ipptool.html).
 Operation has mostly been tested for target `jvm`. Android is supported since v1.6.
-
-## Artifact coordinates
-
-The build produces the jar, sources and javadoc artifacts. They are available at
-[maven central repository](https://central.sonatype.com/namespace/de.gmuth).
-
-- group: gmuth.de
-- artifact: ipp-client
-- version: 3.0
-
-Add dependency:
-
-```
-    implementation("de.gmuth:ipp-client:3.0")
-```
-
-## Source packages
 
 Package
 [`de.gmuth.ipp.core`](https://github.com/gmuth/ipp-client-kotlin/tree/master/src/main/kotlin/de/gmuth/ipp/core)
@@ -213,7 +199,6 @@ contains the usual
 and
 [decoding](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppInputStream.kt)
 operations. RFC 8010 is fully supported.
-
 Package
 [`de.gmuth.ipp.client`](https://github.com/gmuth/ipp-client-kotlin/tree/master/src/main/kotlin/de/gmuth/ipp/client)
 contains the
@@ -222,9 +207,7 @@ and implementations of higher level IPP objects like
 [IppPrinter]((https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppPrinter.kt)),
 [IppJob]((https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppJob.kt)),
 [IppSubscription]((https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppSubscription.kt)) and
-[IppEventNotification]((https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppEventNotification.kt))
-
-## No Multiplatform support
+[IppEventNotification]((https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppEventNotification.kt)).
 
 IPP is based on the exchange of binary messages via HTTP.
 For reading and writing binary data
