@@ -1,10 +1,11 @@
-package de.gmuth.ipp.core
+package de.gmuth.ipp.client
 
 /**
  * Copyright (c) 2020 Gerhard Muth
  */
 
-import de.gmuth.ipp.client.IppExchangeException
+import de.gmuth.ipp.core.IppOperation
+import de.gmuth.ipp.core.IppRequest
 import java.util.logging.Logger.getLogger
 import kotlin.test.Test
 import kotlin.test.assertEquals

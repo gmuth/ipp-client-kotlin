@@ -13,7 +13,7 @@ import java.util.logging.Logger.getLogger
 
 class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputStream) {
 
-    private val log = getLogger(javaClass.name)
+    internal val log = getLogger(javaClass.name)
 
     // character encoding for text and name attributes, RFC 8011 4.1.4.1
     internal lateinit var attributesCharset: Charset
@@ -236,7 +236,7 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
                 charStringBuilder.clear()
             }
         }
-        if (isNotEmpty()) dumpLine()
+        if (hexStringBuilder.isNotEmpty()) dumpLine()
     }
 
 }

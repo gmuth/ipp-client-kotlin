@@ -5,14 +5,19 @@ package de.gmuth.ipp.core
  */
 
 import de.gmuth.ipp.core.IppTag.*
+import de.gmuth.log.Logging
 import java.io.File
 import java.util.logging.Logger.getLogger
 import kotlin.test.*
 
 class IppAttributeTests {
 
-    private val ippAttribute = IppAttribute("printer-state-reasons", Keyword, "none")
-    val tlog = getLogger(javaClass.name)
+    init {
+        Logging.configure()
+    }
+
+    private val log = getLogger(javaClass.name)
+    private val attribute = IppAttribute("printer-state-reasons", Keyword, "none")
 
     @Test
     fun constructorFailsDueToDelimiterTag() {
@@ -26,28 +31,28 @@ class IppAttributeTests {
 
     @Test
     fun accessingSetAsValueFails() {
-        assertFailsWith<IppException> { ippAttribute.value }
+        assertFailsWith<IppException> { attribute.value }
     }
 
     @Test
     fun additionalValue() {
-        ippAttribute.additionalValue(IppAttribute("", Keyword, "media-empty"))
-        assertEquals(2, ippAttribute.values.size)
+        attribute.additionalValue(IppAttribute("", Keyword, "media-empty"))
+        assertEquals(2, attribute.values.size)
     }
 
     @Test
     fun additionalValueIgnore1() {
-        ippAttribute.additionalValue(IppAttribute("", Integer, 2.1))
+        attribute.additionalValue(IppAttribute("", Integer, 2.1))
     }
 
     @Test
     fun additionalValueFails2() {
-        assertFailsWith<IppException> { ippAttribute.additionalValue(IppAttribute<Unit>("", Keyword)) }
+        assertFailsWith<IppException> { attribute.additionalValue(IppAttribute<Unit>("", Keyword)) }
     }
 
     @Test
     fun additionalValueFails3() {
-        assertFailsWith<IppException> { ippAttribute.additionalValue(IppAttribute("invalid-name", Keyword, "wtf")) }
+        assertFailsWith<IppException> { attribute.additionalValue(IppAttribute("invalid-name", Keyword, "wtf")) }
     }
 
     @Test
@@ -60,13 +65,13 @@ class IppAttributeTests {
 
     @Test
     fun buildAttribute() {
-        assertEquals(ippAttribute, ippAttribute.buildIppAttribute(IppAttributesGroup(Printer)))
+        assertEquals(attribute, attribute.buildIppAttribute(IppAttributesGroup(Printer)))
     }
 
     @Test
     fun toStringNoValue() {
-        ippAttribute.values.clear()
-        assertTrue(ippAttribute.toString().endsWith("no-value"))
+        attribute.values.clear()
+        assertTrue(attribute.toString().endsWith("no-value"))
     }
 
     @Test
@@ -81,20 +86,9 @@ class IppAttributeTests {
     }
 
     @Test
-    fun toStringTime1() {
-        IppAttribute("some-time", Integer, 1000).toString()
+    fun toStringTest() {
+        assertEquals("christmas-time (integer) = 1608160102", IppAttribute("christmas-time", Integer, 1608160102).toString())
     }
-
-    @Test
-    fun toStringTime2() {
-        IppAttribute("christmas-time", Integer, 1608160102).toString()
-    }
-
-    @Test
-    fun toStringTimeOut() {
-        IppAttribute("some-time-out", Integer, 1000).toString()
-    }
-
 
     @Test
     fun enumNameOrValue() {
@@ -104,7 +98,7 @@ class IppAttributeTests {
     @Test
     fun log() {
         // cover an output with more than 160 characters and a collection value
-        IppAttribute("media-col".padEnd(160, '-'), BegCollection, IppCollection()).log(tlog)
+        IppAttribute("media-col".padEnd(160, '-'), BegCollection, IppCollection()).log(log)
     }
 
     @Test
@@ -120,6 +114,13 @@ class IppAttributeTests {
     @Test
     fun attributeToString() {
         assertEquals("foo (1setOf integer) = 1,2,3", IppAttribute("foo", Integer, 1, 2, 3).toString())
+    }
+
+    @Test
+    fun attributeWithDateTimeHasValidValueClass() {
+        IppAttribute("datetime-now", DateTime, IppDateTime.now()).run {
+            assertTrue(tag.valueHasValidClass(value))
+        }
     }
 
 }

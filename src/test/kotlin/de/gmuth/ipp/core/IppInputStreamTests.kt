@@ -5,20 +5,15 @@ package de.gmuth.ipp.core
  */
 
 import de.gmuth.ipp.core.IppResolution.Unit.DPI
-import de.gmuth.log.Logging
 import java.io.ByteArrayInputStream
 import java.net.URI
-import java.util.logging.Logger
+import java.util.logging.Level.ALL
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class IppInputStreamTest {
-
-    init {
-        Logging.configure()
-    }
 
     private val message = object : IppMessage() {
         override val codeDescription: String
@@ -175,23 +170,25 @@ class IppInputStreamTest {
             assertEquals(8, requestId)
             with(getSingleAttributesGroup(IppTag.Job)) {
                 assertEquals(2, size)
-                with(get("1")!!) {
-                    assertEquals(IppTag.Boolean, this.tag)
+                get("1")!!.run {
+                    assertEquals(IppTag.Boolean, tag)
                     assertEquals(listOf(true, false), values as List<*>)
                 }
-                with(get("0")!!) {
-                    assertEquals(IppTag.NoValue, this.tag)
-                }
+                assertEquals(IppTag.NoValue, get("0")!!.tag)
             }
         }
     }
 
     @Test
     fun readMessageFails() {
-        val encoded = "01 01 00 0B 00 00 00 08 01 47 00 01 61 00 01 66 0A 0B 0C 0D"
-       assertFailsWith<IppException> {
-            encoded.toIppInputStream().readMessage(message)
-       }
+        val encoded =
+            "01 01 00 0B 00 00 00 08 01 47 00 01 61 00 01 66 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF AA"
+        assertFailsWith<IppException> {
+            encoded.toIppInputStream().run {
+                log.level = ALL
+                readMessage(message)
+            }
+        }
     }
 
     @Test
@@ -203,7 +200,9 @@ class IppInputStreamTest {
     @Test
     fun readOutOfBandAttribute() {
         val encoded = "00 01 65 00 01 02"
-        encoded.toIppInputStream().readAttribute(IppTag.NoValue)
+        encoded.toIppInputStream().run {
+            assertEquals(1, readAttribute(IppTag.NoValue).values.size)
+        }
     }
 
     @Test
@@ -214,16 +213,14 @@ class IppInputStreamTest {
         with(attribute.value as ByteArray) { assertEquals(1, size) }
     }
 
+    // Hex utility extensions
+
+    private fun String.toByteArray() =
+        ByteArray((length + 1) / 3) { substring(3 * it, 3 * it + 2).toInt(16).toByte() }
+
+    private fun String.toIppInputStream() = IppInputStream(ByteArrayInputStream(toByteArray()).buffered())
+        .apply { attributesCharset = Charsets.US_ASCII }
+
+    private fun String.readAttributeValue(tag: IppTag) =
+        toIppInputStream().readAttributeValue(tag)
 }
-
-// hex utility extensions
-
-fun String.toByteArray() =
-    ByteArray((length + 1) / 3) { substring(3 * it, 3 * it + 2).toInt(16).toByte() }
-
-fun String.toIppInputStream() = IppInputStream(ByteArrayInputStream(toByteArray()).buffered()).apply {
-    attributesCharset = Charsets.US_ASCII
-}
-
-fun String.readAttributeValue(tag: IppTag) =
-    toIppInputStream().readAttributeValue(tag)

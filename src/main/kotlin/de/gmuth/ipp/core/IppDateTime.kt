@@ -5,6 +5,7 @@ package de.gmuth.ipp.core
  */
 
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoField
@@ -137,6 +138,10 @@ data class IppDateTime(
     internal fun getTimeZoneId() =
         "GMT%c%02d%02d".format(directionFromUTC, hoursFromUTC, minutesFromUTC)
 
+    companion object {
+        fun now(zone: ZoneId = ZoneId.systemDefault()) =
+            IppDateTime(ZonedDateTime.now(zone))
+    }
 }
 
 // Calendar extension
