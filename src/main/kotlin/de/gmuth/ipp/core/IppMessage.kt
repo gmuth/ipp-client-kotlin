@@ -13,7 +13,7 @@ import java.util.logging.Logger.getLogger
 
 abstract class IppMessage() {
 
-    private val log = getLogger(javaClass.name)
+    internal val log = getLogger(javaClass.name)
     var code: Int? = null // unsigned short (16 bits)
     var requestId: Int? = null
     var version: String? = null

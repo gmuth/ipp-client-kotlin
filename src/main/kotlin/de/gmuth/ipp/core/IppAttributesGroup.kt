@@ -6,7 +6,7 @@ package de.gmuth.ipp.core
 
 import java.io.File
 import java.time.Instant
-import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.util.logging.Level
 import java.util.logging.Level.INFO
@@ -53,8 +53,8 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     fun getTextValue(name: String) =
         getValue<IppString>(name).text
 
-    fun getTimeValue(name: String, zoneId: ZoneId = ZoneId.systemDefault()): ZonedDateTime =
-        Instant.ofEpochSecond(getValue<Int>(name).toLong()).atZone(zoneId)
+    fun getTimeValue(name: String): ZonedDateTime =
+        Instant.ofEpochSecond(getValue<Int>(name).toLong()).atZone(ZoneOffset.UTC)
 
     fun put(attributesGroup: IppAttributesGroup) =
         attributesGroup.values.forEach { put(it) }

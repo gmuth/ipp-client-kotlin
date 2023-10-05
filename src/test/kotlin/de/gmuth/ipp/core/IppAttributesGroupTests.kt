@@ -14,7 +14,7 @@ import kotlin.test.assertTrue
 
 class IppAttributesGroupTests {
 
-    val log = getLogger(javaClass.name)
+    private val log = getLogger(javaClass.name)
     private val group = IppAttributesGroup(Operation)
 
     @Test
@@ -28,8 +28,9 @@ class IppAttributesGroupTests {
     }
 
     @Test
-    fun putWithReplacementAllowed() {
-        with(IppAttributesGroup(Printer)) {
+    fun putWithReplacement() {
+        group.run {
+            onReplaceWarn = false
             attribute("number", Integer, 0)
             attribute("number", Integer, 1, 2)
             assertEquals(1, size)
@@ -39,11 +40,13 @@ class IppAttributesGroupTests {
 
     @Test
     fun putWithReplacementWarning() {
-        group.put(IppAttribute("number", Integer, 0))
-        group.onReplaceWarn = true
-        group.put(IppAttribute("number", Integer, 1, 2))
-        assertEquals(1, group.size)
-        assertEquals(group["number"]!!.values.size, 2)
+        group.run {
+            onReplaceWarn = true
+            put(IppAttribute("number", Integer, 0))
+            put(IppAttribute("number", Integer, 1, 2))
+            assertEquals(1, size)
+            assertEquals(get("number")!!.values.size, 2)
+        }
     }
 
     @Test
@@ -70,13 +73,19 @@ class IppAttributesGroupTests {
     @Test
     fun getValue() {
         group.attribute("foo", Keyword, "bar")
-        assertEquals("bar", group.getValue("foo") as String)
+        assertEquals("bar", group.getValue<String>("foo"))
     }
 
     @Test
     fun getTextValue() {
         group.attribute("foo", TextWithoutLanguage, IppString("bar"))
         assertEquals("bar", group.getTextValue("foo"))
+    }
+
+    @Test
+    fun getEpochTimeValue() {
+        group.attribute("epoch-seconds", Integer, 62)
+        assertEquals("1970-01-01T00:01:02", group.getTimeValue("epoch-seconds").toLocalDateTime().toString())
     }
 
     @Test

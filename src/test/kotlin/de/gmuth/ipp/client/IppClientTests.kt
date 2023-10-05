@@ -1,5 +1,9 @@
 package de.gmuth.ipp.client
 
+/**
+ * Copyright (c) 2023 Gerhard Muth
+ */
+
 import de.gmuth.ipp.core.IppOperation.GetPrinterAttributes
 import org.junit.Test
 import java.net.URI

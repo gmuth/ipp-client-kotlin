@@ -70,17 +70,17 @@ data class IppAttribute<T>(val name: String, val tag: IppTag) : IppAttributeBuil
     fun enumNameOrValue(value: Any) =
         if (tag == IppTag.Enum) getEnumName(name, value) else value
 
-    fun log(logger: Logger, level: Level = INFO, prefix: String = "") = logger.run {
+    fun log(logger: Logger, level: Level = INFO, prefix: String = "") = logger.also {
         val string = toString()
         if (string.length < 160) {
-            log(level) { "$prefix$string" }
+            it.log(level) { "$prefix$string" }
         } else {
-            log(level) { "$prefix$name ($tag) =" }
+            it.log(level) { "$prefix$name ($tag) =" }
             for (value in values) {
                 if (value is IppCollection) {
                     (value as IppCollection).log(logger, level, "$prefix  ")
                 } else {
-                    log(level) { "$prefix  ${enumNameOrValue(value as Any)}" }
+                    it.log(level) { "$prefix  ${enumNameOrValue(value as Any)}" }
                 }
             }
         }

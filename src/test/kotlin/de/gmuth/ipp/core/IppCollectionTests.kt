@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020 Gerhard Muth
+ * Copyright (c) 2020-2023 Gerhard Muth
  */
 
 import java.util.NoSuchElementException
@@ -12,7 +12,7 @@ import kotlin.test.assertFailsWith
 
 class IppCollectionTests {
 
-    val tlog = getLogger(javaClass.name)
+    private val log = getLogger(javaClass.name)
     private val collection = IppCollection(IppAttribute("foo", IppTag.Keyword, "a", "b"))
 
     @Test
@@ -21,7 +21,7 @@ class IppCollectionTests {
     }
 
     @Test
-    fun attribute() {
+    fun addAttribute() {
         collection.addAttribute("year", IppTag.Integer, 2021)
         assertEquals(2, collection.members.size)
     }
@@ -41,13 +41,13 @@ class IppCollectionTests {
 
     @Test
     fun logNarrow() {
-        collection.log(tlog)
+        collection.log(log)
     }
 
     @Test
     fun logWide() {
         collection.addAll(listOf(IppAttribute("bar", IppTag.Keyword, "c".repeat(160))))
-        collection.log(tlog)
+        collection.log(log)
     }
 
 }
