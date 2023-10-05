@@ -38,7 +38,7 @@ open class IppClient(
     companion object {
         val log = Logging.getLogger {}
         const val APPLICATION_IPP = "application/ipp"
-        const val version = "2.5-SNAPSHOT"
+        const val version = "2.5"
         const val build = "2023"
 
         init {
