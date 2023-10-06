@@ -4,6 +4,7 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020-2023 Gerhard Muth
  */
 
+import java.io.BufferedWriter
 import java.io.File
 import java.time.Instant
 import java.time.ZoneOffset
@@ -61,19 +62,24 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
 
     override fun toString() = "'$tag' $size attributes"
 
+    @JvmOverloads
     fun log(logger: Logger, level: Level = INFO, prefix: String = "", title: String = "$tag") {
         logger.log(level) { "${prefix}$title" }
         keys.forEach { logger.log(level) { "$prefix  ${get(it)}" } }
     }
 
-    fun saveText(file: File) = file.run {
-        bufferedWriter().use { writer ->
-            values.forEach { value ->
-                writer.write(value.toString())
-                writer.newLine()
-            }
+    fun write(bufferedWriter: BufferedWriter, title: String = "$tag") = bufferedWriter.run {
+        write(title)
+        newLine()
+        values.forEach {
+            write("  $it")
+            newLine()
         }
-        log.info { "saved $path" }
+    }
+
+    fun saveText(file: File) = file.apply {
+        bufferedWriter().use { write(it) }
+        log.info { "Saved $path" }
     }
 
 }

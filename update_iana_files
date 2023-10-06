@@ -1,12 +1,15 @@
 cd src/main/resources
 
 # curl -o $FILE -z $FILE https://www.iana.org/assignments/ipp-registrations/$FILE
+# curl -o $FILE https://www.iana.org/assignments/ipp-registrations/$FILE
+
+IPP_REGISTRATIONS="https://www.iana.org/assignments/ipp-registrations"
 
 FILE=ipp-registrations-2.csv
-curl -o $FILE https://www.iana.org/assignments/ipp-registrations/$FILE
+curl -o $FILE $IPP_REGISTRATIONS/$FILE
 
 FILE=ipp-registrations-4.csv
-curl -o $FILE https://www.iana.org/assignments/ipp-registrations/$FILE
+curl -o $FILE $IPP_REGISTRATIONS/$FILE
 
 FILE=ipp-registrations-6.csv
-curl -o $FILE https://www.iana.org/assignments/ipp-registrations/$FILE
+curl -o $FILE $IPP_REGISTRATIONS/$FILE

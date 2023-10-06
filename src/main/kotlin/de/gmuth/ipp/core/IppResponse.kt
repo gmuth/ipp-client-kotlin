@@ -4,8 +4,7 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020-2023 Gerhard Muth
  */
 
-import de.gmuth.ipp.core.IppTag.Printer
-import de.gmuth.ipp.core.IppTag.Unsupported
+import de.gmuth.ipp.core.IppTag.*
 import java.nio.charset.Charset
 
 class IppResponse : IppMessage {
@@ -25,6 +24,9 @@ class IppResponse : IppMessage {
 
     val printerGroup: IppAttributesGroup
         get() = getSingleAttributesGroup(Printer)
+
+    val jobGroups: Collection<IppAttributesGroup>
+        get() = getAttributesGroups(Job)
 
     val unsupportedGroup: IppAttributesGroup
         get() = getSingleAttributesGroup(Unsupported)

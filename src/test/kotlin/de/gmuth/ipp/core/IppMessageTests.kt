@@ -76,7 +76,7 @@ class IppMessageTests {
                 saveDocumentStream(tmpFile1)
                 assertEquals(26, tmpFile1.length())
                 encode() // save raw bytes
-                saveRawBytes(tmpFile2)
+                saveBytes(tmpFile2)
                 assertEquals(38, tmpFile2.length())
             } finally {
                 tmpFile1.delete()
@@ -91,7 +91,7 @@ class IppMessageTests {
         assertEquals("codeDescription []", message.toString())
         message.log(log)
         assertFailsWith<IppException> { // missing raw bytes
-            message.saveRawBytes(createTempFile("test", null))
+            message.saveBytes(createTempFile("test", null))
         }
     }
 

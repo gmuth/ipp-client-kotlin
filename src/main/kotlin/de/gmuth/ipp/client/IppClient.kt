@@ -5,7 +5,6 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.ipp.client.IppExchangeException.ClientErrorNotFoundException
-import de.gmuth.ipp.core.IppException
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppResponse
@@ -14,6 +13,7 @@ import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import de.gmuth.ipp.core.IppTag.Unsupported
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import java.io.File
+import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URI
@@ -23,9 +23,12 @@ import java.util.logging.Logger.getLogger
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.HttpsURLConnection
 
+typealias IppResponseInterceptor = (request: IppRequest, response: IppResponse) -> Unit
+
 open class IppClient(val config: IppConfig = IppConfig()) {
     protected val log = getLogger(javaClass.name)
 
+    var responseInterceptor: IppResponseInterceptor? = null
     var saveMessages: Boolean = false
     var saveMessagesDirectory = File("ipp-messages")
     var onExceptionSaveMessages: Boolean = false
@@ -73,7 +76,13 @@ open class IppClient(val config: IppConfig = IppConfig()) {
         log.finer { "send '${request.operation}' request to $ippUri" }
         val response = httpPost(toHttpUri(ippUri), request)
         log.fine { "$ippUri: $request => $response" }
-        if (saveMessages) saveMessages(ippUri, request, response)
+        if (saveMessages) {
+            fun file(suffix: String) = File(saveMessagesDirectory, "${request.requestId}-${request.operation}.$suffix")
+            request.saveBytes(file("request"))
+            response.saveBytes(file("response"))
+            response.saveText(file("txt"))
+        }
+        responseInterceptor?.invoke(request, response)
         validateResponse(request, response)
         return response
     }
@@ -81,6 +90,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
     //----------------------------------------------
     // HTTP post IPP request and decode IPP response
     //----------------------------------------------
+
     open fun httpPost(httpUri: URI, request: IppRequest): IppResponse {
         with(httpUri.toURL().openConnection() as HttpURLConnection) {
             if (this is HttpsURLConnection && config.sslContext != null) {
@@ -90,23 +100,15 @@ open class IppClient(val config: IppConfig = IppConfig()) {
             configure(chunked = request.hasDocument())
             request.write(outputStream)
             val responseContentStream = try {
+                validateResponse(request, inputStream)
                 inputStream
-            } catch (throwable: Throwable) {
+            } catch (ioException: IOException) {
+                validateResponse(request, errorStream, ioException)
                 errorStream
             }
-            validateResponse(request, responseContentStream)
             return decodeContentStream(request, responseCode, responseContentStream)
-        }
-    }
 
-    protected fun saveMessages(ippUri: URI, request: IppRequest, response: IppResponse) {
-        val messageSubDirectory = File(saveMessagesDirectory, ippUri.host).apply {
-            if (!mkdirs() && !isDirectory) throw IppException("failed to create directory: $path")
         }
-
-        fun file(suffix: String) = File(messageSubDirectory, "${request.requestId}-${request.operation}.$suffix")
-        request.saveRawBytes(file("request"))
-        response.saveRawBytes(file("response"))
     }
 
     protected fun validateResponse(request: IppRequest, response: IppResponse) {
@@ -143,10 +145,18 @@ open class IppClient(val config: IppConfig = IppConfig()) {
         setRequestProperty("Accept-Encoding", "identity") // avoid 'gzip' with Androids OkHttp
     }
 
-    protected fun HttpURLConnection.validateResponse(request: IppRequest, contentStream: InputStream) =
+    protected fun HttpURLConnection.validateResponse(
+        request: IppRequest,
+        contentStream: InputStream?,
+        cause: Exception? = null
+    ) =
         when {
             responseCode == 401 -> with(request) {
                 "User '$requestingUserName' is unauthorized for operation '$operation'"
+            }
+
+            responseCode == 426 -> {
+                "HTTP status $responseCode, $responseMessage, Try ipps://${request.printerUri.host}"
             }
 
             responseCode != 200 -> {
@@ -157,6 +167,8 @@ open class IppClient(val config: IppConfig = IppConfig()) {
                 "Invalid Content-Type: $contentType"
             }
 
+            cause != null -> cause.message
+
             else -> null
         }?.let {
             throw IppExchangeException(
@@ -165,7 +177,8 @@ open class IppClient(val config: IppConfig = IppConfig()) {
                 responseCode, // HTTP
                 httpHeaderFields = headerFields,
                 httpStream = contentStream,
-                message = it
+                message = it,
+                cause = cause
             )
         }
 

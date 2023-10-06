@@ -22,6 +22,8 @@ Repository [ipp-samples](https://github.com/gmuth/ipp-samples) contains examples
 ```
 implementation("de.gmuth:ipp-client:3.0")
 ```
+
+[README.md for version 2.x](https://github.com/gmuth/ipp-client-kotlin/blob/2.5/README.md) is still available.
 ### [IppPrinter](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppPrinter.kt) and [IppJob](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppJob.kt)
 
 ```kotlin
@@ -84,9 +86,7 @@ ippPrinter
     .pollAndHandleNotifications()
 ```
 
-### Printer Capabilities
-
-`IppPrinter` checks, if attribute values are supported by looking into `'...-supported'` printer attributes.
+IppPrinter checks, if attribute values are supported by looking into `'...-supported'` printer attributes.
 
 ```
 DocumentFormat("application/pcl")
@@ -95,7 +95,7 @@ WARN: according to printer attributes value 'application/pcl' is not supported.
 document-format-supported (1setOf mimeMediaType) = application/pdf,application/postscript
 ```
 
-### exchange [IppRequest](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppRequest.kt) for [IppResponse](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppResponse.kt)
+### Exchange [IppRequest](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppRequest.kt) for [IppResponse](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppResponse.kt)
 
 ```kotlin
 val uri = URI.create("ipp://colorjet.local/ipp/printer")
@@ -158,7 +158,10 @@ val margin = 300 // 3 mm
 printer.printJob(
     jpegFile,
     DocumentFormat.JPEG,
-    mediaColWithSize(width, width*image.height/image.width).withMargin(margin)
+    MediaCollection(
+        MediaSize(width, width * image.height / image.width),
+        MediaMargin(300)
+    )
 )
 ```
 
@@ -168,14 +171,13 @@ From version 3.0 onwards the library
 uses [Java Logging](https://docs.oracle.com/javase/8/docs/technotes/guides/logging/overview.html) - configure as you
 like.
 Tests can use Logging.configure() to load logging.properties from test/resources.
-
 The behaviour of my previously
 used [ConsoleLogger](https://github.com/gmuth/logging-kotlin/blob/main/src/main/kotlin/de/gmuth/log/ConsoleLogger.kt) is
 now implemented by StdoutHandler and SimpleClassNameFormatter.
-I moved all of my custom logging code to it's own
+I moved all of my custom logging code to its own
 repository [logging-kotlin](https://github.com/gmuth/logging-kotlin/tree/main/src/main/kotlin/de/gmuth/log).
 
-## Build sources
+## Sources
 
 To build the jar make sure you have JDK 11 installed.
 The default tasks build the jar in `build/libs`.

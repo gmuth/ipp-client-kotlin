@@ -9,12 +9,13 @@ plugins {
     id("org.sonarqube") version "4.3.1.3277" // https://plugins.gradle.org/plugin/org.sonarqube
     //id("org.sonarqube") version "3.5.0.2730" // supports java 8, dropped with 4.1
     id("maven-publish")
+    id("java-library")
     id("signing")
     id("jacoco")
 }
 
 group = "de.gmuth"
-version = "3.0"
+version = "3.1-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -43,30 +44,26 @@ defaultTasks("assemble")
 //    }
 //}
 
-val javaVersion = "1.8"
+val javaVersion = "11"
+tasks.apply {
 
-tasks.compileKotlin {
-    kotlinOptions {
-        // If 1.6 is required you also have to configure gradle plugin org.jetbrains.kotlin.jvm version 1.6
-        jvmTarget = javaVersion
+    // Kotlin
+    compileKotlin {
+        kotlinOptions { jvmTarget = javaVersion }
     }
-}
-
-// avoid warnings "jvm target compatibility should be set to the same Java version."
-tasks.compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = javaVersion
+    compileTestKotlin {
+        kotlinOptions { jvmTarget = javaVersion }
     }
-}
 
-tasks.compileJava {
-    sourceCompatibility = tasks.compileKotlin.get().kotlinOptions.jvmTarget
-    targetCompatibility = tasks.compileKotlin.get().kotlinOptions.jvmTarget
-}
-
-tasks.compileTestJava {
-    sourceCompatibility = tasks.compileTestKotlin.get().kotlinOptions.jvmTarget
-    targetCompatibility = tasks.compileTestKotlin.get().kotlinOptions.jvmTarget
+    // Java
+    compileJava {
+        sourceCompatibility = javaVersion
+        targetCompatibility = javaVersion
+    }
+    compileTestJava {
+        sourceCompatibility = javaVersion
+        targetCompatibility = javaVersion
+    }
 }
 
 //tasks.withType<Jar> {
@@ -213,11 +210,11 @@ tasks.sonar {
 
 // ====== fat jar ======
 
-tasks.register("fatJar", Jar::class) {
-    description = "Generates a fat jar for this project."
-    group = JavaBasePlugin.DOCUMENTATION_GROUP
-    manifest.attributes["Main-Class"] = "CopyNewJobsKt"
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    from(configurations.runtimeClasspath.get().map(::zipTree))
-    with(tasks.jar.get())
-}
+//tasks.register("fatJar", Jar::class) {
+//    description = "Generates a fat jar for this project."
+//    group = JavaBasePlugin.DOCUMENTATION_GROUP
+//    manifest.attributes["Main-Class"] = "CopyNewJobsKt"
+//    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+//    from(configurations.runtimeClasspath.get().map(::zipTree))
+//    with(tasks.jar.get())
+//}

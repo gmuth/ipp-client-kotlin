@@ -155,12 +155,11 @@ class IppSubscription(
         if (hasJobId()) append(" job #$jobId")
         if (attributes.containsKey("notify-events")) append(" events=${events.joinToString(",")}")
         if (attributes.containsKey("notify-time-interval")) append(" time-interval=$timeInterval")
-        if (attributes.containsKey("notify-lease-duration")) {
-            append(" lease-duration=$leaseDuration (expires at $expiresAt)")
-        }
+        if (attributes.containsKey("notify-lease-duration")) append(" lease-duration=$leaseDuration (expires at $expiresAt)")
         toString()
     }
 
+    @JvmOverloads
     fun log(logger: Logger, level: Level = INFO) =
         attributes.log(logger, level, title = "subscription #$id")
 

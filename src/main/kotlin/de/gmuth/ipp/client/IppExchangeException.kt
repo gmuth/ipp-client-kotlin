@@ -64,8 +64,8 @@ open class IppExchangeException(
         fileNameWithoutSuffix: String = "ipp_exchange_exception_$httpStatus",
         directory: String = createTempDirectory("ipp-client-").pathString
     ) {
-        request.saveRawBytes(File(directory, "$fileNameWithoutSuffix.request"))
-        response?.saveRawBytes(File(directory, "$fileNameWithoutSuffix.response"))
+        request.saveBytes(File(directory, "$fileNameWithoutSuffix.request"))
+        response?.saveBytes(File(directory, "$fileNameWithoutSuffix.response"))
     }
 
 }

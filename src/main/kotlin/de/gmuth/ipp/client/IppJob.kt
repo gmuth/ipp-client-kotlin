@@ -344,6 +344,7 @@ class IppJob(
         }
     }
 
+    @JvmOverloads
     fun log(logger: Logger, level: Level = INFO) =
         attributes.log(logger, level, title = "JOB-$id")
 }

@@ -40,6 +40,7 @@ class IppConfig(
         verifySSLHostname = false
     }
 
+    @JvmOverloads
     fun log(logger: Logger, level: Level = INFO) = logger.run {
         log(level) { "userName: $userName" }
         log(level) { "ippVersion: $ippVersion" }

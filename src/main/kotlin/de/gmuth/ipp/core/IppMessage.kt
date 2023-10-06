@@ -132,13 +132,31 @@ abstract class IppMessage() {
         log.info { "saved ${file.length()} document bytes to file ${file.path}" }
     }
 
-    fun saveRawBytes(file: File) =
+    fun saveBytes(file: File) =
         if (rawBytes == null) {
             throw IppException("No raw bytes to save. You must call read/decode or write/encode before.")
         } else {
             file.writeBytes(rawBytes!!)
             log.info { "Saved ${file.path} (${file.length()} bytes)" }
         }
+
+    protected fun write(bufferedWriter: BufferedWriter, title: String) {
+        fun writeln(text: String) = bufferedWriter.run { write(text); newLine() }
+        bufferedWriter.write(title)
+        if (rawBytes != null) bufferedWriter.write(" (decoded ${rawBytes!!.size} raw IPP bytes)")
+        bufferedWriter.newLine()
+        writeln("version $version")
+        writeln("$codeDescription")
+        writeln("request-id $requestId")
+        for (group in attributesGroups) {
+            group.write(bufferedWriter)
+        }
+    }
+
+    fun saveText(file: File) = file.apply {
+        bufferedWriter().use { write(it, title = "# File: ${file.name}") }
+        log.info { "Saved $path (${length()} bytes)" }
+    }
 
     // -------
     // LOGGING

@@ -8,6 +8,7 @@ import de.gmuth.ipp.attributes.*
 import de.gmuth.ipp.attributes.CommunicationChannel.Companion.getCommunicationChannelsSupported
 import de.gmuth.ipp.attributes.Marker.Companion.getMarkers
 import de.gmuth.ipp.attributes.PrinterState.*
+import de.gmuth.ipp.attributes.TemplateAttributes.jobName
 import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
@@ -172,6 +173,9 @@ open class IppPrinter(
     val alertDescription: List<IppString>? // PWG 5100.9
         get() = attributes.getValuesOrNull("printer-alert-description")
 
+    val identifyActionsSupported: List<String>
+        get() = attributes.getValues("identify-actions-supported")
+
     // ----------------------------------------------
     // Extensions supported by cups and some printers
     // https://www.cups.org/doc/spec-ipp.html
@@ -196,8 +200,8 @@ open class IppPrinter(
         get() = attributes.getTextValue("cups-version")
 
     val supportedAttributes: Collection<IppAttribute<*>> = attributes.values
-            .filter { it.name.endsWith("-supported") }
-            .sortedBy { it.name }
+        .filter { it.name.endsWith("-supported") }
+        .sortedBy { it.name }
 
     //-------------------------------------------------------
 
@@ -217,11 +221,12 @@ open class IppPrinter(
     // Identify-Printer
     //-----------------
 
+    // https://ftp.pwg.org/pub/pwg/candidates/cs-ippjobprinterext3v10-20120727-5100.13.pdf
     fun identify(vararg actions: String) = identify(actions.toList())
 
     fun identify(actions: List<String>): IppResponse {
-        checkIfValueIsSupported("identify-actions-supported", actions)
         val request = ippRequest(IdentifyPrinter).apply {
+            checkIfValueIsSupported("identify-actions-supported", actions)
             operationGroup.attribute("identify-actions", Keyword, actions)
         }
         return exchange(request)
@@ -493,6 +498,7 @@ open class IppPrinter(
         toString()
     }
 
+    @JvmOverloads
     fun log(logger: Logger, level: Level = INFO) =
         attributes.log(logger, level, title = "PRINTER-$name ($makeAndModel), $state $stateReasons")
 
@@ -562,14 +568,123 @@ open class IppPrinter(
     fun savePrinterAttributes(directory: String = ".") {
         val printerModel: String = makeAndModel.text.replace("\\s+".toRegex(), "_")
         exchange(ippRequest(GetPrinterAttributes)).run {
-            saveRawBytes(File(directory, "$printerModel.bin"))
+            saveBytes(File(directory, "$printerModel.bin"))
             printerGroup.saveText(File(directory, "$printerModel.txt"))
         }
     }
 
     fun printerDirectory(printerName: String = name.text.replace("\\s+".toRegex(), "_")) =
         File(workDirectory, printerName).apply {
-            if (!mkdirs() && !isDirectory) throw IOException("failed to create printer directory: $path")
+            if (!mkdirs() && !isDirectory) throw IOException("Failed to create printer directory: $path")
         }
+
+    /**
+     * Exchange a few IPP requests and save the IPP responses returned by the printer.
+     * Operations:
+     * - Get-Printer-Attributes
+     * - Print-Job, Get-Jobs, Get-Job-Attributes
+     * - Hold-Job, Release-Job, Cancel-Job
+     */
+    @JvmOverloads
+    fun inspect(directory: String = "inspected-printers", cancelJob: Boolean = true) {
+
+        log.info { "Inspect printer $printerUri" }
+
+        val printerModel = with(StringBuilder()) {
+            if (isCups()) append("CUPS_")
+            append(makeAndModel.text.replace("\\s+".toRegex(), "_"))
+            toString()
+        }
+        log.info { "Printer model: $printerModel" }
+
+        ippClient.saveMessages = true
+        ippClient.saveMessagesDirectory = File(directory, printerModel).apply {
+            if (!isDirectory && !mkdirs()) throw RuntimeException("Failed to create directory: $path")
+        }
+
+        attributes.run {
+            // Media
+            if (containsKey("media-supported")) log.info { "Media supported: $mediaSupported" }
+            if (containsKey("media-ready")) log.info { "Media ready: $mediaReady" }
+            if (containsKey("media-default")) log.info { "Media default: $mediaDefault" }
+            // URIs
+            log.info { "Communication channels supported:" }
+            communicationChannelsSupported.forEach { log.info { "  $it" } }
+        }
+
+        val pdfResource = when {
+            !attributes.containsKey("media-ready") -> {
+                log.info { "media-ready not supported" }
+                "/blank_A4.pdf"
+            }
+
+            mediaReady.contains("iso-a4") || mediaReady.contains("iso_a4_210x297mm") -> "/blank_A4.pdf"
+            mediaReady.contains("na_letter") || mediaReady.contains("na_letter_8.5x11in") -> "/blank_USLetter.pdf"
+            else -> {
+                log.info { "No PDF available for media '$mediaReady', trying A4" }
+                "/blank_A4.pdf"
+            }
+        }
+
+        runInspectionWorkflow(pdfResource, cancelJob)
+    }
+
+    protected fun runInspectionWorkflow(pdfResource: String, cancelJob: Boolean) {
+
+        log.info { "> Get printer attributes" }
+        getPrinterAttributes()
+
+        if (supportsOperations(IdentifyPrinter)) {
+            val action = with(identifyActionsSupported) { if (contains("sound")) "sound" else first() }
+            log.info { "> Identify by $action" }
+            identify(action)
+        }
+
+        log.info { "> Validate job" }
+        val response = validateJob(
+            jobName("Validation"),
+            Sides.TwoSidedLongEdge,
+            PrintQuality.Normal,
+            ColorMode.Color,
+            DocumentFormat.JPEG,
+            Media.ISO_A3
+        )
+        log.info { response.toString() }
+
+        log.info { "> Print job $pdfResource" }
+        printJob(
+            IppPrinter::class.java.getResourceAsStream(pdfResource)!!,
+            jobName(pdfResource)
+
+        ).run {
+            log.info { toString() }
+
+            log.info { "> Get jobs" }
+            for (job in getJobs()) {
+                log.info { "$job" }
+            }
+
+            if (supportsOperations(HoldJob, ReleaseJob)) {
+                log.info { "> Hold job" }
+                hold()
+                log.info { "> Release job" }
+                release()
+            }
+
+            if (cancelJob) {
+                log.info { "> Cancel job" }
+                cancel(updateAttributes = false)
+            }
+
+            log.info { "> Update job attributes" }
+            updateAttributes()
+
+            ippClient.saveMessages = false
+            if (!isTerminated()) {
+                log.info { "> Wait for termination" }
+                waitForTermination()
+            }
+        }
+    }
 
 }
