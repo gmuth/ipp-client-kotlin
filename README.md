@@ -153,14 +153,13 @@ val printer = IppPrinter(URI.create("ipp://192.168.2.64"))
 val jpegFile = File("label.jpeg")
 val image = javax.imageio.ImageIO.read(jpegFile)
 val width = 2540 * 2 // hundreds of mm
-val margin = 300 // 3 mm
 
 printer.printJob(
     jpegFile,
     DocumentFormat.JPEG,
     MediaCollection(
         MediaSize(width, width * image.height / image.width),
-        MediaMargin(300)
+        MediaMargin(300) // 3 mm
     )
 )
 ```
