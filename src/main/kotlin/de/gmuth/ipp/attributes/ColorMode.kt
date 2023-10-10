@@ -10,11 +10,19 @@ import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppException
 import de.gmuth.ipp.core.IppTag.Keyword
 
-enum class ColorMode(private val keyword: String) : IppAttributeBuilder {
+// https://ftp.pwg.org/pub/pwg/candidates/cs-ippjobprinterext3v10-20120727-5100.13.pdf  - 5.2.3
+class ColorMode(private val keyword: String) : IppAttributeBuilder {
 
-    Auto("auto"),
-    Color("color"),
-    Monochrome("monochrome");
+    companion object {
+        @JvmField
+        val Auto = ColorMode("auto")
+
+        @JvmField
+        val Color = ColorMode("color")
+
+        @JvmField
+        val Monochrome = ColorMode("monochrome")
+    }
 
     override fun buildIppAttribute(printerAttributes: IppAttributesGroup) = IppAttribute(
         when { // use job-creation-attributes-supported? // 5100.11

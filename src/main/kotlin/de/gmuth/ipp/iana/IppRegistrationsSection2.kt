@@ -73,8 +73,8 @@ object IppRegistrationsSection2 {
 
     }
 
-    private val attributesMap: Map<String, Attribute>
-    private val aliasMap: Map<String, String>
+    internal val attributesMap: Map<String, Attribute>
+    internal val aliasMap: Map<String, String>
 
     init {
         // source: https://www.iana.org/assignments/ipp-registrations/ipp-registrations-2.csv

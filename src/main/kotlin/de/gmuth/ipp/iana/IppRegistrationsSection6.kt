@@ -25,8 +25,8 @@ object IppRegistrationsSection6 {
         override fun toString() = "$attribute/$value ($syntax) = $name $reference "
     }
 
-    private val enumAttributeValuesMap: Map<String, EnumAttributeValue>
-    private val aliasMap: Map<String, String>
+    internal val enumAttributeValuesMap: Map<String, EnumAttributeValue>
+    internal val aliasMap: Map<String, String>
 
     init {
         // source: https://www.iana.org/assignments/ipp-registrations/ipp-registrations-6.csv
