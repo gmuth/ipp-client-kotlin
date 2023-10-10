@@ -151,7 +151,7 @@ class IppSubscription(
     // Logging
     // -------
 
-    override fun toString() = StringBuilder("subscription #$id:").run {
+    override fun toString() = StringBuilder("Subscription #$id:").run {
         if (hasJobId()) append(" job #$jobId")
         if (attributes.containsKey("notify-events")) append(" events=${events.joinToString(",")}")
         if (attributes.containsKey("notify-time-interval")) append(" time-interval=$timeInterval")

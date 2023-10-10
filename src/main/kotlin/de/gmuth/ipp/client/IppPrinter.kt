@@ -485,10 +485,12 @@ open class IppPrinter(
 
     override fun toString() = StringBuilder("IppPrinter:").run {
         if (attributes.containsKey("printer-name")) append(" name=$name")
-        append(", makeAndModel=$makeAndModel")
+        if (attributes.containsKey("printer-make-and-model")) append(", makeAndModel=$makeAndModel")
         append(", state=$state, stateReasons=$stateReasons")
         stateMessage?.let { if (it.text.isNotEmpty()) append(", stateMessage=$stateMessage") }
         if (attributes.containsKey("printer-is-accepting-jobs")) append(", isAcceptingJobs=$isAcceptingJobs")
+        if (attributes.containsKey("printer-location")) append(", location=$location")
+        if (attributes.containsKey("printer-info")) append(", info=$info")
         toString()
     }
 
@@ -683,7 +685,7 @@ open class IppPrinter(
                 waitForTermination()
             }
 
-            if(isAborted()) log(log)
+            if (isAborted()) log(log)
         }
     }
 

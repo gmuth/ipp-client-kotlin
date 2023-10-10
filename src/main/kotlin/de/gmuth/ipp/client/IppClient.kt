@@ -44,7 +44,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
     }
 
     //-----------------
-    // build IppRequest
+    // Build IppRequest
     //-----------------
 
     protected val requestCounter = AtomicInteger(1)
@@ -107,7 +107,6 @@ open class IppClient(val config: IppConfig = IppConfig()) {
                 errorStream
             }
             return decodeContentStream(request, responseCode, responseContentStream)
-
         }
     }
 
@@ -152,7 +151,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
     ) =
         when {
             responseCode == 401 -> with(request) {
-                "User '$requestingUserName' is unauthorized for operation '$operation'"
+                "User \"$requestingUserName\" is not authorized for operation $operation on $printerUri"
             }
 
             responseCode == 426 -> {

@@ -289,6 +289,7 @@ class IppJob(
     // https://openprinting.github.io/cups/doc/man-cupsd.conf.html
     //-------------------------------------------------------------------------------------
 
+    @JvmOverloads
     fun cupsGetDocument(documentNumber: Int = 1): IppDocument {
         log.fine { "cupsGetDocument #$documentNumber for job #$id" }
         val response = exchange(ippRequest(CupsGetDocument).apply {

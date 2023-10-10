@@ -59,7 +59,7 @@ class IppEventNotification(
 
     @SuppressWarnings("kotlin:S3776")
     override fun toString() = StringBuilder().run {
-        append("event #$sequenceNumber:")
+        append("Event #$sequenceNumber:")
         append(" [$subscribedEvent] $text")
         with(attributes) {
             if (containsKey("notify-job-id")) append(", job #$jobId")

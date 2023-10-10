@@ -4,8 +4,8 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020-2023 Gerhard Muth
  */
 
-import de.gmuth.ipp.client.WhichJobs.All
 import de.gmuth.ipp.client.IppExchangeException.ClientErrorNotFoundException
+import de.gmuth.ipp.client.WhichJobs.All
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppRequest
@@ -115,22 +115,29 @@ class CupsClient(
         printerInfo: String?,
         printerLocation: String?,
         ppdName: String? // virtual PPD 'everywhere' is supported asynchronous
-    ) = exchange(
-        cupsPrinterRequest(
-            CupsCreateLocalPrinter,
-            printerName,
-            deviceUri,
-            printerInfo,
-            printerLocation,
-            ppdName
-        )
-    )
+    ): IppPrinter {
+        require(deviceUri.scheme.startsWith("ipp")) { "uri scheme unsupported: $deviceUri" }
+        require(!printerName.contains("-")) { "printerName must not contain '-'" }
+        exchange(
+            cupsPrinterRequest(
+                CupsCreateLocalPrinter,
+                printerName,
+                deviceUri,
+                printerInfo,
+                printerLocation,
+                ppdName
+            )
+        ).run {
+            log.info { "$statusMessage ${printerGroup["printer-uri-supported"]!!.values}" }
+            return IppPrinter(printerGroup, ippClient)
+        }
+    }
 
     // --------------------------------------
     // Build request for a named CUPS printer
     // --------------------------------------
 
-    internal fun cupsPrinterRequest(
+    protected fun cupsPrinterRequest(
         operation: IppOperation,
         printerName: String,
         deviceUri: URI? = null,
@@ -167,7 +174,7 @@ class CupsClient(
     // Delegate to IppPrinter
     //-----------------------
 
-    internal val ippPrinter: IppPrinter by lazy {
+    protected val ippPrinter: IppPrinter by lazy {
         IppPrinter(cupsUri, ippClient = ippClient, getPrinterAttributesOnInit = false)
             .apply { workDirectory = cupsClientWorkDirectory }
     }
@@ -207,45 +214,31 @@ class CupsClient(
         deviceUri: URI,
         printerInfo: String? = null,
         printerLocation: String? = null
-    ): IppPrinter {
-
-        // validate ipp scheme
-        require(deviceUri.scheme.startsWith("ipp")) { "uri scheme unsupported: $deviceUri" }
-
-        createLocalPrinter(printerName, deviceUri, printerInfo, printerLocation, ppdName = "everywhere").apply {
-            log.info {
-                "$statusMessage ${
-                    printerGroup.getValues<List<URI>>("printer-uri-supported").joinToString(",")
-                }"
-            }
-        }
-
-        return getPrinter(printerName).apply {
-
-            // https://github.com/apple/cups/issues/5919
-            log.info { "Waiting for CUPS to generate IPP Everywhere PPD." }
-            log.info { toString() }
-            do {
-                Thread.sleep(1000)
-                updateAttributes("printer-make-and-model")
-            } while (!makeAndModel.text.lowercase().contains("everywhere"))
-            log.info { toString() }
-
-            // make printer permanent
-            exchange(
-                cupsPrinterRequest(CupsAddModifyPrinter, printerName).apply {
-                    createAttributesGroup(Printer).run {
-                        attribute("printer-is-temporary", IppTag.Boolean, false)
-                    }
+    ) = createLocalPrinter(
+        printerName,
+        deviceUri,
+        printerInfo,
+        printerLocation,
+        ppdName = "everywhere"
+    ).apply {
+        updateAttributes("printer-name")
+        log.info(toString())
+        log.info { "CUPS now generates IPP Everywhere PPD." }
+        do { // https://github.com/apple/cups/issues/5919
+            updateAttributes("printer-make-and-model")
+        } while (!makeAndModel.text.lowercase().contains("everywhere"))
+        log.info { "Make printer permanent." }
+        exchange(
+            cupsPrinterRequest(CupsAddModifyPrinter, printerName).apply {
+                createAttributesGroup(Printer).run {
+                    attribute("printer-is-temporary", IppTag.Boolean, false)
                 }
-            )
-
-            // make printer operational
-            enable()
-            resume()
-            updateAttributes()
-            log.info { toString() }
-        }
+            }
+        )
+        log.info { "Make printer operational." }
+        enable()
+        resume()
+        updateAttributes()
     }
 
     // ---------------------------
@@ -268,7 +261,7 @@ class CupsClient(
                 "job-name", "job-state", "job-state-reasons",
                 if (version < "1.6.0") "document-count" else "number-of-documents"
             )
-            // wired: do not modify above set
+            // weird: do not modify above set
             // job-originating-user-name is missing when document-count or job-originating-host-name ist requested
             // once hidden in response, wait for one minute and user-name should show up again
         )
@@ -284,7 +277,15 @@ class CupsClient(
                 }
             }
             .apply {
-                with(jobOwners) { log.info { "Found $size job ${if (size <= 1) "owner" else "owners"}: ${joinToString(", ")}" } }
+                with(jobOwners) {
+                    log.info {
+                        "Found $size job ${if (size <= 1) "owner" else "owners"}: ${
+                            joinToString(
+                                ", "
+                            )
+                        }"
+                    }
+                }
                 log.info { "Found $size jobs (which=$whichJobs) where $numberOfJobsWithoutDocuments jobs have no documents" }
                 log.info { "Saved $numberOfSavedDocuments documents of ${size.minus(numberOfJobsWithoutDocuments.toInt())} jobs with documents to directory: ${ippPrinter.workDirectory}" }
             }

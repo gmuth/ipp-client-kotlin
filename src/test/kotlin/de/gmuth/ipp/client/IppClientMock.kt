@@ -10,12 +10,9 @@ import de.gmuth.ipp.core.IppStatus
 import de.gmuth.log.Logging
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.OutputStream
 import java.net.URI
 
-class IppClientMock(
-    var directory: String = "printers"
-) : IppClient() {
+class IppClientMock(var directory: String = "printers") : IppClient() {
 
     init {
         Logging.configure()

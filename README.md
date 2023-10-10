@@ -1,4 +1,4 @@
-# ipp-client
+# ipp-client 3.0
 
 A client implementation of the ipp protocol for java and kotlin.
 RFCs [8010](https://tools.ietf.org/html/rfc8010),
@@ -103,7 +103,7 @@ val file = File("A4-blank.pdf")
 
 val ippClient = IppClient()
 val request = IppRequest(IppOperation.PrintJob, uri).apply {
-    // constructor adds 'attributes-charset', 'attributes-natural-language' and 'printer-uri'
+    // Constructor adds 'attributes-charset', 'attributes-natural-language' and 'printer-uri'
     operationGroup.attribute("document-format", IppTag.MimeMediaType, "application/pdf")
     documentInputStream = FileInputStream(file)
 }
@@ -117,32 +117,40 @@ Use the `CupsClient` to connect to a CUPS server.
 If you want to access a cups queue you can construct an `IppPrinter` from it's uri.
 
 ```kotlin
-// connect to default ipp://localhost:631
+// Connect to default ipp://localhost:631
 val cupsClient = CupsClient()
 
-// credentials (e.g. for remote connections)
+// Credentials (e.g. for remote connections)
 cupsClient.basicAuth("admin", "secret")
 
-// list all queues
+// List all queues
 cupsClient.getPrinters().forEach {
     println("${it.name} -> ${it.printerUri}")
 }
 
-// list all completed jobs for queue
+// List all completed jobs for queue
 cupsClient.getPrinter("ColorJet_HP")
     .getJobs(WhichJobs.Completed)
     .forEach { println(it) }
 
-// default printer
+// Default printer
 val defaultPrinter = cupsClient.getDefault()
 
-// check capability
+// Check capability
 if (defaultPrinter.hasCapability(Capability.CanPrintInColor)) {
     println("${defaultPrinter.name} can print in color")
 }
 
-// get canceled jobs and save documents
+// Get canceled jobs and save documents
 cupsClient.getJobsAndSaveDocuments(WhichJobs.Canceled)
+
+// Setup IPP Everywhere Printer
+cupsClient.setupIppEverywherePrinter(
+    "myprinter",
+    URI.create("ipp://myprinter.local:631/ipp/print"),
+    "My description",
+    "My location"
+)
 
 ```
 
