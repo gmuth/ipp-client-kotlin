@@ -24,12 +24,6 @@ repositories {
 // update gradle wrapper
 // ./gradlew wrapper --gradle-version 7.6.2
 
-//java {
-//    registerFeature("slf4jSupport") {
-//        usingSourceSet(sourceSets["main"])
-//    }
-//}
-
 dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     //testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
@@ -38,13 +32,7 @@ dependencies {
 // gradlew clean -x test build publishToMavenLocal
 defaultTasks("assemble")
 
-//java {
-//    toolchain {
-//        languageVersion.set(JavaLanguageVersion.of(8))
-//    }
-//}
-
-val javaVersion = "11"
+val javaVersion = "1.8"
 tasks.apply {
 
     // Kotlin
@@ -65,11 +53,6 @@ tasks.apply {
         targetCompatibility = javaVersion
     }
 }
-
-//tasks.withType<Jar> {
-//    archiveBaseName.set("ipp-client")
-//    archiveClassifier.set("")
-//}
 
 // ================= PUBLISHING ================
 

@@ -49,7 +49,6 @@ class IppJobTests {
             assertEquals(2, kOctets)
             assertEquals(1, numberOfDocuments)
             assertEquals("blank.pdf", documentNameSupplied.text)
-            assertTrue(hasStateReasons())
             assertFalse(isProcessing())
             assertFalse(isProcessingStopped())
             assertTrue(isTerminated())
@@ -117,7 +116,7 @@ class IppJobTests {
     @Test
     fun isProcessingToStopPoint() {
         job.apply {
-            attributes.remove("job-state-reasons")
+            attributes.attribute("job-state-reasons", Keyword, "none")
             assertFalse(isProcessingToStopPoint())
             attributes.attribute("job-state-reasons", Keyword, "processing-to-stop-point")
             assertTrue(isProcessingToStopPoint())

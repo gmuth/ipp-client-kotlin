@@ -126,10 +126,10 @@ object IppRegistrationsSection2 {
         if (tag.isOutOfBandTag()) return
         val syntax = syntaxForAttribute(name, true)
         if (syntax == null) {
-            log.finer { "no syntax found for '$name'" }
+            log.fine { "no syntax found for '$name'" }
             unknownAttributes.add(name)
         } else if (!syntax.contains(tag.registeredSyntax())) {
-            log.warning { "$name ($tag) does not match syntax '$syntax'" }
+            log.warning { "$name ($tag) does not match iana registered syntax '$syntax'" }
         }
     }
 

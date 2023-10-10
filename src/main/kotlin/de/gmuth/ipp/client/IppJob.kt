@@ -52,6 +52,7 @@ class IppJob(
         get() = JobState.fromAttributes(attributes)
 
     val stateReasons: List<String>
+        @SuppressWarnings("kotlin:S1192")
         get() = attributes.getValues("job-state-reasons")
 
     val name: IppString
@@ -95,17 +96,22 @@ class IppJob(
         @SuppressWarnings("kotlin:S1192")
         get() = attributes.getTextValue("com.apple.print.JobInfo.PMJobOwner")
 
-    fun hasStateReasons() = attributes.containsKey("job-state-reasons")
+    fun isPending(updateStateAttributes: Boolean = false) = stateIs(updateStateAttributes, Pending)
+    fun isAborted(updateStateAttributes: Boolean = false) = stateIs(updateStateAttributes, Aborted)
+    fun isCanceled(updateStateAttributes: Boolean = false) = stateIs(updateStateAttributes, Canceled)
+    fun isCompleted(updateStateAttributes: Boolean = false) = stateIs(updateStateAttributes, Completed)
+    fun isProcessing(updateStateAttributes: Boolean = false) = stateIs(updateStateAttributes, Processing)
+    fun isProcessingStopped(updateStateAttributes: Boolean = false) = stateIs(updateStateAttributes, ProcessingStopped)
+    fun isTerminated(updateStateAttributes: Boolean = false) = stateIs(updateStateAttributes, Canceled)
+            || stateIs(false, Aborted) || stateIs(false, Completed)
 
-    fun isPending() = state == Pending
-    fun isAborted() = state == Aborted
-    fun isCanceled() = state == Canceled
-    fun isProcessing() = state == Processing
-    fun isProcessingStopped() = state == ProcessingStopped
-    fun isTerminated() = state in listOf(Canceled, Aborted, Completed)
+    protected fun stateIs(updateStateAttributes: Boolean, expectedState: JobState): Boolean {
+        if (updateStateAttributes) updateAttributes("job-state", "job-state-reasons")
+        return state == expectedState
+    }
 
     // https://datatracker.ietf.org/doc/html/rfc8011#section-5.3.8
-    fun stateReasonsContain(reason: String) = hasStateReasons() && stateReasons.contains(reason)
+    fun stateReasonsContain(reason: String) = stateReasons.contains(reason)
     fun isProcessingToStopPoint() = stateReasonsContain("processing-to-stop-point")
     fun resourcesAreNotReady() = stateReasonsContain("resources-are-not-ready")
     fun isIncoming() = stateReasonsContain("job-incoming")
@@ -158,8 +164,9 @@ class IppJob(
                 log.info { lastJobString }
             }
             if (isProcessingStopped() || lastPrinterString.isNotEmpty()) {
-                printer.updatePrinterStateAttributes()
-                printer.updateAttributes()
+                printer.updateAttributes(
+                    "printer-state", "printer-state-reasons", "printer-state-message", "printer-is-accepting-jobs"
+                )
                 if (printer.toString() != lastPrinterString) {
                     lastPrinterString = printer.toString()
                     log.info { lastPrinterString }
@@ -167,6 +174,7 @@ class IppJob(
             }
             if (isProcessing() && lastPrinterString.isNotEmpty()) lastPrinterString = ""
         }
+        if (isAborted()) log(log)
     }
 
     //-------------------
@@ -178,14 +186,14 @@ class IppJob(
     fun restart() = exchange(ippRequest(RestartJob))
 
     @JvmOverloads
-    fun cancel(messageForOperator: String? = null, updateAttributes: Boolean = true): IppResponse { // RFC 8011 4.3.3
+    fun cancel(messageForOperator: String? = null): IppResponse { // RFC 8011 4.3.3
         if (isCanceled()) log.warning { "Job #$id is already 'canceled'" }
         if (isProcessingToStopPoint()) log.warning { "Job #$id is already 'processing-to-stop-point'" }
         val request = ippRequest(CancelJob).apply {
             messageForOperator?.let { operationGroup.attribute("message", TextWithoutLanguage, it) }
         }
         log.info { "Cancel job #$id" }
-        return exchange(request).also { if (updateAttributes) updateAttributes() }
+        return exchange(request)
     }
 
     //--------------
@@ -332,7 +340,7 @@ class IppJob(
         StringBuffer().run {
             append("Job #$id:")
             if (containsKey("job-state")) append(" state=$state")
-            if (hasStateReasons()) append(" (reasons=${stateReasons.joinToString(",")})")
+            if (containsKey("job-state-reasons")) append(" (reasons=${stateReasons.joinToString(",")})")
             if (containsKey("job-name")) append(", name=$name")
             if (containsKey("job-impressions-completed")) append(", impressions-completed=$impressionsCompleted")
             if (containsKey("job-originating-host-name")) append(", originating-host-name=$originatingHostName")

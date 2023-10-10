@@ -27,7 +27,7 @@ import kotlin.io.path.createTempDirectory
 @SuppressWarnings("kotlin:S1192")
 open class IppPrinter(
     val printerUri: URI,
-    var attributes: IppAttributesGroup = IppAttributesGroup(Printer),
+    val attributes: IppAttributesGroup = IppAttributesGroup(Printer),
     ippConfig: IppConfig = IppConfig(),
     val ippClient: IppClient = IppClient(ippConfig),
     getPrinterAttributesOnInit: Boolean = true,
@@ -37,10 +37,6 @@ open class IppPrinter(
     var workDirectory: File = createTempDirectory().toFile()
 
     companion object {
-
-        val printerStateAttributes = listOf(
-            "printer-is-accepting-jobs", "printer-state", "printer-state-reasons"
-        )
 
         val printerClassAttributes = listOf(
             "printer-name",
@@ -58,6 +54,7 @@ open class IppPrinter(
             "media-supported",
             "media-ready",
             "media-default",
+            "media-source-supported",
             "ipp-versions-supported"
         )
     }
@@ -265,9 +262,6 @@ open class IppPrinter(
 
     fun updateAttributes(vararg requestedAttributes: String) =
         updateAttributes(requestedAttributes.toList())
-
-    fun updatePrinterStateAttributes() =
-        updateAttributes(printerStateAttributes)
 
     //-------------
     // Validate-Job
@@ -614,15 +608,15 @@ open class IppPrinter(
 
         val pdfResource = when {
             !attributes.containsKey("media-ready") -> {
-                log.info { "media-ready not supported" }
-                "/blank_A4.pdf"
+                log.warning { "media-ready not supported" }
+                "blank_A4.pdf"
             }
 
-            mediaReady.contains("iso-a4") || mediaReady.contains("iso_a4_210x297mm") -> "/blank_A4.pdf"
-            mediaReady.contains("na_letter") || mediaReady.contains("na_letter_8.5x11in") -> "/blank_USLetter.pdf"
+            mediaReady.contains("iso-a4") || mediaReady.contains("iso_a4_210x297mm") -> "blank_A4.pdf"
+            mediaReady.contains("na_letter") || mediaReady.contains("na_letter_8.5x11in") -> "blank_USLetter.pdf"
             else -> {
-                log.info { "No PDF available for media '$mediaReady', trying A4" }
-                "/blank_A4.pdf"
+                log.warning { "No PDF available for media '$mediaReady', trying A4" }
+                "blank_A4.pdf"
             }
         }
 
@@ -641,22 +635,26 @@ open class IppPrinter(
         }
 
         log.info { "> Validate job" }
-        val response = validateJob(
-            jobName("Validation"),
-            Sides.TwoSidedLongEdge,
-            PrintQuality.Normal,
-            ColorMode.Color,
-            DocumentFormat.JPEG,
-            Media.ISO_A3
-        )
+        val response = try {
+            validateJob(
+                jobName("Validation"),
+                DocumentFormat.OCTET_STREAM,
+                Sides.TwoSidedShortEdge,
+                PrintQuality.Normal,
+                ColorMode.Color,
+                Media.ISO_A3
+            )
+        } catch (ippExchangeException: IppExchangeException) {
+            ippExchangeException.response
+        }
         log.info { response.toString() }
 
         log.info { "> Print job $pdfResource" }
         printJob(
-            IppPrinter::class.java.getResourceAsStream(pdfResource)!!,
-            jobName(pdfResource)
+            IppPrinter::class.java.getResourceAsStream("/$pdfResource"),
+            jobName(pdfResource),
 
-        ).run {
+            ).run {
             log.info { toString() }
 
             log.info { "> Get jobs" }
@@ -673,7 +671,7 @@ open class IppPrinter(
 
             if (cancelJob) {
                 log.info { "> Cancel job" }
-                cancel(updateAttributes = false)
+                cancel()
             }
 
             log.info { "> Update job attributes" }
@@ -684,6 +682,8 @@ open class IppPrinter(
                 log.info { "> Wait for termination" }
                 waitForTermination()
             }
+
+            if(isAborted()) log(log)
         }
     }
 
