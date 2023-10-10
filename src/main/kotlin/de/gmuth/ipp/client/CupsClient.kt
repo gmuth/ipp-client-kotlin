@@ -128,7 +128,7 @@ class CupsClient(
                 ppdName
             )
         ).run {
-            log.info { "$statusMessage ${printerGroup["printer-uri-supported"]!!.values}" }
+            log.info { "$statusMessage ${printerGroup.getValues<Any>("printer-uri-supported")}" }
             return IppPrinter(printerGroup, ippClient)
         }
     }
