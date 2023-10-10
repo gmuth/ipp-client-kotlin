@@ -114,7 +114,7 @@ println(response.jobGroup["job-id"])
 ### [CupsClient](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/CupsClient.kt)
 
 Use the `CupsClient` to connect to a CUPS server.
-If you want to access a cups queue you can construct an `IppPrinter` from it's uri.
+If you want to access a cups queue you can construct an `IppPrinter` from its uri.
 
 ```kotlin
 // Connect to default ipp://localhost:631
