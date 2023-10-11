@@ -50,9 +50,8 @@ class CupsClient(
 
     fun getPrinter(printerName: String) =
         try {
-            IppPrinter(printerUri = cupsPrinterUri(printerName), ippClient = ippClient).apply {
-                workDirectory = cupsClientWorkDirectory
-            }
+            IppPrinter(printerUri = cupsPrinterUri(printerName), ippClient = ippClient)
+                .apply { workDirectory = cupsClientWorkDirectory }
         } catch (clientErrorNotFoundException: ClientErrorNotFoundException) {
             with(getPrinters()) {
                 if (isNotEmpty()) log.warning { "Available CUPS printers: ${map { it.name }}" }
@@ -116,7 +115,6 @@ class CupsClient(
         printerLocation: String?,
         ppdName: String? // virtual PPD 'everywhere' is supported asynchronous
     ): IppPrinter {
-        require(deviceUri.scheme.startsWith("ipp")) { "uri scheme unsupported: $deviceUri" }
         require(!printerName.contains("-")) { "printerName must not contain '-'" }
         exchange(
             cupsPrinterRequest(
@@ -223,6 +221,7 @@ class CupsClient(
     ).apply {
         updateAttributes("printer-name")
         log.info(toString())
+        require(deviceUri.scheme.startsWith("ipp")) { "uri scheme unsupported: $deviceUri" }
         log.info { "CUPS now generates IPP Everywhere PPD." }
         do { // https://github.com/apple/cups/issues/5919
             updateAttributes("printer-make-and-model")
@@ -272,20 +271,11 @@ class CupsClient(
             }
             .onEach { job -> // keep stats and save documents
                 if (job.numberOfDocuments == 0) numberOfJobsWithoutDocuments.incrementAndGet()
-                else getAndSaveDocuments(job, optionalCommandToHandleFile = commandToHandleSavedFile).apply {
-                    numberOfSavedDocuments.addAndGet(size)
-                }
+                else getAndSaveDocuments(job, optionalCommandToHandleFile = commandToHandleSavedFile)
+                    .apply { numberOfSavedDocuments.addAndGet(size) }
             }
             .apply {
-                with(jobOwners) {
-                    log.info {
-                        "Found $size job ${if (size <= 1) "owner" else "owners"}: ${
-                            joinToString(
-                                ", "
-                            )
-                        }"
-                    }
-                }
+                log.info { "Found ${jobOwners.size} job ${if (jobOwners.size == 1) "owner" else "owners"}: $jobOwners" }
                 log.info { "Found $size jobs (which=$whichJobs) where $numberOfJobsWithoutDocuments jobs have no documents" }
                 log.info { "Saved $numberOfSavedDocuments documents of ${size.minus(numberOfJobsWithoutDocuments.toInt())} jobs with documents to directory: ${ippPrinter.workDirectory}" }
             }
