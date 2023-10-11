@@ -61,6 +61,7 @@ open class IppPrinter(
 
     init {
         log.fine { "create IppPrinter for $printerUri" }
+        require(printerUri.scheme.startsWith("ipp")) { "uri scheme unsupported: ${printerUri.scheme}" }
         if (printerUri.scheme == "ipps") ippConfig.trustAnyCertificateAndSSLHostname()
         if (!getPrinterAttributesOnInit) {
             log.fine { "getPrinterAttributesOnInit disabled => no printer attributes available" }
