@@ -42,7 +42,7 @@ class IppClientMock(var directory: String = "printers") : IppClient() {
         ByteArrayOutputStream()
             .also { request.write(it) }
             .toByteArray()
-            .run { log.info { "mocked post $size IPP bytes to $httpUri" } }
+            .run { log.info { "post $size request bytes to $httpUri, ${rawResponse.size} response bytes" } }
         decode(rawResponse)
     }
 }
