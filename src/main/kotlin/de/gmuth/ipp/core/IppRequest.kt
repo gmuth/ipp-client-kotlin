@@ -12,7 +12,7 @@ import java.time.Duration
 class IppRequest : IppMessage {
 
     val printerUri: URI
-        get() = operationGroup.getValueOrNull("printer-uri") ?: throw IppException("missing 'printer-uri'")
+        get() = operationGroup.getValueOrNull("printer-uri") ?: throw IppException("Missing 'printer-uri'")
 
     override val codeDescription: String
         get() = operation.toString()
@@ -49,7 +49,7 @@ class IppRequest : IppMessage {
     }
 
     fun createSubscriptionAttributesGroup(
-        notifyEvents: List<String>? = null,
+        notifyEvents: Collection<String>? = null,
         notifyLeaseDuration: Duration? = null,
         notifyTimeInterval: Duration? = null,
         notifyJobId: Int? = null
