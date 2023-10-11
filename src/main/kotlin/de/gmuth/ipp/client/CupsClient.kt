@@ -211,7 +211,7 @@ class CupsClient(
         printerName: String,
         deviceUri: URI,
         printerInfo: String? = null,
-        printerLocation: String? = null
+        printerLocation: String? = IppPrinter(deviceUri).location.text
     ) = createLocalPrinter(
         printerName,
         deviceUri,
@@ -229,7 +229,7 @@ class CupsClient(
         log.info { "Make printer permanent." }
         exchange(
             cupsPrinterRequest(CupsAddModifyPrinter, printerName).apply {
-                createAttributesGroup(Printer).run {
+                getSingleAttributesGroup(Printer).run {
                     attribute("printer-is-temporary", IppTag.Boolean, false)
                 }
             }
