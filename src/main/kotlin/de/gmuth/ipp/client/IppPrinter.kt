@@ -395,7 +395,7 @@ open class IppPrinter(
 
     fun createPrinterSubscription(
         // https://datatracker.ietf.org/doc/html/rfc3995#section-5.3.3.4.2
-        notifyEvents: List<String>? = listOf("all"),
+        notifyEvents: Collection<String>? = listOf("all"),
         notifyLeaseDuration: Duration? = null,
         notifyTimeInterval: Duration? = null
     ): IppSubscription {
@@ -407,7 +407,7 @@ open class IppPrinter(
         return IppSubscription(this, subscriptionAttributes)
     }
 
-    fun checkNotifyEvents(notifyEvents: List<String>?) = notifyEvents?.let {
+    fun checkNotifyEvents(notifyEvents: Collection<String>?) = notifyEvents?.let {
         if (it.isNotEmpty() && it.first() != "all")
             checkIfValueIsSupported("notify-events-supported", it)
     }
@@ -622,6 +622,7 @@ open class IppPrinter(
             }
         }
 
+        ippConfig.userName = "ipp-inspector"
         runInspectionWorkflow(pdfResource, cancelJob)
     }
 
