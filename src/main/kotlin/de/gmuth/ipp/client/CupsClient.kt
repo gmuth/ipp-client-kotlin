@@ -6,6 +6,7 @@ package de.gmuth.ipp.client
 
 import de.gmuth.ipp.client.IppExchangeException.ClientErrorNotFoundException
 import de.gmuth.ipp.client.WhichJobs.All
+import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppRequest
@@ -221,7 +222,6 @@ class CupsClient(
     ).apply {
         updateAttributes("printer-name")
         log.info(toString())
-        require(deviceUri.scheme.startsWith("ipp")) { "uri scheme unsupported: $deviceUri" }
         log.info { "CUPS now generates IPP Everywhere PPD." }
         do { // https://github.com/apple/cups/issues/5919
             updateAttributes("printer-make-and-model")
@@ -229,9 +229,7 @@ class CupsClient(
         log.info { "Make printer permanent." }
         exchange(
             cupsPrinterRequest(CupsAddModifyPrinter, printerName).apply {
-                getSingleAttributesGroup(Printer).run {
-                    attribute("printer-is-temporary", IppTag.Boolean, false)
-                }
+                printerGroup.attribute("printer-is-temporary", IppTag.Boolean, false)
             }
         )
         log.info { "Make printer operational." }
@@ -239,6 +237,9 @@ class CupsClient(
         resume()
         updateAttributes()
     }
+
+    private val IppRequest.printerGroup: IppAttributesGroup
+        get() = getSingleAttributesGroup(Printer)
 
     // ---------------------------
     // Get jobs and save documents
