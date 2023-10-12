@@ -36,9 +36,9 @@ class IppDocument(
         .also { log.fine { "Read ${it.size} bytes of $this" } }
 
     fun filenameSuffix() = when (format) {
+        "application/pdf", "application/vnd.cups-pdf" -> "pdf"
         "application/octet-stream" -> "bin"
         "application/postscript" -> "ps"
-        "application/pdf" -> "pdf"
         "image/jpeg" -> "jpg"
         "text/plain" -> "txt"
         else -> format.split("/")[1]
