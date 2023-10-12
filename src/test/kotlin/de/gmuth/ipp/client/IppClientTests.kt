@@ -15,8 +15,8 @@ class IppClientTests {
     @Test
     fun sendRequestToURIWithEncodedWhitespaces() {
         ippClient.ippRequest(GetPrinterAttributes, URI.create("ipp://0/PDF%20Printer")).run {
-            assertEquals("/PDF%20Printer", printerUri.rawPath)
-            assertEquals("/PDF Printer", printerUri.path)
+            assertEquals("/PDF%20Printer", printerOrJobUri.rawPath)
+            assertEquals("/PDF Printer", printerOrJobUri.path)
         }
     }
 }

@@ -25,7 +25,7 @@ import javax.net.ssl.HttpsURLConnection
 
 typealias IppResponseInterceptor = (request: IppRequest, response: IppResponse) -> Unit
 
-open class IppClient(val config: IppConfig = IppConfig()) {
+open class IppClient(val config: IppConfig = IppConfig()) : IppExchange {
     protected val log = getLogger(javaClass.name)
 
     var responseInterceptor: IppResponseInterceptor? = null
@@ -47,18 +47,16 @@ open class IppClient(val config: IppConfig = IppConfig()) {
     // Build IppRequest
     //-----------------
 
-    protected val requestCounter = AtomicInteger(1)
+    private val requestCounter = AtomicInteger(1)
 
     fun ippRequest(
         operation: IppOperation,
-        printerUri: URI,
-        jobId: Int? = null,
+        printerUri: URI? = null,
         requestedAttributes: Collection<String>? = null,
         userName: String? = config.userName
     ) = IppRequest(
         operation,
         printerUri,
-        jobId,
         requestedAttributes,
         userName,
         config.ippVersion,
@@ -71,8 +69,8 @@ open class IppClient(val config: IppConfig = IppConfig()) {
     // Exchange IppRequest for IppResponse
     //------------------------------------
 
-    fun exchange(request: IppRequest): IppResponse {
-        val ippUri: URI = request.printerUri
+    override fun exchange(request: IppRequest): IppResponse {
+        val ippUri: URI = request.printerOrJobUri
         log.finer { "send '${request.operation}' request to $ippUri" }
         val response = httpPost(toHttpUri(ippUri), request)
         log.fine { "$ippUri: $request => $response" }
@@ -151,11 +149,11 @@ open class IppClient(val config: IppConfig = IppConfig()) {
     ) =
         when {
             responseCode == 401 -> with(request) {
-                "User \"$requestingUserName\" is not authorized for operation $operation on $printerUri"
+                "User \"$requestingUserName\" is not authorized for operation $operation on $printerOrJobUri"
             }
 
             responseCode == 426 -> {
-                "HTTP status $responseCode, $responseMessage, Try ipps://${request.printerUri.host}"
+                "HTTP status $responseCode, $responseMessage, Try ipps://${request.printerOrJobUri.host}"
             }
 
             responseCode != 200 -> {

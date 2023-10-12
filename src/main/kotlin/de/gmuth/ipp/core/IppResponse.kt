@@ -22,9 +22,6 @@ class IppResponse : IppMessage {
     val statusMessage: IppString
         get() = operationGroup.getValue("status-message")
 
-    val printerGroup: IppAttributesGroup
-        get() = getSingleAttributesGroup(Printer)
-
     val jobGroups: Collection<IppAttributesGroup>
         get() = getAttributesGroups(Job)
 

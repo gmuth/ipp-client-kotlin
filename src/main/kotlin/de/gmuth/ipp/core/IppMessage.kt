@@ -13,7 +13,7 @@ import java.util.logging.Logger.getLogger
 
 abstract class IppMessage() {
 
-    protected val log = getLogger(javaClass.name)
+    private val log = getLogger(javaClass.name)
     var code: Int? = null // unsigned short (16 bits)
     var requestId: Int? = null
     var version: String? = null
@@ -40,13 +40,19 @@ abstract class IppMessage() {
     val operationGroup: IppAttributesGroup
         get() = getSingleAttributesGroup(Operation)
 
+    val printerGroup: IppAttributesGroup // also used for CUPS-Printer-Operation requests
+        get() = getSingleAttributesGroup(Printer)
+
     val jobGroup: IppAttributesGroup
         get() = getSingleAttributesGroup(Job)
 
-    fun getAttributesGroups(tag: IppTag) =
+    val subscriptionGroup: IppAttributesGroup
+        get() = getSingleAttributesGroup(Subscription)
+
+    internal fun getAttributesGroups(tag: IppTag) =
         attributesGroups.filter { it.tag == tag }
 
-    fun getSingleAttributesGroup(tag: IppTag) = getAttributesGroups(tag).run {
+    internal fun getSingleAttributesGroup(tag: IppTag) = getAttributesGroups(tag).run {
         if (isEmpty()) throw IppException("No group found with tag '$tag' in $attributesGroups")
         single()
     }
@@ -168,6 +174,7 @@ abstract class IppMessage() {
         if (rawBytes == null) "" else " (${rawBytes!!.size} bytes)"
     )
 
+    @JvmOverloads
     fun log(logger: Logger, level: Level = INFO, prefix: String = "") {
         if (rawBytes != null) logger.log(level) { "${prefix}${rawBytes!!.size} raw ipp bytes" }
         logger.log(level) { "${prefix}version = $version" }

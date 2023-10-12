@@ -8,11 +8,23 @@ import de.gmuth.ipp.core.IppTag.*
 import java.net.URI
 import java.nio.charset.Charset
 import java.time.Duration
+import java.util.logging.Level
+import java.util.logging.Logger
 
 class IppRequest : IppMessage {
+    private val logger = Logger.getLogger(javaClass.name)
 
-    val printerUri: URI
-        get() = operationGroup.getValueOrNull("printer-uri") ?: throw IppException("Missing 'printer-uri'")
+    val printerOrJobUri: URI
+        @SuppressWarnings("kotlin:S1192")
+        get() = operationGroup.run {
+            when {
+                containsKey("printer-uri") -> getUriValue("printer-uri")
+                containsKey("job-uri") -> getUriValue("job-uri")
+                else -> throw IppException("Missing 'printer-uri' or 'job-uri' in IppRequest").also {
+                    log(logger, Level.WARNING)
+                }
+            }
+        }
 
     override val codeDescription: String
         get() = operation.toString()
@@ -31,7 +43,6 @@ class IppRequest : IppMessage {
     constructor(
         operation: IppOperation,
         printerUri: URI? = null,
-        jobId: Int? = null,
         requestedAttributes: Collection<String>? = null,
         requestingUserName: String? = null,
         version: String = "2.0",
@@ -41,7 +52,6 @@ class IppRequest : IppMessage {
     ) : super(version, requestId, charset, naturalLanguage) {
         code = operation.code
         operationGroup.run {
-            jobId?.let { attribute("job-id", Integer, it) }
             printerUri?.let { attribute("printer-uri", Uri, it) }
             requestedAttributes?.let { attribute("requested-attributes", Keyword, it) }
             requestingUserName?.let { attribute("requesting-user-name", NameWithoutLanguage, IppString(it)) }

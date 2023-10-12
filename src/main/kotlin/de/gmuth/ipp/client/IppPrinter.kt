@@ -8,7 +8,6 @@ import de.gmuth.ipp.attributes.*
 import de.gmuth.ipp.attributes.CommunicationChannel.Companion.getCommunicationChannelsSupported
 import de.gmuth.ipp.attributes.Marker.Companion.getMarkers
 import de.gmuth.ipp.attributes.PrinterState.*
-import de.gmuth.ipp.attributes.TemplateAttributes.jobName
 import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
@@ -18,21 +17,20 @@ import de.gmuth.ipp.iana.IppRegistrationsSection2
 import java.io.*
 import java.net.URI
 import java.time.Duration
-import java.util.logging.Level
 import java.util.logging.Level.*
-import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
 import kotlin.io.path.createTempDirectory
 
 @SuppressWarnings("kotlin:S1192")
-open class IppPrinter(
+class IppPrinter(
     val printerUri: URI,
-    val attributes: IppAttributesGroup = IppAttributesGroup(Printer),
+    printerAttributes: IppAttributesGroup = IppAttributesGroup(Printer),
     ippConfig: IppConfig = IppConfig(),
-    val ippClient: IppClient = IppClient(ippConfig),
+    internal val ippClient: IppClient = IppClient(ippConfig),
     getPrinterAttributesOnInit: Boolean = true,
     requestedAttributesOnInit: List<String>? = null
-) {
+) : IppObject(ippClient, printerAttributes) {
+
     private val log = getLogger(javaClass.name)
     var workDirectory: File = createTempDirectory().toFile()
 
@@ -69,7 +67,7 @@ open class IppPrinter(
             try {
                 updateAttributes(requestedAttributesOnInit)
                 if (isStopped()) {
-                    log.info { toString() }
+                    log.fine { toString() }
                     alert?.let { log.info { "alert: $it" } }
                     alertDescription?.let { log.info { "alert-description: $it" } }
                 }
@@ -101,6 +99,9 @@ open class IppPrinter(
 
     val ippConfig: IppConfig
         get() = ippClient.config
+
+    fun basicAuth(user: String, password: String) =
+        ippClient.basicAuth(user, password)
 
     var getJobsRequestedAttributes = mutableListOf(
         "job-id", "job-uri", "job-printer-uri", "job-state", "job-name",
@@ -237,15 +238,28 @@ open class IppPrinter(
     // Printer administration
     //-----------------------
 
-    fun pause() = exchangeIppRequest(PausePrinter)
-    fun resume() = exchangeIppRequest(ResumePrinter)
-    fun purgeJobs() = exchangeIppRequest(PurgeJobs)
-    fun enable() = exchangeIppRequest(EnablePrinter)
-    fun disable() = exchangeIppRequest(DisablePrinter)
-    fun holdNewJobs() = exchangeIppRequest(HoldNewJobs)
-    fun releaseHeldNewJobs() = exchangeIppRequest(ReleaseHeldNewJobs)
-    fun cancelJobs() = exchangeIppRequest(CancelJobs)
-    fun cancelMyJobs() = exchangeIppRequest(CancelMyJobs)
+    fun pause() = exchange(ippRequest(PausePrinter))
+    fun resume() = exchange(ippRequest(ResumePrinter))
+    fun purgeJobs() = exchange(ippRequest(PurgeJobs))
+    fun enable() = exchange(ippRequest(EnablePrinter))
+    fun disable() = exchange(ippRequest(DisablePrinter))
+    fun holdNewJobs() = exchange(ippRequest(HoldNewJobs))
+    fun releaseHeldNewJobs() = exchange(ippRequest(ReleaseHeldNewJobs))
+    fun cancelJobs() = exchange(ippRequest(CancelJobs))
+    fun cancelMyJobs() = exchange(ippRequest(CancelMyJobs))
+
+    fun cupsGetPPD(copyTo: OutputStream? = null) = exchange(ippRequest(CupsGetPPD))
+        .apply { copyTo?.let { documentInputStream!!.copyTo(it) } }
+
+    fun savePPD(
+        directory: File = workDirectory,
+        filename: String = "$name.ppd",
+        file: File = File(directory, filename)
+    ) =
+        file.also {
+            cupsGetPPD(it.outputStream())
+            log.info { "Saved PPD $it" }
+        }
 
     //------------------------------------------
     // Get-Printer-Attributes
@@ -358,7 +372,9 @@ open class IppPrinter(
     //-------------------------------
 
     fun getJob(jobId: Int) =
-        exchangeForIppJob(ippRequest(GetJobAttributes, jobId))
+        exchangeForIppJob(
+            ippRequest(GetJobAttributes).apply { operationGroup.attribute("job-id", Integer, jobId) }
+        )
 
     //---------------------------------
     // Get-Jobs (as Collection<IppJob>)
@@ -404,7 +420,7 @@ open class IppPrinter(
             checkNotifyEvents(notifyEvents)
             createSubscriptionAttributesGroup(notifyEvents, notifyLeaseDuration, notifyTimeInterval)
         }
-        val subscriptionAttributes = exchange(request).getSingleAttributesGroup(Subscription)
+        val subscriptionAttributes = exchange(request).subscriptionGroup
         return IppSubscription(this, subscriptionAttributes)
     }
 
@@ -419,9 +435,11 @@ open class IppPrinter(
 
     fun getSubscription(id: Int) = IppSubscription(
         this,
-        exchange(ippRequest(GetSubscriptionAttributes).apply {
-            operationGroup.attribute("notify-subscription-id", Integer, id)
-        }).getSingleAttributesGroup(Subscription)
+        exchange(
+            ippRequest(GetSubscriptionAttributes)
+                .apply { operationGroup.attribute("notify-subscription-id", Integer, id) }
+        )
+            .subscriptionGroup
     )
 
     //---------------------------------------------
@@ -450,32 +468,30 @@ open class IppPrinter(
     // delegate to IppClient
     //----------------------
 
-    fun ippRequest(
+    internal fun ippRequest(
         operation: IppOperation,
-        jobId: Int? = null,
         requestedAttributes: Collection<String>? = null,
-        userName: String? = ippConfig.userName
+        userName: String? = ippConfig.userName,
+        printerUri: URI? = this.printerUri
     ) = ippClient
-        .ippRequest(operation, printerUri, jobId, requestedAttributes, userName)
+        .ippRequest(operation, printerUri, requestedAttributes, userName)
 
-    fun exchange(request: IppRequest) = ippClient.exchange(request.apply {
+    override fun exchange(request: IppRequest) = super.exchange(request.apply {
         checkIfValueIsSupported("ipp-versions-supported", version!!)
         checkIfValueIsSupported("operations-supported", code!!.toInt())
         checkIfValueIsSupported("charset-supported", attributesCharset)
     })
 
-    protected fun exchangeIppRequest(operation: IppOperation) = exchange(ippRequest(operation))
-
-    protected fun exchangeForIppJob(request: IppRequest): IppJob {
+    private fun exchangeForIppJob(request: IppRequest): IppJob {
         val response = exchange(request)
         if (response.status != SuccessfulOk) log.warning { "Job response status: ${response.status}" }
         if (request.containsGroup(Subscription) && !response.containsGroup(Subscription)) {
             request.log(log, WARNING, prefix = "REQUEST: ")
-            val events: List<String> = request.getSingleAttributesGroup(Subscription).getValues("notify-events")
+            val events: List<String> = request.subscriptionGroup.getValues("notify-events")
             throw IppException("printer/server did not create subscription for events: ${events.joinToString(",")}")
         }
         val subscriptionsAttributes = response.run {
-            if (containsGroup(Subscription)) getSingleAttributesGroup(Subscription) else null
+            if (containsGroup(Subscription)) subscriptionGroup else null
         }
         return IppJob(this, response.jobGroup, subscriptionsAttributes)
     }
@@ -484,9 +500,11 @@ open class IppPrinter(
     // Logging
     // -------
 
-    override fun toString() = StringBuilder("IppPrinter:").run {
-        if (attributes.containsKey("printer-name")) append(" name=$name")
-        if (attributes.containsKey("printer-make-and-model")) append(", makeAndModel=$makeAndModel")
+    override fun objectName() = "Printer $name ($makeAndModel)"
+
+    override fun toString() = StringBuilder("Printer").run {
+        if (attributes.containsKey("printer-name")) append(" $name")
+        if (attributes.containsKey("printer-make-and-model")) append(" ($makeAndModel)")
         append(", state=$state, stateReasons=$stateReasons")
         stateMessage?.let { if (it.text.isNotEmpty()) append(", stateMessage=$stateMessage") }
         if (attributes.containsKey("printer-is-accepting-jobs")) append(", isAcceptingJobs=$isAcceptingJobs")
@@ -494,10 +512,6 @@ open class IppPrinter(
         if (attributes.containsKey("printer-info")) append(", info=$info")
         toString()
     }
-
-    @JvmOverloads
-    fun log(logger: Logger, level: Level = INFO) =
-        attributes.log(logger, level, title = "PRINTER-$name ($makeAndModel), $state $stateReasons")
 
     // ------------------------------------------------------
     // attribute value checking based on printer capabilities
@@ -574,121 +588,5 @@ open class IppPrinter(
         File(workDirectory, printerName).apply {
             if (!mkdirs() && !isDirectory) throw IOException("Failed to create printer directory: $path")
         }
-
-    /**
-     * Exchange a few IPP requests and save the IPP responses returned by the printer.
-     * Operations:
-     * - Get-Printer-Attributes
-     * - Print-Job, Get-Jobs, Get-Job-Attributes
-     * - Hold-Job, Release-Job, Cancel-Job
-     */
-    @JvmOverloads
-    fun inspect(directory: String = "inspected-printers", cancelJob: Boolean = true) {
-
-        log.info { "Inspect printer $printerUri" }
-
-        val printerModel = with(StringBuilder()) {
-            if (isCups()) append("CUPS_")
-            append(makeAndModel.text.replace("\\s+".toRegex(), "_"))
-            toString()
-        }
-        log.info { "Printer model: $printerModel" }
-
-        ippClient.saveMessages = true
-        ippClient.saveMessagesDirectory = File(directory, printerModel).apply {
-            if (!isDirectory && !mkdirs()) throw RuntimeException("Failed to create directory: $path")
-        }
-
-        attributes.run {
-            // Media
-            if (containsKey("media-supported")) log.info { "Media supported: $mediaSupported" }
-            if (containsKey("media-ready")) log.info { "Media ready: $mediaReady" }
-            if (containsKey("media-default")) log.info { "Media default: $mediaDefault" }
-            // URIs
-            log.info { "Communication channels supported:" }
-            communicationChannelsSupported.forEach { log.info { "  $it" } }
-        }
-
-        val pdfResource = when {
-            !attributes.containsKey("media-ready") -> {
-                log.warning { "media-ready not supported" }
-                "blank_A4.pdf"
-            }
-
-            mediaReady.contains("iso-a4") || mediaReady.contains("iso_a4_210x297mm") -> "blank_A4.pdf"
-            mediaReady.contains("na_letter") || mediaReady.contains("na_letter_8.5x11in") -> "blank_USLetter.pdf"
-            else -> {
-                log.warning { "No PDF available for media '$mediaReady', trying A4" }
-                "blank_A4.pdf"
-            }
-        }
-
-        ippConfig.userName = "ipp-inspector"
-        runInspectionWorkflow(pdfResource, cancelJob)
-    }
-
-    protected fun runInspectionWorkflow(pdfResource: String, cancelJob: Boolean) {
-
-        log.info { "> Get printer attributes" }
-        getPrinterAttributes()
-
-        if (supportsOperations(IdentifyPrinter)) {
-            val action = with(identifyActionsSupported) { if (contains("sound")) "sound" else first() }
-            log.info { "> Identify by $action" }
-            identify(action)
-        }
-
-        log.info { "> Validate job" }
-        val response = try {
-            validateJob(
-                jobName("Validation"),
-                DocumentFormat.OCTET_STREAM,
-                Sides.TwoSidedShortEdge,
-                PrintQuality.Normal,
-                ColorMode.Color,
-                Media.ISO_A3
-            )
-        } catch (ippExchangeException: IppExchangeException) {
-            ippExchangeException.response
-        }
-        log.info { response.toString() }
-
-        log.info { "> Print job $pdfResource" }
-        printJob(
-            IppPrinter::class.java.getResourceAsStream("/$pdfResource"),
-            jobName(pdfResource),
-
-            ).run {
-            log.info { toString() }
-
-            log.info { "> Get jobs" }
-            for (job in getJobs()) {
-                log.info { "$job" }
-            }
-
-            if (supportsOperations(HoldJob, ReleaseJob)) {
-                log.info { "> Hold job" }
-                hold()
-                log.info { "> Release job" }
-                release()
-            }
-
-            if (cancelJob) {
-                log.info { "> Cancel job" }
-                cancel()
-            }
-
-            log.info { "> Update job attributes" }
-            updateAttributes()
-
-            ippClient.saveMessages = false
-            if (!isTerminated()) {
-                log.info { "> Wait for termination" }
-                waitForTermination()
-            }
-
-            if (isAborted()) log(log)
-        }
-    }
 
 }

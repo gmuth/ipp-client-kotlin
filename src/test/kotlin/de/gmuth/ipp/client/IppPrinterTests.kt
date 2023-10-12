@@ -207,7 +207,7 @@ class IppPrinterTests {
 
     @Test
     fun pause() {
-        printer.ippClient.basicAuth("user", "password")
+        printer.basicAuth("user", "password")
         printer.pause()
     }
 

@@ -26,7 +26,7 @@ class IppRequestTests {
             assertEquals(null, version)
             assertEquals(IppOperation.CreateJob, operation)
             createAttributesGroup(IppTag.Operation)
-            assertFailsWith<IppException> { printerUri }
+            assertFailsWith<IppException> { printerOrJobUri }
         }
     }
 
@@ -38,7 +38,7 @@ class IppRequestTests {
         assertEquals(IppOperation.StartupPrinter, request.operation)
         assertEquals(Charsets.UTF_8, request.attributesCharset)
         assertEquals("en", request.operationGroup.getValue("attributes-natural-language"))
-        assertEquals("ipp://foo", request.printerUri.toString())
+        assertEquals("ipp://foo", request.printerOrJobUri.toString())
         assertEquals("Startup-Printer", request.codeDescription)
         val requestEncoded = request.encode()
         assertEquals(97, requestEncoded.size)
@@ -48,7 +48,7 @@ class IppRequestTests {
     fun printJobRequest() {
         val request = IppRequest(
             IppOperation.PrintJob, URI.create("ipp://printer"),
-            0, listOf("one", "two"), "user"
+            listOf("one", "two"), "user"
         )
         request.documentInputStream = "pdl-content".byteInputStream()
         log.info { request.toString() }
@@ -65,7 +65,7 @@ class IppRequestTests {
             assertEquals(Charsets.UTF_8, getValue("attributes-charset"))
             assertEquals("en", getValue("attributes-natural-language"))
             assertEquals(URI.create("ipp://printer"), getValue("printer-uri"))
-            assertEquals(0, getValue("job-id"))
+            //assertEquals(0, getValue("job-id"))
             assertEquals(listOf("one", "two"), getValues("requested-attributes"))
             //assertEquals("user".toIppString(), getValue("requesting-user-name"))
         }

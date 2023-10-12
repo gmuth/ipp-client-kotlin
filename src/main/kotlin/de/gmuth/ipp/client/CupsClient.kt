@@ -6,7 +6,6 @@ package de.gmuth.ipp.client
 
 import de.gmuth.ipp.client.IppExchangeException.ClientErrorNotFoundException
 import de.gmuth.ipp.client.WhichJobs.All
-import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppRequest
@@ -22,7 +21,7 @@ import java.util.logging.Logger.getLogger
 // https://www.cups.org/doc/spec-ipp.html
 class CupsClient(
     val cupsUri: URI = URI.create("ipp://localhost"),
-    val ippClient: IppClient = IppClient()
+    private val ippClient: IppClient = IppClient()
 ) {
     constructor(host: String = "localhost") : this(URI.create("ipp://$host"))
 
@@ -30,6 +29,10 @@ class CupsClient(
     val config: IppConfig by ippClient::config
     var userName: String? by config::userName
     var cupsClientWorkDirectory = File("CUPS/${cupsUri.host}")
+
+    private val cupsServer =
+        IppPrinter(cupsUri, ippClient = ippClient, getPrinterAttributesOnInit = false)
+            .apply { workDirectory = cupsClientWorkDirectory }
 
     init {
         if (cupsUri.scheme == "ipps") config.trustAnyCertificateAndSSLHostname()
@@ -160,55 +163,53 @@ class CupsClient(
     // Delegate to IppClient
     //----------------------
 
+    fun basicAuth(user: String, password: String) =
+        ippClient.basicAuth(user, password)
+
     internal fun ippRequest(operation: IppOperation, printerURI: URI = cupsUri) =
         ippClient.ippRequest(operation, printerURI)
 
     internal fun exchange(ippRequest: IppRequest) =
         ippClient.exchange(ippRequest)
 
-    fun basicAuth(user: String, password: String) =
-        ippClient.basicAuth(user, password)
-
-    //-----------------------
-    // Delegate to IppPrinter
-    //-----------------------
-
-    protected val ippPrinter: IppPrinter by lazy {
-        IppPrinter(cupsUri, ippClient = ippClient, getPrinterAttributesOnInit = false)
-            .apply { workDirectory = cupsClientWorkDirectory }
-    }
+    //---------
+    // Get Jobs
+    //---------
 
     fun getJobs(
         whichJobs: WhichJobs? = null,
         limit: Int? = null,
-        requestedAttributes: List<String>? = ippPrinter.getJobsRequestedAttributes
+        requestedAttributes: List<String>? = cupsServer.getJobsRequestedAttributes
     ) =
-        ippPrinter.getJobs(whichJobs = whichJobs, limit = limit, requestedAttributes = requestedAttributes)
+        cupsServer.getJobs(whichJobs = whichJobs, limit = limit, requestedAttributes = requestedAttributes)
 
-    //----------------------------
-    // Create printer subscription
-    //----------------------------
+    fun getJob(id: Int) =
+        cupsServer.getJob(id)
 
-    fun createPrinterSubscription(
+    //--------------------
+    // Create Subscription
+    //--------------------
+
+    fun createSubscription(
         // https://datatracker.ietf.org/doc/html/rfc3995#section-5.3.3.4.2
         notifyEvents: List<String>? = listOf("all"),
         notifyLeaseDuration: Duration? = null,
         notifyTimeInterval: Duration? = null
     ) =
-        ippPrinter.createPrinterSubscription(notifyEvents, notifyLeaseDuration, notifyTimeInterval)
+        cupsServer.createPrinterSubscription(notifyEvents, notifyLeaseDuration, notifyTimeInterval)
 
-    fun createPrinterSubscription(
+    fun createSubscription(
         vararg notifyEvents: String = arrayOf("all"),
         notifyLeaseDuration: Duration? = null,
         notifyTimeInterval: Duration? = null
     ) =
-        createPrinterSubscription(notifyEvents.toList(), notifyLeaseDuration, notifyTimeInterval)
+        createSubscription(notifyEvents.toList(), notifyLeaseDuration, notifyTimeInterval)
 
     //-----------------------------
-    // Setup IPP Everywhere Printer
+    // Create IPP Everywhere Printer
     //-----------------------------
 
-    fun setupIppEverywherePrinter(
+    fun createIppEverywherePrinter(
         printerName: String,
         deviceUri: URI,
         printerInfo: String? = null,
@@ -218,7 +219,7 @@ class CupsClient(
         deviceUri,
         printerInfo,
         printerLocation,
-        ppdName = "everywhere"
+        ppdName = "airprint"
     ).apply {
         updateAttributes("printer-name")
         log.info(toString())
@@ -237,9 +238,6 @@ class CupsClient(
         resume()
         updateAttributes()
     }
-
-    private val IppRequest.printerGroup: IppAttributesGroup
-        get() = getSingleAttributesGroup(Printer)
 
     // ---------------------------
     // Get jobs and save documents
@@ -278,7 +276,7 @@ class CupsClient(
             .apply {
                 log.info { "Found ${jobOwners.size} job ${if (jobOwners.size == 1) "owner" else "owners"}: $jobOwners" }
                 log.info { "Found $size jobs (which=$whichJobs) where $numberOfJobsWithoutDocuments jobs have no documents" }
-                log.info { "Saved $numberOfSavedDocuments documents of ${size.minus(numberOfJobsWithoutDocuments.toInt())} jobs with documents to directory: ${ippPrinter.workDirectory}" }
+                log.info { "Saved $numberOfSavedDocuments documents of ${size.minus(numberOfJobsWithoutDocuments.toInt())} jobs with documents to directory: ${cupsServer.workDirectory}" }
             }
     }
 
@@ -294,7 +292,7 @@ class CupsClient(
         pollEvery: Duration = Duration.ofSeconds(1),
         commandToHandleFile: String? = null // e.g. "open" -> open <filename> with Preview on MacOS
     ) {
-        createPrinterSubscription(whichJobEvents, notifyLeaseDuration = leaseDuration)
+        createSubscription(whichJobEvents, notifyLeaseDuration = leaseDuration)
             .pollAndHandleNotifications(pollEvery, autoRenewSubscription = autoRenewLease) { event ->
                 log.info { event.toString() }
                 with(event.getJob()) {
@@ -343,5 +341,4 @@ class CupsClient(
         }
         return documents.map { it.file!! }
     }
-
 }

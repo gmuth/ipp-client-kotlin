@@ -16,10 +16,12 @@ class IppExchangeExceptionTests {
 
     @Test
     fun constructor() {
-        with(IppExchangeException(
+        with(
+            IppExchangeException(
                 IppRequest(IppOperation.GetPrinterAttributes).apply { encode() },
                 null, 400
-        )) {
+        )
+        ) {
             log(log)
             assertEquals(11, request.code)
             assertEquals(400, httpStatus)

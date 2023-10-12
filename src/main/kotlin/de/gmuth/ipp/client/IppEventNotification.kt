@@ -8,12 +8,12 @@ import de.gmuth.ipp.attributes.JobState
 import de.gmuth.ipp.attributes.PrinterState
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppString
-import java.util.logging.Logger
 
 class IppEventNotification(
-    val subscription: IppSubscription,
-    val attributes: IppAttributesGroup
-) {
+    private val subscription: IppSubscription,
+    eventNotificationAttributes: IppAttributesGroup
+) : IppObject(subscription, eventNotificationAttributes) {
+
     val sequenceNumber: Int
         get() = attributes.getValue("notify-sequence-number")
 
@@ -50,12 +50,10 @@ class IppEventNotification(
     val printerIsAcceptingJobs: Boolean
         get() = attributes.getValue("printer-is-accepting-jobs")
 
-    // get job from printer
+    // Get job from printer
     fun getJob() = subscription.printer.getJob(jobId)
 
-    // -------
-    // Logging
-    // -------
+    override fun objectName() = "Event notification #$sequenceNumber $subscribedEvent"
 
     @SuppressWarnings("kotlin:S3776")
     override fun toString() = StringBuilder().run {
@@ -71,8 +69,4 @@ class IppEventNotification(
         }
         toString()
     }
-
-    fun log(logger: Logger) =
-        attributes.log(logger, title = "event notification #$sequenceNumber $subscribedEvent")
-
 }

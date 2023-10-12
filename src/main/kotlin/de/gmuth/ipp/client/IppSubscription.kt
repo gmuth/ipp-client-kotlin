@@ -8,22 +8,20 @@ import de.gmuth.ipp.client.IppExchangeException.ClientErrorNotFoundException
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppOperation.*
-import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppString
-import de.gmuth.ipp.core.IppTag.*
+import de.gmuth.ipp.core.IppTag.EventNotification
+import de.gmuth.ipp.core.IppTag.Integer
 import java.time.Duration
 import java.time.Duration.ofSeconds
 import java.time.LocalDateTime
 import java.time.LocalDateTime.now
-import java.util.logging.Level
-import java.util.logging.Level.INFO
-import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
 
 class IppSubscription(
     val printer: IppPrinter,
-    var attributes: IppAttributesGroup
-) {
+    subscriptionAttributes: IppAttributesGroup
+) : IppObject(printer, subscriptionAttributes) {
+
     private val log = getLogger(javaClass.name)
 
     private var lastSequenceNumber: Int = 0
@@ -54,8 +52,6 @@ class IppSubscription(
     val timeInterval: Duration
         get() = ofSeconds(attributes.getValue<Int>("notify-time-interval").toLong())
 
-    fun hasJobId() = attributes.containsKey("notify-job-id")
-
     //----------------------------
     // Get-Subscription-Attributes
     //----------------------------
@@ -64,10 +60,10 @@ class IppSubscription(
 
     @JvmOverloads
     fun getSubscriptionAttributes(requestedAttributes: List<String>? = null) =
-        exchange(ippRequest(GetSubscriptionAttributes, requestedAttributes = requestedAttributes))
+        exchange(ippRequest(GetSubscriptionAttributes, requestedAttributes = requestedAttributes)).subscriptionGroup
 
     fun updateAttributes() {
-        attributes.put(getSubscriptionAttributes().getSingleAttributesGroup(Subscription))
+        attributes.put(getSubscriptionAttributes())
     }
 
     //------------------
@@ -91,7 +87,8 @@ class IppSubscription(
     // Cancel-Subscription
     //--------------------
 
-    fun cancel() = exchange(ippRequest(CancelSubscription))
+    fun cancel() =
+        exchange(ippRequest(CancelSubscription))
 
     //-------------------
     // Renew-Subscription
@@ -107,18 +104,15 @@ class IppSubscription(
         }
 
     //-----------------------
-    // delegate to IppPrinter
+    // Delegate to IppPrinter
     //-----------------------
 
-    fun ippRequest(operation: IppOperation, requestedAttributes: List<String>? = null) =
-        printer.ippRequest(operation, requestedAttributes = requestedAttributes).apply {
-            operationGroup.attribute("notify-subscription-id", Integer, id)
-        }
-
-    fun exchange(request: IppRequest) = printer.exchange(request)
+    protected fun ippRequest(operation: IppOperation, requestedAttributes: List<String>? = null) =
+        printer.ippRequest(operation, requestedAttributes = requestedAttributes)
+            .apply { operationGroup.attribute("notify-subscription-id", Integer, id) }
 
     //------------------------------------
-    // poll and handle event notifications
+    // Poll and handle event notifications
     //------------------------------------
 
     var pollHandlesNotifications = false
@@ -136,12 +130,12 @@ class IppSubscription(
         fun expiresAfterDelay() = !leaseDuration.isZero && now().plus(pollEvery).isAfter(expiresAt.minusSeconds(2))
         try {
             pollHandlesNotifications = true
-            do {
+            while (pollHandlesNotifications) {
                 if (expired()) log.warning { "subscription #$id has expired" }
                 getNotifications().forEach { handleNotification(it) }
                 if (expiresAfterDelay() && autoRenewSubscription) renew(leaseDuration)
                 Thread.sleep(pollEvery.toMillis())
-            } while (pollHandlesNotifications)
+            }
         } catch (clientErrorNotFoundException: ClientErrorNotFoundException) {
             log.info { clientErrorNotFoundException.response!!.statusMessage.toString() }
         }
@@ -151,16 +145,13 @@ class IppSubscription(
     // Logging
     // -------
 
-    override fun toString() = StringBuilder("Subscription #$id:").run {
-        if (hasJobId()) append(" job #$jobId")
+    override fun objectName() = "Subscription #$id"
+
+    override fun toString() = StringBuilder(objectName()).run {
+        if (attributes.containsKey("notify-job-id")) append(", job #$jobId")
         if (attributes.containsKey("notify-events")) append(" events=${events.joinToString(",")}")
         if (attributes.containsKey("notify-time-interval")) append(" time-interval=$timeInterval")
         if (attributes.containsKey("notify-lease-duration")) append(" lease-duration=$leaseDuration (expires at $expiresAt)")
         toString()
     }
-
-    @JvmOverloads
-    fun log(logger: Logger, level: Level = INFO) =
-        attributes.log(logger, level, title = "subscription #$id")
-
 }

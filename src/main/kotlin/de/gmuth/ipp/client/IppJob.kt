@@ -15,16 +15,14 @@ import java.io.InputStream
 import java.net.URI
 import java.time.Duration
 import java.time.ZonedDateTime
-import java.util.logging.Level
-import java.util.logging.Level.INFO
-import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
 
+@SuppressWarnings("kotlin:S1192")
 class IppJob(
     val printer: IppPrinter,
-    var attributes: IppAttributesGroup,
+    jobAttributes: IppAttributesGroup,
     subscriptionAttributes: IppAttributesGroup? = null
-) {
+) : IppObject(printer, jobAttributes) {
 
     companion object {
         var defaultDelay: Duration = Duration.ofSeconds(1)
@@ -33,7 +31,6 @@ class IppJob(
 
     private val log = getLogger(javaClass.name)
     var subscription: IppSubscription? = subscriptionAttributes?.let { IppSubscription(printer, it) }
-    val ippConfig = printer.ippConfig
 
     //--------------
     // IppAttributes
@@ -52,15 +49,12 @@ class IppJob(
         get() = JobState.fromAttributes(attributes)
 
     val stateReasons: List<String>
-        @SuppressWarnings("kotlin:S1192")
         get() = attributes.getValues("job-state-reasons")
 
     val name: IppString
-        @SuppressWarnings("kotlin:S1192")
         get() = attributes.getValue("job-name")
 
     val originatingUserName: IppString
-        @SuppressWarnings("kotlin:S1192")
         get() = attributes.getValue("job-originating-user-name")
 
     val originatingHostName: IppString
@@ -93,7 +87,6 @@ class IppJob(
         get() = attributes.getTimeValue("time-at-completed")
 
     val appleJobOwner: String // only supported by Apple CUPS
-        @SuppressWarnings("kotlin:S1192")
         get() = attributes.getTextValue("com.apple.print.JobInfo.PMJobOwner")
 
     fun isPending(updateStateAttributes: Boolean = false) = stateIs(updateStateAttributes, Pending)
@@ -105,7 +98,7 @@ class IppJob(
     fun isTerminated(updateStateAttributes: Boolean = false) = stateIs(updateStateAttributes, Canceled)
             || stateIs(false, Aborted) || stateIs(false, Completed)
 
-    protected fun stateIs(updateStateAttributes: Boolean, expectedState: JobState): Boolean {
+    private fun stateIs(updateStateAttributes: Boolean, expectedState: JobState): Boolean {
         if (updateStateAttributes) updateAttributes("job-state", "job-state-reasons")
         return state == expectedState
     }
@@ -210,7 +203,7 @@ class IppJob(
         val request = documentRequest(SendDocument, lastDocument, documentName, documentNaturalLanguage).apply {
             documentInputStream = inputStream
         }
-        attributes = exchange(request).jobGroup
+        attributes.put(exchange(request).jobGroup)
     }
 
     @JvmOverloads
@@ -235,10 +228,10 @@ class IppJob(
         val request = documentRequest(SendURI, lastDocument, documentName, documentNaturalLanguage).apply {
             operationGroup.attribute("document-uri", Uri, documentUri)
         }
-        attributes = exchange(request).jobGroup
+        attributes.put(exchange(request).jobGroup)
     }
 
-    protected fun documentRequest(
+    private fun documentRequest(
         operation: IppOperation,
         lastDocument: Boolean,
         documentName: String?,
@@ -251,20 +244,35 @@ class IppJob(
         }
     }
 
+    //--------------
+    // CUPS-Move-Job
+    //--------------
+
+    fun cupsMoveJob(printerUri: URI) = exchange(
+        ippRequest(CupsMoveJob).apply {
+            require(uri.host == printerUri.host) { "Printer $printerUri must be on the same server: ${uri.host}" }
+            createAttributesGroup(Job).attribute("job-printer-uri", Uri, printerUri)
+        }
+    )
+
+    fun cupsMoveJob(ippPrinter: IppPrinter) =
+        cupsMoveJob(ippPrinter.printerUri)
+
     //------------------------
     // Create-Job-Subscription
     //------------------------
 
+    @JvmOverloads
     fun createJobSubscription(notifyEvents: List<String>? = null): IppSubscription {
         val request = ippRequest(CreateJobSubscriptions).apply {
             printer.checkNotifyEvents(notifyEvents)
             createSubscriptionAttributesGroup(notifyEvents, notifyJobId = id)
         }
-        val subscriptionAttributes = exchange(request).getSingleAttributesGroup(Subscription)
+        val subscriptionAttributes = exchange(request).subscriptionGroup
         return IppSubscription(printer, subscriptionAttributes).apply {
             subscription = this
             if (notifyEvents != null && !events.containsAll(notifyEvents)) {
-                log.warning { "server ignored some notifyEvents $notifyEvents, subscribed events: $events" }
+                log.warning { "Server ignored some notifyEvents $notifyEvents, subscribed events: $events" }
             }
         }
     }
@@ -291,7 +299,7 @@ class IppJob(
 
     @JvmOverloads
     fun cupsGetDocument(documentNumber: Int = 1): IppDocument {
-        log.fine { "cupsGetDocument #$documentNumber for job #$id" }
+        log.fine { "CupsGetDocument #$documentNumber for job #$id" }
         val response = exchange(ippRequest(CupsGetDocument).apply {
             operationGroup.attribute("document-number", Integer, documentNumber)
         })
@@ -319,28 +327,26 @@ class IppJob(
     fun printerDirectory() =
         printer.printerDirectory(printerUri.toString().substringAfterLast("/"))
 
-    fun ippRequest(operation: IppOperation, requestedAttributes: List<String>? = null) =
+    private fun ippRequest(operation: IppOperation, requestedAttributes: List<String>? = null) =
         printer.ippRequest(
-            operation, id, requestedAttributes,
+            operation, requestedAttributes, printerUri = null,
             userName = when {
                 useJobOwnerAsUserName && attributes.containsKey("job-originating-user-name") -> originatingUserName.text
                 useJobOwnerAsUserName && attributes.containsKey("com.apple.print.JobInfo.PMJobOwner") -> appleJobOwner
-                else -> ippConfig.userName
+                else -> printer.ippConfig.userName
             }
-        )
-
-    fun exchange(request: IppRequest) =
-        printer.exchange(request)
+        ).apply { operationGroup.attribute("job-uri", Uri, uri) }
 
     // -------
     // Logging
     // -------
 
+    override fun objectName() = "Job #$id"
+
     @SuppressWarnings("kotlin:S3776")
-    override fun toString(): String = with(attributes) {
-        StringBuffer().run {
-            append("Job #$id:")
-            if (containsKey("job-state")) append(" state=$state")
+    override fun toString(): String = attributes.run {
+        StringBuilder(objectName()).run {
+            if (containsKey("job-state")) append(", state=$state")
             if (containsKey("job-state-reasons")) append(" (reasons=${stateReasons.joinToString(",")})")
             if (containsKey("job-name")) append(", name=$name")
             if (containsKey("job-impressions-completed")) append(", impressions-completed=$impressionsCompleted")
@@ -349,11 +355,8 @@ class IppJob(
             if (containsKey("com.apple.print.JobInfo.PMJobOwner")) append(", appleJobOwner=$appleJobOwner")
             if (containsKey("number-of-documents") || containsKey("document-count")) append(", number-of-documents=$numberOfDocuments")
             if (containsKey("job-printer-uri")) append(", printer-uri=$printerUri")
+            if (containsKey("job-uri")) append(", uri=$uri")
             toString()
         }
     }
-
-    @JvmOverloads
-    fun log(logger: Logger, level: Level = INFO) =
-        attributes.log(logger, level, title = "JOB-$id")
 }

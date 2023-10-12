@@ -9,15 +9,16 @@ import de.gmuth.ipp.core.IppString
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
-import java.util.logging.Logger
+import java.io.OutputStream
 import java.util.logging.Logger.getLogger
 import kotlin.io.path.createTempDirectory
 
 class IppDocument(
-    val job: IppJob,
-    val attributes: IppAttributesGroup,
-    val inputStream: InputStream
-) {
+    private val job: IppJob,
+    documentAttributes: IppAttributesGroup,
+    private val inputStream: InputStream
+) : IppObject(job, documentAttributes) {
+
     private val log = getLogger(javaClass.name)
 
     val number: Int
@@ -31,9 +32,8 @@ class IppDocument(
 
     var file: File? = null
 
-    fun readBytes() = inputStream.readBytes().also {
-        log.fine { "read ${it.size} bytes of $this" }
-    }
+    fun readBytes() = inputStream.readBytes()
+        .also { log.fine { "Read ${it.size} bytes of $this" } }
 
     fun filenameSuffix() = when (format) {
         "application/octet-stream" -> "bin"
@@ -46,7 +46,7 @@ class IppDocument(
 
     fun filename() = StringBuilder().run {
         var suffix: String? = filenameSuffix()
-        with(job) {
+        job.run {
             append("job-$id")
             if (numberOfDocuments > 1) append("-doc-$number")
             job.getOriginatingUserNameOrAppleJobOwnerOrNull()?.let { append("-$it") }
@@ -62,13 +62,16 @@ class IppDocument(
         toString().replace('/', '_')
     }
 
+    fun copyTo(outputStream: OutputStream) =
+        inputStream.copyTo(outputStream)
+
     fun save(
         directory: File = createTempDirectory().toFile(),
         file: File = File(directory, filename()),
         overwrite: Boolean = true
     ) = file.also {
         if (file.isFile && !overwrite) throw IOException("File '$file' already exists")
-        inputStream.copyTo(file.outputStream())
+        copyTo(file.outputStream())
         this.file = file
         log.info { "Saved $this" }
     }
@@ -76,14 +79,12 @@ class IppDocument(
     fun runCommand(commandToHandleFile: String) =
         Runtime.getRuntime().exec(arrayOf(commandToHandleFile, file!!.absolutePath))
 
-    override fun toString() = StringBuilder().run {
-        append("document #$number ($format) of job #${job.id}")
+    override fun objectName() = "Document #$number"
+
+    override fun toString() = StringBuilder(objectName()).run {
+        append(" ($format) of job #${job.id}")
         if (attributes.containsKey("document-name")) append(" '$name'")
         if (file != null) append(": $file (${file!!.length()} bytes)")
         toString()
     }
-
-    fun log(logger: Logger) =
-        attributes.log(logger, title = "DOCUMENT-$number")
-
 }

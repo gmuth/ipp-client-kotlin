@@ -6,6 +6,7 @@ package de.gmuth.ipp.core
 
 import java.io.BufferedWriter
 import java.io.File
+import java.net.URI
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
@@ -50,6 +51,9 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     @Suppress("UNCHECKED_CAST")
     fun <T> getValues(name: String) =
         get(name)?.values as T ?: throw IppException("Attribute '$name' not found in group $tag")
+
+    fun getUriValue(name: String) =
+        getValue<URI>(name)
 
     fun getTextValue(name: String) =
         getValue<IppString>(name).text
