@@ -32,19 +32,31 @@ class CupsClient(
 
     private val cupsServer =
         IppPrinter(cupsUri, ippClient = ippClient, getPrinterAttributesOnInit = false)
-            .apply { workDirectory = cupsClientWorkDirectory }
+            .apply { workDirectory = cupsClientWorkDirectory.createDirectoryIfNotExists() }
 
     init {
         if (cupsUri.scheme == "ipps") config.trustAnyCertificateAndSSLHostname()
     }
 
-    fun getPrinters() = try {
-        exchange(ippRequest(CupsGetPrinters))
-            .getAttributesGroups(Printer)
-            .map { IppPrinter(it, ippClient) }
-    } catch (clientErrorNotFoundException: ClientErrorNotFoundException) {
-        emptyList()
+    private fun cupsPrinterUri(printerName: String) =
+        cupsUri.run { URI("$scheme://$host${if (port > 0) ":$port" else ""}/printers/$printerName") }
+            .apply { log.finer { "cupsPrinterUri($printerName) = $this" } }
+
+    val version: String by lazy {
+        getPrinters().run {
+            if (isNotEmpty()) last()
+            else IppPrinter(getJobs(All).last().printerUri)
+        }.cupsVersion
     }
+
+    fun getPrinters() =
+        try {
+            exchange(ippRequest(CupsGetPrinters))
+                .getAttributesGroups(Printer)
+                .map { IppPrinter(it, ippClient) }
+        } catch (clientErrorNotFoundException: ClientErrorNotFoundException) {
+            emptyList()
+        }
 
     fun getPrinterNames() =
         getPrinters().map { it.name.toString() }
@@ -71,20 +83,6 @@ class CupsClient(
         cupsPrinterRequest(CupsSetDefault, printerName)
     )
 
-    val version: String by lazy {
-        getPrinters().run {
-            if (isNotEmpty()) last()
-            else IppPrinter(getJobs(All).last().printerUri)
-        }.cupsVersion
-    }
-
-    internal fun cupsPrinterUri(printerName: String) = with(cupsUri) {
-        val optionalPort = if (port > 0) ":$port" else ""
-        URI("$scheme://$host$optionalPort/printers/$printerName")
-    }.apply {
-        log.fine { "cupsPrinterUri($printerName) -> $this" }
-    }
-
     // https://www.cups.org/doc/spec-ipp.html#CUPS_ADD_MODIFY_PRINTER
     fun addModifyPrinter(
         printerName: String,
@@ -105,11 +103,9 @@ class CupsClient(
         )
     )
 
-    fun deletePrinter(printerName: String) = exchange(
-        cupsPrinterRequest(CupsDeletePrinter, printerName)
-    ).apply {
-        log.info { "Printer deleted: $printerName" }
-    }
+    fun deletePrinter(printerName: String) =
+        exchange(cupsPrinterRequest(CupsDeletePrinter, printerName))
+            .apply { log.info { "Printer deleted: $printerName" } }
 
     // https://www.cups.org/doc/spec-ipp.html#CUPS_CREATE_LOCAL_PRINTER
     fun createLocalPrinter(
@@ -139,7 +135,7 @@ class CupsClient(
     // Build request for a named CUPS printer
     // --------------------------------------
 
-    protected fun cupsPrinterRequest(
+    private fun cupsPrinterRequest(
         operation: IppOperation,
         printerName: String,
         deviceUri: URI? = null,
@@ -166,10 +162,10 @@ class CupsClient(
     fun basicAuth(user: String, password: String) =
         ippClient.basicAuth(user, password)
 
-    internal fun ippRequest(operation: IppOperation, printerURI: URI = cupsUri) =
+    private fun ippRequest(operation: IppOperation, printerURI: URI = cupsUri) =
         ippClient.ippRequest(operation, printerURI)
 
-    internal fun exchange(ippRequest: IppRequest) =
+    private fun exchange(ippRequest: IppRequest) =
         ippClient.exchange(ippRequest)
 
     //---------
@@ -213,30 +209,32 @@ class CupsClient(
         printerName: String,
         deviceUri: URI,
         printerInfo: String? = null,
-        printerLocation: String? = IppPrinter(deviceUri).location.text
+        printerLocation: String? = IppPrinter(deviceUri).location.text,
+        savePPD: Boolean = false
     ) = createLocalPrinter(
         printerName,
         deviceUri,
         printerInfo,
         printerLocation,
-        ppdName = "airprint"
+        ppdName = "everywhere"
     ).apply {
         updateAttributes("printer-name")
         log.info(toString())
-        log.info { "CUPS now generates IPP Everywhere PPD." }
-        do { // https://github.com/apple/cups/issues/5919
+        log.info { "CUPS now generates IPP Everywhere PPD." } // https://github.com/apple/cups/issues/5919
+        do {
             updateAttributes("printer-make-and-model")
+            Thread.sleep(500)
         } while (!makeAndModel.text.lowercase().contains("everywhere"))
         log.info { "Make printer permanent." }
         exchange(
-            cupsPrinterRequest(CupsAddModifyPrinter, printerName).apply {
-                printerGroup.attribute("printer-is-temporary", IppTag.Boolean, false)
-            }
+            cupsPrinterRequest(CupsAddModifyPrinter, printerName)
+                .apply { printerGroup.attribute("printer-is-temporary", IppTag.Boolean, false) }
         )
         log.info { "Make printer operational." }
         enable()
         resume()
         updateAttributes()
+        if(savePPD) savePPD(cupsClientWorkDirectory)
     }
 
     // ---------------------------

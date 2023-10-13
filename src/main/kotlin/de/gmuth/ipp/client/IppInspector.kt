@@ -38,9 +38,7 @@ object IppInspector {
         log.info { "Printer model: $printerModel" }
 
         ippClient.saveMessages = true
-        ippClient.saveMessagesDirectory = File(directory, printerModel).apply {
-            if (!isDirectory && !mkdirs()) throw RuntimeException("Failed to create directory: $path")
-        }
+        ippClient.saveMessagesDirectory = File(directory, printerModel).createDirectoryIfNotExists()
         workDirectory = ippClient.saveMessagesDirectory
 
         attributes.run {

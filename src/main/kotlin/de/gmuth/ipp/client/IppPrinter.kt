@@ -258,7 +258,7 @@ class IppPrinter(
     ) =
         file.also {
             cupsGetPPD(it.outputStream())
-            log.info { "Saved PPD $it" }
+            log.info { "Saved PPD: $it" }
         }
 
     //------------------------------------------
@@ -584,9 +584,9 @@ class IppPrinter(
         }
     }
 
-    fun printerDirectory(printerName: String = name.text.replace("\\s+".toRegex(), "_")) =
-        File(workDirectory, printerName).apply {
-            if (!mkdirs() && !isDirectory) throw IOException("Failed to create printer directory: $path")
-        }
+    fun printerDirectory(printerName: String = name.text.replace("\\s+".toRegex(), "_")): File =
+        File(workDirectory, printerName).createDirectoryIfNotExists()
 
+    internal fun File.createDirectoryIfNotExists() = this
+        .apply { if (!mkdirs() && !isDirectory) throw IOException("Failed to create directory: $path") }
 }
