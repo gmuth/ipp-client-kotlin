@@ -26,6 +26,9 @@ data class IppCollection(val members: MutableCollection<IppAttribute<*>> = mutab
     fun <T> getMember(memberName: String) =
         members.single { it.name == memberName } as IppAttribute<T>
 
+    val size: Int
+        get() = members.size
+
     override fun toString() = members.joinToString(" ", "{", "}") {
         "${it.name}=${it.values.joinToString(",")}"
     }

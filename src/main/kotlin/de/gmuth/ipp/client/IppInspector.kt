@@ -49,6 +49,7 @@ object IppInspector {
             // URIs
             log.info { "Communication channels supported:" }
             communicationChannelsSupported.forEach { log.info { "  $it" } }
+            log.info { "Document formats: $documentFormatSupported" }
         }
 
         val pdfResource = when {
@@ -120,6 +121,7 @@ object IppInspector {
                 release()
             }
 
+            //updateAttributes("job-state")
             if (cancelJob) {
                 log.info { "> Cancel job" }
                 cancel()

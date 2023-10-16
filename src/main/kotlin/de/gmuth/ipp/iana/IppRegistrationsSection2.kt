@@ -109,7 +109,7 @@ object IppRegistrationsSection2 {
     fun getAttribute(name: String, resolveAlias: Boolean = true) =
         attributesMap[if (resolveAlias) resolveAlias(name) else name]
 
-    fun syntaxForAttribute(name: String, resolveAlias: Boolean) =
+    fun syntaxForAttribute(name: String, resolveAlias: Boolean = true) =
         getAttribute(name, resolveAlias)?.syntax
 
     fun tagForAttribute(name: String) = getAttribute(name)?.tag()

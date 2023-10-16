@@ -24,18 +24,19 @@ implementation("de.gmuth:ipp-client:3.0.1")
 ```
 
 [README.md for version 2.x](https://github.com/gmuth/ipp-client-kotlin/blob/2.5/README.md) is still available.
+
 ### [IppPrinter](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppPrinter.kt) and [IppJob](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppJob.kt)
 
 ```kotlin
-// initialize printer connection and show printer attributes
+// Initialize printer connection and show printer attributes
 val ippPrinter = IppPrinter(URI.create("ipp://colorjet.local/ipp/printer"))
 ippPrinter.attributes.log(logger)
 
-// marker levels
+// Marker levels
 ippPrinter.markers.forEach { println(it) }
 println("black: ${ippPrinter.marker(BLACK).levelPercent()} %")
 
-// print file
+// Print file
 val file = File("A4-ten-pages.pdf")
 val job = ippPrinter.printJob(
     file,
@@ -56,16 +57,16 @@ val job = ippPrinter.printJob(
 )
 job.subscription?.pollAndHandleNotifications { println(it) }
 
-// print remote file, make printer pull document from remote server
+// Print remote file, make printer pull document from remote server
 val remoteFile = URI.create("http://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf")
 ippPrinter.printUri(remoteFile)
 
-// create job and send document
+// Create job and send document
 val job = ippPrinter.createJob(jobName(file.name))
 job.sendDocument(FileInputStream(file))
 job.waitForTermination()
 
-// manage jobs
+// Manage jobs
 ippPrinter.getJobs().forEach { println(it) }
 ippPrinter.getJobs(WhichJobs.Completed)
 
@@ -75,14 +76,14 @@ job.release()
 job.cancel()
 job.cupsGetDocuments() // CUPS only
 
-// print operator
+// Print operator
 ippPrinter.pause()
 ippPrinter.resume()
 ippPrinter.sound() // identify printer
 
-// subscribe and handle/log events (e.g. from CUPS) for 5 minutes
+// Subscribe and handle/log events (e.g. from CUPS) for 5 minutes
 ippPrinter
-    .createPrinterSubscription(notifyLeaseDuration=Duration.ofMinutes(5))
+    .createPrinterSubscription(notifyLeaseDuration = Duration.ofMinutes(5))
     .pollAndHandleNotifications()
 ```
 
@@ -93,6 +94,15 @@ DocumentFormat("application/pcl")
 
 WARN: according to printer attributes value 'application/pcl' is not supported.
 document-format-supported (1setOf mimeMediaType) = application/pdf,application/postscript
+```
+
+To get to know a new printer and its supported features, you can run the inspection workflow
+of [IppInspector](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppInspector.kt).
+IPP traffic is saved to directory `inspected-printers`. The workflow will try to print a PDF.
+
+```
+// need an IPP server? https://openprinting.github.io/cups/doc/man-ippeveprinter.html
+IppInspector.inspect(URI.create("ipp://ippeveprinter:8501/ipp/print"))
 ```
 
 ### Exchange [IppRequest](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppRequest.kt) for [IppResponse](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppResponse.kt)
@@ -172,7 +182,38 @@ printer.printJob(
 )
 ```
 
-## Logging
+### IANA Registrations
+
+[Section 2](https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-2)
+and [6 registrations](https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-6)
+are available as Maps and can be queried:
+
+```kotlin
+// List media attributes and show syntax
+IppRegistrationsSection2.attributesMap.values
+    .filter { it.name.contains("media") }
+    .sortedBy { it.collection }
+    .forEach { println(it) }
+
+// Lookup tag for attribute job-name
+IppRegistrationsSection2.tagForAttribute("job-name") // IppTag.NameWithoutLanguage
+```
+
+It's not recommended to use IppRegistrations on the happy path of your control flow.
+You should rather e.g. lookup the correct tag during development and then use it in your code.
+Only when the library detects IPP issues through response codes, it consults the IppRegistrations to help identifying the issue.
+
+This library implements a different concept then jipp.
+jipp seems very strict about IPP syntax and is not designed to cope with illegal IPP responses.
+My IPP library in contrast is designed for resilience. E.g. it accepts messages and attributes that use wrong IPP tags.
+I've not yet seen any IPP server implementation without a single encoding bug.
+[IppInputStream](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppInputStream.kt)
+for example includes workarounds for
+[illegal responses of my HP and Xerox printers](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/test/kotlin/de/gmuth/ipp/core/IppResponseTests.kt).
+From my experience this approach works better in real life projects than blaming the manufacturers firmware.
+
+
+### Logging
 
 From version 3.0 onwards the library
 uses [Java Logging](https://docs.oracle.com/javase/8/docs/technotes/guides/logging/overview.html) - configure as you
@@ -215,14 +256,16 @@ contains the
 and implementations of higher level IPP objects like
 [IppPrinter]((https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppPrinter.kt)),
 [IppJob]((https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppJob.kt)),
-[IppSubscription]((https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppSubscription.kt)) and
+[IppSubscription]((https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppSubscription.kt))
+and
 [IppEventNotification]((https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppEventNotification.kt)).
 
 IPP is based on the exchange of binary messages via HTTP.
 For reading and writing binary data
 [DataInputStream](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/io/DataInputStream.html)
 and [DataOutputStream](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/io/DataOutputStream.html) are
-used. For message transportation IppClient uses [HttpURLConnection](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/net/HttpURLConnection.html).
+used. For message transportation IppClient
+uses [HttpURLConnection](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/net/HttpURLConnection.html).
 
 Only Java runtimes (including Android) provide implementations of these classes.
 The Java standard libraries also

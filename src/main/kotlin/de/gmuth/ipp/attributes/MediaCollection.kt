@@ -19,12 +19,13 @@ class MediaCollection(
     val type: String? = null
 ) : IppAttributeBuilder {
 
-    override fun buildIppAttribute(printerAttributes: IppAttributesGroup) =
-        IppAttribute("media-col", BegCollection, IppCollection().apply {
+    override fun buildIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<*> {
+        val mediaSize = size // conflict with IppCollection.size
+        return IppAttribute("media-col", BegCollection, IppCollection().apply {
             type?.let { addAttribute("media-type", Keyword, it) }
-            size?.let { add(it.buildIppAttribute(printerAttributes)) }
+            mediaSize?.let { add(it.buildIppAttribute(printerAttributes)) }
             margin?.let { addAll(it.buildIppAttributes()) }
             source?.let { add(it.buildIppAttribute(printerAttributes)) }
         })
-
+    }
 }
