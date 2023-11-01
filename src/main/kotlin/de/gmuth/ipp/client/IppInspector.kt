@@ -121,7 +121,6 @@ object IppInspector {
                 release()
             }
 
-            //updateAttributes("job-state")
             if (cancelJob) {
                 log.info { "> Cancel job" }
                 cancel()
