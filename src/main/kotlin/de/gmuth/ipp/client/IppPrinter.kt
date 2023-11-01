@@ -498,6 +498,9 @@ class IppPrinter(
         return IppJob(this, response.jobGroup, subscriptionsAttributes)
     }
 
+    private fun checkIfValueIsSupported(supportedAttributeName: String, value: Any) =
+        IppValueSupport.checkIfValueIsSupported(attributes, supportedAttributeName, value)
+
     // -------
     // Logging
     // -------
@@ -516,65 +519,6 @@ class IppPrinter(
     @JvmOverloads
     fun log(logger: Logger, level: Level = INFO) =
         attributes.log(logger, level, title = "PRINTER $name ($makeAndModel)")
-
-    // ------------------------------------------------------
-    // attribute value checking based on printer capabilities
-    // ------------------------------------------------------
-
-    fun checkIfValueIsSupported(supportedAttributeName: String, value: Any) {
-        if (attributes.isEmpty()) return
-
-        if (!supportedAttributeName.endsWith("-supported"))
-            throw IppException("attribute name not ending with '-supported'")
-
-        if (value is Collection<*>) { // instead of providing another signature just check collections iteratively
-            for (collectionValue in value) {
-                checkIfValueIsSupported(supportedAttributeName, collectionValue!!)
-            }
-        } else {
-            isAttributeValueSupported(supportedAttributeName, value)
-        }
-    }
-
-    fun isAttributeValueSupported(supportedAttributeName: String, value: Any): Boolean? {
-        val supportedAttribute = attributes[supportedAttributeName] ?: return null
-        val attributeValueIsSupported = when (supportedAttribute.tag) {
-            IppTag.Boolean -> { // e.g. 'page-ranges-supported'
-                supportedAttribute.value as Boolean
-            }
-
-            IppTag.Enum, Charset, NaturalLanguage, MimeMediaType, Keyword, Resolution -> when (supportedAttributeName) {
-                "media-col-supported" -> with(value as IppCollection) {
-                    members.filter { !supportedAttribute.values.contains(it.name) }
-                        .forEach { log.warning { "member unsupported: $it" } }
-                    // all member names must be supported
-                    supportedAttribute.values.containsAll(members.map { it.name })
-                }
-
-                else -> supportedAttribute.values.contains(value)
-            }
-
-            Integer -> {
-                if (supportedAttribute.is1setOf()) supportedAttribute.values.contains(value)
-                else value is Int && value <= supportedAttribute.value as Int // e.g. 'job-priority-supported'
-            }
-
-            RangeOfInteger -> {
-                value is Int && value in supportedAttribute.value as IntRange
-            }
-
-            else -> null
-        }
-        when (attributeValueIsSupported) {
-            null -> log.warning { "unable to check if value '$value' is supported by $supportedAttribute" }
-            true -> log.fine { "$supportedAttributeName: $value" }
-            false -> {
-                log.warning { "according to printer attributes value '${supportedAttribute.enumNameOrValue(value)}' is not supported." }
-                log.warning { "$supportedAttribute" }
-            }
-        }
-        return attributeValueIsSupported
-    }
 
     // -----------------------
     // Save printer attributes
