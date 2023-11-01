@@ -19,6 +19,7 @@ import java.net.HttpURLConnection
 import java.net.URI
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.logging.Level.SEVERE
+import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.HttpsURLConnection
@@ -26,7 +27,7 @@ import javax.net.ssl.HttpsURLConnection
 typealias IppResponseInterceptor = (request: IppRequest, response: IppResponse) -> Unit
 
 open class IppClient(val config: IppConfig = IppConfig()) : IppExchange {
-    protected val log = getLogger(javaClass.name)
+    protected val log: Logger = getLogger(javaClass.name)
 
     var responseInterceptor: IppResponseInterceptor? = null
     var saveMessages: Boolean = false

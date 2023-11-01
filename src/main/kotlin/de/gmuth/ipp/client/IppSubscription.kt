@@ -21,7 +21,7 @@ import java.util.logging.Logger.getLogger
 
 class IppSubscription(
     val printer: IppPrinter,
-    private val attributes: IppAttributesGroup
+    val attributes: IppAttributesGroup
 ) : IppExchange by printer {
 
     private val log = getLogger(javaClass.name)

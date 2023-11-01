@@ -17,7 +17,7 @@ import kotlin.io.path.createTempDirectory
 
 class IppDocument(
     val job: IppJob,
-    private val attributes: IppAttributesGroup,
+    val attributes: IppAttributesGroup,
     private val inputStream: InputStream
 ) {
 

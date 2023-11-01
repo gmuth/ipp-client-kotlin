@@ -13,7 +13,7 @@ import java.util.logging.Logger
 
 class IppEventNotification(
     val subscription: IppSubscription,
-    private val attributes: IppAttributesGroup
+    val attributes: IppAttributesGroup
 ) {
 
     val sequenceNumber: Int

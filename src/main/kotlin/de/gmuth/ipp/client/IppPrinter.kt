@@ -26,7 +26,7 @@ import kotlin.io.path.createTempDirectory
 @SuppressWarnings("kotlin:S1192")
 class IppPrinter(
     val printerUri: URI,
-    internal val attributes: IppAttributesGroup = IppAttributesGroup(Printer),
+    val attributes: IppAttributesGroup = IppAttributesGroup(Printer),
     ippConfig: IppConfig = IppConfig(),
     internal val ippClient: IppClient = IppClient(ippConfig),
     getPrinterAttributesOnInit: Boolean = true,
