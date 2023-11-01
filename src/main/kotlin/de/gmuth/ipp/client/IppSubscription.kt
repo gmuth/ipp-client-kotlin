@@ -15,12 +15,14 @@ import java.time.Duration
 import java.time.Duration.ofSeconds
 import java.time.LocalDateTime
 import java.time.LocalDateTime.now
+import java.util.logging.Level
+import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
 
 class IppSubscription(
     val printer: IppPrinter,
-    subscriptionAttributes: IppAttributesGroup
-) : IppObject(printer, subscriptionAttributes) {
+    private val attributes: IppAttributesGroup
+) : IppExchange by printer {
 
     private val log = getLogger(javaClass.name)
 
@@ -145,13 +147,16 @@ class IppSubscription(
     // Logging
     // -------
 
-    override fun objectName() = "Subscription #$id"
-
-    override fun toString() = StringBuilder(objectName()).run {
+    override fun toString() = StringBuilder("Subscription #$id").run {
         if (attributes.containsKey("notify-job-id")) append(", job #$jobId")
         if (attributes.containsKey("notify-events")) append(" events=${events.joinToString(",")}")
         if (attributes.containsKey("notify-time-interval")) append(" time-interval=$timeInterval")
         if (attributes.containsKey("notify-lease-duration")) append(" lease-duration=$leaseDuration (expires at $expiresAt)")
         toString()
     }
+
+    @JvmOverloads
+    fun log(logger: Logger, level: Level = Level.INFO) =
+        attributes.log(logger, level, title = "SUBSCRIPTION #$id")
+
 }

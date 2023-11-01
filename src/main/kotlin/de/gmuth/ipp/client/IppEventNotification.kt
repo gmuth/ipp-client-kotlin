@@ -8,11 +8,13 @@ import de.gmuth.ipp.attributes.JobState
 import de.gmuth.ipp.attributes.PrinterState
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppString
+import java.util.logging.Level
+import java.util.logging.Logger
 
 class IppEventNotification(
-    private val subscription: IppSubscription,
-    eventNotificationAttributes: IppAttributesGroup
-) : IppObject(subscription, eventNotificationAttributes) {
+    val subscription: IppSubscription,
+    private val attributes: IppAttributesGroup
+) {
 
     val sequenceNumber: Int
         get() = attributes.getValue("notify-sequence-number")
@@ -53,11 +55,9 @@ class IppEventNotification(
     // Get job from printer
     fun getJob() = subscription.printer.getJob(jobId)
 
-    override fun objectName() = "Event notification #$sequenceNumber $subscribedEvent"
-
     @SuppressWarnings("kotlin:S3776")
     override fun toString() = StringBuilder().run {
-        append("Event #$sequenceNumber:")
+        append("EventNotification #$sequenceNumber:")
         append(" [$subscribedEvent] $text")
         with(attributes) {
             if (containsKey("notify-job-id")) append(", job #$jobId")
@@ -69,4 +69,9 @@ class IppEventNotification(
         }
         toString()
     }
+
+    @JvmOverloads
+    fun log(logger: Logger, level: Level = Level.INFO) =
+        attributes.log(logger, level, title = "EVENTNOTIFICATION #$sequenceNumber $subscribedEvent")
+
 }

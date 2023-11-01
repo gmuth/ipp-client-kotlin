@@ -10,14 +10,16 @@ import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
+import java.util.logging.Level
+import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
 import kotlin.io.path.createTempDirectory
 
 class IppDocument(
-    private val job: IppJob,
-    documentAttributes: IppAttributesGroup,
+    val job: IppJob,
+    private val attributes: IppAttributesGroup,
     private val inputStream: InputStream
-) : IppObject(job, documentAttributes) {
+) {
 
     private val log = getLogger(javaClass.name)
 
@@ -79,12 +81,15 @@ class IppDocument(
     fun runCommand(commandToHandleFile: String) =
         Runtime.getRuntime().exec(arrayOf(commandToHandleFile, file!!.absolutePath))
 
-    override fun objectName() = "Document #$number"
-
-    override fun toString() = StringBuilder(objectName()).run {
+    override fun toString() = StringBuilder("Document #$number").run {
         append(" ($format) of job #${job.id}")
         if (attributes.containsKey("document-name")) append(" '$name'")
         if (file != null) append(": $file (${file!!.length()} bytes)")
         toString()
     }
+
+    @JvmOverloads
+    fun log(logger: Logger, level: Level = Level.INFO) =
+        attributes.log(logger, level, title = "DOCUMENT #$number")
+
 }

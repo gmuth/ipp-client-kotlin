@@ -15,14 +15,16 @@ import java.io.InputStream
 import java.net.URI
 import java.time.Duration
 import java.time.ZonedDateTime
+import java.util.logging.Level
+import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
 
 @SuppressWarnings("kotlin:S1192")
 class IppJob(
     val printer: IppPrinter,
-    jobAttributes: IppAttributesGroup,
+    val attributes: IppAttributesGroup,
     subscriptionAttributes: IppAttributesGroup? = null
-) : IppObject(printer, jobAttributes) {
+) : IppExchange by printer {
 
     companion object {
         var defaultDelay: Duration = Duration.ofSeconds(1)
@@ -341,11 +343,9 @@ class IppJob(
     // Logging
     // -------
 
-    override fun objectName() = "Job #$id"
-
     @SuppressWarnings("kotlin:S3776")
     override fun toString(): String = attributes.run {
-        StringBuilder(objectName()).run {
+        StringBuilder("Job #$id").run {
             if (containsKey("job-state")) append(", state=$state")
             if (containsKey("job-state-reasons")) append(" (reasons=${stateReasons.joinToString(",")})")
             if (containsKey("job-name")) append(", name=$name")
@@ -359,4 +359,9 @@ class IppJob(
             toString()
         }
     }
+
+    @JvmOverloads
+    fun log(logger: Logger, level: Level = Level.INFO) =
+        attributes.log(logger, level, title = "JOB #$id")
+
 }

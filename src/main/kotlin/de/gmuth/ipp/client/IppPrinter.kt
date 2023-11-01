@@ -17,19 +17,21 @@ import de.gmuth.ipp.iana.IppRegistrationsSection2
 import java.io.*
 import java.net.URI
 import java.time.Duration
+import java.util.logging.Level
 import java.util.logging.Level.*
+import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
 import kotlin.io.path.createTempDirectory
 
 @SuppressWarnings("kotlin:S1192")
 class IppPrinter(
     val printerUri: URI,
-    printerAttributes: IppAttributesGroup = IppAttributesGroup(Printer),
+    internal val attributes: IppAttributesGroup = IppAttributesGroup(Printer),
     ippConfig: IppConfig = IppConfig(),
     internal val ippClient: IppClient = IppClient(ippConfig),
     getPrinterAttributesOnInit: Boolean = true,
     requestedAttributesOnInit: List<String>? = null
-) : IppObject(ippClient, printerAttributes) {
+) : IppExchange {
 
     private val log = getLogger(javaClass.name)
     var workDirectory: File = createTempDirectory().toFile()
@@ -476,7 +478,7 @@ class IppPrinter(
     ) = ippClient
         .ippRequest(operation, printerUri, requestedAttributes, userName)
 
-    override fun exchange(request: IppRequest) = super.exchange(request.apply {
+    override fun exchange(request: IppRequest) = ippClient.exchange(request.apply {
         checkIfValueIsSupported("ipp-versions-supported", version!!)
         checkIfValueIsSupported("operations-supported", code!!.toInt())
         checkIfValueIsSupported("charset-supported", attributesCharset)
@@ -500,8 +502,6 @@ class IppPrinter(
     // Logging
     // -------
 
-    override fun objectName() = "Printer $name ($makeAndModel)"
-
     override fun toString() = StringBuilder("Printer").run {
         if (attributes.containsKey("printer-name")) append(" $name")
         if (attributes.containsKey("printer-make-and-model")) append(" ($makeAndModel)")
@@ -512,6 +512,10 @@ class IppPrinter(
         if (attributes.containsKey("printer-info")) append(", info=$info")
         toString()
     }
+
+    @JvmOverloads
+    fun log(logger: Logger, level: Level = INFO) =
+        attributes.log(logger, level, title = "PRINTER $name ($makeAndModel)")
 
     // ------------------------------------------------------
     // attribute value checking based on printer capabilities
