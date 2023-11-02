@@ -31,7 +31,7 @@ jobs:
           java-version: '17'
       # https://github.com/marketplace/actions/gradle-build-action
       - name: Gradle build
-        uses: gradle/gradle-build-action@v2.9
+        uses: gradle/gradle-build-action@v2.9.0
 #        with:
 #          gradle-version: 7.6.2
 #          arguments: test build
