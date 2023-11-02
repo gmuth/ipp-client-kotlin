@@ -13,7 +13,7 @@ import java.util.logging.Logger.getLogger
 
 class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputStream) {
 
-    internal val log = getLogger(javaClass.name)
+    internal val logger = getLogger(javaClass.name)
 
     // character encoding for text and name attributes, RFC 8011 4.1.4.1
     internal lateinit var attributesCharset: Charset
@@ -21,13 +21,13 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
     fun readMessage(message: IppMessage) {
         with(message) {
             version = "${readUnsignedByte()}.${readUnsignedByte()}"
-            log.finest { "version = $version" }
+            logger.finest { "version = $version" }
 
             code = readUnsignedShort()
-            log.finest { "code = $code ($codeDescription)" }
+            logger.finest { "code = $code ($codeDescription)" }
 
             requestId = readInt()
-            log.finest { "requestId = $requestId" }
+            logger.finest { "requestId = $requestId" }
         }
 
         lateinit var currentGroup: IppAttributesGroup
@@ -42,7 +42,7 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
 
                     tag.isValueTag() -> {
                         val attribute = readAttribute(tag)
-                        log.finest { attribute.toString() }
+                        logger.finest { attribute.toString() }
                         if (attribute.name.isNotEmpty()) {
                             currentGroup.put(attribute)
                             currentAttribute = attribute
@@ -55,8 +55,8 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
         } catch (throwable: Throwable) {
             if (throwable !is EOFException) readBytes().apply {
                 if (isNotEmpty()) {
-                    log.warning { "Skipped $size unparsed bytes" }
-                    hexdump { log.finest { it } }
+                    logger.warning { "Skipped $size unparsed bytes" }
+                    hexdump { logger.finest { it } }
                 }
             }
             throw IppException("Failed to read ipp message", throwable)
@@ -64,7 +64,7 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
     }
 
     internal fun readTag() = IppTag.fromByte(readByte()).apply {
-        if (isDelimiterTag()) log.finest { "--- $this ---" }
+        if (isDelimiterTag()) logger.finest { "--- $this ---" }
     }
 
     internal fun readAttribute(tag: IppTag) = IppAttribute<Any>(name = readString(), tag).apply {
@@ -162,7 +162,7 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
                     readCollection()
                 } else {
                     // Xerox B210: workaround for invalid 'media-col' without members
-                    log.warning { "Invalid value length for IppCollection, trying to recover" }
+                    logger.warning { "Invalid value length for IppCollection, trying to recover" }
                     IppCollection()
                 }
             }
@@ -172,8 +172,8 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
                 readLengthAndValue().apply {
                     if (isNotEmpty()) {
                         val level = if (tag == Unsupported_) Level.FINEST else Level.WARNING
-                        log.log(level) { "Ignore $size value bytes tagged '$tag'" }
-                        hexdump { log.log(level) { it } }
+                        logger.log(level) { "Ignore $size value bytes tagged '$tag'" }
+                        hexdump { logger.log(level) { it } }
                     }
                 }
             }
@@ -217,7 +217,7 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
             if (!this) { // unexpected value length
                 reset() // revert 'readShort()'
                 with("Expected value length of $expected bytes but found $length") {
-                    if (throwException) throw IppException(this) else log.warning { this }
+                    if (throwException) throw IppException(this) else logger.warning { this }
                 }
             }
         }

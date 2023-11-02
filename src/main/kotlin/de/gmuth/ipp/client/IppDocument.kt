@@ -21,7 +21,7 @@ class IppDocument(
     private val inputStream: InputStream
 ) {
 
-    private val log = getLogger(javaClass.name)
+    private val logger = getLogger(javaClass.name)
 
     val number: Int
         get() = attributes.getValue("document-number")
@@ -35,9 +35,9 @@ class IppDocument(
     var file: File? = null
 
     fun readBytes() = inputStream.readBytes()
-        .also { log.fine { "Read ${it.size} bytes of $this" } }
+        .also { logger.fine { "Read ${it.size} bytes of $this" } }
 
-    fun filenameSuffix() = when (format) {
+    internal fun filenameSuffix() = when (format) {
         "application/pdf", "application/vnd.cups-pdf" -> "pdf"
         "application/octet-stream" -> "bin"
         "application/postscript" -> "ps"
@@ -75,7 +75,7 @@ class IppDocument(
         if (file.isFile && !overwrite) throw IOException("File '$file' already exists")
         copyTo(file.outputStream())
         this.file = file
-        log.info { "Saved $this" }
+        logger.info { "Saved $file" }
     }
 
     fun runCommand(commandToHandleFile: String) =

@@ -7,7 +7,7 @@ package de.gmuth.ipp.attributes
 import de.gmuth.ipp.core.IppAttribute
 import de.gmuth.ipp.core.IppTag.Integer
 
-open class MediaMargin(
+class MediaMargin(
     val left: Int? = null,
     val right: Int? = null,
     val top: Int? = null,

@@ -11,7 +11,7 @@ fun main() {
 
     //ConsoleLogger.defaultLogLevel = Logging.LogLevel.DEBUG
     //HttpURLConnectionClient.log.logLevel = Logging.LogLevel.TRACE
-    val log = getLogger("issueNo3")
+    val logger = getLogger("issueNo3")
     var ippPrinter: IppPrinter? = null
 
     // httpConnect(printerUri)
@@ -19,30 +19,30 @@ fun main() {
 
     val ippConfig = IppConfig().apply {
         ippVersion = "1.1"
-        log(log)
+        log(logger)
     }
     try {
-        log.info { "open ipp connection to $printerUri" }
+        logger.info { "open ipp connection to $printerUri" }
         ippPrinter = IppPrinter(printerUri, ippConfig = ippConfig, getPrinterAttributesOnInit = true)
-        log.info { "successfully connected $printerUri" }
+        logger.info { "successfully connected $printerUri" }
     } catch (exception: Exception) {
-        log.log(SEVERE, exception, { "failed to connect to $printerUri" })
+        logger.log(SEVERE, exception, { "failed to connect to $printerUri" })
     }
 
     if (ippPrinter != null) ippPrinter.run {
         if (saveAttributes) {
             try {
                 savePrinterAttributes()
-                log.info { "saved printer attributes" }
+                logger.info { "saved printer attributes" }
             } catch (exception: Exception) {
-                log.log(SEVERE, exception, { "failed to save printer attributes" })
+                logger.log(SEVERE, exception, { "failed to save printer attributes" })
             }
         }
         try {
-            log.info { "documentFormatSupported:" }
-            documentFormatSupported.forEach { log.info { " $it" } }
+            logger.info { "documentFormatSupported:" }
+            documentFormatSupported.forEach { logger.info { " $it" } }
         } catch (exception: Exception) {
-            log.log(SEVERE, exception, { "failed to read documentFormatSupported" })
+            logger.log(SEVERE, exception, { "failed to read documentFormatSupported" })
         }
     }
 }

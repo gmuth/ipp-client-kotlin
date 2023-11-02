@@ -14,7 +14,7 @@ import kotlin.test.assertTrue
 
 class IppAttributesGroupTests {
 
-    private val log = getLogger(javaClass.name)
+    private val logger = getLogger(javaClass.name)
     private val group = IppAttributesGroup(Operation)
 
     @Test
@@ -121,7 +121,7 @@ class IppAttributesGroupTests {
     @Test
     fun log() {
         group.attribute("Commodore PET", Integer, 2001)
-        group.log(log, prefix = "|", title = "title")
+        group.log(logger, prefix = "|", title = "title")
     }
 
     @Test

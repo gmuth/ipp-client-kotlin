@@ -14,7 +14,7 @@ import java.util.logging.Logger.getLogger
 // https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-2
 object IppRegistrationsSection2 {
 
-    val log = getLogger(javaClass.name)
+    private val logger = getLogger(javaClass.name)
 
     data class Attribute(
         val collection: String,
@@ -103,7 +103,7 @@ object IppRegistrationsSection2 {
     }
 
     fun resolveAlias(name: String) = (aliasMap[name] ?: name).also {
-        if (aliasMap.containsKey(name)) log.finer { "'$name' resolves to '$it'" }
+        if (aliasMap.containsKey(name)) logger.finer { "'$name' resolves to '$it'" }
     }
 
     fun getAttribute(name: String, resolveAlias: Boolean = true) =
@@ -126,10 +126,10 @@ object IppRegistrationsSection2 {
         if (tag.isOutOfBandTag()) return
         val syntax = syntaxForAttribute(name, true)
         if (syntax == null) {
-            log.fine { "no syntax found for '$name'" }
+            logger.fine { "no syntax found for '$name'" }
             unknownAttributes.add(name)
         } else if (!syntax.contains(tag.registeredSyntax())) {
-            log.warning { "$name ($tag) does not match iana registered syntax '$syntax'" }
+            logger.warning { "$name ($tag) does not match iana registered syntax '$syntax'" }
         }
     }
 
@@ -145,16 +145,16 @@ object IppRegistrationsSection2 {
     fun validate(ippAttribute: IppAttribute<*>) = with(ippAttribute) {
         checkSyntaxOfAttribute(name, tag)
         if (isCollection()) validate(name, values as List<IppCollection>)
-        if (!tag.isOutOfBandTag() && values.isEmpty()) log.warning { "'$name' ($tag) has no values" }
-        if (values.size > 1 && attributeIs1setOf(name) == false) log.warning { "'$name' is not registered as '1setOf'" }
+        if (!tag.isOutOfBandTag() && values.isEmpty()) logger.warning { "'$name' ($tag) has no values" }
+        if (values.size > 1 && attributeIs1setOf(name) == false) logger.warning { "'$name' is not registered as '1setOf'" }
     }
 
     @Suppress("UNCHECKED_CAST")
     fun validate(name: String, ippCollections: List<IppCollection>) {
-        log.finer { "validate collection '$name'" }
+        logger.finer { "validate collection '$name'" }
         val resolvedName = resolveAlias(name)
         for (ippCollection in ippCollections) {
-            log.finer { "         ${ippCollection.members.size} members" }
+            logger.finer { "         ${ippCollection.members.size} members" }
             for (member in ippCollection.members) {
                 if (member.isCollection()) {
                     validate("$resolvedName/${member.name}", member.values as List<IppCollection>)
@@ -168,8 +168,8 @@ object IppRegistrationsSection2 {
     fun logUnknownAttributes() {
         with(unknownAttributes.toMutableList()) {
             sort()
-            log.info { "$size unknown attributes:" }
-            forEach { log.info { "- $it" } }
+            logger.info { "$size unknown attributes:" }
+            forEach { logger.info { "- $it" } }
         }
     }
 }

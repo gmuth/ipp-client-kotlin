@@ -20,9 +20,8 @@ class IppRequest : IppMessage {
             when {
                 containsKey("printer-uri") -> getUriValue("printer-uri")
                 containsKey("job-uri") -> getUriValue("job-uri")
-                else -> throw IppException("Missing 'printer-uri' or 'job-uri' in IppRequest").also {
-                    log(logger, Level.WARNING)
-                }
+                else -> throw IppException("Missing 'printer-uri' or 'job-uri' in IppRequest")
+                    .also { log(logger, Level.WARNING) }
             }
         }
 

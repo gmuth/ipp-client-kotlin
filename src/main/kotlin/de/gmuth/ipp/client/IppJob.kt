@@ -8,6 +8,7 @@ import de.gmuth.ipp.attributes.JobState
 import de.gmuth.ipp.attributes.JobState.*
 import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppOperation.*
+import de.gmuth.ipp.core.IppStatus.SuccessfulOk
 import de.gmuth.ipp.core.IppTag.*
 import java.io.File
 import java.io.FileInputStream
@@ -23,16 +24,20 @@ import java.util.logging.Logger.getLogger
 class IppJob(
     val printer: IppPrinter,
     val attributes: IppAttributesGroup,
-    subscriptionAttributes: IppAttributesGroup? = null
 ) : IppExchange by printer {
+
+    private val logger = getLogger(javaClass.name)
+    var subscription: IppSubscription? = null
+
+    constructor(printer: IppPrinter, response: IppResponse) : this(printer, response.jobGroup) {
+        if (response.status != SuccessfulOk) logger.warning { "Job response status: ${response.status}" }
+        if (response.containsGroup(Subscription)) subscription = IppSubscription(printer, response.subscriptionGroup)
+    }
 
     companion object {
         var defaultDelay: Duration = Duration.ofSeconds(1)
         var useJobOwnerAsUserName: Boolean = false
     }
-
-    private val log = getLogger(javaClass.name)
-    var subscription: IppSubscription? = subscriptionAttributes?.let { IppSubscription(printer, it) }
 
     //--------------
     // IppAttributes
@@ -147,16 +152,16 @@ class IppJob(
 
     @JvmOverloads
     fun waitForTermination(delay: Duration = defaultDelay) {
-        log.info { "Wait for termination of job #$id" }
+        logger.info { "Wait for termination of job #$id" }
         var lastPrinterString = ""
         var lastJobString = toString()
-        log.info { lastJobString }
+        logger.info { lastJobString }
         while (!isTerminated()) {
-            Thread.sleep(delay.toMillis())
+            Thread.sleep(delay.toMillis()) // no coroutines (http, ssl and stream parsing also require JVM)
             updateAttributes()
             if (toString() != lastJobString) {
                 lastJobString = toString()
-                log.info { lastJobString }
+                logger.info { lastJobString }
             }
             if (isProcessingStopped() || lastPrinterString.isNotEmpty()) {
                 printer.updateAttributes(
@@ -164,12 +169,12 @@ class IppJob(
                 )
                 if (printer.toString() != lastPrinterString) {
                     lastPrinterString = printer.toString()
-                    log.info { lastPrinterString }
+                    logger.info { lastPrinterString }
                 }
             }
             if (isProcessing() && lastPrinterString.isNotEmpty()) lastPrinterString = ""
         }
-        if (isAborted()) log(log)
+        if (isAborted()) log(logger)
     }
 
     //-------------------
@@ -182,12 +187,12 @@ class IppJob(
 
     @JvmOverloads
     fun cancel(messageForOperator: String? = null): IppResponse { // RFC 8011 4.3.3
-        if (isCanceled()) log.warning { "Job #$id is already 'canceled'" }
-        if (isProcessingToStopPoint()) log.warning { "Job #$id is already 'processing-to-stop-point'" }
+        if (isCanceled()) logger.warning { "Job #$id is already 'canceled'" }
+        if (isProcessingToStopPoint()) logger.warning { "Job #$id is already 'processing-to-stop-point'" }
         val request = ippRequest(CancelJob).apply {
             messageForOperator?.let { operationGroup.attribute("message", TextWithoutLanguage, it) }
         }
-        log.info { "Cancel job #$id" }
+        logger.info { "Cancel $this" }
         return exchange(request)
     }
 
@@ -202,9 +207,8 @@ class IppJob(
         documentName: String? = null,
         documentNaturalLanguage: String? = null
     ) {
-        val request = documentRequest(SendDocument, lastDocument, documentName, documentNaturalLanguage).apply {
-            documentInputStream = inputStream
-        }
+        val request = documentRequest(SendDocument, lastDocument, documentName, documentNaturalLanguage)
+            .apply { documentInputStream = inputStream }
         attributes.put(exchange(request).jobGroup)
     }
 
@@ -227,9 +231,8 @@ class IppJob(
         documentName: String? = null,
         documentNaturalLanguage: String? = null
     ) {
-        val request = documentRequest(SendURI, lastDocument, documentName, documentNaturalLanguage).apply {
-            operationGroup.attribute("document-uri", Uri, documentUri)
-        }
+        val request = documentRequest(SendURI, lastDocument, documentName, documentNaturalLanguage)
+            .apply { operationGroup.attribute("document-uri", Uri, documentUri) }
         attributes.put(exchange(request).jobGroup)
     }
 
@@ -274,7 +277,7 @@ class IppJob(
         return IppSubscription(printer, subscriptionAttributes).apply {
             subscription = this
             if (notifyEvents != null && !events.containsAll(notifyEvents)) {
-                log.warning { "Server ignored some notifyEvents $notifyEvents, subscribed events: $events" }
+                logger.warning { "Server ignored some notifyEvents $notifyEvents, subscribed events: $events" }
             }
         }
     }
@@ -301,10 +304,9 @@ class IppJob(
 
     @JvmOverloads
     fun cupsGetDocument(documentNumber: Int = 1): IppDocument {
-        log.fine { "CupsGetDocument #$documentNumber for job #$id" }
-        val response = exchange(ippRequest(CupsGetDocument).apply {
-            operationGroup.attribute("document-number", Integer, documentNumber)
-        })
+        logger.fine { "CupsGetDocument #$documentNumber for job #$id" }
+        val response = exchange(ippRequest(CupsGetDocument)
+            .apply { operationGroup.attribute("document-number", Integer, documentNumber) })
         return IppDocument(this, response.jobGroup, response.documentInputStream!!)
     }
 
@@ -327,7 +329,7 @@ class IppJob(
     //-----------------------
 
     fun printerDirectory() =
-        printer.printerDirectory(printerUri.toString().substringAfterLast("/"))
+        printer.printerDirectory(printerUri.toString().substringAfterLast(File.separator))
 
     private fun ippRequest(operation: IppOperation, requestedAttributes: List<String>? = null) =
         printer.ippRequest(

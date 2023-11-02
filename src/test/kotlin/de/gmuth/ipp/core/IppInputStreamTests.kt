@@ -185,7 +185,7 @@ class IppInputStreamTest {
             "01 01 00 0B 00 00 00 08 01 47 00 01 61 00 01 66 FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF AA"
         assertFailsWith<IppException> {
             encoded.toIppInputStream().run {
-                log.level = ALL
+                logger.level = ALL
                 readMessage(message)
             }
         }

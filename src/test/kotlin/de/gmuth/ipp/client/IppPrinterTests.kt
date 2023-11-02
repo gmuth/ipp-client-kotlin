@@ -31,7 +31,7 @@ import kotlin.test.assertTrue
 
 class IppPrinterTests {
 
-    val log = getLogger(javaClass.name)
+    private val logger = getLogger(javaClass.name)
     val blankPdf = File("tool/A4-blank.pdf")
     val ippClientMock = IppClientMock("printers/Simulated_Laser_Printer")
     val printer = IppPrinter(
@@ -42,7 +42,7 @@ class IppPrinterTests {
     @Test
     fun printerAttributes() {
         printer.run {
-            log.info { toString() }
+            logger.info { toString() }
             assertTrue(isAcceptingJobs)
             assertTrue(documentFormatSupported.contains("application/pdf"))
             assertTrue(supportsOperations(GetPrinterAttributes))
@@ -64,7 +64,7 @@ class IppPrinterTests {
                 assertEquals(80, levelPercent())
                 assertEquals("#000000", colorCode)
                 assertFalse(levelIsLow())
-                log.info { this.toString() }
+                logger.info { this.toString() }
             }
             assertTrue(isIdle())
             assertFalse(isProcessing())
@@ -72,13 +72,13 @@ class IppPrinterTests {
             assertFalse(isMediaNeeded())
             assertFalse(isCups())
             printerType.apply {
-                log.info { toString() }
-                log(log)
+                logger.info { toString() }
+                log(logger)
             }
             communicationChannelsSupported.forEach {
-                log.info { "${it.uri}, ${it.security}, ${it.authentication}, $it" }
+                logger.info { "${it.uri}, ${it.security}, ${it.authentication}, $it" }
             }
-            ippConfig.log(log)
+            ippConfig.log(logger)
         }
     }
 
@@ -93,7 +93,7 @@ class IppPrinterTests {
         ippClientMock.mockResponse("Get-Printer-Attributes.ipp")
         printer.run {
             updateAttributes()
-            log(log)
+            log(logger)
             assertEquals(122, attributes.size)
         }
     }
@@ -142,7 +142,7 @@ class IppPrinterTests {
     fun printJobInputStream() {
         ippClientMock.mockResponse("Print-Job.ipp")
         printer.printJob(FileInputStream(blankPdf)).run {
-            log(log)
+            log(logger)
             assertEquals(461881017, id)
             assertEquals(JobState.Pending, state)
             assertEquals(listOf("none"), stateReasons)

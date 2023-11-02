@@ -25,7 +25,7 @@ class CupsClient(
 ) {
     constructor(host: String = "localhost") : this(URI.create("ipp://$host"))
 
-    private val log = getLogger(javaClass.name)
+    private val logger = getLogger(javaClass.name)
     val config: IppConfig by ippClient::config
     var userName: String? by config::userName
     var cupsClientWorkDirectory = File("CUPS/${cupsUri.host}")
@@ -40,7 +40,7 @@ class CupsClient(
 
     private fun cupsPrinterUri(printerName: String) =
         cupsUri.run { URI("$scheme://$host${if (port > 0) ":$port" else ""}/printers/$printerName") }
-            .apply { log.finer { "cupsPrinterUri($printerName) = $this" } }
+            .apply { logger.finer { "cupsPrinterUri($printerName) = $this" } }
 
     val version: String by lazy {
         getPrinters().run {
@@ -70,7 +70,7 @@ class CupsClient(
                 .apply { workDirectory = cupsClientWorkDirectory }
         } catch (clientErrorNotFoundException: ClientErrorNotFoundException) {
             with(getPrinters()) {
-                if (isNotEmpty()) log.warning { "Available CUPS printers: ${map { it.name }}" }
+                if (isNotEmpty()) logger.warning { "Available CUPS printers: ${map { it.name }}" }
             }
             throw clientErrorNotFoundException
         }
@@ -105,7 +105,7 @@ class CupsClient(
 
     fun deletePrinter(printerName: String) =
         exchange(cupsPrinterRequest(CupsDeletePrinter, printerName))
-            .apply { log.info { "Printer deleted: $printerName" } }
+            .apply { logger.info { "Printer deleted: $printerName" } }
 
     // https://www.cups.org/doc/spec-ipp.html#CUPS_CREATE_LOCAL_PRINTER
     fun createLocalPrinter(
@@ -126,7 +126,7 @@ class CupsClient(
                 ppdName
             )
         ).run {
-            log.info { "$statusMessage ${printerGroup.getValues<Any>("printer-uri-supported")}" }
+            logger.info { "$statusMessage ${printerGroup.getValues<Any>("printer-uri-supported")}" }
             return IppPrinter(printerGroup, ippClient)
         }
     }
@@ -219,18 +219,18 @@ class CupsClient(
         ppdName = "everywhere"
     ).apply {
         updateAttributes("printer-name")
-        log.info(toString())
-        log.info { "CUPS now generates IPP Everywhere PPD." } // https://github.com/apple/cups/issues/5919
+        logger.info(toString())
+        logger.info { "CUPS now generates IPP Everywhere PPD." } // https://github.com/apple/cups/issues/5919
         do {
             updateAttributes("printer-make-and-model")
             Thread.sleep(500)
         } while (!makeAndModel.text.lowercase().contains("everywhere"))
-        log.info { "Make printer permanent." }
+        logger.info { "Make printer permanent." }
         exchange(
             cupsPrinterRequest(CupsAddModifyPrinter, printerName)
                 .apply { printerGroup.attribute("printer-is-temporary", IppTag.Boolean, false) }
         )
-        log.info { "Make printer operational." }
+        logger.info { "Make printer operational." }
         enable()
         resume()
         updateAttributes()
@@ -263,7 +263,7 @@ class CupsClient(
         )
             .onEach { job -> // update attributes and lookup job owners
                 if (updateJobAttributes) job.updateAttributes()
-                log.info { job.toString() }
+                logger.info { job.toString() }
                 job.getOriginatingUserNameOrAppleJobOwnerOrNull()?.let { jobOwners.add(it) }
             }
             .onEach { job -> // keep stats and save documents
@@ -272,9 +272,9 @@ class CupsClient(
                     .apply { numberOfSavedDocuments.addAndGet(size) }
             }
             .apply {
-                log.info { "Found ${jobOwners.size} job ${if (jobOwners.size == 1) "owner" else "owners"}: $jobOwners" }
-                log.info { "Found $size jobs (which=$whichJobs) where $numberOfJobsWithoutDocuments jobs have no documents" }
-                log.info { "Saved $numberOfSavedDocuments documents of ${size.minus(numberOfJobsWithoutDocuments.toInt())} jobs with documents to directory: ${cupsServer.workDirectory}" }
+                logger.info { "Found ${jobOwners.size} job ${if (jobOwners.size == 1) "owner" else "owners"}: $jobOwners" }
+                logger.info { "Found $size jobs (which=$whichJobs) where $numberOfJobsWithoutDocuments jobs have no documents" }
+                logger.info { "Saved $numberOfSavedDocuments documents of ${size.minus(numberOfJobsWithoutDocuments.toInt())} jobs with documents to directory: ${cupsServer.workDirectory}" }
             }
     }
 
@@ -292,10 +292,10 @@ class CupsClient(
     ) {
         createSubscription(whichJobEvents, notifyLeaseDuration = leaseDuration)
             .pollAndHandleNotifications(pollEvery, autoRenewSubscription = autoRenewLease) { event ->
-                log.info { event.toString() }
+                logger.info { event.toString() }
                 with(event.getJob()) {
                     while (isIncoming()) {
-                        log.info { toString() }
+                        logger.info { toString() }
                         Thread.sleep(1000)
                         updateAttributes()
                     }
@@ -319,7 +319,7 @@ class CupsClient(
             if (documents.isNotEmpty() && onSuccessUpdateJobAttributes) job.updateAttributes()
             true
         } catch (ippExchangeException: IppExchangeException) {
-            log.info { "Get documents for job #${job.id} failed: ${ippExchangeException.message}" }
+            logger.info { "Get documents for job #${job.id} failed: ${ippExchangeException.message}" }
             ippExchangeException.httpStatus!! != 401
         }
 
@@ -327,7 +327,7 @@ class CupsClient(
             val configuredUserName = config.userName
             jobOwners.forEach {
                 config.userName = it
-                log.fine { "set userName '${config.userName}'" }
+                logger.fine { "set userName '${config.userName}'" }
                 if (getDocuments()) return@forEach
             }
             config.userName = configuredUserName

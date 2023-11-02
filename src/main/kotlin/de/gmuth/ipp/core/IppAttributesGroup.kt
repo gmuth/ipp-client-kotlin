@@ -17,7 +17,7 @@ import java.util.logging.Logger.getLogger
 
 class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*>>() {
 
-    private val log = getLogger(javaClass.name)
+    private val logger = getLogger(javaClass.name)
     var onReplaceWarn: Boolean = false
 
     init {
@@ -26,7 +26,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
 
     fun put(attribute: IppAttribute<*>) = put(attribute.name, attribute).also {
         if (it != null && onReplaceWarn) {
-            log.warning { "replaced '$it' with '${attribute.values.joinToString(",")}' in group $tag" }
+            logger.warning { "replaced '$it' with '${attribute.values.joinToString(",")}' in group $tag" }
         }
     }
 
@@ -83,7 +83,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
 
     fun saveText(file: File) = file.apply {
         bufferedWriter().use { write(it) }
-        log.info { "Saved $path" }
+        logger.info { "Saved $path" }
     }
 
 }

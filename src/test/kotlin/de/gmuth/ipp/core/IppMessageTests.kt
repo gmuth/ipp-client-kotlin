@@ -12,7 +12,7 @@ import kotlin.test.*
 
 class IppMessageTests {
 
-    val log = getLogger(javaClass.name)
+    private val logger = getLogger(javaClass.name)
 
     private val message = object : IppMessage() {
         override val codeDescription: String
@@ -57,7 +57,7 @@ class IppMessageTests {
             assertEquals(38, rawBytes!!.size)
             write(ByteArrayOutputStream()) // cover warning
             toString() // cover toString
-            log(log) // cover log
+            log(logger) // cover log
         }
     }
 
@@ -89,7 +89,7 @@ class IppMessageTests {
     @Test
     fun withoutRawBytes() {
         assertEquals("codeDescription []", message.toString())
-        message.log(log)
+        message.log(logger)
         assertFailsWith<IppException> { // missing raw bytes
             message.saveBytes(createTempFile("test", null))
         }

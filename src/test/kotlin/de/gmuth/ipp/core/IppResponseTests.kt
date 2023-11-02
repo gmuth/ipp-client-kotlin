@@ -18,7 +18,7 @@ class IppResponseTests {
         Logging.configure()
     }
 
-    val log = getLogger(javaClass.name)
+    private val logger = getLogger(javaClass.name)
     private val ippResponse = IppResponse()
 
     @Test
@@ -43,7 +43,7 @@ class IppResponseTests {
     @Test
     fun invalidXeroxMediaColResponse() = ippResponse.run {
         read(File("src/test/resources/invalidXeroxMediaCol.response"))
-        log(log)
+        log(logger)
         jobGroup.run {
             assertEquals(598, getValue("job-id"))
             assertEquals(4, getValue("job-state")) // pending-held
@@ -60,7 +60,7 @@ class IppResponseTests {
         // IppInputStream solution: first mark(2) then NameWithLanguage -> readShort().let { if (markSupported() && it < 6) reset() }
         // requestNaturalLanguage = "de" // triggers HP name with language bug
         ippResponse.read(File("src/test/resources/invalidHpNameWithLanguage.response"))
-        ippResponse.log(log)
+        ippResponse.log(logger)
         ippResponse.jobGroup.run {
             assertEquals(IppString("A4-blank.pdf", "de"), getValue("job-name"))
             assertEquals(993, getValue("job-id"))

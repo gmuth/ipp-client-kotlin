@@ -16,7 +16,7 @@ class IppAttributeTests {
         Logging.configure()
     }
 
-    private val log = getLogger(javaClass.name)
+    private val logger = getLogger(javaClass.name)
     private val attribute = IppAttribute("printer-state-reasons", Keyword, "none")
 
     @Test
@@ -98,7 +98,7 @@ class IppAttributeTests {
     @Test
     fun log() {
         // cover an output with more than 160 characters and a collection value
-        IppAttribute("media-col".padEnd(160, '-'), BegCollection, IppCollection()).log(log)
+        IppAttribute("media-col".padEnd(160, '-'), BegCollection, IppCollection()).log(logger)
     }
 
     @Test

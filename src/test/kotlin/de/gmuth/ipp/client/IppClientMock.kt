@@ -36,13 +36,13 @@ class IppClientMock(var directory: String = "printers") : IppClient() {
     // when used with real http, responses are frequently created and garbage collected
     // however references to attribute groups are kept in IPP objects
     // changes to an attribute group would affect other tests as well
-    // therefor it's important to produce a fresh response for each call
+    // therefor it's important to produce a fresh response for each mocked call
 
     override fun httpPost(httpUri: URI, request: IppRequest) = IppResponse().apply {
         ByteArrayOutputStream()
             .also { request.write(it) }
             .toByteArray()
-            .run { log.info { "post $size request bytes to $httpUri, ${rawResponse.size} response bytes" } }
+            .run { logger.info { "post $size request bytes to $httpUri, ${rawResponse.size} response bytes" } }
         decode(rawResponse)
     }
 }

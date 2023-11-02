@@ -13,11 +13,11 @@ import de.gmuth.ipp.core.IppTag.Integer
 
 // unit: 1/100 mm, e.g. 2540 = 1 inch
 class MediaSize(val xDimension: Int, val yDimension: Int) : IppAttributeBuilder {
-    override fun buildIppAttribute(printerAttributes: IppAttributesGroup) =
-        IppAttribute(
-            "media-size", BegCollection, IppCollection(
-                IppAttribute("x-dimension", Integer, xDimension),
-                IppAttribute("y-dimension", Integer, yDimension)
-            )
+    override fun buildIppAttribute(printerAttributes: IppAttributesGroup) = IppAttribute(
+        "media-size", BegCollection,
+        IppCollection(
+            IppAttribute("x-dimension", Integer, xDimension),
+            IppAttribute("y-dimension", Integer, yDimension)
         )
+    )
 }

@@ -13,7 +13,7 @@ import java.util.logging.Logger.getLogger
 
 class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStream) {
 
-    private val log = getLogger(javaClass.name)
+    private val logger = getLogger(javaClass.name)
 
     // Charset for text and name attributes, RFC 8011 4.1.4.1
     internal lateinit var attributesCharset: Charset
@@ -22,13 +22,13 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
         attributesCharset = operationGroup.getValue("attributes-charset")
 
         writeVersion(version ?: throw IppException("missing version"))
-        log.finest { "version = $version" }
+        logger.finest { "version = $version" }
 
         writeShort(code ?: throw IppException("missing operation or status code"))
-        log.finest { "code = $code ($codeDescription)" }
+        logger.finest { "code = $code ($codeDescription)" }
 
         writeInt(requestId ?: throw IppException("missing requestId"))
-        log.finest { "requestId = $requestId" }
+        logger.finest { "requestId = $requestId" }
 
         for (group in attributesGroups) {
             writeTag(group.tag)
@@ -51,7 +51,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
     }
 
     internal fun writeTag(tag: IppTag) {
-        if (tag.isDelimiterTag()) log.finest { "--- $tag ---" }
+        if (tag.isDelimiterTag()) logger.finest { "--- $tag ---" }
         writeByte(tag.code.toInt())
     }
 
@@ -63,7 +63,7 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
     }
 
     internal fun writeAttribute(attribute: IppAttribute<*>) {
-        log.finest { "$attribute" }
+        logger.finest { "$attribute" }
         with(attribute) {
             if (values.isEmpty() || tag.isOutOfBandTag()) {
                 writeTag(tag)

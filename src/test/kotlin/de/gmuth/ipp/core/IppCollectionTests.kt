@@ -12,7 +12,7 @@ import kotlin.test.assertFailsWith
 
 class IppCollectionTests {
 
-    private val log = getLogger(javaClass.name)
+    private val logger = getLogger(javaClass.name)
     private val collection = IppCollection(IppAttribute("foo", IppTag.Keyword, "a", "b"))
 
     @Test
@@ -41,13 +41,13 @@ class IppCollectionTests {
 
     @Test
     fun logNarrow() {
-        collection.log(log)
+        collection.log(logger)
     }
 
     @Test
     fun logWide() {
         collection.addAll(listOf(IppAttribute("bar", IppTag.Keyword, "c".repeat(160))))
-        collection.log(log)
+        collection.log(logger)
     }
 
 }

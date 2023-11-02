@@ -15,7 +15,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class CupsClientTests {
-    val log = getLogger(javaClass.name)
+    private val logger = getLogger(javaClass.name)
     val ippClientMock = IppClientMock("printers/CUPS")
     val cupsClient = CupsClient(URI.create("ipps://cups"), ippClient = ippClientMock)
 
@@ -29,7 +29,7 @@ class CupsClientTests {
     fun getPrinters() {
         ippClientMock.mockResponse("Cups-Get-Printers.ipp")
         cupsClient.getPrinters().run {
-            forEach { log.info { it.toString() } }
+            forEach { logger.info { it.toString() } }
             assertEquals(12, size)
         }
     }
@@ -38,7 +38,7 @@ class CupsClientTests {
     fun getPrinter() {
         ippClientMock.mockResponse("Get-Printer-Attributes.ipp", "printers/CUPS_HP_LaserJet_100_color_MFP_M175")
         cupsClient.getPrinter("ColorJet_HP").run {
-            log(log)
+            log(logger)
             assertEquals("HP LaserJet 100 color MFP M175", makeAndModel.text)
             assertEquals(PrinterState.Idle, state)
             assertEquals(5, markers.size)

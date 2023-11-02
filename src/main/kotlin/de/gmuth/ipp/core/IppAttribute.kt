@@ -15,7 +15,7 @@ import java.util.logging.Logger.getLogger
 
 data class IppAttribute<T>(val name: String, val tag: IppTag) : IppAttributeBuilder {
 
-    private val log = getLogger(javaClass.name)
+    private val logger = getLogger(javaClass.name)
 
     val values: MutableCollection<T> = mutableListOf()
 
@@ -40,7 +40,7 @@ data class IppAttribute<T>(val name: String, val tag: IppTag) : IppAttributeBuil
         when {
             attribute.name.isNotEmpty() -> throw IppException("For additional '$name' values attribute name must be empty")
             attribute.values.size != 1 -> throw IppException("Expected 1 additional value, not ${attribute.values.size}")
-            attribute.tag != tag -> log.warning { "$name: ignore additional value \"$attribute\" - tag is not '$tag'" }
+            attribute.tag != tag -> logger.warning { "$name: ignore additional value \"$attribute\" - tag is not '$tag'" }
             else -> {
                 attribute.tag.validateValueClass(attribute.values.single() as Any)
                 values.add(attribute.values.single() as T)
@@ -85,5 +85,4 @@ data class IppAttribute<T>(val name: String, val tag: IppTag) : IppAttributeBuil
             }
         }
     }
-
 }

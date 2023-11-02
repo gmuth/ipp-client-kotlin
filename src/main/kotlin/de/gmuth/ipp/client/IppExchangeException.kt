@@ -32,11 +32,11 @@ open class IppExchangeException(
         IppExchangeException(request, response) {
         init {
             require(response.status == ClientErrorNotFound)
-            { "ipp response status is not ClientErrorNotFound: ${response.status}" }
+            { "IPP response status is not ClientErrorNotFound: ${response.status}" }
         }
     }
 
-    val log = getLogger(javaClass.name)
+    private val logger = getLogger(javaClass.name)
 
     companion object {
         fun defaultMessage(request: IppRequest, response: IppResponse?) = StringBuilder().run {
@@ -53,11 +53,11 @@ open class IppExchangeException(
 
     fun log(logger: Logger, level: Level = INFO) = logger.run {
         log(level) { message }
-        request.log(log, level, prefix = "REQUEST: ")
-        response?.log(log, level, prefix = "RESPONSE: ")
+        request.log(this@IppExchangeException.logger, level, prefix = "REQUEST: ")
+        response?.log(this@IppExchangeException.logger, level, prefix = "RESPONSE: ")
         httpStatus?.let { log(level) { "HTTP-Status: $it" } }
         httpHeaderFields?.let { for ((key: String?, value) in it) log(level) { "HTTP: $key = $value" } }
-        httpStream?.let { log.log(level) { "HTTP-Content:\n" + it.bufferedReader().use { it.readText() } } }
+        httpStream?.let { this@IppExchangeException.logger.log(level) { "HTTP-Content:\n" + it.bufferedReader().use { it.readText() } } }
     }
 
     fun saveMessages(

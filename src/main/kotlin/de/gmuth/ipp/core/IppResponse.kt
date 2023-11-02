@@ -4,7 +4,7 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020-2023 Gerhard Muth
  */
 
-import de.gmuth.ipp.core.IppTag.*
+import de.gmuth.ipp.core.IppTag.Unsupported
 import java.nio.charset.Charset
 
 class IppResponse : IppMessage {
@@ -22,9 +22,6 @@ class IppResponse : IppMessage {
     val statusMessage: IppString
         get() = operationGroup.getValue("status-message")
 
-    val jobGroups: Collection<IppAttributesGroup>
-        get() = getAttributesGroups(Job)
-
     val unsupportedGroup: IppAttributesGroup
         get() = getSingleAttributesGroup(Unsupported)
 
@@ -41,5 +38,4 @@ class IppResponse : IppMessage {
     ) : super(version, requestId, charset, naturalLanguage) {
         code = status.code
     }
-
 }

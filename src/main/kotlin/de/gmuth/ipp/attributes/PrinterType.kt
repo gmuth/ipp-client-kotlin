@@ -11,12 +11,9 @@ import de.gmuth.ipp.core.IppTag
 import java.util.logging.Level
 import java.util.logging.Level.INFO
 import java.util.logging.Logger
-import java.util.logging.Logger.getLogger
 
 // https://www.cups.org/doc/spec-ipp.html
 class PrinterType(val value: Int) : IppAttributeBuilder {
-
-    val log = getLogger(javaClass.name)
 
     enum class Capability(val bit: Int, val description: String) {
         IsAPrinterClass(0, "Is a printer class."),

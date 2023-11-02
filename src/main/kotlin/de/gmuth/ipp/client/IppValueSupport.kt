@@ -14,11 +14,12 @@ import java.util.logging.Logger.getLogger
 
 object IppValueSupport {
 
-    private val log = getLogger(javaClass.name)
+    private val logger = getLogger(javaClass.name)
 
-    fun checkIfValueIsSupported(printerAttributes: IppAttributesGroup, attribute: IppAttribute<Any>) {
+    fun checkIfValueIsSupported(printerAttributes: IppAttributesGroup, attribute: IppAttribute<*>) {
         val supportedAttribute = printerAttributes["${attribute.name}-supported"]
-        supportedAttribute?.let { checkIfValueIsSupported(printerAttributes, supportedAttribute.name, attribute.value) }
+        if (supportedAttribute == null) logger.warning { "${attribute.name}-supported not available in printer attributes" }
+        else checkIfValueIsSupported(printerAttributes, supportedAttribute.name, attribute.value as Any)
     }
 
     fun checkIfValueIsSupported(
@@ -54,9 +55,10 @@ object IppValueSupport {
 
             IppTag.Enum, Charset, NaturalLanguage, MimeMediaType, Keyword, Resolution -> when (supportedAttributeName) {
                 "media-col-supported" -> with(value as IppCollection) {
-                    members.filter { !supportedAttribute.values.contains(it.name) }
-                        .forEach { log.warning { "member unsupported: $it" } }
-                    // all member names must be supported
+                    members
+                        .onEach { checkIfValueIsSupported(printerAttributes, it) }
+                        .filter { !supportedAttribute.values.contains(it.name) }
+                        .forEach { logger.warning { "media-col member unsupported: $it" } }
                     supportedAttribute.values.containsAll(members.map { it.name })
                 }
 
@@ -75,13 +77,14 @@ object IppValueSupport {
             else -> null
         }
         when (attributeValueIsSupported) {
-            null -> log.warning { "unable to check if value '$value' is supported by $supportedAttribute" }
-            true -> log.fine { "$supportedAttributeName: $value" }
+            null -> logger.warning { "Unable to check if value '$value' is supported by $supportedAttribute" }
+            true -> logger.finer { "$value is supported according to $supportedAttributeName" }
             false -> {
-                log.warning { "according to printer attributes value '${supportedAttribute.enumNameOrValue(value)}' is not supported." }
-                log.warning { "$supportedAttribute" }
+                logger.warning { "According to printer attributes value '${supportedAttribute.enumNameOrValue(value)}' is not supported." }
+                logger.warning { "$supportedAttribute" }
             }
         }
         return attributeValueIsSupported
+            .also { logger.finest { "is $supportedAttributeName(${supportedAttribute.tag})? $value -> $attributeValueIsSupported" } }
     }
 }

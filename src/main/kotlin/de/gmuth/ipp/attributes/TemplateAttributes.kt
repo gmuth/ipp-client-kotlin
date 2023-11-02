@@ -53,8 +53,12 @@ object TemplateAttributes {
         IppAttribute("media-source", Keyword, keyword)
 
     @JvmStatic // input tray
+    fun mediaColWithSource(mediaSource: MediaSource) =
+        MediaCollection(source = mediaSource)
+
+    @JvmStatic // input tray
     fun mediaColWithSource(keyword: String) =
-        MediaCollection(source = MediaSource(keyword))
+        mediaColWithSource(MediaSource(keyword))
 
     @JvmStatic // unit: hundreds of mm
     fun mediaColWithSize(xDimension: Int, yDimension: Int) =

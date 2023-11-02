@@ -70,7 +70,7 @@ enum class IppTag(
     override fun toString() = registeredName
 
     fun registeredSyntax() = when (this) {
-        // iana registered syntax doesn't care about language
+        // IANA registered syntax doesn't care about language
         NameWithoutLanguage, NameWithLanguage -> "name"
         TextWithoutLanguage, TextWithLanguage -> "text"
         else -> registeredName
@@ -87,5 +87,4 @@ enum class IppTag(
         fun fromString(name: String): IppTag =
             values().singleOrNull { it.registeredName == name } ?: throw IppException("Unknown tag name '$name'")
     }
-
 }

@@ -24,16 +24,12 @@ class IppSubscription(
     val attributes: IppAttributesGroup
 ) : IppExchange by printer {
 
-    private val log = getLogger(javaClass.name)
-
+    private val logger = getLogger(javaClass.name)
     private var lastSequenceNumber: Int = 0
     private var leaseStartedAt = now()
 
     init {
-        if (attributes.size <= 1) {
-            updateAttributes()
-            log.info { toString() }
-        }
+        if (attributes.size <= 1) updateAttributes()
     }
 
     val id: Int
@@ -61,11 +57,12 @@ class IppSubscription(
     // RFC 3995 11.2.4.1.2: 'subscription-template', 'subscription-description' or 'all' (default)
 
     @JvmOverloads
-    fun getSubscriptionAttributes(requestedAttributes: List<String>? = null) =
-        exchange(ippRequest(GetSubscriptionAttributes, requestedAttributes = requestedAttributes)).subscriptionGroup
+    fun getSubscriptionAttributes(requestedAttributes: List<String>? = null) = exchange(
+        subscriptionRequest(GetSubscriptionAttributes, requestedAttributes = requestedAttributes)
+    )
 
     fun updateAttributes() {
-        attributes.put(getSubscriptionAttributes())
+        attributes.put(getSubscriptionAttributes().subscriptionGroup)
     }
 
     //------------------
@@ -73,7 +70,7 @@ class IppSubscription(
     //------------------
 
     fun getNotifications(notifySequenceNumber: Int? = lastSequenceNumber + 1): List<IppEventNotification> {
-        val request = ippRequest(GetNotifications).apply {
+        val request = subscriptionRequest(GetNotifications).apply {
             operationGroup.run {
                 attribute("notify-subscription-ids", Integer, id)
                 notifySequenceNumber?.let { attribute("notify-sequence-numbers", Integer, it) }
@@ -89,27 +86,27 @@ class IppSubscription(
     // Cancel-Subscription
     //--------------------
 
-    fun cancel() =
-        exchange(ippRequest(CancelSubscription))
+    fun cancel() = exchange(subscriptionRequest(CancelSubscription))
 
     //-------------------
     // Renew-Subscription
     //-------------------
 
-    fun renew(leaseDuration: Duration? = null) =
-        exchange(ippRequest(RenewSubscription).apply {
+    fun renew(leaseDuration: Duration? = null) = exchange(
+        subscriptionRequest(RenewSubscription).apply {
             createSubscriptionAttributesGroup(notifyLeaseDuration = leaseDuration)
-        }).also {
-            leaseStartedAt = now()
-            updateAttributes()
-            log.info { "renewed $this" }
         }
+    ).also {
+        leaseStartedAt = now()
+        updateAttributes()
+        logger.fine { "renewed $this" }
+    }
 
     //-----------------------
     // Delegate to IppPrinter
     //-----------------------
 
-    protected fun ippRequest(operation: IppOperation, requestedAttributes: List<String>? = null) =
+    private fun subscriptionRequest(operation: IppOperation, requestedAttributes: List<String>? = null) =
         printer.ippRequest(operation, requestedAttributes = requestedAttributes)
             .apply { operationGroup.attribute("notify-subscription-id", Integer, id) }
 
@@ -127,19 +124,19 @@ class IppSubscription(
     fun pollAndHandleNotifications(
         pollEvery: Duration = ofSeconds(5), // should be larger than 1s
         autoRenewSubscription: Boolean = false,
-        handleNotification: (event: IppEventNotification) -> Unit = { log.info { it.toString() } }
+        handleNotification: (event: IppEventNotification) -> Unit = { logger.info { it.toString() } }
     ) {
         fun expiresAfterDelay() = !leaseDuration.isZero && now().plus(pollEvery).isAfter(expiresAt.minusSeconds(2))
         try {
             pollHandlesNotifications = true
             while (pollHandlesNotifications) {
-                if (expired()) log.warning { "subscription #$id has expired" }
+                if (expired()) logger.warning { "subscription #$id has expired" }
                 getNotifications().forEach { handleNotification(it) }
                 if (expiresAfterDelay() && autoRenewSubscription) renew(leaseDuration)
                 Thread.sleep(pollEvery.toMillis())
             }
         } catch (clientErrorNotFoundException: ClientErrorNotFoundException) {
-            log.info { clientErrorNotFoundException.response!!.statusMessage.toString() }
+            logger.info { clientErrorNotFoundException.response!!.statusMessage.toString() }
         }
     }
 

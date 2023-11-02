@@ -22,7 +22,7 @@ import kotlin.test.assertTrue
 
 class IppJobTests {
 
-    val log = getLogger(javaClass.name)
+    private val logger = getLogger(javaClass.name)
     val blankPdf = File("tool/A4-blank.pdf")
 
     val ippClientMock = IppClientMock("printers/CUPS_HP_LaserJet_100_color_MFP_M175")
@@ -42,8 +42,8 @@ class IppJobTests {
     @Test
     fun jobAttributes() {
         job.apply {
-            log.info { toString() }
-            log(log)
+            logger.info { toString() }
+            log(logger)
             assertEquals("ipp://localhost:631/jobs/2366", uri.toString())
             assertEquals(0, mediaSheetsCompleted)
             assertEquals(2, kOctets)
@@ -66,7 +66,7 @@ class IppJobTests {
         job.apply {
             attributes.onReplaceWarn = true
             updateAttributes()
-            log(log)
+            log(logger)
             assertEquals(32, attributes.size)
         }
     }
@@ -172,8 +172,8 @@ class IppJobTests {
     fun cupsGetDocument1() {
         ippClientMock.mockResponse(cupsDocumentResponse("application/pdf"))
         job.cupsGetDocument().apply {
-            log.info { toString() }
-            log(log)
+            logger.info { toString() }
+            log(logger)
             save().delete()
             assertEquals("job-2366-gmuth-A4-blank.pdf", filename())
         }
@@ -194,10 +194,10 @@ class IppJobTests {
             jobGroup.remove("document-name")
         })
         job.cupsGetDocument(2).apply {
-            log.info { toString() }
-            log.info { "${filename()} (${readBytes().size} bytes)" }
+            logger.info { toString() }
+            logger.info { "${filename()} (${readBytes().size} bytes)" }
             job.attributes.remove("document-name-supplied")
-            log.info { filename() }
+            logger.info { filename() }
             assertEquals("bin", filenameSuffix())
         }
     }

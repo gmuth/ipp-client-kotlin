@@ -6,7 +6,7 @@ import org.jetbrains.dokka.gradle.DokkaTask
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.7.22"
     id("org.jetbrains.dokka") version "1.7.20"
-    id("org.sonarqube") version "4.3.1.3277" // https://plugins.gradle.org/plugin/org.sonarqube
+    id("org.sonarqube") version "4.4.1.3373" // https://plugins.gradle.org/plugin/org.sonarqube
     //id("org.sonarqube") version "3.5.0.2730" // supports java 8, dropped with 4.1
     id("maven-publish")
     id("java-library")
@@ -158,12 +158,17 @@ repo?.run { // tasks for publishing on maven repo
 val isRunningOnGithub = System.getenv("CI")?.toBoolean() ?: false
 println("isRunningOnGithub=$isRunningOnGithub")
 
+// https://docs.gradle.org/current/userguide/jacoco_plugin.html
+jacoco {
+    // https://mvnrepository.com/artifact/org.jacoco/jacoco-maven-plugin
+    toolVersion = "0.8.11"
+}
+
 // required for sonarqube code coverage
 // https://docs.sonarqube.org/latest/analysis/test-coverage/java-test-coverage
 tasks.jacocoTestReport {
     dependsOn(tasks.test)
     // https://stackoverflow.com/questions/67725347/jacoco-fails-on-gradle-7-0-2-and-kotlin-1-5-10
-    //version = "0.8.7"
     reports {
         xml.required.set(true)
         csv.required.set(false)
@@ -175,18 +180,19 @@ tasks.jacocoTestReport {
 // https://docs.sonarqube.org/latest/analysis/scan/sonarscanner-for-gradle/
 // configure token with 'publish analysis' permission in file ~/.gradle/gradle.properties:
 // systemProp.sonar.login=<token>
-sonar {
-    properties {
-        property("sonar.host.url", "https://sonarcloud.io")
-        property("sonar.projectKey", "gmuth_ipp-client-kotlin")
-        property("sonar.organization", "gmuth")
-        //property("sonar.verbose", "true")
-        //property("sonar.junit.reportPaths", "build/test-results/test")
-        //property("sonar.jacoco.reportPaths", "build/jacoco/test.exec")
-        //property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/")
-    }
-}
+//sonar {
+//    properties {
+//        property("sonar.host.url", "https://sonarcloud.io")
+//        property("sonar.projectKey", "gmuth_ipp-client-kotlin")
+//        property("sonar.organization", "gmuth")
+//        //property("sonar.verbose", "true")
+//        //property("sonar.junit.reportPaths", "build/test-results/test")
+//        //property("sonar.jacoco.reportPaths", "build/jacoco/test.exec")
+//        //property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/")
+//    }
+//}
 
+// https://docs.sonarsource.com/sonarqube/latest/analyzing-source-code/scanners/sonarscanner-for-gradle/
 tasks.sonar {
     dependsOn(tasks.jacocoTestReport) // for coverage
 }

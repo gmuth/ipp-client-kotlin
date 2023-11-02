@@ -11,7 +11,6 @@ import de.gmuth.ipp.attributes.PrinterState.*
 import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
-import de.gmuth.ipp.core.IppStatus.SuccessfulOk
 import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import java.io.*
@@ -33,7 +32,7 @@ class IppPrinter(
     requestedAttributesOnInit: List<String>? = null
 ) : IppExchange {
 
-    private val log = getLogger(javaClass.name)
+    private val logger = getLogger(javaClass.name)
     var workDirectory: File = createTempDirectory().toFile()
 
     companion object {
@@ -60,27 +59,27 @@ class IppPrinter(
     }
 
     init {
-        log.fine { "create IppPrinter for $printerUri" }
+        logger.fine { "create IppPrinter for $printerUri" }
         require(printerUri.scheme.startsWith("ipp")) { "uri scheme unsupported: ${printerUri.scheme}" }
         if (printerUri.scheme == "ipps") ippConfig.trustAnyCertificateAndSSLHostname()
         if (!getPrinterAttributesOnInit) {
-            log.fine { "getPrinterAttributesOnInit disabled => no printer attributes available" }
+            logger.fine { "getPrinterAttributesOnInit disabled => no printer attributes available" }
         } else if (attributes.isEmpty()) {
             try {
                 updateAttributes(requestedAttributesOnInit)
                 if (isStopped()) {
-                    log.fine { toString() }
-                    alert?.let { log.info { "alert: $it" } }
-                    alertDescription?.let { log.info { "alert-description: $it" } }
+                    logger.fine { toString() }
+                    alert?.let { logger.info { "alert: $it" } }
+                    alertDescription?.let { logger.info { "alert-description: $it" } }
                 }
             } catch (ippExchangeException: IppExchangeException) {
                 if (ippExchangeException.statusIs(ClientErrorNotFound))
-                    log.severe { ippExchangeException.message }
+                    logger.severe { ippExchangeException.message }
                 else {
-                    log.severe { "Failed to get printer attributes on init. Workaround: getPrinterAttributesOnInit=false" }
+                    logger.severe { "Failed to get printer attributes on init. Workaround: getPrinterAttributesOnInit=false" }
                     ippExchangeException.response?.let {
-                        if (it.containsGroup(Printer)) log.info { "${it.printerGroup.size} attributes parsed" }
-                        else log.warning { "RESPONSE: $it" }
+                        if (it.containsGroup(Printer)) logger.info { "${it.printerGroup.size} attributes parsed" }
+                        else logger.warning { "RESPONSE: $it" }
                     }
                 }
                 throw ippExchangeException
@@ -260,7 +259,7 @@ class IppPrinter(
     ) =
         file.also {
             cupsGetPPD(it.outputStream())
-            log.info { "Saved PPD: $it" }
+            logger.info { "Saved PPD: $it" }
         }
 
     //------------------------------------------
@@ -364,7 +363,7 @@ class IppPrinter(
             // put attribute in operation or job group?
             val groupTag = IppRegistrationsSection2.selectGroupForAttribute(attribute.name) ?: Job
             if (!containsGroup(groupTag)) createAttributesGroup(groupTag)
-            log.finer { "$groupTag put $attribute" }
+            logger.finer { "$groupTag put $attribute" }
             getSingleAttributesGroup(groupTag).put(attribute)
         }
     }
@@ -389,7 +388,7 @@ class IppPrinter(
         limit: Int? = null,
         requestedAttributes: List<String>? = getJobsRequestedAttributes
     ): Collection<IppJob> {
-        log.fine { "getJobs(whichJobs=$whichJobs, requestedAttributes=$requestedAttributes)" }
+        logger.fine { "getJobs(whichJobs=$whichJobs, requestedAttributes=$requestedAttributes)" }
         val request = ippRequest(GetJobs, requestedAttributes = requestedAttributes).apply {
             operationGroup.run {
                 whichJobs?.keyword?.let {
@@ -407,6 +406,13 @@ class IppPrinter(
 
     fun getJobs(whichJobs: WhichJobs? = null, vararg requestedAttributes: String) =
         getJobs(whichJobs, requestedAttributes = requestedAttributes.toList())
+
+    //------------
+    // Cancel jobs
+    //------------
+
+    fun cancelJobs(whichJobs: WhichJobs) =
+        getJobs(whichJobs).forEach { it.cancel() }
 
     //----------------------------
     // Create-Printer-Subscription
@@ -484,19 +490,14 @@ class IppPrinter(
         checkIfValueIsSupported("charset-supported", attributesCharset)
     })
 
-    private fun exchangeForIppJob(request: IppRequest): IppJob {
-        val response = exchange(request)
-        if (response.status != SuccessfulOk) log.warning { "Job response status: ${response.status}" }
-        if (request.containsGroup(Subscription) && !response.containsGroup(Subscription)) {
-            request.log(log, WARNING, prefix = "REQUEST: ")
-            val events: List<String> = request.subscriptionGroup.getValues("notify-events")
-            throw IppException("printer/server did not create subscription for events: ${events.joinToString(",")}")
+    private fun exchangeForIppJob(request: IppRequest) =
+        IppJob(this, exchange(request)).apply {
+            if (request.containsGroup(Subscription) && subscription == null) {
+                request.log(logger, WARNING, prefix = "REQUEST: ")
+                val events: List<String> = request.subscriptionGroup.getValues("notify-events")
+                throw IppException("printer/server did not create subscription for events: ${events.joinToString(",")}")
+            }
         }
-        val subscriptionsAttributes = response.run {
-            if (containsGroup(Subscription)) subscriptionGroup else null
-        }
-        return IppJob(this, response.jobGroup, subscriptionsAttributes)
-    }
 
     private fun checkIfValueIsSupported(supportedAttributeName: String, value: Any) =
         IppValueSupport.checkIfValueIsSupported(attributes, supportedAttributeName, value)

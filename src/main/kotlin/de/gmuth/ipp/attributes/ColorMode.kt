@@ -33,7 +33,6 @@ class ColorMode(private val keyword: String) : IppAttributeBuilder {
                 else "Required attribute not found (print-color-mode-supported or output-mode-supported)"
             )
         },
-        Keyword,
-        keyword
+        Keyword, keyword
     )
 }

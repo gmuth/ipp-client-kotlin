@@ -15,14 +15,14 @@ import kotlin.test.assertNotNull
 
 class IppRequestTests {
 
-    val log = getLogger(javaClass.name)
+    private val logger = getLogger(javaClass.name)
 
     @Test
     fun requestConstructor1() {
         IppRequest().run {
             code = 5
-            log.info { toString() }
-            log(log)
+            logger.info { toString() }
+            log(logger)
             assertEquals(null, version)
             assertEquals(IppOperation.CreateJob, operation)
             createAttributesGroup(IppTag.Operation)
@@ -51,10 +51,10 @@ class IppRequestTests {
             listOf("one", "two"), "user"
         )
         request.documentInputStream = "pdl-content".byteInputStream()
-        log.info { request.toString() }
-        request.log(log)
+        logger.info { request.toString() }
+        request.log(logger)
         val requestEncoded = request.encode()
-        log.info { "encoded ${requestEncoded.size} bytes" }
+        logger.info { "encoded ${requestEncoded.size} bytes" }
         val requestDecoded = IppRequest()
         requestDecoded.decode(requestEncoded)
         assertEquals("2.0", requestDecoded.version)

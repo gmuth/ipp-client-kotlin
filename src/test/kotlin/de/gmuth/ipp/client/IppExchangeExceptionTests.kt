@@ -12,7 +12,7 @@ import kotlin.test.assertEquals
 
 class IppExchangeExceptionTests {
 
-    val log = getLogger(javaClass.name)
+    private val logger = getLogger(javaClass.name)
 
     @Test
     fun constructor() {
@@ -22,7 +22,7 @@ class IppExchangeExceptionTests {
                 null, 400
         )
         ) {
-            log(log)
+            log(logger)
             assertEquals(11, request.code)
             assertEquals(400, httpStatus)
             assertEquals(message, "Get-Printer-Attributes failed")

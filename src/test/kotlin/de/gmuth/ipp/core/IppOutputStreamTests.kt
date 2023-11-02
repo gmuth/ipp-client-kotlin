@@ -18,7 +18,6 @@ import kotlin.test.assertFailsWith
 
 class IppOutputStreamTest {
 
-    private val log = Logger.getLogger(javaClass.name)
     private val byteArrayOutputStream = ByteArrayOutputStream()
     private val ippOutputStream = IppOutputStream(byteArrayOutputStream).apply { attributesCharset = Charsets.US_ASCII }
 

@@ -13,7 +13,7 @@ import java.util.logging.Logger.getLogger
 
 abstract class IppMessage() {
 
-    private val log = getLogger(javaClass.name)
+    private val logger = getLogger(javaClass.name)
     var code: Int? = null // unsigned short (16 bits)
     var requestId: Int? = null
     var version: String? = null
@@ -112,12 +112,12 @@ abstract class IppMessage() {
     }
 
     fun read(file: File) {
-        log.fine { "Read file ${file.absolutePath}: ${file.length()} bytes" }
+        logger.fine { "Read file ${file.absolutePath}: ${file.length()} bytes" }
         read(FileInputStream(file))
     }
 
     fun decode(byteArray: ByteArray) {
-        log.fine { "Decode ${byteArray.size} bytes" }
+        logger.fine { "Decode ${byteArray.size} bytes" }
         read(ByteArrayInputStream(byteArray))
     }
 
@@ -126,16 +126,16 @@ abstract class IppMessage() {
     // ------------------------
 
     protected fun copyDocumentStream(outputStream: OutputStream): Long {
-        if (documentInputStreamIsConsumed) log.warning { "documentInputStream is consumed" }
+        if (documentInputStreamIsConsumed) logger.warning { "documentInputStream is consumed" }
         return documentInputStream!!.copyTo(outputStream).apply {
-            log.fine { "consumed documentInputStream: $this bytes" }
+            logger.fine { "consumed documentInputStream: $this bytes" }
             documentInputStreamIsConsumed = true
         }
     }
 
     fun saveDocumentStream(file: File) {
         copyDocumentStream(file.outputStream())
-        log.info { "saved ${file.length()} document bytes to file ${file.path}" }
+        logger.info { "saved ${file.length()} document bytes to file ${file.path}" }
     }
 
     fun saveBytes(file: File) =
@@ -143,7 +143,7 @@ abstract class IppMessage() {
             throw IppException("No raw bytes to save. You must call read/decode or write/encode before.")
         } else {
             file.writeBytes(rawBytes!!)
-            log.info { "Saved ${file.path} (${file.length()} bytes)" }
+            logger.info { "Saved ${file.path} (${file.length()} bytes)" }
         }
 
     protected fun write(bufferedWriter: BufferedWriter, title: String) {
@@ -161,7 +161,7 @@ abstract class IppMessage() {
 
     fun saveText(file: File) = file.apply {
         bufferedWriter().use { write(it, title = "# File: ${file.name}") }
-        log.info { "Saved $path (${length()} bytes)" }
+        logger.info { "Saved $path (${length()} bytes)" }
     }
 
     // -------
