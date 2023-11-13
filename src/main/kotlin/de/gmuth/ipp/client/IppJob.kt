@@ -77,6 +77,9 @@ class IppJob(
     val kOctets: Int
         get() = attributes.getValue("job-k-octets")
 
+    val pageRanges: Collection<IntRange>
+        get() = attributes.getValues("page-ranges")
+
     val numberOfDocuments: Int
         get() = attributes.getValue("number-of-documents")
 
