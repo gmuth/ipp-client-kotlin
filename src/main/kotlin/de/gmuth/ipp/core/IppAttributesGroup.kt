@@ -7,8 +7,8 @@ package de.gmuth.ipp.core
 import java.io.BufferedWriter
 import java.io.File
 import java.net.URI
-import java.time.Instant
-import java.time.ZoneOffset
+import java.time.Duration
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.logging.Level
 import java.util.logging.Level.INFO
@@ -46,11 +46,11 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getValue(name: String) =
-        get(name)?.value as T ?: throw IppException("Attribute '$name' not found in group $tag")
+        get(name)?.value as T ?: throw attributeNotFoundException(name)
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getValues(name: String) =
-        get(name)?.values as T ?: throw IppException("Attribute '$name' not found in group $tag")
+        get(name)?.values as T ?: throw attributeNotFoundException(name)
 
     fun getUriValue(name: String) =
         getValue<URI>(name)
@@ -58,13 +58,19 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     fun getTextValue(name: String) =
         getValue<IppString>(name).text
 
-    fun getTimeValue(name: String): ZonedDateTime =
-        Instant.ofEpochSecond(getValue<Int>(name).toLong()).atZone(ZoneOffset.UTC)
+    fun getZonedDateTimeValue(name: String, zoneId: ZoneId = ZoneId.systemDefault()): ZonedDateTime =
+        get(name)?.getZonedDateTimeValue()?.withZoneSameInstant(zoneId) ?: throw attributeNotFoundException(name)
+
+    fun getDurationOfSecondsValue(name: String): Duration =
+        get(name)?.getDurationOfSecondsValue() ?: throw attributeNotFoundException(name)
 
     fun put(attributesGroup: IppAttributesGroup) =
         attributesGroup.values.forEach { put(it) }
 
     override fun toString() = "'$tag' $size attributes"
+
+    private fun attributeNotFoundException(name: String) =
+        IppException("Attribute '$name' not found in group $tag")
 
     @JvmOverloads
     fun log(logger: Logger, level: Level = INFO, prefix: String = "", title: String = "$tag") {
@@ -85,5 +91,4 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
         bufferedWriter().use { write(it) }
         logger.info { "Saved $path" }
     }
-
 }

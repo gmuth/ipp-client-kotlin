@@ -43,10 +43,14 @@ class CupsClient(
             .apply { logger.finer { "cupsPrinterUri($printerName) = $this" } }
 
     val version: String by lazy {
-        getPrinters().run {
-            if (isNotEmpty()) last()
-            else IppPrinter(getJobs(All).last().printerUri)
-        }.cupsVersion
+        try {
+            getPrinters().run {
+                if (isNotEmpty()) last()
+                else IppPrinter(getJobs(All).last().printerUri)
+            }.cupsVersion
+        } catch (exception: NoSuchElementException) {
+            "?"
+        }
     }
 
     fun getPrinters() =
@@ -166,7 +170,9 @@ class CupsClient(
         ippClient.ippRequest(operation, printerURI)
 
     private fun exchange(ippRequest: IppRequest) =
-        ippClient.exchange(ippRequest)
+        ippClient.exchange(ippRequest).also { this.httpServer = it.httpServer }
+
+    var httpServer: String? = null // from response after message exchange
 
     //---------
     // Get Jobs
@@ -181,6 +187,21 @@ class CupsClient(
 
     fun getJob(id: Int) =
         cupsServer.getJob(id)
+
+    //------------------
+    // Get Subscriptions
+    //------------------
+
+    fun getSubscriptions() =
+        cupsServer.getSubscriptions()
+
+    fun getSubscription(id: Int) =
+        cupsServer.getSubscription(id)
+
+    fun getOwnersOfAllSubscriptions() =
+        getSubscriptions()
+            .map { it.subscriberUserName }
+            .toSet()
 
     //--------------------
     // Create Subscription
@@ -234,7 +255,7 @@ class CupsClient(
         enable()
         resume()
         updateAttributes()
-        if(savePPD) savePPD(cupsClientWorkDirectory)
+        if (savePPD) savePPD(cupsClientWorkDirectory)
     }
 
     // ---------------------------
@@ -242,6 +263,11 @@ class CupsClient(
     // ---------------------------
 
     private val jobOwners = mutableSetOf<String>()
+
+    fun getOwnersOfAllJobs() = getJobs(All)
+        .map { it.getOriginatingUserNameOrAppleJobOwnerOrNull() }
+        .filterNotNull()
+        .toSet()
 
     fun getJobsAndSaveDocuments(
         whichJobs: WhichJobs = All,

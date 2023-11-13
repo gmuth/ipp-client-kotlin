@@ -32,7 +32,7 @@ dependencies {
 // gradlew clean -x test build publishToMavenLocal
 defaultTasks("assemble")
 
-val javaVersion = "1.8"
+val javaVersion = "11"
 tasks.apply {
 
     // Kotlin

@@ -22,8 +22,9 @@ class Marker(
     fun levelPercent() = 100 * level / highLevel
     fun levelIsLow() = level < lowLevel
 
-    override fun toString() = "%-10s %3d %% %5s %-12s %-8s %s"
-        .format(color, levelPercent(), if (levelIsLow()) "(low)" else "", type, colorCode, name)
+    override fun toString() = "%-10s %3d %% %5s %-12s %-8s %s".format(
+        color, levelPercent(), if (levelIsLow()) "(low)" else "", type, colorCode, name
+    )
 
     enum class Color(val code: String) {
         NONE("NONE"),

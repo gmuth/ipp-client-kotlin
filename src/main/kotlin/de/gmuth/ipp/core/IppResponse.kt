@@ -9,6 +9,8 @@ import java.nio.charset.Charset
 
 class IppResponse : IppMessage {
 
+    var httpServer: String? = null
+
     override val codeDescription: String
         get() = status.toString()
 

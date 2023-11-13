@@ -37,6 +37,7 @@ class IppJob(
     companion object {
         var defaultDelay: Duration = Duration.ofSeconds(1)
         var useJobOwnerAsUserName: Boolean = false
+        var useJobUri: Boolean = false
     }
 
     //--------------
@@ -77,21 +78,19 @@ class IppJob(
         get() = attributes.getValue("job-k-octets")
 
     val numberOfDocuments: Int
-        get() = attributes.getValueOrNull("number-of-documents")
-            ?: attributes.getValueOrNull("document-count") // CUPS 1.x
-            ?: throw IppException("number-of-documents or document-count not found")
+        get() = attributes.getValue("number-of-documents")
 
     val documentNameSupplied: IppString
         get() = attributes.getValue("document-name-supplied")
 
     val timeAtCreation: ZonedDateTime
-        get() = attributes.getTimeValue("time-at-creation")
+        get() = attributes.getZonedDateTimeValue("time-at-creation")
 
     val timeAtProcessing: ZonedDateTime
-        get() = attributes.getTimeValue("time-at-processing")
+        get() = attributes.getZonedDateTimeValue("time-at-processing")
 
     val timeAtCompleted: ZonedDateTime
-        get() = attributes.getTimeValue("time-at-completed")
+        get() = attributes.getZonedDateTimeValue("time-at-completed")
 
     val appleJobOwner: String // only supported by Apple CUPS
         get() = attributes.getTextValue("com.apple.print.JobInfo.PMJobOwner")
@@ -128,6 +127,13 @@ class IppJob(
         attributes.containsKey("com.apple.print.JobInfo.PMJobName") -> attributes.getTextValue("com.apple.print.JobInfo.PMJobName")
         else -> null
     }
+
+    val numberOfDocumentsOrDocumentCount: Int
+        get() = when {
+            attributes.containsKey("number-of-documents") -> numberOfDocuments
+            attributes.containsKey("document-count") -> attributes.getValue<Int>("document-count")
+            else -> throw IppException("number-of-documents or document-count not found")
+        }
 
     //-------------------
     // Get-Job-Attributes
@@ -315,7 +321,7 @@ class IppJob(
         save: Boolean = false,
         optionalCommandToHandleFile: String? = null
     ) =
-        (1..numberOfDocuments)
+        (1..numberOfDocumentsOrDocumentCount)
             .map { cupsGetDocument(it) }
             .onEach { document ->
                 if (save) with(document) {
@@ -339,7 +345,18 @@ class IppJob(
                 useJobOwnerAsUserName && attributes.containsKey("com.apple.print.JobInfo.PMJobOwner") -> appleJobOwner
                 else -> printer.ippConfig.userName
             }
-        ).apply { operationGroup.attribute("job-uri", Uri, uri) }
+        ).apply {
+            operationGroup.run {
+                if (useJobUri) {
+                    // depending on network and CUPS config job uris might not be reachable
+                    attribute("job-uri", Uri, uri)
+                } else {
+                    // play save, this uri has worked before
+                    attribute("printer-uri", Uri, printer.printerUri)
+                    attribute("job-id", Integer, id)
+                }
+            }
+        }
 
     // -------
     // Logging
@@ -355,7 +372,7 @@ class IppJob(
             if (containsKey("job-originating-host-name")) append(", originating-host-name=$originatingHostName")
             if (containsKey("job-originating-user-name")) append(", originating-user-name=$originatingUserName")
             if (containsKey("com.apple.print.JobInfo.PMJobOwner")) append(", appleJobOwner=$appleJobOwner")
-            if (containsKey("number-of-documents") || containsKey("document-count")) append(", number-of-documents=$numberOfDocuments")
+            if (containsKey("number-of-documents") || containsKey("document-count")) append(", $numberOfDocumentsOrDocumentCount documents")
             if (containsKey("job-printer-uri")) append(", printer-uri=$printerUri")
             if (containsKey("job-uri")) append(", uri=$uri")
             toString()

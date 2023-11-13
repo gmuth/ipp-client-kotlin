@@ -21,22 +21,24 @@ import java.util.logging.Logger.getLogger
 
 class IppSubscription(
     val printer: IppPrinter,
-    val attributes: IppAttributesGroup
+    val attributes: IppAttributesGroup,
+    startLease: Boolean = true
 ) : IppExchange by printer {
 
     private val logger = getLogger(javaClass.name)
     private var lastSequenceNumber: Int = 0
-    private var leaseStartedAt = now()
+    private var leaseStartedAt: LocalDateTime? = if (startLease) now() else null
 
     init {
-        if (attributes.size <= 1) updateAttributes()
+        // Create-Subscription only responds with id
+        if (attributes.size == 1 && attributes.containsKey("notify-subscription-id")) updateAttributes()
     }
 
     val id: Int
         get() = attributes.getValue("notify-subscription-id")
 
     val leaseDuration: Duration
-        get() = ofSeconds(attributes.getValue<Int>("notify-lease-duration").toLong())
+        get() = attributes.getDurationOfSecondsValue("notify-lease-duration")
 
     val events: List<String>
         get() = attributes.getValues("notify-events")
@@ -48,16 +50,22 @@ class IppSubscription(
         get() = attributes.getValue("notify-subscriber-user-name")
 
     val timeInterval: Duration
-        get() = ofSeconds(attributes.getValue<Int>("notify-time-interval").toLong())
+        get() = attributes.getDurationOfSecondsValue("notify-time-interval")
+
+    private fun expires() = when {
+        leaseDuration.isZero -> "(never expires)"
+        leaseStartedAt == null -> ""
+        else -> "(expires $expiresAt)"
+    }
 
     //----------------------------
     // Get-Subscription-Attributes
     //----------------------------
 
     // RFC 3995 11.2.4.1.2: 'subscription-template', 'subscription-description' or 'all' (default)
-
+    // BUG: CUPS ignores unsupported requested attributes, e.g. notify-lease-expiration-time
     @JvmOverloads
-    fun getSubscriptionAttributes(requestedAttributes: List<String>? = null) = exchange(
+    fun getSubscriptionAttributes(requestedAttributes: Collection<String>? = null) = exchange(
         subscriptionRequest(GetSubscriptionAttributes, requestedAttributes = requestedAttributes)
     )
 
@@ -69,6 +77,7 @@ class IppSubscription(
     // Get-Notifications
     //------------------
 
+    @JvmOverloads
     fun getNotifications(notifySequenceNumber: Int? = lastSequenceNumber + 1): List<IppEventNotification> {
         val request = subscriptionRequest(GetNotifications).apply {
             operationGroup.run {
@@ -87,11 +96,13 @@ class IppSubscription(
     //--------------------
 
     fun cancel() = exchange(subscriptionRequest(CancelSubscription))
+        .also { logger.info { "Canceled $this" } }
 
     //-------------------
     // Renew-Subscription
     //-------------------
 
+    @JvmOverloads
     fun renew(leaseDuration: Duration? = null) = exchange(
         subscriptionRequest(RenewSubscription).apply {
             createSubscriptionAttributesGroup(notifyLeaseDuration = leaseDuration)
@@ -99,14 +110,14 @@ class IppSubscription(
     ).also {
         leaseStartedAt = now()
         updateAttributes()
-        logger.fine { "renewed $this" }
+        logger.fine { "Renewed $this" }
     }
 
     //-----------------------
     // Delegate to IppPrinter
     //-----------------------
 
-    private fun subscriptionRequest(operation: IppOperation, requestedAttributes: List<String>? = null) =
+    private fun subscriptionRequest(operation: IppOperation, requestedAttributes: Collection<String>? = null) =
         printer.ippRequest(operation, requestedAttributes = requestedAttributes)
             .apply { operationGroup.attribute("notify-subscription-id", Integer, id) }
 
@@ -116,23 +127,28 @@ class IppSubscription(
 
     var pollHandlesNotifications = false
 
-    val expiresAt: LocalDateTime
-        get() = leaseStartedAt.plus(leaseDuration)
+    val expiresAt: LocalDateTime? // null = never expires
+        get() = if (leaseDuration.isZero) null else {
+            require(leaseStartedAt != null) { "leaseStartedAt required to calculate expiration" }
+            leaseStartedAt!!.plus(leaseDuration)
+        }
 
-    fun expired() = !leaseDuration.isZero && now().isAfter(expiresAt)
+    fun expired() = expiresAt != null && now().isAfter(expiresAt)
+    fun expiryAvailable() = leaseStartedAt != null && !leaseDuration.isZero
 
+    @JvmOverloads
     fun pollAndHandleNotifications(
         pollEvery: Duration = ofSeconds(5), // should be larger than 1s
         autoRenewSubscription: Boolean = false,
         handleNotification: (event: IppEventNotification) -> Unit = { logger.info { it.toString() } }
     ) {
-        fun expiresAfterDelay() = !leaseDuration.isZero && now().plus(pollEvery).isAfter(expiresAt.minusSeconds(2))
+        fun expiresAfterDelay() = expiresAt != null && now().plus(pollEvery).isAfter(expiresAt!!.minusSeconds(2))
         try {
             pollHandlesNotifications = true
             while (pollHandlesNotifications) {
-                if (expired()) logger.warning { "subscription #$id has expired" }
+                if (expiryAvailable() && expired()) logger.warning { "Subscription #$id has expired" }
                 getNotifications().forEach { handleNotification(it) }
-                if (expiresAfterDelay() && autoRenewSubscription) renew(leaseDuration)
+                if (expiryAvailable() && expiresAfterDelay() && autoRenewSubscription) renew(leaseDuration)
                 Thread.sleep(pollEvery.toMillis())
             }
         } catch (clientErrorNotFoundException: ClientErrorNotFoundException) {
@@ -148,12 +164,13 @@ class IppSubscription(
         if (attributes.containsKey("notify-job-id")) append(", job #$jobId")
         if (attributes.containsKey("notify-events")) append(" events=${events.joinToString(",")}")
         if (attributes.containsKey("notify-time-interval")) append(" time-interval=$timeInterval")
-        if (attributes.containsKey("notify-lease-duration")) append(" lease-duration=$leaseDuration (expires at $expiresAt)")
+        if (attributes.containsKey("notify-lease-duration")) append(" lease-duration=$leaseDuration ${expires()}")
         toString()
     }
 
     @JvmOverloads
-    fun log(logger: Logger, level: Level = Level.INFO) =
-        attributes.log(logger, level, title = "SUBSCRIPTION #$id")
-
+    fun log(logger: Logger, level: Level = Level.INFO) = attributes.log(
+        logger, level,
+        title = "SUBSCRIPTION #$id ${if (attributes.containsKey("notify-lease-duration")) expires() else ""}"
+    )
 }

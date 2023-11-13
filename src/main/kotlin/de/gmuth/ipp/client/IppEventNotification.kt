@@ -8,6 +8,9 @@ import de.gmuth.ipp.attributes.JobState
 import de.gmuth.ipp.attributes.PrinterState
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppString
+import java.net.URI
+import java.nio.charset.Charset
+import java.time.ZonedDateTime
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -15,12 +18,17 @@ class IppEventNotification(
     val subscription: IppSubscription,
     val attributes: IppAttributesGroup
 ) {
+    val charset: Charset
+        get() = attributes.getValue("notify-charset")
 
-    val sequenceNumber: Int
-        get() = attributes.getValue("notify-sequence-number")
+    val naturalLanguage: String
+        get() = attributes.getValue("notify-natural-language")
 
     val subscriptionId: Int
         get() = attributes.getValue("notify-subscription-id")
+
+    val sequenceNumber: Int
+        get() = attributes.getValue("notify-sequence-number")
 
     val subscribedEvent: String
         get() = attributes.getValue("notify-subscribed-event")
@@ -40,6 +48,9 @@ class IppEventNotification(
     val jobImpressionsCompleted: Int
         get() = attributes.getValue("job-impressions-completed")
 
+    val printerUri: URI
+        get() = attributes.getValue("notify-printer-uri")
+
     val printerName: IppString
         get() = attributes.getValue("printer-name")
 
@@ -52,12 +63,24 @@ class IppEventNotification(
     val printerIsAcceptingJobs: Boolean
         get() = attributes.getValue("printer-is-accepting-jobs")
 
-    // Get job from printer
+    // let a Recipient know when the Event Notification occurred (RFC 3996 5.2.2)
+    val printerUpTime: ZonedDateTime
+        get() = attributes.getZonedDateTimeValue("printer-up-time")
+
+    // Get job of event origin
     fun getJob() = subscription.printer.getJob(jobId)
+
+    // Get printer of event origin
+    fun getPrinter(getPrinterAttributesOnInit: Boolean = false) = IppPrinter(
+        printerUri,
+        ippClient = subscription.printer.ippClient,
+        getPrinterAttributesOnInit = getPrinterAttributesOnInit
+    )
 
     @SuppressWarnings("kotlin:S3776")
     override fun toString() = StringBuilder().run {
-        append("EventNotification #$sequenceNumber:")
+        append(printerUpTime.toLocalDateTime())
+        append(" EventNotification #$sequenceNumber")
         append(" [$subscribedEvent] $text")
         with(attributes) {
             if (containsKey("notify-job-id")) append(", job #$jobId")
@@ -72,6 +95,6 @@ class IppEventNotification(
 
     @JvmOverloads
     fun log(logger: Logger, level: Level = Level.INFO) =
-        attributes.log(logger, level, title = "EVENTNOTIFICATION #$sequenceNumber $subscribedEvent")
+        attributes.log(logger, level, title = "EVENT_NOTIFICATION #$sequenceNumber [$subscribedEvent] $text")
 
 }

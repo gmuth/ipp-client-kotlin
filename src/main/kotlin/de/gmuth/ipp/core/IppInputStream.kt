@@ -5,13 +5,19 @@ package de.gmuth.ipp.core
  */
 
 import de.gmuth.ipp.core.IppTag.*
-import java.io.*
+import java.io.BufferedInputStream
+import java.io.DataInputStream
+import java.io.EOFException
 import java.net.URI
 import java.nio.charset.Charset
 import java.util.logging.Level
 import java.util.logging.Logger.getLogger
 
 class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputStream) {
+
+    companion object {
+        var readAttribute_ignoreException: Boolean = false
+    }
 
     internal val logger = getLogger(javaClass.name)
 
@@ -21,13 +27,13 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
     fun readMessage(message: IppMessage) {
         with(message) {
             version = "${readUnsignedByte()}.${readUnsignedByte()}"
-            logger.finest { "version = $version" }
+            logger.finer { "version = $version" }
 
             code = readUnsignedShort()
-            logger.finest { "code = $code ($codeDescription)" }
+            logger.finer { "code = $code ($codeDescription)" }
 
             requestId = readInt()
-            logger.finest { "requestId = $requestId" }
+            logger.finer { "requestId = $requestId" }
         }
 
         lateinit var currentGroup: IppAttributesGroup
@@ -42,7 +48,7 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
 
                     tag.isValueTag() -> {
                         val attribute = readAttribute(tag)
-                        logger.finest { attribute.toString() }
+                        logger.finer { attribute.toString() }
                         if (attribute.name.isNotEmpty()) {
                             currentGroup.put(attribute)
                             currentAttribute = attribute
@@ -56,7 +62,7 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
             if (throwable !is EOFException) readBytes().apply {
                 if (isNotEmpty()) {
                     logger.warning { "Skipped $size unparsed bytes" }
-                    hexdump { logger.finest { it } }
+                    hexdump { logger.finer { it } }
                 }
             }
             throw IppException("Failed to read ipp message", throwable)
@@ -64,14 +70,16 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
     }
 
     internal fun readTag() = IppTag.fromByte(readByte()).apply {
-        if (isDelimiterTag()) logger.finest { "--- $this ---" }
+        if (isDelimiterTag()) logger.finer { "--- $this ---" }
     }
 
     internal fun readAttribute(tag: IppTag) = IppAttribute<Any>(name = readString(), tag).apply {
         try {
             values.add(readAttributeValue(tag))
         } catch (throwable: Throwable) {
-            throw IppException("Failed to read attribute value for '$name' ($tag)", throwable)
+            val message = "Failed to read attribute value for '$name' ($tag)"
+            if (readAttribute_ignoreException) logger.warning { "Ignore exception: $message: ${throwable.toString()}" }
+            else throw IppException(message, throwable)
         }
         // remember attributes-charset for name and text value decoding
         if (name == "attributes-charset") attributesCharset = value as Charset
@@ -113,7 +121,13 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
             }
 
             Uri -> {
-                URI.create(readString().replace(" ", "%20"))
+                val uriString = readString().replace(" ", "%20")
+                try {
+                    URI.create(uriString)
+                } catch (throwable: Throwable) {
+                    logger.fine { "readAttributeValue($tag): $throwable" }
+                    uriString // workaround: return String instead of URI
+                }
             }
 
             // String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
@@ -201,6 +215,7 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
     // RFC 8011 4.1.4.1 -> use attributes-charset
     internal fun readString(charset: Charset = Charsets.US_ASCII) =
         String(readLengthAndValue(), charset)
+            .also { logger.finest { "readString($charset): \"$it\"" } }
 
     internal fun readLengthAndValue() =
         readBytes(readUnsignedShort())

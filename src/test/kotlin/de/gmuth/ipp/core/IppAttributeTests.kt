@@ -87,7 +87,7 @@ class IppAttributeTests {
 
     @Test
     fun toStringTest() {
-        assertEquals("christmas-time (integer) = 1608160102", IppAttribute("christmas-time", Integer, 1608160102).toString())
+        assertEquals("christmas-time (integer) = 1608160102 (2020-12-16T23:08:22Z)", IppAttribute("christmas-time", Integer, 1608160102).toString())
     }
 
     @Test

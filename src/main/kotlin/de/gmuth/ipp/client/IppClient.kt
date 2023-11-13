@@ -106,6 +106,7 @@ open class IppClient(val config: IppConfig = IppConfig()) : IppExchange {
                 errorStream
             }
             return decodeContentStream(request, responseCode, responseContentStream)
+                .apply { httpServer = headerFields["Server"]?.first() }
         }
     }
 
@@ -146,7 +147,11 @@ open class IppClient(val config: IppConfig = IppConfig()) : IppExchange {
         contentStream: InputStream?,
         cause: Exception? = null
     ) = when {
-        responseCode == 401 -> with(request) { "User \"$requestingUserName\" is not authorized for operation $operation on $printerOrJobUri" }
+        responseCode == 401 && request.operationGroup.containsKey("requesting-user-name") -> with(request) {
+            "User \"$requestingUserName\" is not authorized for operation $operation on $printerOrJobUri"
+        }
+
+        responseCode == 401 -> with(request) { "Not authorized for operation $operation on $printerOrJobUri (userName required)" }
         responseCode == 426 -> "HTTP status $responseCode, $responseMessage, Try ipps://${request.printerOrJobUri.host}"
         responseCode != 200 -> "HTTP request failed: $responseCode, $responseMessage"
         contentType != null && !contentType.startsWith(APPLICATION_IPP) -> "Invalid Content-Type: $contentType"
@@ -169,8 +174,9 @@ open class IppClient(val config: IppConfig = IppConfig()) : IppExchange {
         httpStatus: Int,
         contentStream: InputStream
     ) = IppResponse().apply {
-        try { read(contentStream) }
-        catch (throwable: Throwable) {
+        try {
+            read(contentStream)
+        } catch (throwable: Throwable) {
             throw IppExchangeException(
                 request, this, httpStatus, message = "Failed to decode ipp response", cause = throwable
             ).apply {

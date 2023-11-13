@@ -216,6 +216,9 @@ class IppPrinter(
     fun supportsOperations(vararg operations: IppOperation) = operationsSupported.containsAll(operations.toList())
     fun supportsVersion(version: String) = versionsSupported.contains(version)
     fun isCups() = attributes.contains("cups-version")
+    fun paused() = stateReasons.contains("paused")
+    fun offlineReport() = stateReasons.contains("offline-report")
+    fun mediaEmptyReport() = stateReasons.contains("media-empty-report")
 
     //-----------------
     // Identify-Printer
@@ -372,10 +375,9 @@ class IppPrinter(
     // Get-Job-Attributes (as IppJob)
     //-------------------------------
 
-    fun getJob(jobId: Int) =
-        exchangeForIppJob(
-            ippRequest(GetJobAttributes).apply { operationGroup.attribute("job-id", Integer, jobId) }
-        )
+    fun getJob(jobId: Int) = exchangeForIppJob(
+        ippRequest(GetJobAttributes).apply { operationGroup.attribute("job-id", Integer, jobId) }
+    )
 
     //---------------------------------
     // Get-Jobs (as Collection<IppJob>)
@@ -428,8 +430,8 @@ class IppPrinter(
             checkNotifyEvents(notifyEvents)
             createSubscriptionAttributesGroup(notifyEvents, notifyLeaseDuration, notifyTimeInterval)
         }
-        val subscriptionAttributes = exchange(request).subscriptionGroup
-        return IppSubscription(this, subscriptionAttributes)
+        return IppSubscription(this, exchange(request).subscriptionGroup)
+            .apply { logger.info { "Created $this" } }
     }
 
     fun checkNotifyEvents(notifyEvents: Collection<String>?) = notifyEvents?.let {
@@ -443,11 +445,10 @@ class IppPrinter(
 
     fun getSubscription(id: Int) = IppSubscription(
         this,
-        exchange(
-            ippRequest(GetSubscriptionAttributes)
-                .apply { operationGroup.attribute("notify-subscription-id", Integer, id) }
-        )
-            .subscriptionGroup
+        exchange(ippRequest(GetSubscriptionAttributes).apply {
+            operationGroup.attribute("notify-subscription-id", Integer, id)
+        }).subscriptionGroup,
+        startLease = false
     )
 
     //---------------------------------------------
@@ -458,7 +459,7 @@ class IppPrinter(
         notifyJobId: Int? = null,
         mySubscriptions: Boolean? = null,
         limit: Int? = null,
-        requestedAttributes: List<String>? = null
+        requestedAttributes: Collection<String>? = null
     ): List<IppSubscription> {
         val request = ippRequest(GetSubscriptions, requestedAttributes = requestedAttributes).apply {
             operationGroup.run {
@@ -467,9 +468,13 @@ class IppPrinter(
                 limit?.let { attribute("limit", Integer, it) }
             }
         }
-        return exchange(request)
-            .getAttributesGroups(Subscription)
-            .map { IppSubscription(this, it) }
+        return try {
+            exchange(request)
+                .getAttributesGroups(Subscription)
+                .map { IppSubscription(this, it, startLease = false) }
+        } catch (notFoundException: IppExchangeException.ClientErrorNotFoundException) {
+            emptyList()
+        }
     }
 
     //----------------------

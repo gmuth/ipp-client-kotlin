@@ -6,6 +6,7 @@ package de.gmuth.ipp.core
 
 import de.gmuth.ipp.core.IppTag.*
 import java.io.File
+import java.time.ZoneId
 import java.util.logging.Logger.getLogger
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -85,7 +86,12 @@ class IppAttributesGroupTests {
     @Test
     fun getEpochTimeValue() {
         group.attribute("epoch-seconds", Integer, 62)
-        assertEquals("1970-01-01T00:01:02", group.getTimeValue("epoch-seconds").toLocalDateTime().toString())
+        assertEquals(
+            "1970-01-01T00:01:02",
+            group.getZonedDateTimeValue("epoch-seconds")
+                .withZoneSameInstant(ZoneId.of("UTC"))
+                .toLocalDateTime().toString()
+        )
     }
 
     @Test

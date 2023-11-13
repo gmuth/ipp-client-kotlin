@@ -8,6 +8,10 @@ import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.ipp.iana.IppRegistrationsSection2.attributeIs1setOf
 import de.gmuth.ipp.iana.IppRegistrationsSection6.getEnumName
 import java.nio.charset.Charset
+import java.time.Duration
+import java.time.Instant
+import java.time.ZoneId
+import java.time.ZoneOffset
 import java.util.logging.Level
 import java.util.logging.Level.INFO
 import java.util.logging.Logger
@@ -54,15 +58,26 @@ data class IppAttribute<T>(val name: String, val tag: IppTag) : IppAttributeBuil
 
     override fun buildIppAttribute(printerAttributes: IppAttributesGroup) = this
 
+    fun getZonedDateTimeValue() = Instant
+        .ofEpochSecond((value as Int).toLong())
+        .atZone(ZoneOffset.UTC) // epoch always uses UTC
+
+    fun getDurationOfSecondsValue(): Duration =
+        Duration.ofSeconds((value as Int).toLong())
+
     override fun toString() = StringBuilder(name).run {
         append(" (${if (is1setOf()) "1setOf " else ""}$tag) = ")
         append(if (values.isEmpty()) "no-value" else values.joinToString(",") { valueToString(it) })
         toString()
     }
 
-    internal fun valueToString(value: T) = when {
+    private fun valueToString(value: T) = when {
         tag == Charset -> with(value as Charset) { name().lowercase() }
         tag == RangeOfInteger -> with(value as IntRange) { "$start-$endInclusive" }
+        tag == Integer && name.endsWith("time") -> "$value (${getZonedDateTimeValue()})"
+        tag == Integer && (name.endsWith("duration") || name.endsWith("time-interval")) ->
+            "$value (${getDurationOfSecondsValue()})"
+
         value is ByteArray -> with(value as ByteArray) { if (isEmpty()) "no-value" else "$size bytes" }
         else -> enumNameOrValue(value as Any).toString()
     }
@@ -70,17 +85,17 @@ data class IppAttribute<T>(val name: String, val tag: IppTag) : IppAttributeBuil
     fun enumNameOrValue(value: Any) =
         if (tag == IppTag.Enum) getEnumName(name, value) else value
 
-    fun log(logger: Logger, level: Level = INFO, prefix: String = "") = logger.also {
+    fun log(logger: Logger, level: Level = INFO, prefix: String = "") = logger.run {
         val string = toString()
         if (string.length < 160) {
-            it.log(level) { "$prefix$string" }
+            log(level) { "$prefix$string" }
         } else {
-            it.log(level) { "$prefix$name ($tag) =" }
+            log(level) { "$prefix$name ($tag) =" }
             for (value in values) {
                 if (value is IppCollection) {
                     (value as IppCollection).log(logger, level, "$prefix  ")
                 } else {
-                    it.log(level) { "$prefix  ${enumNameOrValue(value as Any)}" }
+                    log(level) { "$prefix  ${enumNameOrValue(value as Any)}" }
                 }
             }
         }
