@@ -32,9 +32,9 @@ jobs:
       # https://github.com/marketplace/actions/gradle-build-action
       - name: Gradle build
         uses: gradle/gradle-build-action@v2.9.0
-#        with:
-#          gradle-version: 7.6.2
-#          arguments: test build
+        with:
+          gradle-version: 7.6.2
+          arguments: sonar
 #
 #      - name: Setup build cache
 #        uses: actions/cache@v2
@@ -45,8 +45,8 @@ jobs:
 #            ${{ runner.os }}-gradle-
 #      - name: Grant execute permission to gradlew
 #        run: chmod +x gradlew
-      - name: With gradle wrapper build and analyse
-        run: ./gradlew build sonar
+#      - name: With gradle wrapper build and analyse
+#        run: ./gradlew build sonar
 
 #      - name: Publish GitHub Packages
 #        env:
