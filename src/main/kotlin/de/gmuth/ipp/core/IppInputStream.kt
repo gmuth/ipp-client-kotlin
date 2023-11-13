@@ -10,7 +10,6 @@ import java.io.DataInputStream
 import java.io.EOFException
 import java.net.URI
 import java.nio.charset.Charset
-import java.util.logging.Level
 import java.util.logging.Logger.getLogger
 
 class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputStream) {
@@ -185,9 +184,8 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
             else -> { // ByteArray - possibly empty
                 readLengthAndValue().apply {
                     if (isNotEmpty()) {
-                        val level = if (tag == Unsupported_) Level.FINEST else Level.WARNING
-                        logger.log(level) { "Ignore $size value bytes tagged '$tag'" }
-                        hexdump { logger.log(level) { it } }
+                        logger.finest { "Ignore $size value bytes tagged '$tag'" }
+                        hexdump { logger.finest { it } }
                     }
                 }
             }
