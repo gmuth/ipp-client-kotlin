@@ -10,7 +10,6 @@ import de.gmuth.ipp.iana.IppRegistrationsSection6.getEnumName
 import java.nio.charset.Charset
 import java.time.Duration
 import java.time.Instant
-import java.time.ZoneId
 import java.time.ZoneOffset
 import java.util.logging.Level
 import java.util.logging.Level.INFO

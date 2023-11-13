@@ -19,6 +19,7 @@ import java.util.logging.Level
 import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
 
+@SuppressWarnings("kotlin:S1192")
 class IppSubscription(
     val printer: IppPrinter,
     val attributes: IppAttributesGroup,
