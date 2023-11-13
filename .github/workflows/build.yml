@@ -23,30 +23,19 @@ jobs:
         with:
           # Disabling shallow clone is recommended for improving relevancy of reporting
           fetch-depth: 0
+
       # https://github.com/marketplace/actions/setup-java-jdk
       - name: Setup JDK 17
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
+
       # https://github.com/marketplace/actions/gradle-build-action
-      - name: Gradle build
+      - name: Setup Gradle
         uses: gradle/gradle-build-action@v2.9.0
-        with:
-          gradle-version: 7.6.2
-          arguments: sonar
-#
-#      - name: Setup build cache
-#        uses: actions/cache@v2
-#        with:
-#          path: ~/.gradle/caches
-#          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts') }}
-#          restore-keys: |
-#            ${{ runner.os }}-gradle-
-#      - name: Grant execute permission to gradlew
-#        run: chmod +x gradlew
-#      - name: With gradle wrapper build and analyse
-#        run: ./gradlew build sonar
+      - name: Gradle wrapper build and analyse
+        run: ./gradlew sonar
 
 #      - name: Publish GitHub Packages
 #        env:
@@ -60,6 +49,7 @@ jobs:
 #        with:
 #          gradle-version: 7.6.2
 #          arguments: jacocoTestReport sonar
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
