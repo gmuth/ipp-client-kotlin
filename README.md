@@ -1,4 +1,4 @@
-# ipp-client v3
+# ipp-client v3.1
 
 A client implementation of the ipp protocol for java and kotlin.
 RFCs [8010](https://tools.ietf.org/html/rfc8010),
@@ -20,7 +20,7 @@ supports printer lookup by queue name.
 Repository [ipp-samples](https://github.com/gmuth/ipp-samples) contains examples how to use jmDNS.
 
 ```
-implementation("de.gmuth:ipp-client:3.0.1")
+implementation("de.gmuth:ipp-client:3.1")
 ```
 
 [README.md for version 2.x](https://github.com/gmuth/ipp-client-kotlin/blob/2.5/README.md) is still available.
@@ -28,9 +28,9 @@ implementation("de.gmuth:ipp-client:3.0.1")
 ### [IppPrinter](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppPrinter.kt) and [IppJob](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppJob.kt)
 
 ```kotlin
-// Initialize printer connection and show printer attributes
+// Initialize printer connection and log printer attributes
 val ippPrinter = IppPrinter(URI.create("ipp://colorjet.local/ipp/printer"))
-ippPrinter.attributes.log(logger)
+ippPrinter.log(logger)
 
 // Marker levels
 ippPrinter.markers.forEach { println(it) }
