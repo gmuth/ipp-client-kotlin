@@ -5,13 +5,14 @@ package de.gmuth.ipp.attributes
  */
 
 import de.gmuth.ipp.core.IppAttribute
+import de.gmuth.ipp.core.IppCollection
 import de.gmuth.ipp.core.IppTag.Integer
 
-class MediaMargin(
-    val left: Int? = null,
-    val right: Int? = null,
-    val top: Int? = null,
-    val bottom: Int? = null
+data class MediaMargin(
+    var left: Int? = null,
+    var right: Int? = null,
+    var top: Int? = null,
+    var bottom: Int? = null
 ) {
     constructor(margin: Int) : this(margin, margin, margin, margin)
 
@@ -23,4 +24,19 @@ class MediaMargin(
             right?.let { addMargin("right", it) }
             bottom?.let { addMargin("bottom", it) }
         }
+
+    override fun toString() =
+        if (listOf(top, bottom, left, right).distinct().size == 1) "$top"
+        else "top=%d;bottom=%d;left=%d;right=%d".format(top, bottom, left, right)
+
+    companion object {
+        fun fromIppCollection(ippCollection: IppCollection) = ippCollection.run {
+            MediaMargin().apply {
+                if (containsMember("media-top-margin")) top = getValue("media-top-margin")
+                if (containsMember("media-left-margin")) left = getValue("media-left-margin")
+                if (containsMember("media-right-margin")) right = getValue("media-right-margin")
+                if (containsMember("media-bottom-margin")) bottom = getValue("media-bottom-margin")
+            }
+        }
+    }
 }

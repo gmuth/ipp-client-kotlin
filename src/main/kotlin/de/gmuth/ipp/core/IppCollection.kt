@@ -22,9 +22,25 @@ data class IppCollection(val members: MutableCollection<IppAttribute<*>> = mutab
     fun addAll(attributes: Collection<IppAttribute<*>>) =
         members.addAll(attributes)
 
+    fun containsMember(memberName: String) =
+        members.map { it.name }.contains(memberName)
+
     @Suppress("UNCHECKED_CAST")
     fun <T> getMember(memberName: String) =
         members.single { it.name == memberName } as IppAttribute<T>
+
+    @Suppress("UNCHECKED_CAST")
+    fun <T> getMemberOrNull(memberName: String) =
+        members.singleOrNull { it.name == memberName } as IppAttribute<T>
+
+    fun <T> getValues(memberName: String) =
+        getMember<T>(memberName).values
+
+    fun <T> getValue(memberName: String) =
+        getMember<T>(memberName).value
+
+    fun <T> getValueOrNull(memberName: String) =
+        getMemberOrNull<T>(memberName)?.value
 
     val size: Int
         get() = members.size

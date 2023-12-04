@@ -16,10 +16,10 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
     private val logger = getLogger(javaClass.name)
 
     // Charset for text and name attributes, RFC 8011 4.1.4.1
-    internal lateinit var attributesCharset: Charset
+    internal lateinit var charset: Charset
 
     fun writeMessage(message: IppMessage) = message.run {
-        attributesCharset = operationGroup.getValue("attributes-charset")
+        charset = attributesCharset // required attributes
 
         writeVersion(version ?: throw IppException("missing version"))
         logger.finest { "version = $version" }
@@ -126,8 +126,8 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
 
             TextWithoutLanguage,
             NameWithoutLanguage -> when (value) {
-                is String -> writeString(value, attributesCharset)
-                is IppString -> writeString(value.text, attributesCharset)
+                is String -> writeString(value, charset)
+                is IppString -> writeString(value.text, charset)
                 else -> throw IppException("expecting value class String or IppString")
             }
 
@@ -135,8 +135,8 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
             NameWithLanguage -> with(value as IppString) {
                 if (language == null) throw IppException("expecting IppString with language")
                 writeShort(4 + text.length + language.length)
-                writeString(language, attributesCharset)
-                writeString(text, attributesCharset)
+                writeString(language, charset)
+                writeString(text, charset)
             }
 
             DateTime -> with(value as IppDateTime) {

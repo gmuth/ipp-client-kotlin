@@ -66,35 +66,40 @@ data class IppAttribute<T>(val name: String, val tag: IppTag) : IppAttributeBuil
 
     override fun toString() = StringBuilder(name).run {
         append(" (${if (is1setOf()) "1setOf " else ""}$tag) = ")
-        append(if (values.isEmpty()) "no-value" else values.joinToString(",") { valueToString(it) })
+        append(valuesToString())
         toString()
     }
+
+    fun toCompactString() = "$name=${valuesToString()}"
+
+    fun valuesToString() =
+        if (values.isEmpty()) "no-value" else values.joinToString(",") { valueToString(it) }
 
     private fun valueToString(value: T) = when {
         tag == Charset -> with(value as Charset) { name().lowercase() }
         tag == RangeOfInteger -> with(value as IntRange) { "$start-$endInclusive" }
-        tag == Integer && name.endsWith("time") -> "$value (${getZonedDateTimeValue()})"
         tag == Integer && (name.endsWith("duration") || name.endsWith("time-interval")) ->
             "$value (${getDurationOfSecondsValue()})"
+        tag == Integer && name.contains("time") -> "$value (${getZonedDateTimeValue()})"
 
-        value is ByteArray -> with(value as ByteArray) { if (isEmpty()) "no-value" else "$size bytes" }
+        value is ByteArray -> with(value as ByteArray) { if (isEmpty()) "" else "$size bytes" }
         else -> enumNameOrValue(value as Any).toString()
     }
 
     fun enumNameOrValue(value: Any) =
         if (tag == IppTag.Enum) getEnumName(name, value) else value
 
-    fun log(logger: Logger, level: Level = INFO, prefix: String = "") = logger.run {
+    fun log(logger: Logger, level: Level = INFO, prefix: String = "") = logger.also {
         val string = toString()
         if (string.length < 160) {
-            log(level) { "$prefix$string" }
+            it.log(level) { "$prefix$string" }
         } else {
-            log(level) { "$prefix$name ($tag) =" }
+            it.log(level) { "$prefix$name ($tag) =" }
             for (value in values) {
                 if (value is IppCollection) {
                     (value as IppCollection).log(logger, level, "$prefix  ")
                 } else {
-                    log(level) { "$prefix  ${enumNameOrValue(value as Any)}" }
+                    it.log(level) { "$prefix  ${enumNameOrValue(value as Any)}" }
                 }
             }
         }

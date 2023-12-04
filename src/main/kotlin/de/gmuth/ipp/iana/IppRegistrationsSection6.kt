@@ -39,6 +39,9 @@ object IppRegistrationsSection6 {
             allEnumAttributeValues
                 .filter { it.value.lowercase().contains("any") }
                 .forEach { put(it.attribute, it.value.replace("^.*\"(.+)\".*$".toRegex(), "$1")) }
+
+            // cups extension
+            put("landscape-orientation-requested-preferred", "orientation-requested") // auto-rotate
         }
     }
 

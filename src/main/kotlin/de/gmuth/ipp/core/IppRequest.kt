@@ -31,11 +31,8 @@ class IppRequest : IppMessage {
     val operation: IppOperation
         get() = IppOperation.fromInt(code!!)
 
-    val attributesCharset: Charset
-        get() = operationGroup.getValue("attributes-charset")
-
-    val requestingUserName: String
-        get() = operationGroup.getTextValue("requesting-user-name")
+    val requestedAttributes: List<String>
+        get() = operationGroup.getValues("requested-attributes")
 
     constructor() : super()
 

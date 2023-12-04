@@ -10,8 +10,6 @@ import de.gmuth.ipp.core.IppTag.Boolean as IppBoolean
 import de.gmuth.ipp.core.IppTag.Enum as IppEnum
 import java.io.ByteArrayOutputStream
 import java.net.URI
-import java.util.logging.Level
-import java.util.logging.Logger
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -19,7 +17,7 @@ import kotlin.test.assertFailsWith
 class IppOutputStreamTest {
 
     private val byteArrayOutputStream = ByteArrayOutputStream()
-    private val ippOutputStream = IppOutputStream(byteArrayOutputStream).apply { attributesCharset = Charsets.US_ASCII }
+    private val ippOutputStream = IppOutputStream(byteArrayOutputStream).apply { charset = Charsets.US_ASCII }
 
     private val message = object : IppMessage() {
         override val codeDescription: String

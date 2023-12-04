@@ -16,7 +16,7 @@ enum class IppTag(
     Job(0x02, "job-attributes-tag"),
     End(0x03, "end-of-attributes-tag"),
     Printer(0x04, "printer-attributes-tag"),
-    Unsupported(0x05, "unsupported-attributes-tag"),
+    Unsupported(0x05, "unsupported-attributes-tag"), // group
     Subscription(0x06, "subscription-attributes-tag"),
     EventNotification(0x07, "event-notification-attributes-tag"),
     Resource(0x08, "resource-attributes-tag"),
@@ -25,7 +25,7 @@ enum class IppTag(
 
     // Out-of-band tags
     // https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-8
-    Unsupported_(0x10, "unsupported"),
+    Unsupported_(0x10, "unsupported"), // value
     Unknown(0x12, "unknown"),
     NoValue(0x13, "no-value"),
     NotSettable(0x15, "not-settable"),

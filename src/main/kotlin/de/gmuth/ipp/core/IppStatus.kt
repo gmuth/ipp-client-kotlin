@@ -72,7 +72,7 @@ enum class IppStatus(val code: Int) {
 
     companion object {
         fun fromInt(code: Int): IppStatus =
-            values().find { it.code == code } ?: throw IppException("Unknown status code %04x".format(code))
+            values().find { it.code == code } ?: throw IppException("Unknown status code %04X".format(code))
     }
 
 }

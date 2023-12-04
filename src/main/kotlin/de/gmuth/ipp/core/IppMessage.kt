@@ -10,8 +10,13 @@ import java.util.logging.Level
 import java.util.logging.Level.INFO
 import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
+import java.nio.charset.Charset as javaCharset
 
 abstract class IppMessage() {
+
+    companion object {
+        var keepDocumentCopy: Boolean = false
+    }
 
     private val logger = getLogger(javaClass.name)
     var code: Int? = null // unsigned short (16 bits)
@@ -25,6 +30,7 @@ abstract class IppMessage() {
     var documentInputStream: InputStream? = null
     var documentInputStreamIsConsumed: Boolean = false
     var rawBytes: ByteArray? = null
+    var documentBytes: ByteArray? = null
 
     abstract val codeDescription: String // request operation or response status
 
@@ -49,10 +55,10 @@ abstract class IppMessage() {
     val subscriptionGroup: IppAttributesGroup
         get() = getSingleAttributesGroup(Subscription)
 
-    internal fun getAttributesGroups(tag: IppTag) =
+    fun getAttributesGroups(tag: IppTag) =
         attributesGroups.filter { it.tag == tag }
 
-    internal fun getSingleAttributesGroup(tag: IppTag) = getAttributesGroups(tag).run {
+    fun getSingleAttributesGroup(tag: IppTag) = getAttributesGroups(tag).run {
         if (isEmpty()) throw IppException("No group found with tag '$tag' in $attributesGroups")
         single()
     }
@@ -65,6 +71,15 @@ abstract class IppMessage() {
         IppAttributesGroup(tag).apply { attributesGroups.add(this) }
 
     fun hasDocument() = documentInputStream != null
+
+    val attributesCharset: javaCharset
+        get() = operationGroup.getValue("attributes-charset")
+
+    val naturalLanguage: String
+        get() = operationGroup.getValue("attributes-natural-language")
+
+    val requestingUserName: String
+        get() = operationGroup.getTextValue("requesting-user-name")
 
     // --------
     // ENCODING
@@ -112,12 +127,12 @@ abstract class IppMessage() {
     }
 
     fun read(file: File) {
-        logger.fine { "Read file ${file.absolutePath}: ${file.length()} bytes" }
+        logger.finer { "Read file ${file.absolutePath}: ${file.length()} bytes" }
         read(FileInputStream(file))
     }
 
     fun decode(byteArray: ByteArray) {
-        logger.fine { "Decode ${byteArray.size} bytes" }
+        logger.finer { "Decode ${byteArray.size} bytes" }
         read(ByteArrayInputStream(byteArray))
     }
 
@@ -127,15 +142,23 @@ abstract class IppMessage() {
 
     protected fun copyDocumentStream(outputStream: OutputStream): Long {
         if (documentInputStreamIsConsumed) logger.warning { "documentInputStream is consumed" }
-        return documentInputStream!!.copyTo(outputStream).apply {
-            logger.fine { "consumed documentInputStream: $this bytes" }
-            documentInputStreamIsConsumed = true
-        }
+        val byteArraySavingOutputStream = ByteArraySavingOutputStream(outputStream)
+        return documentInputStream!!
+            .copyTo(if (keepDocumentCopy) byteArraySavingOutputStream else outputStream) // number of bytes copied
+            .apply {
+                logger.finer { "Consumed documentInputStream: $this bytes" }
+                documentInputStreamIsConsumed = true
+                if (keepDocumentCopy) {
+                    documentBytes = byteArraySavingOutputStream.toByteArray()
+                    if (documentBytes!!.isNotEmpty()) logger.info("Keeping ${documentBytes!!.size} document bytes")
+                }
+                byteArraySavingOutputStream.close()
+            }
     }
 
     fun saveDocumentStream(file: File) {
         copyDocumentStream(file.outputStream())
-        logger.info { "saved ${file.length()} document bytes to file ${file.path}" }
+        logger.fine { "Saved ${file.length()} document bytes to file ${file.path}" }
     }
 
     fun saveBytes(file: File) =
@@ -143,16 +166,16 @@ abstract class IppMessage() {
             throw IppException("No raw bytes to save. You must call read/decode or write/encode before.")
         } else {
             file.writeBytes(rawBytes!!)
-            logger.info { "Saved ${file.path} (${file.length()} bytes)" }
+            logger.fine { "Saved ${file.path} (${file.length()} bytes)" }
         }
 
-    protected fun write(bufferedWriter: BufferedWriter, title: String) {
+    fun write(bufferedWriter: BufferedWriter, title: String? = null) {
         fun writeln(text: String) = bufferedWriter.run { write(text); newLine() }
-        bufferedWriter.write(title)
+        title?.also { bufferedWriter.write(it) }
         if (rawBytes != null) bufferedWriter.write(" (decoded ${rawBytes!!.size} raw IPP bytes)")
         bufferedWriter.newLine()
         writeln("version $version")
-        writeln("$codeDescription")
+        writeln(codeDescription)
         writeln("request-id $requestId")
         for (group in attributesGroups) {
             group.write(bufferedWriter)
@@ -183,6 +206,13 @@ abstract class IppMessage() {
         for (group in attributesGroups) {
             group.log(logger, level, prefix = prefix)
         }
+    }
+
+    class ByteArraySavingOutputStream(private val outputStream: OutputStream) : OutputStream() {
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        fun toByteArray() = byteArrayOutputStream.toByteArray()
+        override fun write(byte: Int) = outputStream.write(byte)
+            .also { byteArrayOutputStream.write(byte) }
     }
 
 }

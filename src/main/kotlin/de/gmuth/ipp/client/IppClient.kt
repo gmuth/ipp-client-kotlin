@@ -70,16 +70,22 @@ open class IppClient(val config: IppConfig = IppConfig()) : IppExchange {
     // Exchange IppRequest for IppResponse
     //------------------------------------
 
-    override fun exchange(request: IppRequest): IppResponse {
-        val ippUri: URI = request.printerOrJobUri
+    override fun exchange(request: IppRequest): IppResponse =
+        exchange(request.printerOrJobUri, request)
+
+    fun exchange(ippUri: URI, request: IppRequest): IppResponse {
         logger.finer { "Send '${request.operation}' request to $ippUri" }
         val response = httpPost(toHttpUri(ippUri), request)
-        logger.fine { "$ippUri: $request => $response" }
+        logger.fine { "Req #${request.requestId} @${ippUri.host}: $request => $response" }
         if (saveMessages) {
-            fun file(suffix: String) = File(saveMessagesDirectory, "${request.requestId}-${request.operation}.$suffix")
-            request.saveBytes(file("request"))
-            response.saveBytes(file("response"))
-            response.saveText(file("txt"))
+            fun file(suffix: String) = File(
+                saveMessagesDirectory,
+                "%03d-%s.%s".format(request.requestId, request.operation, suffix)
+            )
+            request.saveBytes(file("req"))
+            request.saveText(file("req.txt"))
+            response.saveBytes(file("res"))
+            response.saveText(file("res.txt"))
         }
         responseInterceptor?.invoke(request, response)
         validateResponse(request, response)
@@ -117,7 +123,7 @@ open class IppClient(val config: IppConfig = IppConfig()) : IppExchange {
             IppRegistrationsSection2.validate(request)
             if (throwWhenNotSuccessful) {
                 throw if (status == ClientErrorNotFound) ClientErrorNotFoundException(request, response)
-                else IppExchangeException(request, response)
+                else IppExchangeException(request, response, 200)
             }
         }
     }

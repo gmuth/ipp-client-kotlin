@@ -69,6 +69,12 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
 
     override fun toString() = "'$tag' $size attributes"
 
+    fun toValuesString() =
+        values.joinToString(" ") { it.valuesToString() }
+
+    fun toCompactString() =
+        values.joinToString(" ") { it.toCompactString() }
+
     private fun attributeNotFoundException(name: String) =
         IppException("Attribute '$name' not found in group $tag")
 
