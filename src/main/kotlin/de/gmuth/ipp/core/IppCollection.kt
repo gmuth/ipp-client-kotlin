@@ -31,7 +31,7 @@ data class IppCollection(val members: MutableCollection<IppAttribute<*>> = mutab
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getMemberOrNull(memberName: String) =
-        members.singleOrNull { it.name == memberName } as IppAttribute<T>
+        members.singleOrNull { it.name == memberName } as IppAttribute<T>?
 
     fun <T> getValues(memberName: String) =
         getMember<T>(memberName).values
