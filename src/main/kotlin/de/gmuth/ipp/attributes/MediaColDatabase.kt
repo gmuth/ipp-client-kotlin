@@ -18,7 +18,7 @@ class MediaColDatabase(val mediaCollections: List<MediaCollection>) {
         )
     }
 
-    fun findWithSizeNameContaining(text: String) =
+    fun findMediaWithNameContaining(text: String) =
         mediaCollections.filter { it.size?.name?.contains(text) ?: false }
 
     val distinctMediaTypes: List<String>

@@ -203,6 +203,9 @@ class IppPrinter(
         .filter { it.name.endsWith("-supported") }
         .sortedBy { it.name }
 
+    fun getMediaColDatabase() = // must be fetched explicitly from printer
+        MediaColDatabase.fromAttributes(getPrinterAttributes("media-col-database"))
+
     //-------------------------------------------------------
 
     fun isIdle() = state == Idle
