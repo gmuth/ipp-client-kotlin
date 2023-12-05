@@ -10,12 +10,13 @@ import java.util.logging.Level
 import java.util.logging.Logger
 
 class MediaColDatabase(val mediaCollections: List<MediaCollection>) {
+
     companion object {
-        fun fromAttributes(attributes: IppAttributesGroup) = MediaColDatabase(
-            attributes
-                .getValues<List<IppCollection>>("media-col-database")
-                .map { MediaCollection.fromIppCollection(it) }
-        )
+        fun fromAttributes(attributes: IppAttributesGroup) =
+            fromIppCollections(attributes.getValues("media-col-database"))
+
+        fun fromIppCollections(mediaIppCollections: List<IppCollection>) =
+            MediaColDatabase(mediaIppCollections.map { MediaCollection.fromIppCollection(it) })
     }
 
     fun findMediaWithNameContaining(text: String) =
