@@ -84,7 +84,17 @@ ippPrinter.sound() // identify printer
 // Subscribe and handle/log events (e.g. from CUPS) for 5 minutes
 ippPrinter
     .createPrinterSubscription(notifyLeaseDuration = Duration.ofMinutes(5))
-    .pollAndHandleNotifications()
+    .pollAndHandleNotifications() { event -> ... }
+
+// Find supported media by size
+ippPrinter
+    .getMediaColDatabase() // PWG 5100.7 Job Extensions v2.0
+    .findMediaBySize(ISO_A4)
+
+// Media size supported? ready? which source?
+ippPrinter.isMediaSizeSupported(ISO_A3)
+ippPrinter.isMediaSizeReady(ISO_A4)
+ippPrinter.sourcesOfMediaSizeReady(ISO_A4) // e.g. [tray-1, auto]
 ```
 
 IppPrinter checks, if attribute values are supported by looking into `'...-supported'` printer attributes.
@@ -211,7 +221,6 @@ I've not yet seen any IPP server implementation without a single encoding bug.
 for example includes workarounds for
 [illegal responses of my HP and Xerox printers](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/test/kotlin/de/gmuth/ipp/core/IppResponseTests.kt).
 From my experience this approach works better in real life projects than blaming the manufacturers firmware.
-
 
 ### Logging
 

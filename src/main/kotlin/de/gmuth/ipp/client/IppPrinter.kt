@@ -161,6 +161,9 @@ class IppPrinter(
     val mediaSourceSupported: List<String>
         get() = attributes.getValues("media-source-supported")
 
+    val mediaTypeSupported: List<String>
+        get() = attributes.get("media-type-supported")!!.getStringValues()
+
     val versionsSupported: List<String>
         get() = attributes.getValues("ipp-versions-supported")
 
@@ -175,6 +178,25 @@ class IppPrinter(
 
     val identifyActionsSupported: List<String>
         get() = attributes.getValues("identify-actions-supported")
+
+    val mediaSizeDefault: MediaSize
+        get() = MediaSize.fromIppCollection(attributes.getValue("media-size-default"))
+
+    val mediaSizeSupported: List<MediaSizeSupported>
+        get() = attributes
+            .getValues<List<IppCollection>>("media-size-supported")
+            .map { MediaSizeSupported.fromIppCollection(it) }
+
+    val mediaColDefault: MediaCollection
+        get() = MediaCollection.fromIppCollection(attributes.getValue("media-col-default"))
+
+    val mediaColReady: List<MediaCollection>
+        get() = attributes
+            .getValues<List<IppCollection>>("media-col-ready")
+            .map { MediaCollection.fromIppCollection(it) }
+
+    fun getMediaColDatabase() = // must be fetched explicitly from printer
+        MediaColDatabase.fromAttributes(getPrinterAttributes("media-col-database"))
 
     // ----------------------------------------------
     // Extensions supported by cups and some printers
@@ -203,25 +225,34 @@ class IppPrinter(
         .filter { it.name.endsWith("-supported") }
         .sortedBy { it.name }
 
-    fun getMediaColDatabase() = // must be fetched explicitly from printer
-        MediaColDatabase.fromAttributes(getPrinterAttributes("media-col-database"))
-
     //-------------------------------------------------------
 
     fun isIdle() = state == Idle
     fun isStopped() = state == Stopped
     fun isProcessing() = state == Processing
-    fun isMediaJam() = stateReasons.contains("media-jam")
-    fun isMediaLow() = stateReasons.contains("media-low")
-    fun isMediaEmpty() = stateReasons.contains("media-empty")
-    fun isMediaNeeded() = stateReasons.contains("media-needed")
     fun isDuplexSupported() = sidesSupported.any { it.startsWith("two-sided") }
     fun supportsOperations(vararg operations: IppOperation) = operationsSupported.containsAll(operations.toList())
     fun supportsVersion(version: String) = versionsSupported.contains(version)
     fun isCups() = attributes.contains("cups-version")
     fun paused() = stateReasons.contains("paused")
     fun offlineReport() = stateReasons.contains("offline-report")
-    fun mediaEmptyReport() = stateReasons.contains("media-empty-report")
+
+    fun isMediaJam() = stateReasons.contains("media-jam")
+    fun isMediaLow() = stateReasons.contains("media-low")
+    fun isMediaEmpty() = stateReasons.contains("media-empty") || stateReasons.contains("media-empty-report")
+    fun isMediaNeeded() = stateReasons.contains("media-needed")
+
+    fun isMediaSizeSupported(size: MediaSize) = mediaSizeSupported
+        .filter { it.dimensionsAreInt() } // IntRange dimensions are not considered
+        .map { it.toMediaSize() }
+        .any { it.equalsByDimensions(size) }
+
+    fun isMediaSizeReady(size: MediaSize) = mediaColReady
+        .any { it.size?.equalsByDimensions(size) ?: false }
+
+    fun sourcesOfMediaSizeReady(size: MediaSize) = mediaColReady
+        .filter { it.size?.equalsByDimensions(size) ?: false }
+        .map { it.source }
 
     //-----------------
     // Identify-Printer

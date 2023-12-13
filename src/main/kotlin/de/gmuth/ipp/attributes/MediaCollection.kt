@@ -4,7 +4,10 @@ package de.gmuth.ipp.attributes
  * Copyright (c) 2020-2023 Gerhard Muth
  */
 
-import de.gmuth.ipp.core.*
+import de.gmuth.ipp.core.IppAttribute
+import de.gmuth.ipp.core.IppAttributeBuilder
+import de.gmuth.ipp.core.IppAttributesGroup
+import de.gmuth.ipp.core.IppCollection
 import de.gmuth.ipp.core.IppTag.BegCollection
 import de.gmuth.ipp.core.IppTag.NameWithoutLanguage
 
@@ -37,14 +40,15 @@ data class MediaCollection(
         type?.let { append(" type=$it") }
     }.toString()
 
+    fun sizeEqualsByDimensions(mediaSize: MediaSize) =
+        size?.equalsByDimensions(mediaSize) ?: false
+
     companion object {
         fun fromIppCollection(mediaIppCollection: IppCollection) = mediaIppCollection.run {
             MediaCollection().apply {
-                // media-size
                 if (containsMember("media-size")) {
                     size = MediaSize.fromIppCollection(getValue("media-size"))
                 }
-                // media-top-margin, media-bottom-margin, media-left-margin, media-right-margin
                 if (
                     members
                         .map { it.name }
@@ -52,15 +56,12 @@ data class MediaCollection(
                 ) {
                     margin = MediaMargin.fromIppCollection(mediaIppCollection)
                 }
-                // media-source
                 if (containsMember("media-source")) {
                     source = MediaSource(getValue("media-source"))
                 }
-                // media-type
                 if (containsMember("media-type")) {
-                    type = getValue<IppString>("media-type").text
+                    type = getStringValue("media-type")
                 }
-                // duplex-supported
                 if (containsMember("duplex-supported")) {
                     duplexSupported = getValue<Int>("duplex-supported") == 1
                 }

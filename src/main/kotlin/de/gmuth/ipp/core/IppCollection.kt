@@ -42,6 +42,12 @@ data class IppCollection(val members: MutableCollection<IppAttribute<*>> = mutab
     fun <T> getValueOrNull(memberName: String) =
         getMemberOrNull<T>(memberName)?.value
 
+    fun getStringValue(memberName: String): String =
+        members.single { it.name == memberName }.getStringValue()
+
+    fun getTag(memberName: String): IppTag =
+        members.single { it.name == memberName }.tag
+
     val size: Int
         get() = members.size
 

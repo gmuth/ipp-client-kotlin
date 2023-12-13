@@ -9,6 +9,14 @@ import de.gmuth.ipp.core.IppCollection
 import java.util.logging.Level
 import java.util.logging.Logger
 
+/*
+* https://ftp.pwg.org/pub/pwg/candidates/cs-ippjobext20-20190816-5100.7.pdf (section 5.5.32)
+*
+* This attribute lists the set of pre-defined "media-col" collections available in the Printer’s media database.
+* This attribute is similar to “media-col-ready” (section 5.5.34) but returns the entire set of pre-defined "media-col"
+* collections known by the Printer instead of just the media loaded in the Printer.
+*/
+
 class MediaColDatabase(val mediaCollections: List<MediaCollection>) {
 
     companion object {
@@ -19,7 +27,10 @@ class MediaColDatabase(val mediaCollections: List<MediaCollection>) {
             MediaColDatabase(mediaIppCollections.map { MediaCollection.fromIppCollection(it) })
     }
 
-    fun findMediaWithNameContaining(text: String) =
+    fun findByMediaSize(size: MediaSize) =
+        mediaCollections.filter { it.sizeEqualsByDimensions(size) }
+
+    fun findByMediaSizeNameContaining(text: String) =
         mediaCollections.filter { it.size?.name?.contains(text) ?: false }
 
     val distinctMediaTypes: List<String>

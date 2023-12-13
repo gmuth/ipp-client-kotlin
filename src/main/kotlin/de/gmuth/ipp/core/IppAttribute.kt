@@ -55,6 +55,20 @@ data class IppAttribute<T>(val name: String, val tag: IppTag) : IppAttributeBuil
 
     fun isCollection() = tag == BegCollection
 
+    companion object {
+        fun getStringValue(value: Any): String = when (value) {
+            is String -> value
+            is IppString -> value.text
+            else -> throw IllegalArgumentException("Expected String or IppString value but found ${value.javaClass.name}")
+        }
+    }
+
+    fun getStringValue(): String =
+        getStringValue(value as Any)
+
+    fun getStringValues(): List<String> =
+        values.map { getStringValue(it as Any) }
+
     override fun buildIppAttribute(printerAttributes: IppAttributesGroup) = this
 
     fun getZonedDateTimeValue() = Instant
@@ -80,6 +94,7 @@ data class IppAttribute<T>(val name: String, val tag: IppTag) : IppAttributeBuil
         tag == RangeOfInteger -> with(value as IntRange) { "$start-$endInclusive" }
         tag == Integer && (name.endsWith("duration") || name.endsWith("time-interval")) ->
             "$value (${getDurationOfSecondsValue()})"
+
         tag == Integer && name.contains("time") -> "$value (${getZonedDateTimeValue()})"
 
         value is ByteArray -> with(value as ByteArray) { if (isEmpty()) "" else "$size bytes" }
