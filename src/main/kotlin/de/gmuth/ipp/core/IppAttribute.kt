@@ -56,6 +56,7 @@ data class IppAttribute<T>(val name: String, val tag: IppTag) : IppAttributeBuil
     fun isCollection() = tag == BegCollection
 
     companion object {
+        // Get string values for attributes with tag 'keyword' or 'name'
         fun getStringValue(value: Any): String = when (value) {
             is String -> value
             is IppString -> value.text

@@ -58,6 +58,9 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     fun getTextValue(name: String) =
         getValue<IppString>(name).text
 
+    fun getStringValues(name: String) =
+        get(name)?.getStringValues() ?: throw attributeNotFoundException(name)
+
     fun getZonedDateTimeValue(name: String, zoneId: ZoneId = ZoneId.systemDefault()): ZonedDateTime =
         get(name)?.getZonedDateTimeValue()?.withZoneSameInstant(zoneId) ?: throw attributeNotFoundException(name)
 

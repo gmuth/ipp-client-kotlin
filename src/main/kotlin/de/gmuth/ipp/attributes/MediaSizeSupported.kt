@@ -30,7 +30,7 @@ data class MediaSizeSupported(val xDimension: Any, val yDimension: Any) {
 
     fun toMediaSize() =
         if (dimensionsAreInt()) MediaSize(xDimension as Int, yDimension as Int)
-        else throw IllegalStateException("dimensions are not Int")
+        else error("dimensions are not Int")
 
     companion object {
         fun fromIppCollection(ippCollection: IppCollection) = ippCollection.run {

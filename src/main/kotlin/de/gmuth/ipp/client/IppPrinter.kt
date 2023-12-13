@@ -162,7 +162,7 @@ class IppPrinter(
         get() = attributes.getValues("media-source-supported")
 
     val mediaTypeSupported: List<String>
-        get() = attributes.get("media-type-supported")!!.getStringValues()
+        get() = attributes.getStringValues("media-type-supported")
 
     val versionsSupported: List<String>
         get() = attributes.getValues("ipp-versions-supported")
