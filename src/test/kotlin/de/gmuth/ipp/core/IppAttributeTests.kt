@@ -123,4 +123,23 @@ class IppAttributeTests {
         }
     }
 
+    @Test
+    fun keywirdStringValues() {
+        assertEquals(listOf("none"), attribute.getStringValues())
+    }
+
+    @Test
+    fun nameStringValue() {
+        IppAttribute("name", NameWithoutLanguage, IppString("mike")).run {
+            assertEquals("mike", getStringValue())
+        }
+    }
+
+    @Test
+    fun exceptionOnStringValue() {
+        assertFailsWith<IllegalArgumentException> {
+            IppAttribute.getStringValue(0)
+        }
+    }
+
 }

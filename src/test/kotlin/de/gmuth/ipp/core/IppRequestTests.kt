@@ -56,21 +56,21 @@ class IppRequestTests {
         val requestEncoded = request.encode()
         logger.info { "encoded ${requestEncoded.size} bytes" }
         val requestDecoded = IppRequest()
-        requestDecoded.decode(requestEncoded)
-        assertEquals("2.0", requestDecoded.version)
-        assertEquals(IppOperation.PrintJob, requestDecoded.operation)
-        assertEquals(1, requestDecoded.requestId)
-        assertNotNull(requestDecoded.operationGroup)
-        with(requestDecoded.operationGroup) {
-            assertEquals(Charsets.UTF_8, getValue("attributes-charset"))
-            assertEquals("en", getValue("attributes-natural-language"))
-            assertEquals(URI.create("ipp://printer"), getValue("printer-uri"))
-            //assertEquals(0, getValue("job-id"))
-            assertEquals(listOf("one", "two"), getValues("requested-attributes"))
-            //assertEquals("user".toIppString(), getValue("requesting-user-name"))
+        requestDecoded.run {
+            decode(requestEncoded)
+            assertEquals("2.0", version)
+            assertEquals(IppOperation.PrintJob, operation)
+            assertEquals(1, requestId)
+            assertNotNull(operationGroup)
+            operationGroup.run {
+                assertEquals(Charsets.UTF_8, getValue("attributes-charset"))
+                assertEquals("en", getValue("attributes-natural-language"))
+                assertEquals(URI.create("ipp://printer"), getValue("printer-uri"))
+            }
+            assertEquals(listOf("one", "two"), requestedAttributes)
+            assertEquals("user", requestingUserName)
+            assertEquals("pdl-content", String(documentInputStream!!.readBytes()))
         }
-        assertEquals("user", requestDecoded.requestingUserName)
-        assertEquals("pdl-content", String(requestDecoded.documentInputStream!!.readBytes()))
     }
 
     @Test

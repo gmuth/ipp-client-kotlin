@@ -76,9 +76,9 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
         try {
             values.add(readAttributeValue(tag))
         } catch (throwable: Throwable) {
-            val message = "Failed to read attribute value for '$name' ($tag)"
-            if (readAttribute_ignoreException) logger.warning { "Ignore exception: $message: ${throwable.toString()}" }
-            else throw IppException(message, throwable)
+            IppException("Failed to read attribute value for '$name' ($tag)", throwable).apply {
+                if (readAttribute_ignoreException) logger.warning { "Ignore exception: $this" } else throw this
+            }
         }
         // remember attributes-charset for name and text value decoding
         if (name == "attributes-charset") attributesCharset = value as Charset

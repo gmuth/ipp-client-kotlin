@@ -4,19 +4,19 @@ package de.gmuth.ipp.client
  * Copyright (c) 2023 Gerhard Muth
  */
 
-import de.gmuth.ipp.core.IppOperation.GetPrinterAttributes
 import org.junit.Test
 import java.net.URI
 import kotlin.test.assertEquals
 
 class IppClientTests {
-    val ippClient = IppClientMock()
+    val ippClient = IppClient()
 
     @Test
-    fun sendRequestToURIWithEncodedWhitespaces() {
-        ippClient.ippRequest(GetPrinterAttributes, URI.create("ipp://0/PDF%20Printer")).run {
-            assertEquals("/PDF%20Printer", printerOrJobUri.rawPath)
-            assertEquals("/PDF Printer", printerOrJobUri.path)
+    fun toHttpUriWithEncodedSpace() {
+        ippClient.toHttpUri(URI.create("ipp://0/PDF%20Printer")).run {
+            assertEquals("http://0:631/PDF%20Printer", toString())
+            assertEquals("/PDF%20Printer", rawPath)
+            assertEquals("/PDF Printer", path)
         }
     }
 }

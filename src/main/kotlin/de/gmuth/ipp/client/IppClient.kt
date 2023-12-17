@@ -128,7 +128,7 @@ open class IppClient(val config: IppConfig = IppConfig()) : IppExchange {
         }
     }
 
-    private fun toHttpUri(ippUri: URI): URI = with(ippUri) {
+    internal fun toHttpUri(ippUri: URI): URI = with(ippUri) {
         val scheme = scheme.replace("ipp", "http")
         val port = if (port == -1) 631 else port
         URI.create("$scheme://$host:$port$rawPath")
