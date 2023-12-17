@@ -32,7 +32,7 @@ data class MediaCollection(
         })
     }
 
-    override fun toString() = StringBuilder("MEDIA").run {
+    override fun toString() = StringBuilder("MEDIA").apply {
         size?.let { append(" size=$it") }
         margin?.let { append(" margin=$it") }
         source?.let { append(" source=$it") }

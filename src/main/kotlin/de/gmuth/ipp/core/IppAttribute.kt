@@ -93,10 +93,13 @@ data class IppAttribute<T>(val name: String, val tag: IppTag) : IppAttributeBuil
     private fun valueToString(value: T) = when {
         tag == Charset -> with(value as Charset) { name().lowercase() }
         tag == RangeOfInteger -> with(value as IntRange) { "$start-$endInclusive" }
-        tag == Integer && (name.endsWith("duration") || name.endsWith("time-interval")) ->
-            "$value (${getDurationOfSecondsValue()})"
+        tag == Integer && (name.endsWith("duration")
+                || name.endsWith("time-interval")
+                || name.endsWith("time-out")
+                || name.endsWith("up-time")) -> "$value (${getDurationOfSecondsValue()})"
 
-        tag == Integer && name.contains("time") -> "$value (${getZonedDateTimeValue()})"
+        tag == Integer && (name.endsWith("time") || name.startsWith("time")) ->
+            "$value (${getZonedDateTimeValue()})"
 
         value is ByteArray -> with(value as ByteArray) { if (isEmpty()) "" else "$size bytes" }
         else -> enumNameOrValue(value as Any).toString()

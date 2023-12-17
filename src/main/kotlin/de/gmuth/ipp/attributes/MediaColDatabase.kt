@@ -42,7 +42,7 @@ class MediaColDatabase(val mediaCollections: List<MediaCollection>) {
     val distinctMediaSizes: List<MediaSize>
         get() = mediaCollections.mapNotNull { it.size }.distinct().toList()
 
-    override fun toString() = StringBuilder("MEDIA-COL-DATABASE:").run {
+    override fun toString() = StringBuilder("MEDIA-COL-DATABASE:").apply {
         append(" ${mediaCollections.size} definitions")
         append(", ${distinctMediaSources.size} distinct sources")
         append(", ${distinctMediaSizes.size} distinct sizes")
@@ -52,11 +52,17 @@ class MediaColDatabase(val mediaCollections: List<MediaCollection>) {
     @JvmOverloads
     fun log(logger: Logger, level: Level = Level.INFO) {
         logger.log(level, toString())
-        logger.log(level, "media-sources:")
-        distinctMediaSources.forEach { logger.log(level, " $it") }
-        logger.log(level, "media-sizes:")
-        distinctMediaSizes.forEach { logger.log(level, " $it") }
-        logger.log(level, "media-types:")
-        distinctMediaTypes.forEach { logger.log(level, " $it") }
+        distinctMediaSources.run {
+            if (isNotEmpty()) logger.log(level, "media-sources:")
+            forEach { logger.log(level, " $it") }
+        }
+        distinctMediaSizes.run {
+            if (isNotEmpty()) logger.log(level, "media-sizes:")
+            forEach { logger.log(level, " $it") }
+        }
+        distinctMediaTypes.run {
+            if (isNotEmpty()) logger.log(level, "media-types:")
+            forEach { logger.log(level, " $it") }
+        }
     }
 }
