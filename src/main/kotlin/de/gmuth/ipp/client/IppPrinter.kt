@@ -230,16 +230,17 @@ class IppPrinter(
     fun isIdle() = state == Idle
     fun isStopped() = state == Stopped
     fun isProcessing() = state == Processing
+    fun isPaused() = stateReasons.contains("paused")
+    fun isOffline() = stateReasons.contains("offline-report") // reported by CUPS
     fun isDuplexSupported() = sidesSupported.any { it.startsWith("two-sided") }
     fun supportsOperations(vararg operations: IppOperation) = operationsSupported.containsAll(operations.toList())
     fun supportsVersion(version: String) = versionsSupported.contains(version)
     fun isCups() = attributes.contains("cups-version")
-    fun paused() = stateReasons.contains("paused")
-    fun offlineReport() = stateReasons.contains("offline-report")
-
+    fun isTonerLow() = stateReasons.contains("toner-low")
+    fun isTonerEmpty() = stateReasons.any { it.contains("toner-empty") } // toner-empty-error
     fun isMediaJam() = stateReasons.contains("media-jam")
     fun isMediaLow() = stateReasons.contains("media-low")
-    fun isMediaEmpty() = stateReasons.contains("media-empty") || stateReasons.contains("media-empty-report")
+    fun isMediaEmpty() = stateReasons.any { it.contains("media-empty") } // media-empty-report
     fun isMediaNeeded() = stateReasons.contains("media-needed")
 
     fun isMediaSizeSupported(size: MediaSize) = mediaSizeSupported
