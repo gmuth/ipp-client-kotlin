@@ -9,7 +9,7 @@ import java.util.logging.Level.INFO
 import java.util.logging.Logger
 
 // RFC8010 3.1.6.
-class IppCollection(val members: MutableCollection<IppAttribute<*>> = mutableListOf()) {
+data class IppCollection(val members: MutableCollection<IppAttribute<*>> = mutableListOf()) {
 
     constructor(vararg attributes: IppAttribute<*>) : this(attributes.toMutableList())
 

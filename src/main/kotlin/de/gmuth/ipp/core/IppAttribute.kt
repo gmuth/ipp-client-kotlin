@@ -16,7 +16,7 @@ import java.util.logging.Level.INFO
 import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
 
-open class IppAttribute<T>(val name: String, val tag: IppTag) : IppAttributeBuilder {
+data class IppAttribute<T>(val name: String, val tag: IppTag) : IppAttributeBuilder {
 
     private val logger = getLogger(javaClass.name)
 

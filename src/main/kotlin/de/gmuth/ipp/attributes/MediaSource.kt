@@ -5,9 +5,11 @@ package de.gmuth.ipp.attributes
  */
 
 import de.gmuth.ipp.core.IppAttribute
+import de.gmuth.ipp.core.IppAttributeBuilder
+import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppTag.Keyword
 
-data class MediaSource(val keyword: String) : IppAttribute<String>("media-source", Keyword, keyword) {
+data class MediaSource(val keyword: String) : IppAttributeBuilder {
 
     companion object {
         @JvmField
@@ -31,6 +33,9 @@ data class MediaSource(val keyword: String) : IppAttribute<String>("media-source
         @JvmField
         val LargeCapacity = MediaSource("large-capacity")
     }
+
+    override fun buildIppAttribute(printerAttributes: IppAttributesGroup) =
+        IppAttribute("media-source", Keyword, keyword)
 
     override fun toString() = keyword
 
