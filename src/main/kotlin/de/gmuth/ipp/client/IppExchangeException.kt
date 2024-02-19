@@ -53,11 +53,11 @@ open class IppExchangeException(
 
     fun log(logger: Logger, level: Level = INFO) = logger.run {
         log(level) { message }
-        request.log(this@IppExchangeException.logger, level, prefix = "REQUEST: ")
-        response?.log(this@IppExchangeException.logger, level, prefix = "RESPONSE: ")
+        request.log(this, level, prefix = "REQUEST: ")
+        response?.log(this, level, prefix = "RESPONSE: ")
         httpStatus?.let { log(level) { "HTTP-Status: $it" } }
         httpHeaderFields?.let { for ((key: String?, value) in it) log(level) { "HTTP: $key = $value" } }
-        httpStream?.let { this@IppExchangeException.logger.log(level) { "HTTP-Content:\n" + it.bufferedReader().use { it.readText() } } }
+        httpStream?.let { log(level) { "HTTP-Content:\n" + it.bufferedReader().use { it.readText() } } }
     }
 
     fun saveMessages(
