@@ -16,6 +16,6 @@ enum class Sides(private val keyword: String) : IppAttributeBuilder {
     TwoSidedShortEdge("two-sided-short-edge");
 
     override fun buildIppAttribute(printerAttributes: IppAttributesGroup) =
-            IppAttribute("sides", Keyword, keyword)
+        IppAttribute("sides", Keyword, keyword)
 
 }

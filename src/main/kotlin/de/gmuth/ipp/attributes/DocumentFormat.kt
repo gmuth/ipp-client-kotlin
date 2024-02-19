@@ -1,15 +1,14 @@
 package de.gmuth.ipp.attributes
 
 /**
- * Copyright (c) 2020-2023 Gerhard Muth
+ * Copyright (c) 2020-2024 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppAttribute
-import de.gmuth.ipp.core.IppAttributeBuilder
-import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppTag.MimeMediaType
 
-class DocumentFormat(val mediaMimeType: String) : IppAttributeBuilder {
+class DocumentFormat(mediaMimeType: String) :
+    IppAttribute<String>("document-format", MimeMediaType, mediaMimeType) {
 
     companion object {
         // application
@@ -39,8 +38,4 @@ class DocumentFormat(val mediaMimeType: String) : IppAttributeBuilder {
         @JvmField
         val HP_PCL = DocumentFormat("vnd.hp-PCL")
     }
-
-    override fun buildIppAttribute(printerAttributes: IppAttributesGroup) =
-        IppAttribute("document-format", MimeMediaType, mediaMimeType)
-
 }
