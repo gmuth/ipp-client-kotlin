@@ -5,12 +5,9 @@ package de.gmuth.ipp.attributes
  */
 
 import de.gmuth.ipp.core.IppAttribute
-import de.gmuth.ipp.core.IppAttributeBuilder
-import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppTag.Keyword
 
-class Media(val keyword: String) : IppAttributeBuilder {
-
+class Media(val keyword: String) : IppAttribute<String>("media", Keyword, keyword) {
     companion object {
         @JvmField
         val ISO_A3 = Media("iso_a3_297x420mm")
@@ -33,8 +30,4 @@ class Media(val keyword: String) : IppAttributeBuilder {
         @JvmField
         val NA_LEDGER = Media("na_ledger_11x17in")
     }
-
-    override fun buildIppAttribute(printerAttributes: IppAttributesGroup) =
-        IppAttribute("media", Keyword, keyword)
-
 }

@@ -117,7 +117,10 @@ open class IppClient(val config: IppConfig = IppConfig()) : IppExchange {
     }
 
     private fun validateResponse(request: IppRequest, response: IppResponse) = response.run {
-        if (status == ClientErrorBadRequest) request.log(logger, SEVERE, prefix = "BAD-REQUEST: ")
+        if (status == ClientErrorBadRequest) {
+            request.log(logger, SEVERE, prefix = "REQUEST: ")
+            response.log(logger, SEVERE, prefix = "RESPONSE: ")
+        }
         if (containsGroup(Unsupported)) unsupportedGroup.values.forEach { logger.warning() { "Unsupported: $it" } }
         if (!isSuccessful()) {
             IppRegistrationsSection2.validate(request)
