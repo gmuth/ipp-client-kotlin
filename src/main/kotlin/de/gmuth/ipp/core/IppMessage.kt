@@ -198,7 +198,7 @@ abstract class IppMessage() {
     )
 
     @JvmOverloads
-    fun log(logger: Logger, level: Level = INFO, prefix: String = "") {
+    open fun log(logger: Logger, level: Level = INFO, prefix: String = "") {
         if (rawBytes != null) logger.log(level) { "${prefix}${rawBytes!!.size} raw ipp bytes" }
         logger.log(level) { "${prefix}version = $version" }
         logger.log(level) { "${prefix}$codeDescription" }

@@ -6,6 +6,8 @@ package de.gmuth.ipp.core
 
 import de.gmuth.ipp.core.IppTag.Unsupported
 import java.nio.charset.Charset
+import java.util.logging.Level
+import java.util.logging.Logger
 
 class IppResponse : IppMessage {
 
@@ -39,5 +41,10 @@ class IppResponse : IppMessage {
         naturalLanguage: String = "en"
     ) : super(version, requestId, charset, naturalLanguage) {
         code = status.code
+    }
+
+    override fun log(logger: Logger, level: Level, prefix: String) {
+        httpServer?.let { logger.log(level) { "${prefix}httpServer = $it" } }
+        super.log(logger, level, prefix)
     }
 }
