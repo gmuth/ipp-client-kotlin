@@ -34,6 +34,7 @@ open class IppClient(val config: IppConfig = IppConfig()) : IppExchange {
     var saveMessagesDirectory = File("ipp-messages")
     var onExceptionSaveMessages: Boolean = false
     var throwWhenNotSuccessful: Boolean = true
+    var disconnectAfterHttpPost: Boolean = false
 
     fun basicAuth(user: String, password: String) {
         config.userName = user
@@ -88,7 +89,7 @@ open class IppClient(val config: IppConfig = IppConfig()) : IppExchange {
             response.saveText(file("res.txt"))
         }
         responseInterceptor?.invoke(request, response)
-        validateResponse(request, response)
+        validateIppResponse(request, response)
         return response
     }
 
@@ -103,20 +104,24 @@ open class IppClient(val config: IppConfig = IppConfig()) : IppExchange {
                 if (!config.verifySSLHostname) hostnameVerifier = HostnameVerifier { _, _ -> true }
             }
             configure(chunked = request.hasDocument())
-            request.write(outputStream)
-            val responseContentStream = try {
-                validateResponse(request, inputStream)
-                inputStream
-            } catch (ioException: IOException) {
-                validateResponse(request, errorStream, ioException)
-                errorStream
+            try {
+                request.write(outputStream)
+                val responseContentStream = try {
+                    validateHttpResponse(request, inputStream)
+                    inputStream
+                } catch (ioException: IOException) {
+                    validateHttpResponse(request, errorStream, ioException)
+                    errorStream
+                }
+                return decodeContentStream(request, responseCode, responseContentStream)
+                    .apply { httpServer = headerFields["Server"]?.first() }
+            } finally {
+                if (disconnectAfterHttpPost) disconnect()
             }
-            return decodeContentStream(request, responseCode, responseContentStream)
-                .apply { httpServer = headerFields["Server"]?.first() }
         }
     }
 
-    private fun validateResponse(request: IppRequest, response: IppResponse) = response.run {
+    private fun validateIppResponse(request: IppRequest, response: IppResponse) = response.run {
         if (status == ClientErrorBadRequest) {
             request.log(logger, SEVERE, prefix = "REQUEST: ")
             response.log(logger, SEVERE, prefix = "RESPONSE: ")
@@ -151,7 +156,7 @@ open class IppClient(val config: IppConfig = IppConfig()) : IppExchange {
         setRequestProperty("Accept-Encoding", "identity") // avoid 'gzip' with Androids OkHttp
     }
 
-    private fun HttpURLConnection.validateResponse(
+    private fun HttpURLConnection.validateHttpResponse(
         request: IppRequest,
         contentStream: InputStream?,
         cause: Exception? = null
