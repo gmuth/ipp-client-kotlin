@@ -260,18 +260,22 @@ class IppPrinter(
     //-----------------
 
     // https://ftp.pwg.org/pub/pwg/candidates/cs-ippjobprinterext3v10-20120727-5100.13.pdf
+    // https://ftp.pwg.org/pub/pwg/candidates/cs-ippnodriver20-20230301-5100.13.pdf
+
     fun identify(vararg actions: String) = identify(actions.toList())
 
-    fun identify(actions: List<String>): IppResponse {
+    fun identify(actions: List<String>, message: String? = null): IppResponse {
         val request = ippRequest(IdentifyPrinter).apply {
             checkIfValueIsSupported("identify-actions-supported", actions)
             operationGroup.attribute("identify-actions", Keyword, actions)
+            message?.let { operationGroup.attribute("message", TextWithoutLanguage, it) }
         }
         return exchange(request)
     }
 
     fun flash() = identify("flash")
     fun sound() = identify("sound")
+    fun display(message: String) = identify(listOf("display"), message = message)
 
     //-----------------------
     // Printer administration
@@ -411,7 +415,9 @@ class IppPrinter(
     //-------------------------------
 
     fun getJob(jobId: Int) = exchangeForIppJob(
-        ippRequest(GetJobAttributes).apply { operationGroup.attribute("job-id", Integer, jobId) }
+        ippRequest(GetJobAttributes).apply {
+            operationGroup.attribute("job-id", Integer, jobId)
+        }
     )
 
     //---------------------------------
