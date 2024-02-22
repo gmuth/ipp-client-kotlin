@@ -38,9 +38,9 @@ class IppDocument(
         .also { logger.fine { "Read ${it.size} bytes of $this" } }
 
     internal fun filenameSuffix() = when (format) {
+        "application/postscript", "application/vnd.cups-postscript", "application/vnd.adobe-reader-postscript" -> "ps"
         "application/pdf", "application/vnd.cups-pdf" -> "pdf"
         "application/octet-stream" -> "bin"
-        "application/postscript" -> "ps"
         "image/jpeg" -> "jpg"
         "text/plain" -> "txt"
         else -> format.split("/")[1]
