@@ -13,6 +13,7 @@ class DocumentFormat(val mediaMimeType: String) : IppAttributeBuilder {
 
     companion object {
         // application
+
         @JvmField
         val OCTET_STREAM = DocumentFormat("application/octet-stream")
 
@@ -22,7 +23,13 @@ class DocumentFormat(val mediaMimeType: String) : IppAttributeBuilder {
         @JvmField
         val PDF = DocumentFormat("application/pdf")
 
+        // application/vnd
+
+        @JvmField
+        val HP_PCL = DocumentFormat("application/vnd.hp-PCL")
+
         // image
+
         @JvmField
         val PWG_RASTER = DocumentFormat("image/pwg-raster")
 
@@ -35,9 +42,6 @@ class DocumentFormat(val mediaMimeType: String) : IppAttributeBuilder {
         @JvmField
         val PNG = DocumentFormat("image/png")
 
-        // vnd
-        @JvmField
-        val HP_PCL = DocumentFormat("vnd.hp-PCL")
     }
 
     override fun buildIppAttribute(printerAttributes: IppAttributesGroup) =

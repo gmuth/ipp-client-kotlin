@@ -32,7 +32,7 @@ class Marker(
         BLACK("#000000"),
         YELLOW("#FFFF00"),
         MAGENTA("#FF00FF"),
-        TRI_COLOR("#00FFFF#FF00FF#FFFF00"), // Cyan, Magenta, Yellow
+        CYAN_MAGENTA_YELLOW("#00FFFF#FF00FF#FFFF00"),
         UNKNOWN("#?");
 
         companion object {

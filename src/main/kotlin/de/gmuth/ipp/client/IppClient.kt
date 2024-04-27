@@ -159,7 +159,7 @@ open class IppClient(val config: IppConfig = IppConfig()) : IppExchange {
     private fun HttpURLConnection.validateHttpResponse(
         request: IppRequest,
         contentStream: InputStream?,
-        cause: Exception? = null
+        exception: Exception? = null
     ) = when {
         responseCode == 401 && request.operationGroup.containsKey("requesting-user-name") -> with(request) {
             "User \"$requestingUserName\" is not authorized for operation $operation on $printerOrJobUri"
@@ -169,8 +169,8 @@ open class IppClient(val config: IppConfig = IppConfig()) : IppExchange {
         responseCode == 426 -> "HTTP status $responseCode, $responseMessage, Try ipps://${request.printerOrJobUri.host}"
         responseCode != 200 -> "HTTP request failed: $responseCode, $responseMessage"
         contentType != null && !contentType.startsWith(APPLICATION_IPP) -> "Invalid Content-Type: $contentType"
-        cause != null -> cause.message
-        else -> null
+        exception != null -> exception.message
+        else -> null // no issues found
     }?.let {
         throw IppExchangeException(
             request,
@@ -179,7 +179,7 @@ open class IppClient(val config: IppConfig = IppConfig()) : IppExchange {
             httpHeaderFields = headerFields,
             httpStream = contentStream,
             message = it,
-            cause = cause
+            cause = exception
         )
     }
 
