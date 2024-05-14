@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020-2023 Gerhard Muth
+ * Copyright (c) 2020-2024 Gerhard Muth
  */
 
 import de.gmuth.ipp.client.IppExchangeException.ClientErrorNotFoundException
@@ -32,7 +32,7 @@ class CupsClient(
 
     private val cupsServer =
         IppPrinter(cupsUri, ippClient = ippClient, getPrinterAttributesOnInit = false)
-            .apply { workDirectory = cupsClientWorkDirectory.createDirectoryIfNotExists() }
+            .apply { workDirectory = cupsClientWorkDirectory.createDirectoryIfNotExists(false) }
 
     init {
         if (cupsUri.scheme == "ipps") config.trustAnyCertificateAndSSLHostname()

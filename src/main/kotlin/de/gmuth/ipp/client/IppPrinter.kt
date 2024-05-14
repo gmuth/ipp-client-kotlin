@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020-2023 Gerhard Muth
+ * Copyright (c) 2020-2024 Gerhard Muth
  */
 
 import de.gmuth.ipp.attributes.*
@@ -582,6 +582,9 @@ class IppPrinter(
     fun printerDirectory(printerName: String = name.text.replace("\\s+".toRegex(), "_")): File =
         File(workDirectory, printerName).createDirectoryIfNotExists()
 
-    internal fun File.createDirectoryIfNotExists() = this
-        .apply { if (!mkdirs() && !isDirectory) throw IOException("Failed to create directory: $path") }
+    internal fun File.createDirectoryIfNotExists(throwOnFailure: Boolean = true) = this.apply {
+        if (!mkdirs() && !isDirectory) "Failed to create directory: $path".let {
+            if (throwOnFailure) throw IOException(it) else logger.warning(it)
+        }
+    }
 }
