@@ -32,7 +32,7 @@ class CupsClient(
 
     private val cupsServer =
         IppPrinter(cupsUri, ippClient = ippClient, getPrinterAttributesOnInit = false)
-            .apply { workDirectory = cupsClientWorkDirectory.createDirectoryIfNotExists(false) }
+            .apply { workDirectory = cupsClientWorkDirectory }
 
     init {
         if (cupsUri.scheme == "ipps") config.trustAnyCertificateAndSSLHostname()
