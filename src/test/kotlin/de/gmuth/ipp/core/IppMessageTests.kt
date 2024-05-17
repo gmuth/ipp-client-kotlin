@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2023 Gerhard Muth
+ * Copyright (c) 2020-2024 Gerhard Muth
  */
 
 import java.io.ByteArrayInputStream
@@ -9,6 +9,9 @@ import java.io.ByteArrayOutputStream
 import java.io.File.createTempFile
 import java.util.logging.Logger.getLogger
 import kotlin.test.*
+
+internal fun IppMessage.readTestResource(resource: String) =
+    read(javaClass.getResourceAsStream(resource))
 
 class IppMessageTests {
 
