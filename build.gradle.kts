@@ -6,7 +6,7 @@ import org.jetbrains.dokka.gradle.DokkaTask
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.7.22"
     id("org.jetbrains.dokka") version "1.7.20"
-    id("org.sonarqube") version "4.4.1.3373" // https://plugins.gradle.org/plugin/org.sonarqube
+    id("org.sonarqube") version "5.0.0.4638" // https://plugins.gradle.org/plugin/org.sonarqube
     //id("org.sonarqube") version "3.5.0.2730" // supports java 8, dropped with 4.1
     id("maven-publish")
     id("java-library")

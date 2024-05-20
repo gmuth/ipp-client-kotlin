@@ -153,7 +153,7 @@ class IppSubscription(
                 Thread.sleep(pollEvery.toMillis())
             }
         } catch (clientErrorNotFoundException: ClientErrorNotFoundException) {
-            logger.info { clientErrorNotFoundException.response!!.statusMessage.toString() }
+            logger.info { clientErrorNotFoundException.response.statusMessage.toString() }
         }
     }
 
