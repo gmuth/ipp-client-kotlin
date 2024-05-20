@@ -8,6 +8,7 @@ import de.gmuth.ipp.attributes.*
 import de.gmuth.ipp.attributes.CommunicationChannel.Companion.getCommunicationChannelsSupported
 import de.gmuth.ipp.attributes.Marker.Companion.getMarkers
 import de.gmuth.ipp.attributes.PrinterState.*
+import de.gmuth.ipp.client.IppOperationException.ClientErrorNotFoundException
 import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
@@ -72,17 +73,17 @@ class IppPrinter(
                     alert?.let { logger.info { "alert: $it" } }
                     alertDescription?.let { logger.info { "alert-description: $it" } }
                 }
-            } catch (ippExchangeException: IppExchangeException) {
-                if (ippExchangeException.statusIs(ClientErrorNotFound))
-                    logger.severe { ippExchangeException.message }
+            } catch (ippOperationException: IppOperationException) {
+                if (ippOperationException.statusIs(ClientErrorNotFound))
+                    logger.severe { ippOperationException.message }
                 else {
                     logger.severe { "Failed to get printer attributes on init. Workaround: getPrinterAttributesOnInit=false" }
-                    ippExchangeException.response?.let {
+                    ippOperationException.response.let {
                         if (it.containsGroup(Printer)) logger.info { "${it.printerGroup.size} attributes parsed" }
                         else logger.warning { "RESPONSE: $it" }
                     }
                 }
-                throw ippExchangeException
+                throw ippOperationException
             }
             if (isCups()) workDirectory = File("cups-${printerUri.host}")
         }
@@ -513,7 +514,7 @@ class IppPrinter(
             exchange(request)
                 .getAttributesGroups(Subscription)
                 .map { IppSubscription(this, it, startLease = false) }
-        } catch (notFoundException: IppExchangeException.ClientErrorNotFoundException) {
+        } catch (notFoundException: ClientErrorNotFoundException) {
             emptyList()
         }
     }

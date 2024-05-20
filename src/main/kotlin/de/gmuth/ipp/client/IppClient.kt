@@ -1,10 +1,10 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020-2023 Gerhard Muth
+ * Copyright (c) 2020-2024 Gerhard Muth
  */
 
-import de.gmuth.ipp.client.IppExchangeException.ClientErrorNotFoundException
+import de.gmuth.ipp.client.IppOperationException.ClientErrorNotFoundException
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppResponse
@@ -113,7 +113,7 @@ open class IppClient(val config: IppConfig = IppConfig()) : IppExchange {
                     validateHttpResponse(request, errorStream, ioException)
                     errorStream
                 }
-                return decodeContentStream(request, responseCode, responseContentStream)
+                return decodeContentStream(request, responseContentStream)
                     .apply { httpServer = headerFields["Server"]?.first() }
             } finally {
                 if (disconnectAfterHttpPost) disconnect()
@@ -131,7 +131,7 @@ open class IppClient(val config: IppConfig = IppConfig()) : IppExchange {
             IppRegistrationsSection2.validate(request)
             if (throwWhenNotSuccessful) {
                 throw if (status == ClientErrorNotFound) ClientErrorNotFoundException(request, response)
-                else IppExchangeException(request, response, 200)
+                else IppOperationException(request, response)
             }
         }
     }
@@ -172,10 +172,9 @@ open class IppClient(val config: IppConfig = IppConfig()) : IppExchange {
         exception != null -> exception.message
         else -> null // no issues found
     }?.let {
-        throw IppExchangeException(
+        throw HttpPostException(
             request,
-            response = null,
-            responseCode, // HTTP
+            httpStatus = responseCode,
             httpHeaderFields = headerFields,
             httpStream = contentStream,
             message = it,
@@ -183,20 +182,15 @@ open class IppClient(val config: IppConfig = IppConfig()) : IppExchange {
         )
     }
 
-    private fun decodeContentStream(
-        request: IppRequest,
-        httpStatus: Int,
-        contentStream: InputStream
-    ) = IppResponse().apply {
+    private fun decodeContentStream(request: IppRequest, contentStream: InputStream) = IppResponse().apply {
         try {
             read(contentStream)
         } catch (throwable: Throwable) {
-            throw IppExchangeException(
-                request, this, httpStatus, message = "Failed to decode ipp response", cause = throwable
-            ).apply {
-                if (onExceptionSaveMessages)
-                    saveMessages("decoding_ipp_response_${request.requestId}_failed")
-            }
+            throw IppOperationException(request, this, message = "Failed to decode ipp response", cause = throwable)
+                .also {
+                    if (onExceptionSaveMessages)
+                        it.saveMessages("decoding_ipp_response_${request.requestId}_failed")
+                }
         }
     }
 }

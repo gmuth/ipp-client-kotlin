@@ -1,71 +1,34 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020-2023 Gerhard Muth
+ * Copyright (c) 2020-2024 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppException
 import de.gmuth.ipp.core.IppRequest
-import de.gmuth.ipp.core.IppResponse
-import de.gmuth.ipp.core.IppStatus
-import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import java.io.File
-import java.io.InputStream
 import java.util.logging.Level
 import java.util.logging.Level.INFO
 import java.util.logging.Logger
-import java.util.logging.Logger.getLogger
 import kotlin.io.path.createTempDirectory
 import kotlin.io.path.pathString
 
 open class IppExchangeException(
     val request: IppRequest,
-    val response: IppResponse? = null,
-    val httpStatus: Int? = null,
-    val httpHeaderFields: Map<String?, List<String>>? = null,
-    val httpStream: InputStream? = null,
-    message: String = defaultMessage(request, response),
-    cause: Throwable? = null,
+    message: String = "Exchanging request '${request.operation}' failed",
+    cause: Throwable? = null
 ) : IppException(message, cause) {
 
-    class ClientErrorNotFoundException(request: IppRequest, response: IppResponse) :
-        IppExchangeException(request, response) {
-        init {
-            require(response.status == ClientErrorNotFound)
-            { "IPP response status is not ClientErrorNotFound: ${response.status}" }
-        }
-    }
-
-    private val logger = getLogger(javaClass.name)
-
-    companion object {
-        fun defaultMessage(request: IppRequest, response: IppResponse?) = StringBuilder().run {
-            append("${request.operation} failed")
-            response?.run {
-                append(": '$status'")
-                if (operationGroup.containsKey("status-message")) append(", $statusMessage")
-            }
-            toString()
-        }
-    }
-
-    fun statusIs(status: IppStatus) = response?.status == status
-
-    fun log(logger: Logger, level: Level = INFO) = logger.run {
+    open fun log(logger: Logger, level: Level = INFO): Unit = with(logger) {
         log(level) { message }
         request.log(this, level, prefix = "REQUEST: ")
-        response?.log(this, level, prefix = "RESPONSE: ")
-        httpStatus?.let { log(level) { "HTTP-Status: $it" } }
-        httpHeaderFields?.let { for ((key: String?, value) in it) log(level) { "HTTP: $key = $value" } }
-        httpStream?.let { log(level) { "HTTP-Content:\n" + it.bufferedReader().use { it.readText() } } }
     }
 
-    fun saveMessages(
-        fileNameWithoutSuffix: String = "ipp_exchange_exception_$httpStatus",
+    open fun saveMessages(
+        fileNameWithoutSuffix: String = "ipp_exchange_exception",
         directory: String = createTempDirectory("ipp-client-").pathString
     ) {
         request.saveBytes(File(directory, "$fileNameWithoutSuffix.request"))
-        response?.saveBytes(File(directory, "$fileNameWithoutSuffix.response"))
     }
 
 }

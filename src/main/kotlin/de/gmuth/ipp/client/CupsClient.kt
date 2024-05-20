@@ -4,7 +4,7 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020-2024 Gerhard Muth
  */
 
-import de.gmuth.ipp.client.IppExchangeException.ClientErrorNotFoundException
+import de.gmuth.ipp.client.IppOperationException.ClientErrorNotFoundException
 import de.gmuth.ipp.client.WhichJobs.All
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppOperation.*
@@ -276,6 +276,7 @@ class CupsClient(
     ): Collection<IppJob> {
         val numberOfJobsWithoutDocuments = AtomicInteger(0)
         val numberOfSavedDocuments = AtomicInteger(0)
+        with(cupsClientWorkDirectory) { if (!exists()) mkdirs() }
         return getJobs(
             whichJobs,
             requestedAttributes = listOf(
@@ -293,7 +294,7 @@ class CupsClient(
                 job.getOriginatingUserNameOrAppleJobOwnerOrNull()?.let { jobOwners.add(it) }
             }
             .onEach { job -> // keep stats and save documents
-                if (job.numberOfDocuments == 0) numberOfJobsWithoutDocuments.incrementAndGet()
+                if (job.numberOfDocumentsOrDocumentCount == 0) numberOfJobsWithoutDocuments.incrementAndGet()
                 else getAndSaveDocuments(job, optionalCommandToHandleFile = commandToHandleSavedFile)
                     .apply { numberOfSavedDocuments.addAndGet(size) }
             }
@@ -334,35 +335,40 @@ class CupsClient(
     // Get and save documents for job
     // ------------------------------
 
-    internal fun getAndSaveDocuments(
+    private fun getAndSaveDocuments(
         job: IppJob,
         onSuccessUpdateJobAttributes: Boolean = false,
         optionalCommandToHandleFile: String? = null
     ): Collection<File> {
-        var documents: Collection<IppDocument> = emptyList()
-        fun getDocuments() = try {
-            documents = job.cupsGetDocuments()
-            if (documents.isNotEmpty() && onSuccessUpdateJobAttributes) job.updateAttributes()
-            true
-        } catch (ippExchangeException: IppExchangeException) {
-            logger.info { "Get documents for job #${job.id} failed: ${ippExchangeException.message}" }
-            ippExchangeException.httpStatus!! != 401
-        }
-
-        if (!getDocuments()) {
+        val documents: MutableCollection<IppDocument> = mutableListOf()
+        if (!job.tryToGetDocuments(documents, onSuccessUpdateJobAttributes)) {
             val configuredUserName = config.userName
             jobOwners.forEach {
-                config.userName = it
-                logger.fine { "set userName '${config.userName}'" }
-                if (getDocuments()) return@forEach
+                if (it != job.getOriginatingUserNameOrAppleJobOwnerOrNull()) {
+                    config.userName = it
+                    logger.fine { "set userName '${config.userName}'" }
+                    if (job.tryToGetDocuments(documents, onSuccessUpdateJobAttributes)) return@forEach
+                }
             }
             config.userName = configuredUserName
         }
-
         documents.onEach { document ->
             document.save(job.printerDirectory(), overwrite = true)
             optionalCommandToHandleFile?.let { document.runCommand(it) }
         }
         return documents.map { it.file!! }
     }
+
+    private fun IppJob.tryToGetDocuments(
+        documents: MutableCollection<IppDocument>,
+        onSuccessUpdateJobAttributes: Boolean = false
+    ) = try { // returns "getting document was authorized"
+        documents.addAll(cupsGetDocuments())
+        if (documents.isNotEmpty() && onSuccessUpdateJobAttributes) updateAttributes()
+        true
+    } catch (ippExchangeException: IppExchangeException) {
+        logger.info { "Get documents for job #$id failed: ${ippExchangeException.message}" }
+        ippExchangeException !is HttpPostException || ippExchangeException.httpStatus != 401
+    }
+
 }

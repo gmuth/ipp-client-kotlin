@@ -71,7 +71,7 @@ class CupsClientTests {
 
     @Test
     fun getDefaultFails() {
-        val exception = assertFailsWith<IppExchangeException> {
+        val exception = assertFailsWith<IppOperationException> {
             ippClientMock.mockResponse("Cups-Get-Default-Error.ipp")
             cupsClient.getDefault()
         }

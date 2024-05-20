@@ -96,14 +96,14 @@ object IppInspector {
                 ColorMode.Color,
                 Media.ISO_A3
             )
-        } catch (ippExchangeException: IppExchangeException) {
-            ippExchangeException.response
+        } catch (ippOperationException: IppOperationException) {
+            ippOperationException.response
         }
         logger.info { response.toString() }
 
         logger.info { "> Print job $pdfResource" }
         printJob(
-            IppInspector::class.java.getResourceAsStream("/$pdfResource"),
+            IppInspector::class.java.getResourceAsStream("/$pdfResource")!!,
             jobName(pdfResource),
 
             ).run {

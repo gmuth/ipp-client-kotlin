@@ -1,10 +1,10 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2021-2023 Gerhard Muth
+ * Copyright (c) 2021-2024 Gerhard Muth
  */
 
-import de.gmuth.ipp.client.IppExchangeException.ClientErrorNotFoundException
+import de.gmuth.ipp.client.IppOperationException.ClientErrorNotFoundException
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppOperation.*
