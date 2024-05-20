@@ -22,7 +22,8 @@ repositories {
 }
 
 // update gradle wrapper
-// ./gradlew wrapper --gradle-version 7.6.2
+// ./gradlew wrapper --gradle-version 7.6.4
+// gradle 8? should be done when moved to kotlin.jvm plugin 1.9.x (to remove deprecation warnings)
 
 dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test")
@@ -32,15 +33,23 @@ dependencies {
 // gradlew clean -x test build publishToMavenLocal
 defaultTasks("assemble")
 
+// https://docs.gradle.org/current/userguide/compatibility.html
 val javaVersion = "11"
+val kotlinVersion = "1.7"
 tasks.apply {
 
     // Kotlin
     compileKotlin {
-        kotlinOptions { jvmTarget = javaVersion }
+        kotlinOptions {
+            jvmTarget = javaVersion
+            languageVersion = kotlinVersion
+        }
     }
     compileTestKotlin {
-        kotlinOptions { jvmTarget = javaVersion }
+        kotlinOptions {
+            jvmTarget = javaVersion
+            languageVersion = kotlinVersion
+        }
     }
 
     // Java
