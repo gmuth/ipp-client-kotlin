@@ -71,26 +71,21 @@ open class IppClient(val config: IppConfig = IppConfig()) : IppExchange {
     // Exchange IppRequest for IppResponse
     //------------------------------------
 
-    override fun exchange(request: IppRequest): IppResponse =
-        exchange(request.printerOrJobUri, request)
-
-    fun exchange(ippUri: URI, request: IppRequest): IppResponse {
-        logger.finer { "Send '${request.operation}' request to $ippUri" }
-        val response = httpPost(toHttpUri(ippUri), request)
-        logger.fine { "Req #${request.requestId} @${ippUri.host}: $request => $response" }
-        if (saveMessages) {
-            fun file(suffix: String) = File(
-                saveMessagesDirectory,
-                "%03d-%s.%s".format(request.requestId, request.operation, suffix)
-            )
-            request.saveBytes(file("req"))
-            request.saveText(file("req.txt"))
-            response.saveBytes(file("res"))
-            response.saveText(file("res.txt"))
+    override fun exchange(request: IppRequest) = with(request) {
+        logger.finer { "Send '$operation' request to $printerOrJobUri" }
+        httpPost(toHttpUri(printerOrJobUri), request).also {
+            logger.fine { "Req #${request.requestId} @${printerOrJobUri.host}: $request => $it" }
+            if (saveMessages) {
+                fun file(suffix: String) =
+                    File(saveMessagesDirectory, "%03d-%s.%s".format(requestId, operation, suffix))
+                saveBytes(file("req"))
+                saveText(file("req.txt"))
+                it.saveBytes(file("res"))
+                it.saveText(file("res.txt"))
+            }
+            responseInterceptor?.invoke(request, it)
+            validateIppResponse(request, it)
         }
-        responseInterceptor?.invoke(request, response)
-        validateIppResponse(request, response)
-        return response
     }
 
     //----------------------------------------------
