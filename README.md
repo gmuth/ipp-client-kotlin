@@ -53,7 +53,7 @@ val job = ippPrinter.printJob(
     PrintQuality.High,
     Media.ISO_A4,
     mediaColWithSource("tray-1"),
-    notifyEvents = listOf("job-state-changed", "job-stopped", "job-completed") // CUPS
+    notifyEvents = listOf("job-state-changed", "job-progress") // CUPS
 )
 job.subscription?.pollAndHandleNotifications { println(it) }
 

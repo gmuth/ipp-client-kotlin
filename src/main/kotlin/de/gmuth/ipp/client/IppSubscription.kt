@@ -139,13 +139,12 @@ class IppSubscription(
 
     @JvmOverloads
     fun pollAndHandleNotifications(
-        pollEvery: Duration = ofSeconds(5), // should be larger than 1s
+        pollEvery: Duration = ofSeconds(1),
         autoRenewSubscription: Boolean = false,
         handleNotification: (event: IppEventNotification) -> Unit = { logger.info { it.toString() } }
     ) {
         fun expiresAfterDelay() = expiresAt != null && now().plus(pollEvery).isAfter(expiresAt!!.minusSeconds(2))
         try {
-            updateAttributes()
             pollHandlesNotifications = true
             while (pollHandlesNotifications) {
                 if (expiryAvailable() && expired()) logger.warning { "Subscription #$id has expired" }
@@ -154,7 +153,8 @@ class IppSubscription(
                 Thread.sleep(pollEvery.toMillis())
             }
         } catch (clientErrorNotFoundException: ClientErrorNotFoundException) {
-            logger.info { clientErrorNotFoundException.response.statusMessage.toString() }
+            // Subscription ends on job termination. CUPS than responds with "Subscription #... does not exist."
+            logger.fine { "${clientErrorNotFoundException.response.statusMessage}" }
         }
     }
 
