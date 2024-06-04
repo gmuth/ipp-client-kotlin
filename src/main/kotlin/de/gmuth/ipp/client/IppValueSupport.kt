@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020-2023 Gerhard Muth
+ * Copyright (c) 2020-2024 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.*
@@ -19,34 +19,32 @@ object IppValueSupport {
     fun checkIfValueIsSupported(printerAttributes: IppAttributesGroup, attribute: IppAttribute<*>) {
         val supportedAttribute = printerAttributes["${attribute.name}-supported"]
         if (supportedAttribute == null) logger.warning { "${attribute.name}-supported not available in printer attributes" }
-        else checkIfValueIsSupported(printerAttributes, supportedAttribute.name, attribute.value as Any)
+        else checkIfValueIsSupported(printerAttributes, attribute.name, attribute.value as Any)
     }
 
     fun checkIfValueIsSupported(
         printerAttributes: IppAttributesGroup,
-        supportedAttributeName: String,
+        attributeName: String,
         value: Any
     ) {
         require(printerAttributes.tag == Printer) { "Printer attributes group expected" }
         if (printerAttributes.isEmpty()) return
 
-        if (!supportedAttributeName.endsWith("-supported"))
-            throw IppException("attribute name not ending with '-supported'")
-
         if (value is Collection<*>) { // instead of providing another signature just check collections iteratively
             for (collectionValue in value) {
-                checkIfValueIsSupported(printerAttributes, supportedAttributeName, collectionValue!!)
+                checkIfValueIsSupported(printerAttributes, attributeName, collectionValue!!)
             }
         } else {
-            isAttributeValueSupported(printerAttributes, supportedAttributeName, value)
+            isAttributeValueSupported(printerAttributes, attributeName, value)
         }
     }
 
     private fun isAttributeValueSupported(
         printerAttributes: IppAttributesGroup,
-        supportedAttributeName: String,
+        attributeName: String,
         value: Any
     ): Boolean? {
+        val supportedAttributeName = "$attributeName-supported"
         val supportedAttribute = printerAttributes[supportedAttributeName] ?: return null
         val attributeValueIsSupported = when (supportedAttribute.tag) {
             IppTag.Boolean -> { // e.g. 'page-ranges-supported'
@@ -80,7 +78,7 @@ object IppValueSupport {
             null -> logger.warning { "Unable to check if value '$value' is supported by $supportedAttribute" }
             true -> logger.finer { "$value is supported according to $supportedAttributeName" }
             false -> {
-                logger.warning { "According to printer attributes value '${supportedAttribute.enumNameOrValue(value)}' is not supported." }
+                logger.warning { "According to printer attributes value '${supportedAttribute.enumNameOrValue(value)}' is not supported for attribute '$attributeName'." }
                 logger.warning { "$supportedAttribute" }
             }
         }

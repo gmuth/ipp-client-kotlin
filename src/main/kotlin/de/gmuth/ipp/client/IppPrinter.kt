@@ -150,6 +150,9 @@ class IppPrinter(
     val sidesSupported: List<String>
         get() = attributes.getValues("sides-supported")
 
+    val notifyEventsSupported: List<String>
+        get() = attributes.getValues("notify-events-supported")
+
     val mediaSupported: List<String>
         get() = attributes.getValues("media-supported")
 
@@ -267,7 +270,7 @@ class IppPrinter(
 
     fun identify(actions: List<String>, message: String? = null): IppResponse {
         val request = ippRequest(IdentifyPrinter).apply {
-            checkIfValueIsSupported("identify-actions-supported", actions)
+            checkIfValueIsSupported("identify-actions", actions)
             operationGroup.attribute("identify-actions", Keyword, actions)
             message?.let { operationGroup.attribute("message", TextWithoutLanguage, it) }
         }
@@ -340,7 +343,7 @@ class IppPrinter(
     fun printJob(
         inputStream: InputStream,
         attributeBuilders: Collection<IppAttributeBuilder>,
-        notifyEvents: List<String>? = null
+        notifyEvents: List<String>? = null // https://www.rfc-editor.org/rfc/rfc3995.html#section-5.3.3.4.3
     ): IppJob {
         val request = attributeBuildersRequest(PrintJob, attributeBuilders).apply {
             notifyEvents?.let {
@@ -404,7 +407,7 @@ class IppPrinter(
     ) = ippRequest(operation).apply {
         for (attributeBuilder in attributeBuilders) {
             val attribute = attributeBuilder.buildIppAttribute(attributes)
-            checkIfValueIsSupported("${attribute.name}-supported", attribute.values)
+            checkIfValueIsSupported(attribute.name, attribute.values)
             // put attribute in operation or job group?
             val groupTag = IppRegistrationsSection2.selectGroupForAttribute(attribute.name) ?: Job
             if (!containsGroup(groupTag)) createAttributesGroup(groupTag)
@@ -438,7 +441,7 @@ class IppPrinter(
         val request = ippRequest(GetJobs, requestedAttributes = requestedAttributes).apply {
             operationGroup.run {
                 whichJobs?.keyword?.let {
-                    checkIfValueIsSupported("which-jobs-supported", it)
+                    checkIfValueIsSupported("which-jobs", it)
                     attribute("which-jobs", Keyword, it)
                 }
                 myJobs?.let { attribute("my-jobs", IppTag.Boolean, it) }
@@ -479,8 +482,7 @@ class IppPrinter(
     }
 
     fun checkNotifyEvents(notifyEvents: Collection<String>?) = notifyEvents?.let {
-        if (it.isNotEmpty() && it.first() != "all")
-            checkIfValueIsSupported("notify-events-supported", it)
+        if (it.isNotEmpty() && it.first() != "all") checkIfValueIsSupported("notify-events", it)
     }
 
     //-------------------------------------------------
@@ -534,9 +536,9 @@ class IppPrinter(
         .ippRequest(operation, printerUri, requestedAttributes, userName)
 
     override fun exchange(request: IppRequest) = ippClient.exchange(request.apply {
-        checkIfValueIsSupported("ipp-versions-supported", version!!)
-        checkIfValueIsSupported("operations-supported", code!!.toInt())
-        checkIfValueIsSupported("charset-supported", attributesCharset)
+        checkIfValueIsSupported("ipp-versions", version!!)
+        checkIfValueIsSupported("operations", code!!.toInt())
+        checkIfValueIsSupported("charset", attributesCharset)
     })
 
     private fun exchangeForIppJob(request: IppRequest) =
@@ -548,8 +550,8 @@ class IppPrinter(
             }
         }
 
-    private fun checkIfValueIsSupported(supportedAttributeName: String, value: Any) =
-        IppValueSupport.checkIfValueIsSupported(attributes, supportedAttributeName, value)
+    private fun checkIfValueIsSupported(attributeName: String, value: Any) =
+        IppValueSupport.checkIfValueIsSupported(attributes, attributeName, value)
 
     // -------
     // Logging
