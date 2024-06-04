@@ -57,10 +57,6 @@ val job = ippPrinter.printJob(
 )
 job.subscription?.pollAndHandleNotifications { println(it) }
 
-// Print remote file, make printer pull document from remote server
-val remoteFile = URI.create("http://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf")
-ippPrinter.printUri(remoteFile)
-
 // Create job and send document
 val job = ippPrinter.createJob(jobName(file.name))
 job.sendDocument(FileInputStream(file))

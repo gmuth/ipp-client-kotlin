@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2023 Gerhard Muth
+ * Copyright (c) 2020-2024 Gerhard Muth
  */
 
 // https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-6
@@ -10,11 +10,11 @@ enum class IppOperation(val code: Int) {
 
     // RFC 8011
     PrintJob(0x0002),
-    PrintURI(0x0003),
+    PrintURI(0x0003), // https://ftp.pwg.org/pub/pwg/ipp/registrations/reg-ippdepuri10-20211215.pdf
     ValidateJob(0x0004),
     CreateJob(0x0005),
     SendDocument(0x0006),
-    SendURI(0x0007),
+    SendURI(0x0007), // https://ftp.pwg.org/pub/pwg/ipp/registrations/reg-ippdepuri10-20211215.pdf
     CancelJob(0x0008),
     GetJobAttributes(0x0009),
     GetJobs(0x000A),

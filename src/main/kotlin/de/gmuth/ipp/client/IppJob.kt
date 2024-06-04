@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020-2023 Gerhard Muth
+ * Copyright (c) 2020-2024 Gerhard Muth
  */
 
 import de.gmuth.ipp.attributes.JobState
@@ -229,10 +229,11 @@ class IppJob(
         documentNaturalLanguage: String? = null
     ) = sendDocument(FileInputStream(file), lastDocument, documentName, documentNaturalLanguage)
 
-    //---------
-    // Send-URI
-    //---------
+    //----------------------
+    // Send-URI (depreacted)
+    //----------------------
 
+    @Deprecated(message = "see https://ftp.pwg.org/pub/pwg/ipp/registrations/reg-ippdepuri10-20211215.pdf")
     @JvmOverloads
     fun sendUri(
         documentUri: URI,

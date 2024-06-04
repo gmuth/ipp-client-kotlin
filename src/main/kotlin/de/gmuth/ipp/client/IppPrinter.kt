@@ -374,10 +374,11 @@ class IppPrinter(
     fun printJob(file: File, vararg attributeBuilders: IppAttributeBuilder, notifyEvents: List<String>? = null) =
         printJob(FileInputStream(file), attributeBuilders.toList(), notifyEvents)
 
-    //----------
-    // Print-URI
-    //----------
+    //-----------------------
+    // Print-URI (deprecated)
+    //-----------------------
 
+    @Deprecated(message = "see https://ftp.pwg.org/pub/pwg/ipp/registrations/reg-ippdepuri10-20211215.pdf")
     fun printUri(documentUri: URI, vararg attributeBuilders: IppAttributeBuilder): IppJob {
         val request = attributeBuildersRequest(PrintURI, attributeBuilders.toList()).apply {
             operationGroup.attribute("document-uri", Uri, documentUri)
