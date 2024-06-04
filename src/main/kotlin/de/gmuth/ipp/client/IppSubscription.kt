@@ -145,6 +145,7 @@ class IppSubscription(
     ) {
         fun expiresAfterDelay() = expiresAt != null && now().plus(pollEvery).isAfter(expiresAt!!.minusSeconds(2))
         try {
+            updateAttributes()
             pollHandlesNotifications = true
             while (pollHandlesNotifications) {
                 if (expiryAvailable() && expired()) logger.warning { "Subscription #$id has expired" }
