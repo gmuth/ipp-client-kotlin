@@ -135,7 +135,7 @@ class IppSubscription(
         }
 
     fun expired() = expiresAt != null && now().isAfter(expiresAt)
-    fun expiryAvailable() = leaseStartedAt != null && !leaseDuration.isZero
+    fun expiryAvailable() = leaseStartedAt != null && attributes.containsKey("notify-lease-duration") && !leaseDuration.isZero
 
     @JvmOverloads
     fun pollAndHandleNotifications(
