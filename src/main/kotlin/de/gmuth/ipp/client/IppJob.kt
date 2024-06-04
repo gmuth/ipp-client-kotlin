@@ -233,6 +233,7 @@ class IppJob(
     // Send-URI (depreacted)
     //----------------------
 
+    @SuppressWarnings("kotlin:S1133") // some old printers support this optional operation
     @Deprecated(message = "see https://ftp.pwg.org/pub/pwg/ipp/registrations/reg-ippdepuri10-20211215.pdf")
     @JvmOverloads
     fun sendUri(
