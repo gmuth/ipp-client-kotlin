@@ -131,12 +131,11 @@ class IppJob(
         else -> null
     }
 
-    val numberOfDocumentsOrDocumentCount: Int
-        get() = when {
-            attributes.containsKey("number-of-documents") -> numberOfDocuments
-            attributes.containsKey("document-count") -> attributes.getValue<Int>("document-count")
-            else -> throw IppException("number-of-documents or document-count not found")
-        }
+    fun getNumberOfDocumentsOrDocumentCount(): Int = when {
+        attributes.containsKey("number-of-documents") -> numberOfDocuments
+        attributes.containsKey("document-count") -> attributes.getValue("document-count")
+        else -> throw IppException("number-of-documents or document-count not found")
+    }
 
     //-------------------
     // Get-Job-Attributes
@@ -326,7 +325,7 @@ class IppJob(
         save: Boolean = false,
         optionalCommandToHandleFile: String? = null
     ) =
-        (1..numberOfDocumentsOrDocumentCount)
+        (1..getNumberOfDocumentsOrDocumentCount())
             .map { cupsGetDocument(it) }
             .onEach { document ->
                 if (save) with(document) {
@@ -377,7 +376,7 @@ class IppJob(
             if (containsKey("job-originating-host-name")) append(", originating-host-name=$originatingHostName")
             if (containsKey("job-originating-user-name")) append(", originating-user-name=$originatingUserName")
             if (containsKey("com.apple.print.JobInfo.PMJobOwner")) append(", appleJobOwner=$appleJobOwner")
-            if (containsKey("number-of-documents") || containsKey("document-count")) append(", $numberOfDocumentsOrDocumentCount documents")
+            if (containsKey("number-of-documents") || containsKey("document-count")) append(", ${getNumberOfDocumentsOrDocumentCount()} documents")
             if (containsKey("job-printer-uri")) append(", printer-uri=$printerUri")
             if (containsKey("job-uri")) append(", uri=$uri")
             toString()

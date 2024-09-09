@@ -294,7 +294,8 @@ class CupsClient(
                 job.getOriginatingUserNameOrAppleJobOwnerOrNull()?.let { jobOwners.add(it) }
             }
             .onEach { job -> // keep stats and save documents
-                if (job.numberOfDocumentsOrDocumentCount == 0) numberOfJobsWithoutDocuments.incrementAndGet()
+                if (job.getNumberOfDocumentsOrDocumentCount() == 0)
+                    numberOfJobsWithoutDocuments.incrementAndGet()
                 else getAndSaveDocuments(job, optionalCommandToHandleFile = commandToHandleSavedFile)
                     .apply { numberOfSavedDocuments.addAndGet(size) }
             }
