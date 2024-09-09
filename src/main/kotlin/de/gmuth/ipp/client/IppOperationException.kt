@@ -33,8 +33,8 @@ open class IppOperationException(
             append("${request.operation} failed")
             with(response) {
                 append(": '$status'")
-                if (containsGroup(Operation)) {
-                    if (operationGroup.containsKey("status-message")) append(", $statusMessage")
+                if (containsGroup(Operation) && operationGroup.containsKey("status-message")) {
+                    append(", $statusMessage")
                 }
             }
             toString()
