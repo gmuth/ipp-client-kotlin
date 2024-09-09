@@ -1,7 +1,7 @@
 package de.gmuth.ipp.iana
 
 /**
- * Copyright (c) 2020-2023 Gerhard Muth
+ * Copyright (c) 2020-2024 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppAttribute
@@ -65,7 +65,7 @@ object IppRegistrationsSection2 {
             if (subMemberAttribute.isNotBlank()) append("/$subMemberAttribute")
         }.toString()
 
-        fun collectionGroupTag() = when (collection) {
+        internal fun collectionGroupTag() = when (collection) {
             "Operation" -> Operation
             "Job Template" -> Job
             else -> error("No IppTag defined for $collection")
@@ -118,7 +118,16 @@ object IppRegistrationsSection2 {
         getAttribute(name, false)?.is1setOf()
 
     fun selectGroupForAttribute(name: String) =
-        getAttribute(name, false)?.collectionGroupTag()
+        getAttribute(name, false)?.collectionGroupTag().also {
+            // Also lookup via hard coded list. In the future I might remove the rather large csv file.
+            val groupTagWithoutCSV = if (attributesForGroupOperation.contains(name)) Operation else Job
+            if (it != groupTagWithoutCSV) logger.warning {
+                "Incorrect attribute group for attribute '$name': is $groupTagWithoutCSV, expected $it. " +
+                        if (it == null) "" else
+                            "This needs to be fixed in IppRegistrationSection2.attributesForGroupOperation!" +
+                                    " (Please open a bug ticket on https://github.com/gmuth/ipp-client-kotlin/issues)."
+            }
+        }
 
     val unknownAttributes = mutableSetOf<String>()
 
@@ -172,4 +181,93 @@ object IppRegistrationsSection2 {
             forEach { logger.info { "- $it" } }
         }
     }
+
+    // See also IppRegistrationSection2Tests
+    // Here we should only need to list attributes used as IppAttributesBuilders for requests.
+    // All other attributes should be explicitly added to the correct group.
+    internal val attributesForGroupOperation = listOf(
+        "attributes-charset",
+        "attributes-natural-language",
+        "charge-info-message",
+        "client-info",
+        "compression",
+        "compression-accepted",
+        "destination-accesses",
+        "detailed-status-message",
+        "document-access",
+        "document-access-error",
+        "document-charset",
+        "document-data-get-interval",
+        "document-data-wait",
+        "document-format",
+        "document-format-accepted",
+        "document-format-details",
+        "document-message",
+        "document-metadata",
+        "document-name",
+        "document-natural-language",
+        "document-number",
+        "document-password",
+        "document-preprocessed",
+        "document-uri",
+        "fetch-status-code",
+        "fetch-status-message",
+        "first-index",
+        "identify-actions",
+        "input-attributes",
+        "ipp-attribute-fidelity",
+        "job-authorization-uri",
+        "job-hold-until",
+        "job-hold-until-time",
+        "job-id",
+        "job-ids",
+        "job-impressions",
+        "job-impressions-col",
+        "job-impressions-estimated",
+        "job-k-octets",
+        "job-mandatory-attributes",
+        "job-media-sheets",
+        "job-media-sheets-col",
+        "job-message-from-operator",
+        "job-name",
+        "job-pages",
+        "job-pages-col",
+        "job-password",
+        "job-password-encryption",
+        "job-state",
+        "job-state-message",
+        "job-state-reasons",
+        "job-uri",
+        "last-document",
+        "limit",
+        "message",
+        "my-jobs",
+        "notify-get-interval",
+        "notify-printer-ids",
+        "notify-sequence-numbers",
+        "notify-subscription-ids",
+        "notify-wait",
+        "original-requesting-user-name",
+        "output-attributes",
+        "output-device-job-states",
+        "output-device-uuid",
+        "preferred-attributes",
+        "printer-ids",
+        "printer-uri",
+        "printer-xri-requested",
+        "profile-uri-actual",
+        "requested-attributes",
+        "requesting-user-name",
+        "requesting-user-uri",
+        "resource-format-accepted",
+        "resource-formats",
+        "resource-ids",
+        "resource-states",
+        "resource-types",
+        "restart-get-interval",
+        "status-message",
+        "system-uri",
+        "which-jobs",
+        "which-printers"
+    )
 }
