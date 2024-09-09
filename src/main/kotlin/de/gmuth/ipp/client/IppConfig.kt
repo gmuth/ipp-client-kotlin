@@ -19,11 +19,11 @@ class IppConfig(
     var userName: String? = System.getProperty("user.name"),
     var ippVersion: String = "2.0",
     var charset: Charset = Charsets.UTF_8,
-    var naturalLanguage: String = "en",
+    var naturalLanguage: String = "en-us",
 
     // HTTP config
     var timeout: Duration = Duration.ofSeconds(30),
-    var userAgent: String? = "ipp-client/3.0",
+    var userAgent: String? = "ipp-client/3.1",
     var password: String? = null,
     var sslContext: SSLContext? = null,
     // trust any certificate: sslContextForAnyCertificate()
