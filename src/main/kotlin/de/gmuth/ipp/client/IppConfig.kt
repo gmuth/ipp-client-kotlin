@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2021-2023 Gerhard Muth
+ * Copyright (c) 2021-2024 Gerhard Muth
  */
 
 import java.nio.charset.Charset
@@ -18,7 +18,7 @@ class IppConfig(
     // IPP config
     var userName: String? = System.getProperty("user.name"),
     var ippVersion: String = "2.0",
-    var charset: Charset = Charsets.UTF_8,
+    var charset: Charset = UTF_8,
     var naturalLanguage: String = "en-us",
 
     // HTTP config
