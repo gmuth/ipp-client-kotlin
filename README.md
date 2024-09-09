@@ -230,6 +230,13 @@ now implemented by StdoutHandler and SimpleClassNameFormatter.
 I moved all of my custom logging code to its own
 repository [logging-kotlin](https://github.com/gmuth/logging-kotlin/tree/main/src/main/kotlin/de/gmuth/log).
 
+To debug printer communication change the log level of IppClient:
+```
+de.gmuth.ipp.client.IppClient.level=FINE
+de.gmuth.ipp.client.IppClient.level=FINER
+de.gmuth.ipp.client.IppClient.level=FINEST
+```
+
 ## Sources
 
 To build the jar make sure you have JDK 11 installed.
