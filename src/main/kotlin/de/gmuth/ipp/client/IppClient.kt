@@ -18,6 +18,7 @@ import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URI
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.logging.Level.FINEST
 import java.util.logging.Level.SEVERE
 import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
@@ -72,9 +73,13 @@ open class IppClient(val config: IppConfig = IppConfig()) : IppExchange {
     //------------------------------------
 
     override fun exchange(request: IppRequest) = with(request) {
-        logger.finer { "Send '$operation' request to $printerOrJobUri" }
+        logger.fine { "Send '$operation' request to $printerOrJobUri" }
         httpPost(toHttpUri(printerOrJobUri), request).also {
-            logger.fine { "Req #${request.requestId} @${printerOrJobUri.host}: $request => $it" }
+            logger.finer { "Req #${request.requestId} @${printerOrJobUri.host}: $request => $it" }
+            if(logger.isLoggable(FINEST)) {
+                request.log(logger, FINEST, ">>> ")
+                it.log(logger, FINEST, "<<< ")
+            }
             if (saveMessages) {
                 fun file(suffix: String) =
                     File(saveMessagesDirectory, "%03d-%s.%s".format(requestId, operation, suffix))
