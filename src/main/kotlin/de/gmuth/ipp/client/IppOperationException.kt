@@ -8,6 +8,7 @@ import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppStatus
 import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
+import de.gmuth.ipp.core.IppTag.Operation
 import java.io.File
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -32,7 +33,9 @@ open class IppOperationException(
             append("${request.operation} failed")
             with(response) {
                 append(": '$status'")
-                if (operationGroup.containsKey("status-message")) append(", $statusMessage")
+                if (containsGroup(Operation)) {
+                    if (operationGroup.containsKey("status-message")) append(", $statusMessage")
+                }
             }
             toString()
         }
