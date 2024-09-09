@@ -270,7 +270,7 @@ class IppPrinter(
 
     fun identify(actions: List<String>, message: String? = null): IppResponse {
         val request = ippRequest(IdentifyPrinter).apply {
-            checkIfValueIsSupported("identify-actions", actions)
+            checkIfValueIsSupported("identify-actions", actions, true)
             operationGroup.attribute("identify-actions", Keyword, actions)
             message?.let { operationGroup.attribute("message", TextWithoutLanguage, it) }
         }
@@ -407,7 +407,7 @@ class IppPrinter(
     ) = ippRequest(operation).apply {
         for (attributeBuilder in attributeBuilders) {
             val attribute = attributeBuilder.buildIppAttribute(attributes)
-            checkIfValueIsSupported(attribute.name, attribute.values)
+            checkIfValueIsSupported(attribute.name, attribute.values, false)
             // put attribute in operation or job group?
             val groupTag = IppRegistrationsSection2.selectGroupForAttribute(attribute.name) ?: Job
             if (!containsGroup(groupTag)) createAttributesGroup(groupTag)
@@ -441,7 +441,7 @@ class IppPrinter(
         val request = ippRequest(GetJobs, requestedAttributes = requestedAttributes).apply {
             operationGroup.run {
                 whichJobs?.keyword?.let {
-                    checkIfValueIsSupported("which-jobs", it)
+                    checkIfValueIsSupported("which-jobs", it, true)
                     attribute("which-jobs", Keyword, it)
                 }
                 myJobs?.let { attribute("my-jobs", IppTag.Boolean, it) }
@@ -482,7 +482,11 @@ class IppPrinter(
     }
 
     fun checkNotifyEvents(notifyEvents: Collection<String>?) = notifyEvents?.let {
-        if (it.isNotEmpty() && it.first() != "all") checkIfValueIsSupported("notify-events", it)
+        if (it.isNotEmpty() && it.first() != "all") {
+            if (!attributes.containsKey("notify-events-supported"))
+                throw IppException("Printer does not support request parameter 'notifyEvents'.")
+            checkIfValueIsSupported("notify-events", it, true)
+        }
     }
 
     //-------------------------------------------------
@@ -536,9 +540,9 @@ class IppPrinter(
         .ippRequest(operation, printerUri, requestedAttributes, userName)
 
     override fun exchange(request: IppRequest) = ippClient.exchange(request.apply {
-        checkIfValueIsSupported("ipp-versions", version!!)
-        checkIfValueIsSupported("operations", code!!.toInt())
-        checkIfValueIsSupported("charset", attributesCharset)
+        checkIfValueIsSupported("ipp-versions", version!!, true)
+        checkIfValueIsSupported("operations", code!!.toInt(), true)
+        checkIfValueIsSupported("charset", attributesCharset, true)
     })
 
     private fun exchangeForIppJob(request: IppRequest) =
@@ -550,8 +554,16 @@ class IppPrinter(
             }
         }
 
-    private fun checkIfValueIsSupported(attributeName: String, value: Any) =
-        IppValueSupport.checkIfValueIsSupported(attributes, attributeName, value)
+    private fun checkIfValueIsSupported(
+        attributeName: String,
+        value: Any,
+        throwIfSupportedAttributesIsNotAvailable: Boolean
+    ) = IppValueSupport.checkIfValueIsSupported(
+        attributes,
+        attributeName,
+        value,
+        throwIfSupportedAttributesIsNotAvailable
+    )
 
     // -------
     // Logging

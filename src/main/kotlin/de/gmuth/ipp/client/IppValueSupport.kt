@@ -16,25 +16,32 @@ object IppValueSupport {
 
     private val logger = getLogger(javaClass.name)
 
-    fun checkIfValueIsSupported(printerAttributes: IppAttributesGroup, attribute: IppAttribute<*>) {
+    fun checkIfValueIsSupported(
+        printerAttributes: IppAttributesGroup, attribute: IppAttribute<*>,
+        throwIfSupportedAttributesIsNotAvailable: Boolean
+    ) {
         val supportedAttribute = printerAttributes["${attribute.name}-supported"]
         if (supportedAttribute == null) logger.warning { "${attribute.name}-supported not available in printer attributes" }
-        else checkIfValueIsSupported(printerAttributes, attribute.name, attribute.value as Any)
+        else checkIfValueIsSupported(printerAttributes, attribute.name, attribute.value as Any, throwIfSupportedAttributesIsNotAvailable)
     }
 
     fun checkIfValueIsSupported(
         printerAttributes: IppAttributesGroup,
         attributeName: String,
-        value: Any
+        value: Any,
+        throwIfSupportedAttributesIsNotAvailable: Boolean
     ) {
         require(printerAttributes.tag == Printer) { "Printer attributes group expected" }
         if (printerAttributes.isEmpty()) return
 
         if (value is Collection<*>) { // instead of providing another signature just check collections iteratively
             for (collectionValue in value) {
-                checkIfValueIsSupported(printerAttributes, attributeName, collectionValue!!)
+                checkIfValueIsSupported(printerAttributes, attributeName, collectionValue!!, throwIfSupportedAttributesIsNotAvailable)
             }
         } else {
+            val supportedAttributeName = "$attributeName-supported"
+            if(!printerAttributes.containsKey(supportedAttributeName) && throwIfSupportedAttributesIsNotAvailable)
+                throw IppException("Unable to check value '$value' because printer attribute '$supportedAttributeName' is not available.")
             isAttributeValueSupported(printerAttributes, attributeName, value)
         }
     }
@@ -54,7 +61,7 @@ object IppValueSupport {
             IppTag.Enum, Charset, NaturalLanguage, MimeMediaType, Keyword, Resolution -> when (supportedAttributeName) {
                 "media-col-supported" -> with(value as IppCollection) {
                     members
-                        .onEach { checkIfValueIsSupported(printerAttributes, it) }
+                        .onEach { checkIfValueIsSupported(printerAttributes, it, false) }
                         .filter { !supportedAttribute.values.contains(it.name) }
                         .forEach { logger.warning { "media-col member unsupported: $it" } }
                     supportedAttribute.values.containsAll(members.map { it.name })
