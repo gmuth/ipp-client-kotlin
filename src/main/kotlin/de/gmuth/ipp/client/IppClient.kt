@@ -33,7 +33,7 @@ open class IppClient(val config: IppConfig = IppConfig()) : IppExchange {
     var responseInterceptor: IppResponseInterceptor? = null
     var saveMessages: Boolean = false
     var saveMessagesDirectory = File("ipp-messages")
-    var onExceptionSaveMessages: Boolean = false
+    var onExceptionSaveMessages: Boolean = true
     var throwWhenNotSuccessful: Boolean = true
     var disconnectAfterHttpPost: Boolean = false
 
@@ -76,7 +76,7 @@ open class IppClient(val config: IppConfig = IppConfig()) : IppExchange {
         logger.fine { "Send '$operation' request to $printerOrJobUri" }
         httpPost(toHttpUri(printerOrJobUri), request).also {
             logger.finer { "Req #${request.requestId} @${printerOrJobUri.host}: $request => $it" }
-            if(logger.isLoggable(FINEST)) {
+            if (logger.isLoggable(FINEST)) {
                 request.log(logger, FINEST, ">>> ")
                 it.log(logger, FINEST, "<<< ")
             }
@@ -129,10 +129,13 @@ open class IppClient(val config: IppConfig = IppConfig()) : IppExchange {
         if (containsGroup(Unsupported)) unsupportedGroup.values.forEach { logger.warning() { "Unsupported: $it" } }
         if (!isSuccessful()) {
             IppRegistrationsSection2.validate(request)
-            if (throwWhenNotSuccessful) {
-                throw if (status == ClientErrorNotFound) ClientErrorNotFoundException(request, response)
+            val exception =
+                if (status == ClientErrorNotFound) ClientErrorNotFoundException(request, response)
                 else IppOperationException(request, response)
-            }
+            if (onExceptionSaveMessages)
+                exception.saveMessages("${request.operation}_${status}_${request.requestId}")
+            if (throwWhenNotSuccessful)
+                throw exception
         }
     }
 

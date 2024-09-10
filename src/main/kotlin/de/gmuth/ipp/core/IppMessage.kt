@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2023 Gerhard Muth
+ * Copyright (c) 2020-2024 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppTag.*
@@ -166,7 +166,7 @@ abstract class IppMessage() {
             throw IppException("No raw bytes to save. You must call read/decode or write/encode before.")
         } else {
             file.writeBytes(rawBytes!!)
-            logger.fine { "Saved ${file.path} (${file.length()} bytes)" }
+            logger.info { "Saved ${file.path} (${file.length()} bytes)" }
         }
 
     fun write(bufferedWriter: BufferedWriter, title: String? = null) {
