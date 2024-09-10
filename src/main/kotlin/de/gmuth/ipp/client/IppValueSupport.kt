@@ -18,29 +18,29 @@ object IppValueSupport {
 
     fun checkIfValueIsSupported(
         printerAttributes: IppAttributesGroup, attribute: IppAttribute<*>,
-        throwIfSupportedAttributesIsNotAvailable: Boolean
+        throwIfSupportedAttributeIsNotAvailable: Boolean
     ) {
         val supportedAttribute = printerAttributes["${attribute.name}-supported"]
         if (supportedAttribute == null) logger.warning { "${attribute.name}-supported not available in printer attributes" }
-        else checkIfValueIsSupported(printerAttributes, attribute.name, attribute.value as Any, throwIfSupportedAttributesIsNotAvailable)
+        else checkIfValueIsSupported(printerAttributes, attribute.name, attribute.value as Any, throwIfSupportedAttributeIsNotAvailable)
     }
 
     fun checkIfValueIsSupported(
         printerAttributes: IppAttributesGroup,
         attributeName: String,
         value: Any,
-        throwIfSupportedAttributesIsNotAvailable: Boolean
+        throwIfSupportedAttributeIsNotAvailable: Boolean
     ) {
         require(printerAttributes.tag == Printer) { "Printer attributes group expected" }
         if (printerAttributes.isEmpty()) return
 
         if (value is Collection<*>) { // instead of providing another signature just check collections iteratively
             for (collectionValue in value) {
-                checkIfValueIsSupported(printerAttributes, attributeName, collectionValue!!, throwIfSupportedAttributesIsNotAvailable)
+                checkIfValueIsSupported(printerAttributes, attributeName, collectionValue!!, throwIfSupportedAttributeIsNotAvailable)
             }
         } else {
             val supportedAttributeName = "$attributeName-supported"
-            if(!printerAttributes.containsKey(supportedAttributeName) && throwIfSupportedAttributesIsNotAvailable)
+            if(!printerAttributes.containsKey(supportedAttributeName) && throwIfSupportedAttributeIsNotAvailable)
                 throw IppException("Unable to check value '$value' because printer attribute '$supportedAttributeName' is not available.")
             isAttributeValueSupported(printerAttributes, attributeName, value)
         }

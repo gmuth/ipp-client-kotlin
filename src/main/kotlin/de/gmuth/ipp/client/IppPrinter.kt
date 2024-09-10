@@ -552,12 +552,12 @@ class IppPrinter(
     private fun checkIfValueIsSupported(
         attributeName: String,
         value: Any,
-        throwIfSupportedAttributesIsNotAvailable: Boolean
+        throwIfSupportedAttributeIsNotAvailable: Boolean
     ) = IppValueSupport.checkIfValueIsSupported(
         attributes,
         attributeName,
         value,
-        throwIfSupportedAttributesIsNotAvailable
+        throwIfSupportedAttributeIsNotAvailable
     )
 
     // -------
