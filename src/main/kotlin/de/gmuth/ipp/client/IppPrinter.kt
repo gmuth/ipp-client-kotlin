@@ -186,10 +186,8 @@ class IppPrinter(
     val mediaSizeDefault: MediaSize
         get() = MediaSize.fromIppCollection(attributes.getValue("media-size-default"))
 
-    val mediaSizeSupported: List<MediaSizeSupported>
-        get() = attributes
-            .getValues<List<IppCollection>>("media-size-supported")
-            .map { MediaSizeSupported.fromIppCollection(it) }
+    val mediaSizeSupported: MediaSizeSupported
+        get() = MediaSizeSupported.fromAttributes(attributes)
 
     val mediaColDefault: MediaCollection
         get() = MediaCollection.fromIppCollection(attributes.getValue("media-col-default"))
@@ -247,10 +245,7 @@ class IppPrinter(
     fun isMediaEmpty() = stateReasons.any { it.contains("media-empty") } // media-empty-report
     fun isMediaNeeded() = stateReasons.contains("media-needed")
 
-    fun isMediaSizeSupported(size: MediaSize) = mediaSizeSupported
-        .filter { it.dimensionsAreInt() } // IntRange dimensions are not considered
-        .map { it.toMediaSize() }
-        .any { it.equalsByDimensions(size) }
+    fun isMediaSizeSupported(size: MediaSize) = mediaSizeSupported.supports(size)
 
     fun isMediaSizeReady(size: MediaSize) = mediaColReady
         .any { it.size?.equalsByDimensions(size) ?: false }

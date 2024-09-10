@@ -1,7 +1,7 @@
 package de.gmuth.ipp.attributes
 
 /**
- * Copyright (c) 2020-2023 Gerhard Muth
+ * Copyright (c) 2020-2024 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.*
@@ -22,7 +22,7 @@ data class MediaSize(val xDimension: Int, val yDimension: Int, val name: String?
 
     override fun toString() = StringBuilder().run {
         name?.let { append("$it ") }
-        append("${xDimension} x ${yDimension}")
+        append("${xDimension}x${yDimension}")
         toString()
     }
 
