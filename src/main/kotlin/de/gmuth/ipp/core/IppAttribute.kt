@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2023 Gerhard Muth
+ * Copyright (c) 2020-2024 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppTag.*
@@ -96,7 +96,15 @@ data class IppAttribute<T>(val name: String, val tag: IppTag) : IppAttributeBuil
         tag == Integer && (name.endsWith("duration")
                 || name.endsWith("time-interval")
                 || name.endsWith("time-out")
-                || name.endsWith("up-time")) -> "$value (${getDurationOfSecondsValue()})"
+                || name.endsWith("printer-up-time")) -> {
+            // should indicate the up-time in seconds (RFC 8011 5.4.29)
+            val duration = getDurationOfSecondsValue()
+            if (duration > Duration.ofDays(10 * 365)) { // looks like epoc time
+                "$value (${getZonedDateTimeValue()})"
+            } else {
+                "$value ($duration)"
+            }
+        }
 
         tag == Integer && (name.endsWith("time") || name.startsWith("time")) ->
             "$value (${getZonedDateTimeValue()})"
