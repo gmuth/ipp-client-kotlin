@@ -86,15 +86,11 @@ abstract class IppMessage() {
     // --------
 
     fun write(outputStream: OutputStream) {
-        val byteArrayOutputStream = ByteArrayOutputStream()
-        val byteArraySavingOutputStream = object : OutputStream() {
-            override fun write(byte: Int) = outputStream.write(byte)
-                .also { byteArrayOutputStream.write(byte) }
-        }
+        val byteArraySavingOutputStream = ByteArraySavingOutputStream(outputStream)
         try {
             IppOutputStream(byteArraySavingOutputStream).writeMessage(this)
         } finally {
-            rawBytes = byteArrayOutputStream.toByteArray()
+            rawBytes = byteArraySavingOutputStream.getSavedBytes()
         }
         if (hasDocument()) copyDocumentStream(outputStream)
     }
@@ -149,7 +145,7 @@ abstract class IppMessage() {
                 logger.finer { "Consumed documentInputStream: $this bytes" }
                 documentInputStreamIsConsumed = true
                 if (keepDocumentCopy) {
-                    documentBytes = byteArraySavingOutputStream.toByteArray()
+                    documentBytes = byteArraySavingOutputStream.getSavedBytes()
                     if (documentBytes!!.isNotEmpty()) logger.info("Keeping ${documentBytes!!.size} document bytes")
                 }
                 byteArraySavingOutputStream.close()
@@ -208,11 +204,10 @@ abstract class IppMessage() {
         }
     }
 
-    class ByteArraySavingOutputStream(private val outputStream: OutputStream) : OutputStream() {
+    private class ByteArraySavingOutputStream(private val outputStream: OutputStream) : OutputStream() {
         val byteArrayOutputStream = ByteArrayOutputStream()
-        fun toByteArray() = byteArrayOutputStream.toByteArray()
+        fun getSavedBytes(): ByteArray = byteArrayOutputStream.toByteArray()
         override fun write(byte: Int) = outputStream.write(byte)
             .also { byteArrayOutputStream.write(byte) }
     }
-
 }
