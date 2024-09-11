@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2021-2023 Gerhard Muth
+ * Copyright (c) 2021-2024 Gerhard Muth
  */
 
 import de.gmuth.ipp.attributes.JobState
@@ -65,7 +65,7 @@ class IppEventNotification(
 
     // let a Recipient know when the Event Notification occurred (RFC 3996 5.2.2)
     val printerUpTime: ZonedDateTime
-        get() = attributes.getZonedDateTimeValue("printer-up-time")
+        get() = attributes.getValueAsZonedDateTime("printer-up-time")
 
     // Get job of event origin
     fun getJob() = subscription.printer.getJob(jobId)

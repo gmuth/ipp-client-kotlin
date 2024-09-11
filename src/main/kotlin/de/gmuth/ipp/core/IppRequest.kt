@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2023 Gerhard Muth
+ * Copyright (c) 2020-2024 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppTag.*
@@ -18,8 +18,8 @@ class IppRequest : IppMessage {
         @SuppressWarnings("kotlin:S1192")
         get() = operationGroup.run {
             when {
-                containsKey("printer-uri") -> getUriValue("printer-uri")
-                containsKey("job-uri") -> getUriValue("job-uri")
+                containsKey("printer-uri") -> getValueAsURI("printer-uri")
+                containsKey("job-uri") -> getValueAsURI("job-uri")
                 else -> throw IppException("Missing 'printer-uri' or 'job-uri' in IppRequest")
                     .also { log(logger, Level.WARNING) }
             }

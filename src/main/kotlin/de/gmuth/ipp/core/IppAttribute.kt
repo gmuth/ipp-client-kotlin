@@ -72,11 +72,11 @@ data class IppAttribute<T>(val name: String, val tag: IppTag) : IppAttributeBuil
 
     override fun buildIppAttribute(printerAttributes: IppAttributesGroup) = this
 
-    fun getZonedDateTimeValue() = Instant
+    fun getValueAsZonedDateTime() = Instant
         .ofEpochSecond((value as Int).toLong())
         .atZone(ZoneOffset.UTC) // epoch always uses UTC
 
-    fun getDurationOfSecondsValue(): Duration =
+    fun getValueAsDurationOfSeconds(): Duration =
         Duration.ofSeconds((value as Int).toLong())
 
     override fun toString() = StringBuilder(name).run {
@@ -98,16 +98,16 @@ data class IppAttribute<T>(val name: String, val tag: IppTag) : IppAttributeBuil
                 || name.endsWith("time-out")
                 || name.endsWith("printer-up-time")) -> {
             // should indicate the up-time in seconds (RFC 8011 5.4.29)
-            val duration = getDurationOfSecondsValue()
+            val duration = getValueAsDurationOfSeconds()
             if (duration > Duration.ofDays(10 * 365)) { // looks like epoc time
-                "$value (${getZonedDateTimeValue()})"
+                "$value (${getValueAsZonedDateTime()})"
             } else {
                 "$value ($duration)"
             }
         }
 
         tag == Integer && (name.endsWith("time") || name.startsWith("time")) ->
-            "$value (${getZonedDateTimeValue()})"
+            "$value (${getValueAsZonedDateTime()})"
 
         value is ByteArray -> with(value as ByteArray) { if (isEmpty()) "" else "$size bytes" }
         else -> enumNameOrValue(value as Any).toString()

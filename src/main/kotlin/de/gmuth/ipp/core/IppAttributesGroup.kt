@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2023 Gerhard Muth
+ * Copyright (c) 2020-2024 Gerhard Muth
  */
 
 import java.io.BufferedWriter
@@ -52,20 +52,20 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     fun <T> getValues(name: String) =
         get(name)?.values as T ?: throw attributeNotFoundException(name)
 
-    fun getUriValue(name: String) =
+    fun getValueAsURI(name: String) =
         getValue<URI>(name)
 
-    fun getTextValue(name: String) =
+    fun getValueAsString(name: String) =
         getValue<IppString>(name).text
 
-    fun getStringValues(name: String) =
+    fun getValuesAsListOfStrings(name: String) =
         get(name)?.getStringValues() ?: throw attributeNotFoundException(name)
 
-    fun getZonedDateTimeValue(name: String, zoneId: ZoneId = ZoneId.systemDefault()): ZonedDateTime =
-        get(name)?.getZonedDateTimeValue()?.withZoneSameInstant(zoneId) ?: throw attributeNotFoundException(name)
+    fun getValueAsZonedDateTime(name: String, zoneId: ZoneId = ZoneId.systemDefault()): ZonedDateTime =
+        get(name)?.getValueAsZonedDateTime()?.withZoneSameInstant(zoneId) ?: throw attributeNotFoundException(name)
 
-    fun getDurationOfSecondsValue(name: String): Duration =
-        get(name)?.getDurationOfSecondsValue() ?: throw attributeNotFoundException(name)
+    fun getValueAsDurationOfSeconds(name: String): Duration =
+        get(name)?.getValueAsDurationOfSeconds() ?: throw attributeNotFoundException(name)
 
     fun put(attributesGroup: IppAttributesGroup) =
         attributesGroup.values.forEach { put(it) }

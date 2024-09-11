@@ -39,7 +39,7 @@ class IppSubscription(
         get() = attributes.getValue("notify-subscription-id")
 
     val leaseDuration: Duration
-        get() = attributes.getDurationOfSecondsValue("notify-lease-duration")
+        get() = attributes.getValueAsDurationOfSeconds("notify-lease-duration")
 
     val events: List<String>
         get() = attributes.getValues("notify-events")
@@ -51,12 +51,12 @@ class IppSubscription(
         get() = attributes.getValue("notify-subscriber-user-name")
 
     val timeInterval: Duration
-        get() = attributes.getDurationOfSecondsValue("notify-time-interval")
+        get() = attributes.getValueAsDurationOfSeconds("notify-time-interval")
 
     private fun expires() = when {
         leaseDuration.isZero -> "(never expires)"
-        leaseStartedAt == null -> ""
-        else -> "(expires $expiresAt)"
+        leaseStartedAt != null -> "(expires $expiresAt)"
+        else -> ""
     }
 
     //----------------------------
@@ -135,7 +135,8 @@ class IppSubscription(
         }
 
     fun expired() = expiresAt != null && now().isAfter(expiresAt)
-    fun expiryAvailable() = leaseStartedAt != null && attributes.containsKey("notify-lease-duration") && !leaseDuration.isZero
+    fun expiryAvailable() =
+        leaseStartedAt != null && attributes.containsKey("notify-lease-duration") && !leaseDuration.isZero
 
     @JvmOverloads
     fun pollAndHandleNotifications(

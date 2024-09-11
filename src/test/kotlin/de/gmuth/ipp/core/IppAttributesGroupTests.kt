@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2023 Gerhard Muth
+ * Copyright (c) 2020-2024 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppTag.*
@@ -80,7 +80,7 @@ class IppAttributesGroupTests {
     @Test
     fun getTextValue() {
         group.attribute("foo", TextWithoutLanguage, IppString("bar"))
-        assertEquals("bar", group.getTextValue("foo"))
+        assertEquals("bar", group.getValueAsString("foo"))
     }
 
     @Test
@@ -88,7 +88,7 @@ class IppAttributesGroupTests {
         group.attribute("epoch-seconds", Integer, 62)
         assertEquals(
             "1970-01-01T00:01:02",
-            group.getZonedDateTimeValue("epoch-seconds")
+            group.getValueAsZonedDateTime("epoch-seconds")
                 .withZoneSameInstant(ZoneId.of("UTC"))
                 .toLocalDateTime().toString()
         )

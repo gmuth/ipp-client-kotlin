@@ -166,7 +166,7 @@ class IppPrinter(
         get() = attributes.getValues("media-source-supported")
 
     val mediaTypeSupported: List<String>
-        get() = attributes.getStringValues("media-type-supported")
+        get() = attributes.getValuesAsListOfStrings("media-type-supported")
 
     val versionsSupported: List<String>
         get() = attributes.getValues("ipp-versions-supported")
@@ -221,7 +221,7 @@ class IppPrinter(
         printerType.contains(capability)
 
     val cupsVersion: String
-        get() = attributes.getTextValue("cups-version")
+        get() = attributes.getValueAsString("cups-version")
 
     val supportedAttributes: Collection<IppAttribute<*>> = attributes.values
         .filter { it.name.endsWith("-supported") }

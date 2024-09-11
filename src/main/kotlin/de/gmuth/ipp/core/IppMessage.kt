@@ -79,7 +79,7 @@ abstract class IppMessage() {
         get() = operationGroup.getValue("attributes-natural-language")
 
     val requestingUserName: String
-        get() = operationGroup.getTextValue("requesting-user-name")
+        get() = operationGroup.getValueAsString("requesting-user-name")
 
     // --------
     // ENCODING

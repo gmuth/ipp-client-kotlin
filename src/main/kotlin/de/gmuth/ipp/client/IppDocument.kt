@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2021-2023 Gerhard Muth
+ * Copyright (c) 2021-2024 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppAttributesGroup
@@ -53,7 +53,7 @@ class IppDocument(
             if (numberOfDocuments > 1) append("-doc-$number")
             job.getOriginatingUserNameOrAppleJobOwnerOrNull()?.let { append("-$it") }
             if (attributes.containsKey("com.apple.print.JobInfo.PMApplicationName")) {
-                append("-${attributes.getTextValue("com.apple.print.JobInfo.PMApplicationName")}")
+                append("-${attributes.getValueAsString("com.apple.print.JobInfo.PMApplicationName")}")
             }
             job.getJobNameOrDocumentNameSuppliedOrAppleJobNameOrNull()?.let {
                 append("-${it.take(100)}")
