@@ -1,0 +1,29 @@
+# File: 007-Get-Job-Attributes.res.txt (decoded 688 raw IPP bytes)
+version 2.0
+successful-ok
+request-id 7
+operation-attributes-tag
+  attributes-charset (charset) = utf-8
+  attributes-natural-language (naturalLanguage) = en-us
+  printer-uri (uri) = ipp://xero.local
+job-attributes-tag
+  copies (integer) = 1
+  number-up (integer) = 1
+  print-quality (enum) = draft
+  job-uri (uri) = ipp://xero.local/Job-3679
+  job-id (integer) = 3679
+  job-name (nameWithoutLanguage) = blank_A4.pdf
+  job-originating-user-name (nameWithoutLanguage) = ipp-inspector
+  job-state (enum) = canceled
+  job-uuid (uri) = urn:uuid:16a65700-007c-1000-bb49-e5f34eac2f55
+  job-state-reasons (1setOf keyword) = job-canceled-by-user
+  time-at-completed (integer) = 3632169 (1970-02-12T00:56:09Z)
+  time-at-creation (integer) = 3632169 (1970-02-12T00:56:09Z)
+  time-at-processing (integer) = 0 (1970-01-01T00:00Z)
+  job-k-octets (integer) = 0
+  job-impressions (integer) = 0
+  job-k-octets-processed (integer) = 0
+  job-impressions-completed (integer) = 0
+  job-media-sheets-completed (integer) = 0
+  job-printer-uri (uri) = ipp://xero.local
+  job-printer-up-time (integer) = 3632158 (PT1008H55M58S)

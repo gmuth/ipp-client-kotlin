@@ -1,0 +1,10 @@
+# File: 005-Get-Jobs.req.txt (decoded 287 raw IPP bytes)
+version 2.0
+Get-Jobs
+request-id 5
+operation-attributes-tag
+  attributes-charset (charset) = utf-8
+  attributes-natural-language (naturalLanguage) = en-us
+  printer-uri (uri) = ipp://xero.local
+  requested-attributes (1setOf keyword) = job-id,job-uri,job-printer-uri,job-state,job-name,job-state-reasons,job-originating-user-name
+  requesting-user-name (nameWithoutLanguage) = ipp-inspector

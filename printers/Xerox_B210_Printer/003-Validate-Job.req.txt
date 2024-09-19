@@ -1,0 +1,16 @@
+# File: 003-Validate-Job.req.txt (decoded 317 raw IPP bytes)
+version 2.0
+Validate-Job
+request-id 3
+operation-attributes-tag
+  attributes-charset (charset) = utf-8
+  attributes-natural-language (naturalLanguage) = en-us
+  printer-uri (uri) = ipp://xero.local
+  requesting-user-name (nameWithoutLanguage) = ipp-inspector
+  job-name (nameWithoutLanguage) = Validation
+  document-format (mimeMediaType) = application/octet-stream
+job-attributes-tag
+  sides (keyword) = two-sided-short-edge
+  print-quality (enum) = normal
+  print-color-mode (keyword) = color
+  media (keyword) = iso_a3_297x420mm

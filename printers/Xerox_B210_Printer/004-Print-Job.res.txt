@@ -1,0 +1,13 @@
+# File: 004-Print-Job.res.txt (decoded 224 raw IPP bytes)
+version 2.0
+successful-ok
+request-id 4
+operation-attributes-tag
+  attributes-charset (charset) = utf-8
+  attributes-natural-language (naturalLanguage) = en-us
+  printer-uri (uri) = ipp://xero.local
+job-attributes-tag
+  job-id (integer) = 3679
+  job-state (enum) = pending-held
+  job-state-reasons (1setOf keyword) = job-hold-until-specified
+  job-uri (uri) = ipp://xero.local/Job-3679

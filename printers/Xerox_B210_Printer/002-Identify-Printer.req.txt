@@ -1,0 +1,10 @@
+# File: 002-Identify-Printer.req.txt (decoded 171 raw IPP bytes)
+version 2.0
+Identify-Printer
+request-id 2
+operation-attributes-tag
+  attributes-charset (charset) = utf-8
+  attributes-natural-language (naturalLanguage) = en-us
+  printer-uri (uri) = ipp://xero.local
+  requesting-user-name (nameWithoutLanguage) = ipp-inspector
+  identify-actions (1setOf keyword) = flash

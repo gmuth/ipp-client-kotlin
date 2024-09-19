@@ -1,0 +1,131 @@
+# File: printer-stopped-toner-empty.res.txt (decoded 9418 raw IPP bytes)
+version 2.0
+successful-ok
+request-id 1
+operation-attributes-tag
+  attributes-charset (charset) = utf-8
+  attributes-natural-language (naturalLanguage) = en-us
+  printer-uri (uri) = ipp://xero.local
+printer-attributes-tag
+  job-priority-default (integer) = 50
+  job-hold-until-default (keyword) = no-hold
+  job-sheets-default (keyword) = none
+  multiple-document-handling-default (keyword) = separate-documents-uncollated-copies
+  copies-default (integer) = 1
+  finishings-default (1setOf enum) = none
+  sides-default (keyword) = one-sided
+  number-up-default (integer) = 1
+  orientation-requested-default (enum) = portrait
+  media-default (keyword) = iso_a4_210x297mm
+  printer-resolution-default (resolution) = 300 dpi
+  print-quality-default (enum) = normal
+  media-type-default (keyword) = stationery
+  media-size-default (collection) = {x-dimension=21000 y-dimension=29700}
+  media-source-default (keyword) = tray-1
+  media-col-default (collection) = {media-size={x-dimension=21000 y-dimension=29700} media-type=stationery media-source=tray-1 media-top-margin=440 media-bottom-margin=440 media-left-margin=440 media-right-margin=440}
+  media-ready (1setOf keyword) = iso_a4_210x297mm,iso_a4_210x297mm
+  print-color-mode-default (keyword) = monochrome
+  output-bin-default (keyword) = top
+  margins-pre-applied-default (boolean) = true
+  output-mode-default (keyword) = monochrome
+  job-priority-supported (integer) = 100
+  job-hold-until-supported (1setOf nameWithoutLanguage) = no-hold
+  job-sheets-supported (1setOf keyword) = none
+  multiple-document-handling-supported (1setOf keyword) = separate-documents-uncollated-copies
+  copies-supported (rangeOfInteger) = 1-255
+  finishings-supported (1setOf enum) = none
+  page-ranges-supported (boolean) = false
+  sides-supported (1setOf keyword) = one-sided,two-sided-long-edge,two-sided-short-edge
+  number-up-supported (1setOf integer) = 1
+  orientation-requested-supported (1setOf enum) = portrait
+  media-supported (1setOf keyword) = na_letter_8.5x11in,na_legal_8.5x14in,iso_a4_210x297mm,na_executive_7.25x10.5in,jis_b5_182x257mm,iso_b5_176x250mm,na_number-10_4.125x9.5in,na_monarch_3.875x7.5in,iso_dl_110x220mm,iso_c5_162x229mm,iso_c6_114x162mm,na_foolscap_8.5x13in,iso_a5_148x210mm,iso_a6_105x148mm,oe_oficio_8.5x13.5in,na_index-4x6_4x6in,custom_min_76x127mm,custom_max_216x356mm
+  printer-resolution-supported (1setOf resolution) = 300 dpi
+  print-quality-supported (1setOf enum) = normal
+  job-creation-attributes-supported (1setOf keyword) = copies,finishings,ipp-attribute-fidelity,job-name,document-format,document-name,media,media-col,media-size,media-type,media-source,multiple-document-handling,number-up,output-bin,output-mode,orientation-requested,print-quality,printer-resolution,sides,print-color-mode
+  media-col-supported (1setOf keyword) = media-size,media-type,media-source,media-bottom-margin,media-top-margin,media-right-margin,media-left-margin
+  media-bottom-margin-supported (1setOf integer) = 440
+  media-left-margin-supported (1setOf integer) = 440
+  media-right-margin-supported (1setOf integer) = 440
+  media-top-margin-supported (1setOf integer) = 440
+  media-size-supported (1setOf collection) = {x-dimension=21590 y-dimension=27940},{x-dimension=21590 y-dimension=35560},{x-dimension=21000 y-dimension=29700},{x-dimension=18415 y-dimension=26670},{x-dimension=18200 y-dimension=25700},{x-dimension=17600 y-dimension=25000},{x-dimension=10477 y-dimension=24130},{x-dimension=9842 y-dimension=19050},{x-dimension=11000 y-dimension=22000},{x-dimension=16200 y-dimension=22900},{x-dimension=11400 y-dimension=16200},{x-dimension=21590 y-dimension=33020},{x-dimension=14800 y-dimension=21000},{x-dimension=10500 y-dimension=14800},{x-dimension=21590 y-dimension=34290},{x-dimension=10160 y-dimension=15240},{x-dimension=7600..21600 y-dimension=12700..35600}
+  media-source-supported (1setOf keyword) = tray-1,manual,auto
+  media-type-supported (1setOf keyword) = stationery,stationery-heavyweight,stationery-lightweight,stationery-bond,stationery-colored,cardstock,labels,transparency,envelope,recycled,preprinted,cotton,archive,thicker,thick-envelope
+  pdf-versions-supported (1setOf keyword) = none
+  urf-supported (1setOf keyword) = CP255,DM1,FN3,IFU0,IS1-2-19,MT1-2-3-4,OB10,PQ4,RS300,V1.4,W8
+  job-password-supported (integer) = 0
+  print-color-mode-supported (1setOf keyword) = monochrome,auto,auto-monochrome
+  output-bin-supported (1setOf keyword) = top
+  margins-pre-applied-supported (boolean) = true
+  output-mode-supported (1setOf keyword) = monochrome,auto,auto-monochrome
+  printer-uri-supported (1setOf uri) = ipp://xero.local:631/ipp/print
+  uri-security-supported (1setOf keyword) = none
+  uri-authentication-supported (1setOf keyword) = none
+  printer-name (nameWithoutLanguage) = Xerox B210 Printer
+  printer-location (textWithoutLanguage) = Office
+  printer-info (textWithoutLanguage) = Xerox B210
+  printer-more-info (uri) = http://xero.local:631/airprintRedirect.dhtml
+  printer-driver-installer (uri) = http://www.support.xerox.com/support/
+  printer-make-and-model (textWithoutLanguage) = Xerox B210 Printer
+  printer-state (enum) = stopped
+  printer-state-reasons (1setOf keyword) = toner-empty-error
+  printer-state-message (textWithoutLanguage) = Printer is not able to print.
+  ipp-versions-supported (1setOf keyword) = 1.0,1.1,2.0
+  operations-supported (1setOf enum) = Print-Job,Validate-Job,Create-Job,Send-Document,Cancel-Job,Get-Job-Attributes,Get-Jobs,Get-Printer-Attributes,Identify-Printer,Resubmit-Job
+  multiple-document-jobs-supported (boolean) = false
+  charset-configured (charset) = utf-8
+  charset-supported (1setOf charset) = utf-8
+  natural-language-configured (naturalLanguage) = en-us
+  generated-natural-language-supported (1setOf naturalLanguage) = en-us
+  document-format-default (mimeMediaType) = image/urf
+  document-format-supported (1setOf mimeMediaType) = application/octet-stream,application/PCL,application/postscript,application/vnd.hp-PCL,application/vnd.hp-PCLXL,application/x-QPDL,text/plain,image/urf,application/PCLm
+  printer-is-accepting-jobs (boolean) = true
+  queued-job-count (integer) = 1
+  printer-message-from-operator (textWithoutLanguage) = operator-message
+  color-supported (boolean) = false
+  pdl-override-supported (keyword) = attempted
+  printer-up-time (integer) = 1904632 (PT529H3M52S)
+  multiple-operation-time-out (integer) = 300 (PT5M)
+  compression-supported (1setOf keyword) = none
+  job-k-octets-supported (rangeOfInteger) = 1-262144
+  job-impressions-supported (rangeOfInteger) = 1-65000
+  job-media-sheets-supported (rangeOfInteger) = 1-65000
+  pages-per-minute (integer) = 30
+  printer-kind (1setOf keyword) = document,envelope,label
+  print-scaling-default (keyword) = auto
+  print-scaling-supported (1setOf keyword) = auto,auto-fit,fill,fit,none
+  print-content-optimize-default (keyword) = auto
+  print-content-optimize-supported (1setOf keyword) = auto
+  identify-actions-default (1setOf keyword) = flash
+  identify-actions-supported (1setOf keyword) = flash
+  ipp-features-supported (1setOf keyword) = document-object,airprint-1.8
+  landscape-orientation-requested-preferred (enum) = landscape
+  document-format-preferred (mimeMediaType) = image/urf
+  marker-colors (nameWithoutLanguage) = #000000
+  marker-high-levels (integer) = 100
+  marker-levels (integer) = 0
+  marker-low-levels (integer) = 5
+  marker-names (nameWithoutLanguage) = Black Toner_S/N_:CRUM-211009A6200
+  marker-types (keyword) = toner
+  media-col-ready (1setOf collection) = {media-size={x-dimension=21000 y-dimension=29700} media-type=stationery media-source=tray-1 media-top-margin=440 media-bottom-margin=440 media-left-margin=440 media-right-margin=440},{media-size={x-dimension=21000 y-dimension=29700} media-type=stationery media-source=auto media-top-margin=440 media-bottom-margin=440 media-left-margin=440 media-right-margin=440}
+  printer-device-id (textWithoutLanguage) = MFG:Xerox;CMD:PCL6,POSTSCRIPT,SPL,PCL5E,PDF,TIFF,JPEG,PRN,URF,IDS,EXT;MDL:B210 Printer;CLS:PRINTER;CID:XR_PCL6_Basic_A4_Mono;MODE:SPL3,R000105;
+  printer-icons (1setOf uri) = http://xero.local:631/images/printer-icon128.png,http://xero.local:631/images/printer-icon512.png
+  printer-dns-sd-name (nameWithoutLanguage) = Xerox B210
+  printer-geo-location (uri) = geo:48.96,9.13
+  printer-supply-info-uri (uri) = http://xero.local:631/sws/index.html?link=/sws/app/Information/supplies/supplies.html
+  printer-uuid (uri) = urn:uuid:16a65700-007c-1000-bb49-9c934eac2f55
+  printer-alert (1setOf octetString) = printer-alert[0] = code=markerTonerEmpty;index=1;severity=critical;group=markerSupplies;groupindex=-1;location=9200;training=trained;time=188491075
+  printer-alert-description (1setOf textWithoutLanguage) = printer-alert-description[0] = '09-200 The Toner Cartridge is empty. Immediate user intervention is required to replace the Toner Cartridge. Printing has stopped, all other machine services (if installed) are unaffected.'
+  printer-firmware-name (1setOf nameWithoutLanguage) = System Firmware Version,IPP,URF
+  printer-firmware-string-version (1setOf textWithoutLanguage) = 80.000.60.000,1.0,1.1,2.0,1.4
+  printer-firmware-version (1setOf octetString) = 80.000.60.000,1.0,1.1,2.0,1.4
+  printer-output-tray (1setOf octetString) = name=Output Tray;index=1;type=unRemovableBin;maxcapacity=120;remaining=-3;status=0;description=Output Tray;unit=3;stackingorder=firstToLast;pagedelivery=faceDown;offsetstacking=3;
+  printer-input-tray (1setOf octetString) = type=sheetFeedAutoNonRemovableTray;mediafeed=116900;mediaxfeed=82700;maxcapacity=250;level=250;status=0;name=Tray 1;index=1;dimunit=3;unit=8;medianame=A4;mediaweight=-2;mediatype=Plain;mediacolor=white;,type=sheetFeedManual;mediafeed=116900;mediaxfeed=82700;maxcapacity=1;level=-2;status=11;name=Manual Feed Slot;index=2;dimunit=3;unit=8;medianame=A4;mediaweight=-2;mediatype=Plain;mediacolor=white;,type=other;mediafeed=116900;mediaxfeed=82700;maxcapacity=250;level=250;status=0;name=Tray 1;index=3;dimunit=3;unit=8;medianame=A4;mediaweight=-2;mediatype=Plain;mediacolor=white;
+  wfds-print-version-supported (textWithoutLanguage) = 1.3
+  print-wfds (boolean) = true
+  pclm-source-resolution-supported (1setOf resolution) = 300 dpi
+  pclm-strip-height-preferred (1setOf integer) = 128
+  pclm-strip-height-supported (integer) = 128
+  mopria-certified (textWithoutLanguage) = 2.0
+  printer-config-change-time (integer) = 9 (1970-01-01T00:00:09Z)
+  printer-state-change-time (integer) = 0 (1970-01-01T00:00Z)
+  printer-state-change-date-time (dateTime) = 2021-01-15T00:00:00.0+00:00
