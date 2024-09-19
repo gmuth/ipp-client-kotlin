@@ -18,7 +18,17 @@ object IppInspector {
     const val pdfA4 = "blank_A4.pdf"
 
     fun inspect(printerUri: URI, cancelJob: Boolean = true) =
-        IppPrinter(printerUri).inspect(cancelJob)
+        IppPrinter(printerUri, getPrinterAttributesOnInit = false).inspect(cancelJob)
+
+    private fun IppPrinter.getPrinterModel() = StringBuilder().run {
+        // use another IppPrinter instance to leave request-id-counter untouched
+        with(IppPrinter(printerUri, getPrinterAttributesOnInit = false)) {
+            updateAttributes("cups-version", "printer-make-and-model")
+            if (isCups()) append("CUPS-")
+            append(makeAndModel.text.replace("\\s+".toRegex(), "_"))
+        }
+        toString()
+    }
 
     /**
      * Exchange a few IPP requests and save the IPP responses returned by the printer.
@@ -30,16 +40,15 @@ object IppInspector {
     private fun IppPrinter.inspect(cancelJob: Boolean) {
         logger.info { "Inspect printer $printerUri" }
 
-        val printerModel = with(StringBuilder()) {
-            if (isCups()) append("CUPS-")
-            append(makeAndModel.text.replace("\\s+".toRegex(), "_"))
-            toString()
-        }
+        val printerModel = getPrinterModel()
         logger.info { "Printer model: $printerModel" }
 
         ippClient.saveMessages = true
         ippClient.saveMessagesDirectory = File(directory, printerModel).createDirectoryIfNotExists()
         workDirectory = ippClient.saveMessagesDirectory
+
+        logger.info { "> Get printer attributes" }
+        updateAttributes()
 
         attributes.run {
             // Media
@@ -71,9 +80,6 @@ object IppInspector {
     }
 
     private fun IppPrinter.runInspectionWorkflow(pdfResource: String, cancelJob: Boolean) {
-
-        logger.info { "> Get printer attributes" }
-        getPrinterAttributes()
 
         if (supportsOperations(CupsGetPPD)) {
             logger.info { "> CUPS Get PPD" }
