@@ -1,7 +1,7 @@
 package de.gmuth.ipp.attributes
 
 /**
- * Copyright (c) 2020-2023 Gerhard Muth
+ * Copyright (c) 2020-2024 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppAttribute
@@ -17,6 +17,9 @@ data class MediaSource(val keyword: String) : IppAttributeBuilder {
 
         @JvmField
         val Main = MediaSource("main")
+
+        @JvmField
+        val Tray1 = MediaSource("tray-1")
 
         @JvmField
         val Manual = MediaSource("manual")
