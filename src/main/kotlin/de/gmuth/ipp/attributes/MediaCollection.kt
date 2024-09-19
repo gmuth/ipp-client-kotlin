@@ -1,7 +1,7 @@
 package de.gmuth.ipp.attributes
 
 /**
- * Copyright (c) 2020-2023 Gerhard Muth
+ * Copyright (c) 2020-2024 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppAttribute
@@ -10,6 +10,7 @@ import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppCollection
 import de.gmuth.ipp.core.IppTag.BegCollection
 import de.gmuth.ipp.core.IppTag.NameWithoutLanguage
+import java.util.logging.Logger
 
 // https://ftp.pwg.org/pub/pwg/candidates/cs-ippjobext21-20230210-5100.7.pdf 6.3
 @SuppressWarnings("kotlin:S1192")
@@ -21,6 +22,8 @@ data class MediaCollection(
     var duplexSupported: Boolean? = null
 
 ) : IppAttributeBuilder {
+
+    private val logger = Logger.getLogger(javaClass.name)
 
     override fun buildIppAttribute(printerAttributes: IppAttributesGroup): IppAttribute<*> {
         val mediaSize = size // conflict with IppCollection.size
@@ -44,28 +47,22 @@ data class MediaCollection(
         size?.equalsByDimensions(mediaSize) ?: false
 
     companion object {
-        fun fromIppCollection(mediaIppCollection: IppCollection) = mediaIppCollection.run {
-            MediaCollection().apply {
-                if (containsMember("media-size")) {
-                    size = MediaSize.fromIppCollection(getValue("media-size"))
+        fun fromIppCollection(mediaIppCollection: IppCollection) = MediaCollection().apply {
+            for (member in mediaIppCollection.members) with(member) {
+                when {
+                    name == "media-size" -> size = MediaSize.fromIppCollection(value as IppCollection)
+                    name == "media-type" -> type = getStringValue()
+                    name == "media-source" -> source = MediaSource(getStringValue())
+                    name == "duplex-supported" -> duplexSupported = (value as Int) == 1
+                    isMediaMargin() -> {} // covered later
+                    else -> logger.warning { "unsupported member: $member" }
                 }
-                if (
-                    members
-                        .map { it.name }
-                        .any { it.contains("margin") }
-                ) {
-                    margin = MediaMargin.fromIppCollection(mediaIppCollection)
-                }
-                if (containsMember("media-source")) {
-                    source = MediaSource(getValue("media-source"))
-                }
-                if (containsMember("media-type")) {
-                    type = getStringValue("media-type")
-                }
-                if (containsMember("duplex-supported")) {
-                    duplexSupported = getValue<Int>("duplex-supported") == 1
-                }
+            }
+            if (mediaIppCollection.members.any { it.isMediaMargin() }) {
+                margin = MediaMargin.fromIppCollection(mediaIppCollection)
             }
         }
     }
+
+    private fun IppAttribute<*>.isMediaMargin() = Regex("media-.*-margin").matches(name)
 }
