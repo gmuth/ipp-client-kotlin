@@ -54,8 +54,7 @@ data class MediaCollection(
                     name == "media-type" -> type = getStringValue()
                     name == "media-source" -> source = MediaSource(getStringValue())
                     name == "duplex-supported" -> duplexSupported = (value as Int) == 1
-                    isMediaMargin() -> {} // covered later
-                    else -> logger.warning { "unsupported member: $member" }
+                    else -> if (!isMediaMargin()) logger.warning { "unsupported member: $member" }
                 }
             }
             if (mediaIppCollection.members.any { it.isMediaMargin() }) {
