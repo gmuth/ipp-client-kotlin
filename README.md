@@ -103,7 +103,7 @@ WARN: according to printer attributes value 'application/pcl' is not supported.
 document-format-supported (1setOf mimeMediaType) = application/pdf,application/postscript
 ```
 
-To get to know a new printer and its supported features, you can run the inspection workflow
+To get to know a new printer and its supported features, you can [run the inspection workflow](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/test/kotlin/de/gmuth/ipp/client/inspectPrinter.kt)
 of [IppInspector](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppInspector.kt).
 IPP traffic is saved to directory `inspected-printers`. The workflow will try to print a PDF.
 
