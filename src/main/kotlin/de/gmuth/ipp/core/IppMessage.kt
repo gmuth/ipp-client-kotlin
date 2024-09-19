@@ -183,6 +183,14 @@ abstract class IppMessage() {
         logger.info { "Saved $path (${length()} bytes)" }
     }
 
+    fun readBytesAndSaveText(
+        bytesFile: File,
+        textFile: File = with(bytesFile) { File(parentFile, "$name.txt") }
+    ) = textFile.apply {
+        read(bytesFile)
+        saveText(textFile)
+    }
+
     // -------
     // LOGGING
     // -------
