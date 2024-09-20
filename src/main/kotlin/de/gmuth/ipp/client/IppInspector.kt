@@ -68,20 +68,6 @@ class IppInspector {
             logger.info { "Document formats: $documentFormatSupported" }
         }
 
-        val pdfResource = when {
-            !attributes.containsKey("media-ready") -> {
-                logger.warning { "media-ready not supported" }
-                pdfA4
-            }
-
-            mediaReady.contains("iso-a4") || mediaReady.contains("iso_a4_210x297mm") -> pdfA4
-            mediaReady.contains("na_letter") || mediaReady.contains("na_letter_8.5x11in") -> "blank_USLetter.pdf"
-            else -> {
-                logger.warning { "No PDF available for media '$mediaReady', trying A4" }
-                pdfA4
-            }
-        }
-
         if (savePrinterIcons && attributes.containsKey("printer-icons")) {
             logger.info { "> Save Printer icons" }
             savePrinterIcons()
@@ -113,16 +99,34 @@ class IppInspector {
         }
         logger.info { response.toString() }
 
-        logger.info { "> Print job $pdfResource" }
-        val documentStream = IppInspector::class.java.getResourceAsStream("/$pdfResource")!!
-        printJob(documentStream, jobName(pdfResource)).run {
-            logger.info { toString() }
-            logger.info { "> Get jobs" }
-            for (job in getJobs()) {
-                logger.info { "$job" }
+        logger.info { "> Print job" }
+        val job = printPdf()
+        logger.info { "$job" }
+
+        logger.info { "> Get jobs" }
+        getJobs().forEach { logger.info { "$it" } }
+
+        job.inspect(cancelJob)
+    }
+
+    private fun IppPrinter.printPdf(): IppJob {
+
+        val pdfResource = when {
+            !attributes.containsKey("media-ready") -> {
+                logger.warning { "media-ready not supported" }
+                pdfA4
             }
-            inspect(cancelJob)
+
+            mediaReady.contains("iso-a4") || mediaReady.contains("iso_a4_210x297mm") -> pdfA4
+            mediaReady.contains("na_letter") || mediaReady.contains("na_letter_8.5x11in") -> "blank_USLetter.pdf"
+            else -> {
+                logger.warning { "No PDF available for media '$mediaReady', trying A4" }
+                pdfA4
+            }
         }
+
+        val documentStream = javaClass.getResourceAsStream("/$pdfResource")!!
+        return printJob(documentStream, jobName(pdfResource))
     }
 
     private fun IppJob.inspect(cancelJob: Boolean) {
