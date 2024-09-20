@@ -579,11 +579,11 @@ class IppPrinter(
     fun log(logger: Logger, level: Level = INFO) =
         attributes.log(logger, level, title = "PRINTER $name ($makeAndModel)")
 
-    // -----------------------
-    // Save printer attributes
-    // -----------------------
+    // -----------------------------------------
+    // Save printer attributes and printer icons
+    // -----------------------------------------
 
-    fun savePrinterAttributes(directory: String = ".") {
+    fun savePrinterAttributes(directory: File = workDirectory) {
         val printerModel: String = makeAndModel.text.replace("\\s+".toRegex(), "_")
         exchange(ippRequest(GetPrinterAttributes)).run {
             saveBytes(File(directory, "$printerModel.bin"))
@@ -591,12 +591,30 @@ class IppPrinter(
         }
     }
 
+    fun savePrinterIcons(): Collection<File> = attributes
+        .getValues<List<URI>>("printer-icons")
+        .map { it.save() }
+
     fun printerDirectory(printerName: String = name.text.replace("\\s+".toRegex(), "_")): File =
         File(workDirectory, printerName).createDirectoryIfNotExists()
+
+
+    // --------------------------------------------------
+    // Internal utilities implemented as Kotlin extension
+    // --------------------------------------------------
 
     internal fun File.createDirectoryIfNotExists(throwOnFailure: Boolean = true) = this.apply {
         if (!mkdirs() && !isDirectory) "Failed to create directory: $path".let {
             if (throwOnFailure) throw IOException(it) else logger.warning(it)
         }
+    }
+
+    internal fun URI.save(
+        directory: File? = workDirectory,
+        fileName: String = Regex(".*/").replace(path, ""),
+        file: File = File(directory, fileName)
+    ) = file.also {
+        toURL().openConnection().inputStream.copyTo(file.outputStream())
+        logger.info { "Saved ${file.absolutePath} (${file.length()} bytes from $this)" }
     }
 }

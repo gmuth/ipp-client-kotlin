@@ -109,7 +109,7 @@ IPP traffic is saved to directory `inspected-printers`. The workflow will try to
 
 ```
 // need an IPP server? https://openprinting.github.io/cups/doc/man-ippeveprinter.html
-IppInspector.inspect(URI.create("ipp://ippeveprinter:8501/ipp/print"))
+IppInspector().inspect(URI.create("ipp://ippeveprinter:8501/ipp/print"))
 ```
 
 ### Exchange [IppRequest](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppRequest.kt) for [IppResponse](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppResponse.kt)

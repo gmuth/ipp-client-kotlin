@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2023 Gerhard Muth
+ * Copyright (c) 2023-2024 Gerhard Muth
  */
 
 import de.gmuth.ipp.attributes.*
@@ -11,24 +11,30 @@ import java.io.File
 import java.net.URI
 import java.util.logging.Logger.getLogger
 
-object IppInspector {
-    private val logger = getLogger(javaClass.name)
-    var directory: String = "inspected-printers"
+class IppInspector {
 
-    const val pdfA4 = "blank_A4.pdf"
-
-    fun inspect(printerUri: URI, cancelJob: Boolean = true) =
-        IppPrinter(printerUri, getPrinterAttributesOnInit = false).inspect(cancelJob)
-
-    private fun IppPrinter.getPrinterModel() = StringBuilder().run {
-        // use another IppPrinter instance to leave request-id-counter untouched
-        with(IppPrinter(printerUri, getPrinterAttributesOnInit = false)) {
-            updateAttributes("cups-version", "printer-make-and-model")
-            if (isCups()) append("CUPS-")
-            append(makeAndModel.text.replace("\\s+".toRegex(), "_"))
+    companion object {
+        const val pdfA4 = "blank_A4.pdf"
+        var directory: File = File("inspected-printers")
+        private val logger = getLogger(javaClass.name)
+        private fun getModel(printerUri: URI) = StringBuilder().run {
+            // use another IppPrinter instance to leave request-id-counter untouched
+            with(IppPrinter(printerUri, getPrinterAttributesOnInit = false)) {
+                updateAttributes("cups-version", "printer-make-and-model")
+                if (isCups()) append("CUPS-")
+                append(makeAndModel.text.replace("\\s+".toRegex(), "_"))
+            }
+            toString()
         }
-        toString()
     }
+
+    fun inspect(
+        printerUri: URI,
+        cancelJob: Boolean = true,
+        savePrinterIcons: Boolean = true
+    ) =
+        IppPrinter(printerUri, getPrinterAttributesOnInit = false)
+            .inspect(cancelJob, savePrinterIcons)
 
     /**
      * Exchange a few IPP requests and save the IPP responses returned by the printer.
@@ -37,12 +43,13 @@ object IppInspector {
      * - Print-Job, Get-Jobs, Get-Job-Attributes
      * - Hold-Job, Release-Job, Cancel-Job
      */
-    private fun IppPrinter.inspect(cancelJob: Boolean) {
+    private fun IppPrinter.inspect(cancelJob: Boolean, savePrinterIcons: Boolean) {
         logger.info { "Inspect printer $printerUri" }
 
-        val printerModel = getPrinterModel()
+        val printerModel = getModel(printerUri)
         logger.info { "Printer model: $printerModel" }
 
+        ippConfig.userName = "ipp-inspector"
         ippClient.saveMessages = true
         ippClient.saveMessagesDirectory = File(directory, printerModel).createDirectoryIfNotExists()
         workDirectory = ippClient.saveMessagesDirectory
@@ -75,15 +82,14 @@ object IppInspector {
             }
         }
 
-        ippConfig.userName = "ipp-inspector"
-        runInspectionWorkflow(pdfResource, cancelJob)
-    }
-
-    private fun IppPrinter.runInspectionWorkflow(pdfResource: String, cancelJob: Boolean) {
+        if (savePrinterIcons && attributes.containsKey("printer-icons")) {
+            logger.info { "> Save Printer icons" }
+            savePrinterIcons()
+        }
 
         if (supportsOperations(CupsGetPPD)) {
             logger.info { "> CUPS Get PPD" }
-            savePPD(file = File(workDirectory, "0-${name.text}.ppd"))
+            savePPD(file = File(workDirectory, "$printerModel.ppd"))
         }
 
         if (supportsOperations(IdentifyPrinter)) {
@@ -108,36 +114,42 @@ object IppInspector {
         logger.info { response.toString() }
 
         logger.info { "> Print job $pdfResource" }
-        printJob(
-            IppInspector::class.java.getResourceAsStream("/$pdfResource")!!,
-            jobName(pdfResource),
-
-            ).run {
+        val documentStream = IppInspector::class.java.getResourceAsStream("/$pdfResource")!!
+        printJob(documentStream, jobName(pdfResource)).run {
             logger.info { toString() }
-
             logger.info { "> Get jobs" }
             for (job in getJobs()) {
                 logger.info { "$job" }
             }
+            inspect(cancelJob)
+        }
+    }
 
-            if (supportsOperations(HoldJob, ReleaseJob)) {
-                logger.info { "> Hold job" }
-                hold()
-                logger.info { "> Release job" }
-                release()
-            }
+    private fun IppJob.inspect(cancelJob: Boolean) {
 
-            if (cancelJob) {
-                logger.info { "> Cancel job" }
-                cancel()
-            }
+        if (printer.supportsOperations(HoldJob, ReleaseJob)) {
+            logger.info { "> Hold job" }
+            hold()
+            logger.info { "> Release job" }
+            release()
+        }
 
-            logger.info { "> Update job attributes" }
+        if (cancelJob) {
+            logger.info { "> Cancel job" }
+            cancel()
+        }
+
+        logger.info { "> Update job attributes" }
+        updateAttributes()
+
+        printer.ippClient.saveMessages = false
+        logger.info { "> Wait for termination" }
+        waitForTermination()
+
+        if (!cancelJob) {
+            printer.ippClient.saveMessages = true
+            logger.info { "> Get last attributes of terminated job" }
             updateAttributes()
-
-            ippClient.saveMessages = false
-            logger.info { "> Wait for termination" }
-            waitForTermination()
         }
     }
 }
