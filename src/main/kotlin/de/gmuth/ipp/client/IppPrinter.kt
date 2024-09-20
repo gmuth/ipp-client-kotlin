@@ -300,7 +300,7 @@ class IppPrinter(
     ) =
         file.also {
             cupsGetPPD(it.outputStream())
-            logger.info { "Saved PPD: $it" }
+            logger.info { "Saved $it (${it.length()} bytes)" }
         }
 
     //------------------------------------------
