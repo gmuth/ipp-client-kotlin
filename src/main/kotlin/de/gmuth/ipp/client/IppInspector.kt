@@ -16,7 +16,7 @@ class IppInspector {
     companion object {
         const val pdfA4 = "blank_A4.pdf"
         var directory: File = File("inspected-printers")
-        private val logger = getLogger(javaClass.name)
+        private val logger = getLogger(IppInspector::class.java.name)
         private fun getModel(printerUri: URI) = StringBuilder().run {
             // use another IppPrinter instance to leave request-id-counter untouched
             with(IppPrinter(printerUri, getPrinterAttributesOnInit = false)) {
