@@ -27,7 +27,7 @@ import javax.net.ssl.HttpsURLConnection
 
 typealias IppResponseInterceptor = (request: IppRequest, response: IppResponse) -> Unit
 
-open class IppClient(val config: IppConfig = IppConfig()) : IppExchange {
+open class IppClient(val config: IppConfig = IppConfig()) {
     protected val logger: Logger = getLogger(javaClass.name)
 
     var responseInterceptor: IppResponseInterceptor? = null
@@ -72,7 +72,7 @@ open class IppClient(val config: IppConfig = IppConfig()) : IppExchange {
     // Exchange IppRequest for IppResponse
     //------------------------------------
 
-    override fun exchange(request: IppRequest) = with(request) {
+    fun exchange(request: IppRequest) = with(request) {
         logger.fine { "Send '$operation' request to $printerOrJobUri" }
         httpPost(toHttpUri(printerOrJobUri), request).also {
             logger.finer { "Req #${request.requestId} @${printerOrJobUri.host}: $request => $it" }

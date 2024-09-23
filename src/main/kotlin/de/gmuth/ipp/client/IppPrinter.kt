@@ -31,7 +31,7 @@ class IppPrinter(
     internal val ippClient: IppClient = IppClient(ippConfig),
     getPrinterAttributesOnInit: Boolean = true,
     requestedAttributesOnInit: List<String>? = null
-) : IppExchange {
+) {
 
     private val logger = getLogger(javaClass.name)
     var workDirectory: File = createTempDirectory().toFile()
@@ -534,11 +534,12 @@ class IppPrinter(
     ) = ippClient
         .ippRequest(operation, printerUri, requestedAttributes, userName)
 
-    override fun exchange(request: IppRequest) = ippClient.exchange(request.apply {
+    fun exchange(request: IppRequest): IppResponse = request.run {
         checkIfValueIsSupported("ipp-versions", version!!, true)
         checkIfValueIsSupported("operations", code!!.toInt(), true)
         checkIfValueIsSupported("charset", attributesCharset, true)
-    })
+        ippClient.exchange(this)
+    }
 
     private fun exchangeForIppJob(request: IppRequest) =
         IppJob(this, exchange(request)).apply {

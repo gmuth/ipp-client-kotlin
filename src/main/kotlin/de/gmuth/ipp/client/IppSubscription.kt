@@ -5,10 +5,8 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.ipp.client.IppOperationException.ClientErrorNotFoundException
-import de.gmuth.ipp.core.IppAttributesGroup
-import de.gmuth.ipp.core.IppOperation
+import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppOperation.*
-import de.gmuth.ipp.core.IppString
 import de.gmuth.ipp.core.IppTag.EventNotification
 import de.gmuth.ipp.core.IppTag.Integer
 import java.time.Duration
@@ -24,7 +22,7 @@ class IppSubscription(
     val printer: IppPrinter,
     val attributes: IppAttributesGroup,
     startLease: Boolean = true
-) : IppExchange by printer {
+) {
 
     private val logger = getLogger(javaClass.name)
     private var lastSequenceNumber: Int = 0
@@ -121,6 +119,8 @@ class IppSubscription(
     private fun subscriptionRequest(operation: IppOperation, requestedAttributes: Collection<String>? = null) =
         printer.ippRequest(operation, requestedAttributes = requestedAttributes)
             .apply { operationGroup.attribute("notify-subscription-id", Integer, id) }
+
+    private fun exchange(request: IppRequest) = printer.exchange(request)
 
     //------------------------------------
     // Poll and handle event notifications

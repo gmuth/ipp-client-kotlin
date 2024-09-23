@@ -24,7 +24,7 @@ import java.util.logging.Logger.getLogger
 class IppJob(
     val printer: IppPrinter,
     val attributes: IppAttributesGroup,
-) : IppExchange by printer {
+) {
 
     private val logger = getLogger(javaClass.name)
     var subscription: IppSubscription? = null
@@ -361,6 +361,8 @@ class IppJob(
                 }
             }
         }
+
+    private fun exchange(request: IppRequest) = printer.exchange(request)
 
     // -------
     // Logging
