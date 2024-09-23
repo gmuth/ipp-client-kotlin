@@ -296,7 +296,7 @@ class CupsClient(
             .onEach { job -> // keep stats and save documents
                 if (job.getNumberOfDocumentsOrDocumentCount() == 0)
                     numberOfJobsWithoutDocuments.incrementAndGet()
-                else getAndSaveDocuments(job, optionalCommandToHandleFile = commandToHandleSavedFile)
+                else job.getAndSaveDocuments(optionalCommandToHandleFile = commandToHandleSavedFile)
                     .apply { numberOfSavedDocuments.addAndGet(size) }
             }
             .apply {
@@ -324,10 +324,10 @@ class CupsClient(
                 with(event.getJob()) {
                     while (isIncoming()) {
                         logger.info { toString() }
-                        Thread.sleep(1000)
+                        Thread.sleep(1969)
                         updateAttributes()
                     }
-                    getAndSaveDocuments(this, optionalCommandToHandleFile = commandToHandleFile)
+                    getAndSaveDocuments(optionalCommandToHandleFile = commandToHandleFile)
                 }
             }
     }
@@ -336,25 +336,24 @@ class CupsClient(
     // Get and save documents for job
     // ------------------------------
 
-    private fun getAndSaveDocuments(
-        job: IppJob,
+    private fun IppJob.getAndSaveDocuments(
         onSuccessUpdateJobAttributes: Boolean = false,
         optionalCommandToHandleFile: String? = null
     ): Collection<File> {
         val documents: MutableCollection<IppDocument> = mutableListOf()
-        if (!job.tryToGetDocuments(documents, onSuccessUpdateJobAttributes)) {
+        if (!tryToGetDocuments(documents, onSuccessUpdateJobAttributes)) {
             val configuredUserName = config.userName
             jobOwners.forEach {
-                if (it != job.getOriginatingUserNameOrAppleJobOwnerOrNull()) {
+                if (it != getOriginatingUserNameOrAppleJobOwnerOrNull()) {
                     config.userName = it
                     logger.fine { "set userName '${config.userName}'" }
-                    if (job.tryToGetDocuments(documents, onSuccessUpdateJobAttributes)) return@forEach
+                    if (tryToGetDocuments(documents, onSuccessUpdateJobAttributes)) return@forEach
                 }
             }
             config.userName = configuredUserName
         }
         documents.onEach { document ->
-            document.save(job.printerDirectory(), overwrite = true)
+            document.save(printerDirectory(), overwrite = true)
             optionalCommandToHandleFile?.let { document.runCommand(it) }
         }
         return documents.map { it.file!! }
@@ -363,10 +362,10 @@ class CupsClient(
     private fun IppJob.tryToGetDocuments(
         documents: MutableCollection<IppDocument>,
         onSuccessUpdateJobAttributes: Boolean = false
-    ) = try { // returns "getting document was authorized"
+    ) = try {
         documents.addAll(cupsGetDocuments())
         if (documents.isNotEmpty() && onSuccessUpdateJobAttributes) updateAttributes()
-        true
+        true // getting documents was authorized and download succeeded
     } catch (ippExchangeException: IppExchangeException) {
         logger.info { "Get documents for job #$id failed: ${ippExchangeException.message}" }
         ippExchangeException !is HttpPostException || ippExchangeException.httpStatus != 401
