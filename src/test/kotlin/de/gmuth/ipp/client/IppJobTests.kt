@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2021-2023 Gerhard Muth
+ * Copyright (c) 2021-2024 Gerhard Muth
  */
 
 import de.gmuth.ipp.attributes.JobState
@@ -64,7 +64,6 @@ class IppJobTests {
     @Test
     fun updateAttributes() {
         job.apply {
-            attributes.onReplaceWarn = true
             updateAttributes()
             log(logger)
             assertEquals(32, attributes.size)

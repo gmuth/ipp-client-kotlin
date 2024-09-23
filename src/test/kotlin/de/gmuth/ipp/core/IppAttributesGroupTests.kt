@@ -20,18 +20,18 @@ class IppAttributesGroupTests {
 
     @Test
     fun constructorFails1() {
-        assertFailsWith<IppException> { IppAttributesGroup(End) }
+        assertFailsWith<IllegalArgumentException> { IppAttributesGroup(End) }
     }
 
     @Test
     fun constructorFails2() {
-        assertFailsWith<IppException> { IppAttributesGroup(Integer) }
+        assertFailsWith<IllegalArgumentException> { IppAttributesGroup(Integer) }
     }
 
     @Test
-    fun putWithReplacement() {
+    fun putWithReplacementEnabled() {
         group.run {
-            onReplaceWarn = false
+            replaceEnabled = true
             attribute("number", Integer, 0)
             attribute("number", Integer, 1, 2)
             assertEquals(1, size)
@@ -40,13 +40,13 @@ class IppAttributesGroupTests {
     }
 
     @Test
-    fun putWithReplacementWarning() {
+    fun putWithReplacementDisabled() {
         group.run {
-            onReplaceWarn = true
+            replaceEnabled = false
             put(IppAttribute("number", Integer, 0))
             put(IppAttribute("number", Integer, 1, 2))
             assertEquals(1, size)
-            assertEquals(get("number")!!.values.size, 2)
+            assertEquals(get("number")!!.values.size, 1)
         }
     }
 

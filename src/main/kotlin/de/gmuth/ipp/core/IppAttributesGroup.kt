@@ -18,15 +18,24 @@ import java.util.logging.Logger.getLogger
 class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*>>() {
 
     private val logger = getLogger(javaClass.name)
-    var onReplaceWarn: Boolean = false
+    var replaceEnabled: Boolean = true
 
     init {
-        if (!tag.isGroupTag()) throw IppException("'$tag' is not a group tag")
+        require(tag.isGroupTag(), { "'$tag' is not a group tag" })
     }
 
-    fun put(attribute: IppAttribute<*>) = put(attribute.name, attribute).also {
-        if (it != null && onReplaceWarn) {
-            logger.warning { "replaced '$it' with '${attribute.values.joinToString(",")}' in group $tag" }
+    fun put(attribute: IppAttribute<*>) {
+        if (containsKey(attribute.name)) {
+            // some implementations do not follow the IPP specification
+            if (replaceEnabled) {
+                put(attribute.name, attribute).also {
+                    logger.warning { "replaced '$it' with '${attribute.values.joinToString(",")}' in group $tag" }
+                }
+            } else {
+                logger.warning { "ignored replacement attribute: $attribute" }
+            }
+        } else {
+            put(attribute.name, attribute)
         }
     }
 
