@@ -63,8 +63,8 @@ class IppRequest : IppMessage {
         attribute("notify-pull-method", Keyword, "ippget")
         notifyJobId?.let { attribute("notify-job-id", Integer, it) }
         notifyEvents?.let { attribute("notify-events", Keyword, it) }
-        notifyTimeInterval?.let { attribute("notify-time-interval", Integer, it.toMillis() / 1000) }
-        notifyLeaseDuration?.let { attribute("notify-lease-duration", Integer, it.toMillis() / 1000) }
+        notifyTimeInterval?.let { attribute("notify-time-interval", Integer, it.toSeconds()) }
+        notifyLeaseDuration?.let { attribute("notify-lease-duration", Integer, it.toSeconds()) }
     }
 
 }
