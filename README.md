@@ -161,8 +161,8 @@ if (defaultPrinter.hasCapability(Capability.CanPrintInColor)) {
 // Get canceled jobs and save documents
 cupsClient.getJobsAndSaveDocuments(WhichJobs.Canceled)
 
-// Setup IPP Everywhere Printer
-cupsClient.setupIppEverywherePrinter(
+// Create IPP Everywhere Printer
+cupsClient.createIppEverywherePrinter(
     "myprinter",
     URI.create("ipp://myprinter.local:631/ipp/print"),
     "My description",
