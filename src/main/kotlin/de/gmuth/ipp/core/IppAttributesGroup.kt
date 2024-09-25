@@ -4,6 +4,7 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020-2024 Gerhard Muth
  */
 
+import de.gmuth.ipp.core.IppException.IppAttributeNotFoundException
 import java.io.BufferedWriter
 import java.io.File
 import java.net.URI
@@ -58,11 +59,11 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getValue(name: String) =
-        get(name)?.value as T ?: throw attributeNotFoundException(name)
+        get(name)?.value as T ?: throw IppAttributeNotFoundException(name, tag)
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getValues(name: String) =
-        get(name)?.values as T ?: throw attributeNotFoundException(name)
+        get(name)?.values as T ?: throw IppAttributeNotFoundException(name, tag)
 
     fun getValueAsURI(name: String) =
         getValue<URI>(name)
@@ -71,13 +72,13 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
         getValue<IppString>(name).text
 
     fun getValuesAsListOfStrings(name: String) =
-        get(name)?.getStringValues() ?: throw attributeNotFoundException(name)
+        get(name)?.getStringValues() ?: throw IppAttributeNotFoundException(name, tag)
 
     fun getValueAsZonedDateTime(name: String, zoneId: ZoneId = ZoneId.systemDefault()): ZonedDateTime =
-        get(name)?.getValueAsZonedDateTime()?.withZoneSameInstant(zoneId) ?: throw attributeNotFoundException(name)
+        get(name)?.getValueAsZonedDateTime()?.withZoneSameInstant(zoneId) ?: throw IppAttributeNotFoundException(name, tag)
 
     fun getValueAsDurationOfSeconds(name: String): Duration =
-        get(name)?.getValueAsDurationOfSeconds() ?: throw attributeNotFoundException(name)
+        get(name)?.getValueAsDurationOfSeconds() ?: throw IppAttributeNotFoundException(name, tag)
 
     fun put(attributesGroup: IppAttributesGroup) =
         attributesGroup.values.forEach { put(it) }
@@ -89,9 +90,6 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
 
     fun toCompactString() =
         values.joinToString(" ") { it.toCompactString() }
-
-    private fun attributeNotFoundException(name: String) =
-        IppException("Attribute '$name' not found in group $tag")
 
     @JvmOverloads
     fun log(logger: Logger, level: Level = INFO, prefix: String = "", title: String = "$tag") {
