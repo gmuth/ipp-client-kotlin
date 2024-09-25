@@ -23,7 +23,7 @@ data class IppAttribute<T>(val name: String, val tag: IppTag) : IppAttributeBuil
     val values: MutableCollection<T> = mutableListOf()
 
     init {
-        if (tag.isDelimiterTag()) throw IppException("'$tag' is not a value tag")
+        require (tag.isValueTag()) { "'$tag' is not a value tag"}
     }
 
     constructor(name: String, tag: IppTag, values: Collection<T>) : this(name, tag) {

@@ -21,7 +21,7 @@ class IppAttributeTests {
 
     @Test
     fun constructorFailsDueToDelimiterTag() {
-        assertFailsWith<IppException> { IppAttribute<Unit>("some-attribute-name", Operation) }
+        assertFailsWith<IllegalArgumentException> { IppAttribute<Unit>("some-attribute-name", Operation) }
     }
 
     @Test
