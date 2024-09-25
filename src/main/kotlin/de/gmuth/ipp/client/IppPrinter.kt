@@ -477,7 +477,7 @@ class IppPrinter(
     }
 
     fun checkNotifyEvents(notifyEvents: Collection<String>?) = notifyEvents?.let {
-        if (!attributes.containsKey("notify-events-supported"))
+        if (attributes.isNotEmpty() && !attributes.containsKey("notify-events-supported"))
             throw IppException("Printer does not support event notifications.")
         if (it.isNotEmpty() && it.first() != "all") {
             checkIfValueIsSupported("notify-events", it, true)
