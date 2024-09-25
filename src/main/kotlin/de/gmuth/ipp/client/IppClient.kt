@@ -170,6 +170,10 @@ open class IppClient(val config: IppConfig = IppConfig()) {
 
         responseCode == 401 -> with(request) { "Not authorized for operation $operation on $printerOrJobUri (userName required)" }
         responseCode == 426 -> "HTTP status $responseCode, $responseMessage, Try ipps://${request.printerOrJobUri.host}"
+        responseCode in 300..399 -> {
+            val locationHeader = headerFields["Location"] ?: headerFields["location"]
+            "HTTP redirect: $responseCode, $responseMessage redirect-location: $locationHeader"
+        }
         responseCode != 200 -> "HTTP request failed: $responseCode, $responseMessage"
         contentType != null && !contentType.startsWith(APPLICATION_IPP) -> "Invalid Content-Type: $contentType"
         exception != null -> exception.message
