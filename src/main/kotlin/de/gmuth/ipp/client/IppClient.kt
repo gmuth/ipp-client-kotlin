@@ -114,7 +114,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
                     errorStream
                 }
                 return decodeContentStream(request, responseContentStream)
-                    .apply { httpServer = headerFields["Server"]?.first() }
+                    .apply { httpServer = getHeaderField("Server") }
             } finally {
                 if (disconnectAfterHttpPost) disconnect()
             }
@@ -164,10 +164,12 @@ open class IppClient(val config: IppConfig = IppConfig()) {
         contentStream: InputStream?,
         exception: Exception? = null
     ) = when {
+        responseCode in 300..308 -> {
+            "HTTP redirect: $responseCode, $responseMessage, Location: ${getHeaderField("Location")}"
+        }
         responseCode == 401 && request.operationGroup.containsKey("requesting-user-name") -> with(request) {
             "User \"$requestingUserName\" is not authorized for operation $operation on $printerOrJobUri"
         }
-
         responseCode == 401 -> with(request) { "Not authorized for operation $operation on $printerOrJobUri (userName required)" }
         responseCode == 426 -> "HTTP status $responseCode, $responseMessage, Try ipps://${request.printerOrJobUri.host}"
         responseCode != 200 -> "HTTP request failed: $responseCode, $responseMessage"
