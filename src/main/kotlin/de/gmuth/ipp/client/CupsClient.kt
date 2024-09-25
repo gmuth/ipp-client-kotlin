@@ -21,7 +21,7 @@ import java.util.logging.Logger.getLogger
 // https://www.cups.org/doc/spec-ipp.html
 class CupsClient(
     val cupsUri: URI = URI.create("ipp://localhost"),
-    private val ippClient: IppClient = IppClient()
+    val ippClient: IppClient = IppClient()
 ) {
     constructor(host: String = "localhost") : this(URI.create("ipp://$host"))
 
