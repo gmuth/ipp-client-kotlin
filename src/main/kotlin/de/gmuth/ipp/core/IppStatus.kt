@@ -62,9 +62,9 @@ enum class IppStatus(val code: Int) {
     ServerErrorTooManyJobs(0x050B), // https://ftp.pwg.org/pub/pwg/candidates/cs-ippjobext20-20190816-5100.7.pdf
     ServerErrorTooManyDocuments(0x050C);
 
-    fun isSuccessful() = (0x0000..0x00FF).contains(code)
-    fun isClientError() = (0x0400..0x04FF).contains(code)
-    fun isServerError() = (0x0500..0x05FF).contains(code)
+    fun isSuccessful() = code in 0x0000..0x00FF
+    fun isClientError() = code in 0x0400..0x04FF
+    fun isServerError() = code in 0x0500..0x05FF
 
     override fun toString() = name
         .replace(Regex("[A-Z]+")) { "-" + it.value.lowercase() }
