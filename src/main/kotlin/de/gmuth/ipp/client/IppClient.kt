@@ -191,11 +191,10 @@ open class IppClient(val config: IppConfig = IppConfig()) {
         try {
             read(contentStream)
         } catch (throwable: Throwable) {
-            throw IppOperationException(request, this, message = "Failed to decode ipp response", cause = throwable)
-                .also {
-                    if (onExceptionSaveMessages)
-                        it.saveMessages("decoding_ipp_response_${request.requestId}_failed")
-                }
+            throw IppOperationException(request, this, "Failed to decode ipp response", throwable).apply {
+                if (onExceptionSaveMessages)
+                    saveMessages("decoding_ipp_response_${request.requestId}_failed")
+            }
         }
     }
 }
