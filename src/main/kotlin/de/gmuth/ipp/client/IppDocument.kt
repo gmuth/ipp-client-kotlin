@@ -50,7 +50,7 @@ class IppDocument(
         var suffix: String? = filenameSuffix()
         job.run {
             append("job-$id")
-            if (numberOfDocuments > 1) append("-doc-$number")
+            getNumberOfDocumentsOrDocumentCount().also { if (it > 1) append("-doc-$it")}
             job.getOriginatingUserNameOrAppleJobOwnerOrNull()?.let { append("-$it") }
             if (attributes.containsKey("com.apple.print.JobInfo.PMApplicationName")) {
                 append("-${attributes.getValueAsString("com.apple.print.JobInfo.PMApplicationName")}")
