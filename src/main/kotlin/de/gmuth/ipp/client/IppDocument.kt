@@ -75,7 +75,7 @@ class IppDocument(
         if (file.isFile && !overwrite) throw IOException("File '$file' already exists")
         copyTo(file.outputStream())
         this.file = file
-        logger.info { "Saved $file" }
+        logger.info { "Saved $file ${if(attributes.containsKey("document-format")) "($format)" else ""}" }
     }
 
     fun runCommand(commandToHandleFile: String) =
