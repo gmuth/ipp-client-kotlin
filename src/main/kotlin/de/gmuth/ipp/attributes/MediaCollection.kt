@@ -49,11 +49,11 @@ data class MediaCollection(
     companion object {
         fun fromIppCollection(mediaIppCollection: IppCollection) = MediaCollection().apply {
             for (member in mediaIppCollection.members) with(member) {
-                when {
-                    name == "media-size" -> size = MediaSize.fromIppCollection(value as IppCollection)
-                    name == "media-type" -> type = getStringValue()
-                    name == "media-source" -> source = MediaSource(getStringValue())
-                    name == "duplex-supported" -> duplexSupported = (value as Int) == 1
+                when (name) {
+                    "media-size" -> size = MediaSize.fromIppCollection(value as IppCollection)
+                    "media-type" -> type = getStringValue()
+                    "media-source" -> source = MediaSource(getStringValue())
+                    "duplex-supported" -> duplexSupported = (value as Int) == 1
                     else -> if (!isMediaMargin()) logger.warning { "unsupported member: $member" }
                 }
             }
