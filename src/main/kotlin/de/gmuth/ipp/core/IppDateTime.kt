@@ -141,9 +141,9 @@ data class IppDateTime(
     companion object {
         fun now(zone: ZoneId = ZoneId.systemDefault()) =
             IppDateTime(ZonedDateTime.now(zone))
+
+        // Calendar extension
+        private fun Calendar.dstSavingsOffsetMillis() =
+            with(timeZone) { rawOffset + if (useDaylightTime() && inDaylightTime(time)) dstSavings else 0 }
     }
 }
-
-// Calendar extension
-fun Calendar.dstSavingsOffsetMillis() =
-    with(timeZone) { rawOffset + if (useDaylightTime() && inDaylightTime(time)) dstSavings else 0 }
