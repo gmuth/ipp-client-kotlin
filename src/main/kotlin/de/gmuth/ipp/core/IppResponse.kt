@@ -38,7 +38,7 @@ class IppResponse : IppMessage {
         version: String = "2.0",
         requestId: Int = 1,
         charset: Charset = Charsets.UTF_8,
-        naturalLanguage: String = "en"
+        naturalLanguage: String = "en-us"
     ) : super(version, requestId, charset, naturalLanguage) {
         code = status.code
     }
