@@ -262,12 +262,9 @@ class CupsClient(
     // Get jobs and save documents
     // ---------------------------
 
-    private val jobOwners = mutableSetOf<String>()
-
     fun getOwnersOfAllJobs() = getJobs(All)
-        .map { it.getOriginatingUserNameOrAppleJobOwnerOrNull() }
-        .filterNotNull()
-        .toSet()
+        .mapNotNull { it.getOriginatingUserNameOrAppleJobOwnerOrNull() }
+        .toSortedSet()
 
     fun getJobsAndSaveDocuments(
         whichJobs: WhichJobs = All,
@@ -284,23 +281,28 @@ class CupsClient(
                 "job-name", "job-state", "job-state-reasons",
                 if (version < "1.6.0") "document-count" else "number-of-documents"
             )
-            // weird: do not modify above set
-            // job-originating-user-name is missing when document-count or job-originating-host-name ist requested
-            // once hidden in response, wait for one minute and user-name should show up again
         )
-            .onEach { job -> // update attributes and lookup job owners
-                if (updateJobAttributes) job.updateAttributes()
-                logger.info { job.toString() }
-                job.getOriginatingUserNameOrAppleJobOwnerOrNull()?.let { jobOwners.add(it) }
+            .onEach {
+                if(updateJobAttributes) it.updateAttributes()
+                logger.info { "$it" }
             }
-            .onEach { job -> // keep stats and save documents
-                if (job.getNumberOfDocumentsOrDocumentCount() == 0)
-                    numberOfJobsWithoutDocuments.incrementAndGet()
-                else job.getAndSaveDocuments(optionalCommandToHandleFile = commandToHandleSavedFile)
-                    .apply { numberOfSavedDocuments.addAndGet(size) }
+            .onEach {
+                it.apply {
+                    if (getNumberOfDocumentsOrDocumentCount() == 0) {
+                        numberOfJobsWithoutDocuments.incrementAndGet()
+                    } else {
+                        try {
+                            useJobOwnerAsUserName = true
+                            cupsGetDocuments(true, optionalCommandToHandleFile = commandToHandleSavedFile)
+                                .apply { numberOfSavedDocuments.addAndGet(size) }
+                        } catch (ippExchangeException: IppExchangeException) {
+                            logger.info { "Get documents for job #$id failed: ${ippExchangeException.message}" }
+                            ippExchangeException !is HttpPostException || ippExchangeException.httpStatus != 401
+                        }
+                    }
+                }
             }
             .apply {
-                logger.info { "Found ${jobOwners.size} job ${if (jobOwners.size == 1) "owner" else "owners"}: $jobOwners" }
                 logger.info { "Found $size jobs (which=$whichJobs) where $numberOfJobsWithoutDocuments jobs have no documents" }
                 logger.info { "Saved $numberOfSavedDocuments documents of ${size.minus(numberOfJobsWithoutDocuments.toInt())} jobs with documents to directory: ${cupsServer.workDirectory}" }
             }
@@ -316,6 +318,7 @@ class CupsClient(
         leaseDuration: Duration = Duration.ofMinutes(60),
         autoRenewLease: Boolean = true,
         pollEvery: Duration = Duration.ofSeconds(1),
+        saveDocuments: Boolean = true,
         commandToHandleFile: String? = null // e.g. "open" -> open <filename> with Preview on MacOS
     ) {
         createSubscription(whichJobEvents, notifyLeaseDuration = leaseDuration)
@@ -327,48 +330,9 @@ class CupsClient(
                         Thread.sleep(1969)
                         updateAttributes()
                     }
-                    getAndSaveDocuments(optionalCommandToHandleFile = commandToHandleFile)
+                    useJobOwnerAsUserName = true
+                    cupsGetDocuments(save = saveDocuments, optionalCommandToHandleFile = commandToHandleFile)
                 }
             }
     }
-
-    // ------------------------------
-    // Get and save documents for job
-    // ------------------------------
-
-    private fun IppJob.getAndSaveDocuments(
-        onSuccessUpdateJobAttributes: Boolean = false,
-        optionalCommandToHandleFile: String? = null
-    ): Collection<File> {
-        val documents: MutableCollection<IppDocument> = mutableListOf()
-        if (!tryToGetDocuments(documents, onSuccessUpdateJobAttributes)) {
-            val configuredUserName = config.userName
-            jobOwners.forEach {
-                if (it != getOriginatingUserNameOrAppleJobOwnerOrNull()) {
-                    config.userName = it
-                    logger.fine { "set userName '${config.userName}'" }
-                    if (tryToGetDocuments(documents, onSuccessUpdateJobAttributes)) return@forEach
-                }
-            }
-            config.userName = configuredUserName
-        }
-        documents.onEach { document ->
-            document.save(printerDirectory(), overwrite = true)
-            optionalCommandToHandleFile?.let { document.runCommand(it) }
-        }
-        return documents.map { it.file!! }
-    }
-
-    private fun IppJob.tryToGetDocuments(
-        documents: MutableCollection<IppDocument>,
-        onSuccessUpdateJobAttributes: Boolean = false
-    ) = try {
-        documents.addAll(cupsGetDocuments())
-        if (documents.isNotEmpty() && onSuccessUpdateJobAttributes) updateAttributes()
-        true // getting documents was authorized and download succeeded
-    } catch (ippExchangeException: IppExchangeException) {
-        logger.info { "Get documents for job #$id failed: ${ippExchangeException.message}" }
-        ippExchangeException !is HttpPostException || ippExchangeException.httpStatus != 401
-    }
-
 }
