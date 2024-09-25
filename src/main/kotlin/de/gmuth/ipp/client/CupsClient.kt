@@ -287,17 +287,16 @@ class CupsClient(
                 logger.info { "$it" }
             }
             .onEach {
-                it.apply {
+                it.apply { // job
                     if (getNumberOfDocumentsOrDocumentCount() == 0) {
                         numberOfJobsWithoutDocuments.incrementAndGet()
                     } else {
                         try {
                             useJobOwnerAsUserName = true
-                            cupsGetDocuments(true, optionalCommandToHandleFile = commandToHandleSavedFile)
+                            cupsGetDocuments(save = true, optionalCommandToHandleFile = commandToHandleSavedFile)
                                 .apply { numberOfSavedDocuments.addAndGet(size) }
                         } catch (ippExchangeException: IppExchangeException) {
                             logger.info { "Get documents for job #$id failed: ${ippExchangeException.message}" }
-                            ippExchangeException !is HttpPostException || ippExchangeException.httpStatus != 401
                         }
                     }
                 }
