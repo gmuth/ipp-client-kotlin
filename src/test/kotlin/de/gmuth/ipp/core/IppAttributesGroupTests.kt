@@ -4,6 +4,7 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020-2024 Gerhard Muth
  */
 
+import de.gmuth.ipp.core.IppAttributesGroup.Companion.replaceEnabled
 import de.gmuth.ipp.core.IppTag.*
 import java.io.File
 import java.time.ZoneId

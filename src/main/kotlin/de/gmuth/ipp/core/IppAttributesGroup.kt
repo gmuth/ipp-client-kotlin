@@ -18,7 +18,10 @@ import java.util.logging.Logger.getLogger
 class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*>>() {
 
     private val logger = getLogger(javaClass.name)
-    var replaceEnabled: Boolean = true
+
+    companion object {
+        var replaceEnabled: Boolean = true
+    }
 
     init {
         require(tag.isGroupTag(), { "'$tag' is not a group tag" })
