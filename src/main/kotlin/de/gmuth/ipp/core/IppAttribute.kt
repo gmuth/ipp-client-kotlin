@@ -56,8 +56,8 @@ data class IppAttribute<T>(val name: String, val tag: IppTag) : IppAttributeBuil
     fun isCollection() = tag == BegCollection
 
     companion object {
-        // Get string values for attributes with tag 'keyword' or 'name'
-        fun getStringValue(value: Any): String = when (value) {
+        // Get string value for attributes with tag 'keyword' or 'name'
+        internal fun getStringValue(value: Any): String = when (value) {
             is String -> value
             is IppString -> value.text
             else -> throw IllegalArgumentException("Expected String or IppString value but found ${value.javaClass.name}")
