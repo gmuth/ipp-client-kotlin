@@ -58,7 +58,9 @@ class IppMessageTests {
             }
             assertTrue(documentInputStreamIsConsumed)
             assertEquals(38, rawBytes!!.size)
-            write(ByteArrayOutputStream()) // cover warning
+            assertFailsWith<IppException> {
+                write(ByteArrayOutputStream())
+            }
             toString() // cover toString
             log(logger) // cover log
         }
@@ -75,10 +77,11 @@ class IppMessageTests {
             val tmpFile1 = createTempFile("test", null)
             val tmpFile2 = createTempFile("test", null)
             try {
+                IppMessage.keepDocumentCopy = true
                 assertTrue(hasDocument())
-                saveDocumentStream(tmpFile1)
+                saveDocument(tmpFile1)
                 assertEquals(26, tmpFile1.length())
-                encode() // save raw bytes
+                encode(appendDocumentIfAvailable = true) // save raw bytes
                 saveBytes(tmpFile2)
                 assertEquals(38, tmpFile2.length())
             } finally {

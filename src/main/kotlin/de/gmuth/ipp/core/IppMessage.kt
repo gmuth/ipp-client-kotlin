@@ -85,21 +85,25 @@ abstract class IppMessage() {
     // ENCODING
     // --------
 
-    fun write(outputStream: OutputStream) {
+    @JvmOverloads
+    fun write(outputStream: OutputStream, writeDocumentIfAvailable: Boolean = true) {
         val byteArraySavingOutputStream = ByteArraySavingOutputStream(outputStream)
         try {
             IppOutputStream(byteArraySavingOutputStream).writeMessage(this)
         } finally {
             rawBytes = byteArraySavingOutputStream.getSavedBytes()
         }
-        if (hasDocument()) copyDocumentStream(outputStream)
+        if (writeDocumentIfAvailable && hasDocument()) {
+            writeDocument(outputStream)
+        }
     }
 
     fun write(file: File) =
         write(FileOutputStream(file))
 
-    fun encode(): ByteArray = ByteArrayOutputStream().run {
-        write(this)
+    @JvmOverloads
+    fun encode(appendDocumentIfAvailable: Boolean = true) = ByteArrayOutputStream().run {
+        write(this, appendDocumentIfAvailable)
         toByteArray()
     }
 
@@ -136,8 +140,21 @@ abstract class IppMessage() {
     // DOCUMENT and IPP-MESSAGE
     // ------------------------
 
-    protected fun copyDocumentStream(outputStream: OutputStream): Long {
-        if (documentInputStreamIsConsumed) logger.warning { "documentInputStream is consumed" }
+    fun writeDocument(outputStream: OutputStream) {
+        if (documentInputStreamIsConsumed) {
+            if (keepDocumentCopy) outputStream.use { it.write(documentBytes!!) }
+            else throw IppException(
+                "Enable IppMessage.keepDocumentCopy in order to keep documentBytes after consumption of documentInputStream"
+            )
+        } else {
+            copyUnconsumedDocumentInputStream(outputStream)
+        }
+    }
+
+    private fun copyUnconsumedDocumentInputStream(outputStream: OutputStream): Long {
+        if (hasDocument() && documentInputStreamIsConsumed) {
+            throw IppException("documentInputStream is consumed")
+        }
         val byteArraySavingOutputStream = ByteArraySavingOutputStream(outputStream)
         return documentInputStream!!
             .copyTo(if (keepDocumentCopy) byteArraySavingOutputStream else outputStream) // number of bytes copied
@@ -152,9 +169,9 @@ abstract class IppMessage() {
             }
     }
 
-    fun saveDocumentStream(file: File) {
-        copyDocumentStream(file.outputStream())
-        logger.fine { "Saved ${file.length()} document bytes to file ${file.path}" }
+    fun saveDocument(file: File) = file.run {
+        writeDocument(outputStream())
+        logger.info { "Saved ${file.length()} document bytes to file $path" }
     }
 
     fun saveBytes(file: File) =
@@ -165,6 +182,7 @@ abstract class IppMessage() {
             logger.info { "Saved ${file.path} (${file.length()} bytes)" }
         }
 
+    @JvmOverloads
     fun write(bufferedWriter: BufferedWriter, title: String? = null) {
         fun writeln(text: String) = bufferedWriter.run { write(text); newLine() }
         title?.also { bufferedWriter.write(it) }
