@@ -1,9 +1,8 @@
-# ipp-client v3.1
+# ipp-client v3.2
 
 A client implementation of the ipp protocol for java and kotlin.
 RFCs [8010](https://tools.ietf.org/html/rfc8010),
 [8011](https://tools.ietf.org/html/rfc8011),
-[3382](https://datatracker.ietf.org/doc/html/rfc3382),
 [3995](https://datatracker.ietf.org/doc/html/rfc3995) and
 [3996](https://datatracker.ietf.org/doc/html/rfc3996)
 
@@ -21,7 +20,7 @@ supports printer lookup by queue name.
 Repository [ipp-samples](https://github.com/gmuth/ipp-samples) contains examples how to use jmDNS.
 
 ```
-implementation("de.gmuth:ipp-client:3.1")
+implementation("de.gmuth:ipp-client:3.2")
 ```
 
 [README.md for version 2.x](https://github.com/gmuth/ipp-client-kotlin/blob/2.5/README.md) is still available.
@@ -108,7 +107,6 @@ of [IppInspector](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/mai
 IPP traffic is saved to directory `inspected-printers`. The workflow will try to print a PDF.
 
 ```
-// need an IPP server? https://openprinting.github.io/cups/doc/man-ippeveprinter.html
 IppInspector().inspect(URI.create("ipp://ippeveprinter:8501/ipp/print"))
 ```
 

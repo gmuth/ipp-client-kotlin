@@ -15,7 +15,7 @@ plugins {
 }
 
 group = "de.gmuth"
-version = "3.2-SNAPSHOT"
+version = "3.2"
 
 repositories {
     mavenCentral()
