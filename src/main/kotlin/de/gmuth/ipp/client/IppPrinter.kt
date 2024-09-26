@@ -377,7 +377,7 @@ class IppPrinter(
     //-----------------------
 
     @SuppressWarnings("kotlin:S1133") // some old printers support this optional operation
-    @Deprecated(message = "see https://ftp.pwg.org/pub/pwg/ipp/registrations/reg-ippdepuri10-20211215.pdf")
+    // Deprecated(message = "see https://ftp.pwg.org/pub/pwg/ipp/registrations/reg-ippdepuri10-20211215.pdf")
     fun printUri(documentUri: URI, vararg attributeBuilders: IppAttributeBuilder): IppJob {
         val request = attributeBuildersRequest(PrintURI, attributeBuilders.toList()).apply {
             operationGroup.attribute("document-uri", Uri, documentUri)

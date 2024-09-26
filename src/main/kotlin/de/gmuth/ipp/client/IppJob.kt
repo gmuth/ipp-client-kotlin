@@ -99,12 +99,25 @@ class IppJob(
     val appleJobOwner: String // only supported by Apple CUPS
         get() = attributes.getValueAsString("com.apple.print.JobInfo.PMJobOwner")
 
+    @JvmOverloads
     fun isPending(updateStateAttributes: Boolean = false) = stateIs(updateStateAttributes, Pending)
+
+    @JvmOverloads
     fun isAborted(updateStateAttributes: Boolean = false) = stateIs(updateStateAttributes, Aborted)
+
+    @JvmOverloads
     fun isCanceled(updateStateAttributes: Boolean = false) = stateIs(updateStateAttributes, Canceled)
+
+    @JvmOverloads
     fun isCompleted(updateStateAttributes: Boolean = false) = stateIs(updateStateAttributes, Completed)
+
+    @JvmOverloads
     fun isProcessing(updateStateAttributes: Boolean = false) = stateIs(updateStateAttributes, Processing)
+
+    @JvmOverloads
     fun isProcessingStopped(updateStateAttributes: Boolean = false) = stateIs(updateStateAttributes, ProcessingStopped)
+
+    @JvmOverloads
     fun isTerminated(updateStateAttributes: Boolean = false) = stateIs(updateStateAttributes, Canceled)
             || stateIs(false, Aborted) || stateIs(false, Completed)
 
@@ -143,12 +156,14 @@ class IppJob(
     //-------------------
 
     //  RFC 8011 4.3.4 groups: 'all', 'job-template', 'job-description'
+    @JvmOverloads
     fun getJobAttributes(requestedAttributes: List<String>? = null) =
         exchange(ippRequest(GetJobAttributes, requestedAttributes)).jobGroup
 
     fun getJobAttributes(vararg requestedAttribute: String) =
         getJobAttributes(requestedAttribute.toList())
 
+    @JvmOverloads
     fun updateAttributes(requestedAttributes: List<String>? = null) =
         attributes.put(getJobAttributes(requestedAttributes))
 
@@ -233,9 +248,9 @@ class IppJob(
     // Send-URI (depreacted)
     //----------------------
 
-    @SuppressWarnings("kotlin:S1133") // some old printers support this optional operation
-    @Deprecated(message = "see https://ftp.pwg.org/pub/pwg/ipp/registrations/reg-ippdepuri10-20211215.pdf")
     @JvmOverloads
+    @SuppressWarnings("kotlin:S1133") // some old printers support this optional operation
+    // Deprecated(message = "see https://ftp.pwg.org/pub/pwg/ipp/registrations/reg-ippdepuri10-20211215.pdf")
     fun sendUri(
         documentUri: URI,
         lastDocument: Boolean = true,
@@ -266,7 +281,7 @@ class IppJob(
 
     fun cupsMoveJob(printerUri: URI) = exchange(
         ippRequest(CupsMoveJob).apply {
-            require(uri.host == printerUri.host) { "Printer $printerUri must be on the same server: ${uri.host}" }
+            require(uri.host == printerUri.host) { "Printer $printerUri must be managed by the same server as ${uri.host}" }
             createAttributesGroup(Job).attribute("job-printer-uri", Uri, printerUri)
         }
     )
