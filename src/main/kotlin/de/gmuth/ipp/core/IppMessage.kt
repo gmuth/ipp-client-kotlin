@@ -171,7 +171,7 @@ abstract class IppMessage() {
 
     fun saveDocument(file: File) = file.run {
         writeDocument(outputStream())
-        logger.info { "Saved ${file.length()} document bytes to file $path" }
+        logger.info { "Saved ${length()} document bytes to file $path" }
     }
 
     fun saveBytes(file: File) =
