@@ -75,7 +75,8 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
         get(name)?.getStringValues() ?: throw IppAttributeNotFoundException(name, tag)
 
     fun getValueAsZonedDateTime(name: String, zoneId: ZoneId = ZoneId.systemDefault()): ZonedDateTime =
-        get(name)?.getValueAsZonedDateTime()?.withZoneSameInstant(zoneId) ?: throw IppAttributeNotFoundException(name, tag)
+        get(name)?.getValueAsZonedDateTime()?.withZoneSameInstant(zoneId)
+            ?: throw IppAttributeNotFoundException(name, tag)
 
     fun getValueAsDurationOfSeconds(name: String): Duration =
         get(name)?.getValueAsDurationOfSeconds() ?: throw IppAttributeNotFoundException(name, tag)
@@ -97,17 +98,14 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
         keys.forEach { logger.log(level) { "$prefix  ${get(it)}" } }
     }
 
-    fun write(bufferedWriter: BufferedWriter, title: String = "$tag") = bufferedWriter.run {
-        write(title)
-        newLine()
-        values.forEach {
-            write("  $it")
-            newLine()
-        }
+    @JvmOverloads
+    fun writeText(bufferedWriter: BufferedWriter, title: String = "$tag") = bufferedWriter.run {
+        write(title); newLine()
+        values.forEach { write("  $it"); newLine() }
     }
 
     fun saveText(file: File) = file.apply {
-        bufferedWriter().use { write(it) }
+        bufferedWriter().use { writeText(it) }
         logger.info { "Saved $path" }
     }
 }

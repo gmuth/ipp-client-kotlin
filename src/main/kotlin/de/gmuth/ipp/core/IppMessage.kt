@@ -183,21 +183,19 @@ abstract class IppMessage() {
         }
 
     @JvmOverloads
-    fun write(bufferedWriter: BufferedWriter, title: String? = null) {
-        fun writeln(text: String) = bufferedWriter.run { write(text); newLine() }
-        title?.also { bufferedWriter.write(it) }
-        if (rawBytes != null) bufferedWriter.write(" (decoded ${rawBytes!!.size} raw IPP bytes)")
-        bufferedWriter.newLine()
+    fun writeText(bufferedWriter: BufferedWriter, title: String? = null) = bufferedWriter.run {
+        fun BufferedWriter.writeln(text: String) { write(text); newLine() }
+        title?.also { write(it) }
+        if (rawBytes != null) write(" (decoded ${rawBytes!!.size} raw IPP bytes)")
+        newLine()
         writeln("version $version")
         writeln(codeDescription)
         writeln("request-id $requestId")
-        for (group in attributesGroups) {
-            group.write(bufferedWriter)
-        }
+        attributesGroups.forEach { it.writeText(bufferedWriter) }
     }
 
     fun saveText(file: File) = file.apply {
-        bufferedWriter().use { write(it, title = "# File: ${file.name}") }
+        bufferedWriter().use { writeText(it, title = "# File: ${file.name}") }
         logger.info { "Saved $path (${length()} bytes)" }
     }
 
