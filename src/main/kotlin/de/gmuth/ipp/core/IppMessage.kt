@@ -144,7 +144,7 @@ abstract class IppMessage() {
         if (documentInputStreamIsConsumed) {
             if (keepDocumentCopy) outputStream.use { it.write(documentBytes!!) }
             else throw IppException(
-                "Enable IppMessage.keepDocumentCopy in order to keep documentBytes after consumption of documentInputStream"
+                "DocumentInputStream is consumed. Enable IppMessage.keepDocumentCopy in order to keep documentBytes."
             )
         } else {
             copyUnconsumedDocumentInputStream(outputStream)
@@ -184,7 +184,9 @@ abstract class IppMessage() {
 
     @JvmOverloads
     fun writeText(bufferedWriter: BufferedWriter, title: String? = null) = bufferedWriter.run {
-        fun BufferedWriter.writeln(text: String) { write(text); newLine() }
+        fun BufferedWriter.writeln(text: String) {
+            write(text); newLine()
+        }
         title?.also { write(it) }
         if (rawBytes != null) write(" (decoded ${rawBytes!!.size} raw IPP bytes)")
         newLine()
