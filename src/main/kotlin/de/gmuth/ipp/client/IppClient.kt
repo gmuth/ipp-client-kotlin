@@ -74,7 +74,13 @@ open class IppClient(val config: IppConfig = IppConfig()) {
 
     fun exchange(request: IppRequest) = with(request) {
         logger.fine { "Send '$operation' request to $printerOrJobUri" }
-        httpPost(toHttpUri(printerOrJobUri), request).also {
+        val httpUri = with(printerOrJobUri) {
+            URI(
+                scheme.replace("ipp", "http"), userInfo, host,
+                if (port == -1) 631 else port, path, query, fragment
+            )
+        }
+        httpPost(httpUri, request).also {
             logger.finer { "Req #${request.requestId} @${printerOrJobUri.host}: $request => $it" }
             if (logger.isLoggable(FINEST)) {
                 request.log(logger, FINEST, ">>> ")
@@ -139,12 +145,6 @@ open class IppClient(val config: IppConfig = IppConfig()) {
         }
     }
 
-    internal fun toHttpUri(ippUri: URI): URI = with(ippUri) {
-        val scheme = scheme.replace("ipp", "http")
-        val port = if (port == -1) 631 else port
-        URI.create("$scheme://$host:$port$rawPath")
-    }
-
     private fun HttpURLConnection.configure(chunked: Boolean) {
         config.run {
             connectTimeout = timeout.toMillis().toInt()
@@ -167,9 +167,11 @@ open class IppClient(val config: IppConfig = IppConfig()) {
         responseCode in 300..308 -> {
             "HTTP redirect: $responseCode, $responseMessage, Location: ${getHeaderField("Location")}"
         }
+
         responseCode == 401 && request.operationGroup.containsKey("requesting-user-name") -> with(request) {
             "User \"$requestingUserName\" is not authorized for operation $operation on $printerOrJobUri"
         }
+
         responseCode == 401 -> with(request) { "Not authorized for operation $operation on $printerOrJobUri (userName required)" }
         responseCode == 426 -> "HTTP status $responseCode, $responseMessage, Try ipps://${request.printerOrJobUri.host}"
         responseCode != 200 -> "HTTP request failed: $responseCode, $responseMessage"
