@@ -35,7 +35,7 @@ class IppPrinterTests {
     val blankPdf = File("tool/A4-blank.pdf")
     val ippClientMock = IppClientMock("printers/Simulated_Laser_Printer")
     val printer = IppPrinter(
-        URI.create("ipp://printer-for-printer-tests"),
+        URI.create("ipp://printer-for-printer-tests:6310"),
         ippClient = ippClientMock.apply { mockResponse("Get-Printer-Attributes.ipp") }
     )
 
