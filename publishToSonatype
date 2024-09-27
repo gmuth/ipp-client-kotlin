@@ -1,1 +1,9 @@
+
+# Checklist:
+# - run all tests
+# - validate sonar cloud quality gate
+# - change userAgent in IppConfig.kt
+# - change version in build.gradle.kts
+# - change versions in README.md: title and artifact-id
+
 gradlew -Drepo=sonatype publish
