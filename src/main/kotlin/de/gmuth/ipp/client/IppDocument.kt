@@ -14,7 +14,6 @@ import java.io.OutputStream
 import java.util.logging.Level
 import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
-import kotlin.io.path.createTempDirectory
 
 class IppDocument(
     val job: IppJob,
@@ -74,6 +73,7 @@ class IppDocument(
         overwrite: Boolean = true
     ) = File(directory, filename).also {
         if (it.isFile && !overwrite) throw IOException("File '$it' already exists")
+        if (!it.exists()) it.mkdirs()
         copyTo(it.outputStream())
         this.file = it
         logger.info { "Saved $file ${if (attributes.containsKey("document-format")) "($format)" else ""}" }

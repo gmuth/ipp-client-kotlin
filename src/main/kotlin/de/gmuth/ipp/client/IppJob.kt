@@ -331,9 +331,16 @@ class IppJob(
     @JvmOverloads
     fun cupsGetDocument(documentNumber: Int = 1): IppDocument {
         logger.fine { "CupsGetDocument #$documentNumber for job #$id" }
-        val response = exchange(ippRequest(CupsGetDocument)
-            .apply { operationGroup.attribute("document-number", Integer, documentNumber) })
-        return IppDocument(this, response.jobGroup, response.documentInputStream!!)
+        try {
+            val response = exchange(ippRequest(CupsGetDocument)
+                .apply { operationGroup.attribute("document-number", Integer, documentNumber) })
+            return IppDocument(this, response.jobGroup, response.documentInputStream!!)
+        } catch (httpPostException: HttpPostException) {
+            throw if (httpPostException.httpStatus == 426)
+                IppException("Server requires TLS encrypted connection", httpPostException)
+            else
+                httpPostException
+        }
     }
 
     @JvmOverloads

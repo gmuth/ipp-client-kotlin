@@ -593,9 +593,6 @@ class IppPrinter(
         .getValues<List<URI>>("printer-icons")
         .map { it.save() }
 
-    //fun printerDirectory(printerName: String = name.text.replace("\\s+".toRegex(), "_")): File =
-    //    File(workDirectory, printerName).createDirectoryIfNotExists()
-
     // --------------------------------------------------
     // Internal utilities implemented as Kotlin extension
     // --------------------------------------------------

@@ -6,7 +6,6 @@ package de.gmuth.ipp.client
 
 import de.gmuth.ipp.client.IppOperationException.ClientErrorNotFoundException
 import de.gmuth.ipp.client.WhichJobs.All
-import de.gmuth.ipp.core.IppException
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppRequest
@@ -297,17 +296,12 @@ class CupsClient(
                             useJobOwnerAsUserName = true
                             cupsGetDocuments(
                                 save = true,
-                                directory = File(cupsDirectory, printerUri.path.substringAfterLast("/"))
-                                    .apply { if (!exists()) mkdirs() },
+                                directory = File(cupsDirectory, printerUri.path.substringAfterLast("/")),
                                 optionalCommandToHandleFile = commandToHandleSavedFile
                             )
                                 .apply { numberOfSavedDocuments.addAndGet(size) }
                         } catch (ippExchangeException: IppExchangeException) {
-                            ippExchangeException.run {
-                                logger.info { "Get documents for job #$id failed: $message" }
-                                if (this is HttpPostException && httpStatus == 426)
-                                    throw IppException("Server requires TLS encrypted connection")
-                            }
+                            logger.info { "Get documents for job #$id failed: ${ippExchangeException.message}" }
                         }
                     }
                 }
