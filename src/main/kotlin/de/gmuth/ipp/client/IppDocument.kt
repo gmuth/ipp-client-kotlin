@@ -5,6 +5,7 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.ipp.core.IppAttributesGroup
+import de.gmuth.ipp.core.IppException
 import de.gmuth.ipp.core.IppString
 import java.io.File
 import java.io.IOException
@@ -37,7 +38,7 @@ class IppDocument(
     fun readBytes() = inputStream.readBytes()
         .also { logger.fine { "Read ${it.size} bytes of $this" } }
 
-    internal fun filenameSuffix() = when (format) {
+    internal fun filenameExtension() = when (format) {
         "application/postscript", "application/vnd.cups-postscript", "application/vnd.adobe-reader-postscript" -> "ps"
         "application/pdf", "application/vnd.cups-pdf" -> "pdf"
         "application/octet-stream" -> "bin"
@@ -47,20 +48,20 @@ class IppDocument(
     }
 
     fun filename() = StringBuilder().run {
-        var suffix: String? = filenameSuffix()
+        var extension: String? = filenameExtension()
         job.run {
             append("job-$id")
-            getNumberOfDocumentsOrDocumentCount().also { if (it > 1) append("-doc-$it")}
+            getNumberOfDocumentsOrDocumentCount().also { if (it > 1) append("-doc-$it") }
             job.getOriginatingUserNameOrAppleJobOwnerOrNull()?.let { append("-$it") }
             if (attributes.containsKey("com.apple.print.JobInfo.PMApplicationName")) {
                 append("-${attributes.getValueAsString("com.apple.print.JobInfo.PMApplicationName")}")
             }
             job.getJobNameOrDocumentNameSuppliedOrAppleJobNameOrNull()?.let {
                 append("-${it.take(100)}")
-                if (it.lowercase().endsWith(".$suffix")) suffix = null
+                if (it.lowercase().endsWith(".$extension")) extension = null
             }
         }
-        suffix?.let { append(".$it") }
+        extension?.let { append(".$it") }
         toString().replace('/', '_')
     }
 
@@ -68,18 +69,19 @@ class IppDocument(
         inputStream.copyTo(outputStream)
 
     fun save(
-        directory: File = createTempDirectory().toFile(),
-        file: File = File(directory, filename()),
+        directory: File = job.printer.printerDirectory,
+        filename: String = filename(),
         overwrite: Boolean = true
-    ) = file.also {
-        if (file.isFile && !overwrite) throw IOException("File '$file' already exists")
-        copyTo(file.outputStream())
-        this.file = file
-        logger.info { "Saved $file ${if(attributes.containsKey("document-format")) "($format)" else ""}" }
+    ) = File(directory, filename).also {
+        if (it.isFile && !overwrite) throw IOException("File '$it' already exists")
+        copyTo(it.outputStream())
+        this.file = it
+        logger.info { "Saved $file ${if (attributes.containsKey("document-format")) "($format)" else ""}" }
     }
 
-    fun runCommand(commandToHandleFile: String) =
-        Runtime.getRuntime().exec(arrayOf(commandToHandleFile, file!!.absolutePath))
+    fun runtimeExecCommand(commandToHandleFile: String) =
+        if (file == null) throw IppException("Missing file to handle.")
+        else Runtime.getRuntime().exec(arrayOf(commandToHandleFile, file!!.absolutePath))
 
     override fun toString() = StringBuilder("Document #$number").run {
         append(" ($format) of job #${job.id}")

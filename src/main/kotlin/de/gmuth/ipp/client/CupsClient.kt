@@ -6,6 +6,7 @@ package de.gmuth.ipp.client
 
 import de.gmuth.ipp.client.IppOperationException.ClientErrorNotFoundException
 import de.gmuth.ipp.client.WhichJobs.All
+import de.gmuth.ipp.core.IppException
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppRequest
@@ -28,11 +29,13 @@ class CupsClient(
     private val logger = getLogger(javaClass.name)
     val config: IppConfig by ippClient::config
     var userName: String? by config::userName
-    var cupsClientWorkDirectory = File("CUPS/${cupsUri.host}")
+    var cupsDirectory = with(cupsUri) {
+        File("CUPS" + (if (host in listOf("localhost", "127.0.0.1")) "-" else File.separator) + host)
+    }
 
     private val cupsServer =
         IppPrinter(cupsUri, ippClient = ippClient, getPrinterAttributesOnInit = false)
-            .apply { workDirectory = cupsClientWorkDirectory }
+            .apply { printerDirectory = cupsDirectory }
 
     init {
         if (cupsUri.scheme == "ipps") config.trustAnyCertificateAndSSLHostname()
@@ -71,7 +74,7 @@ class CupsClient(
     fun getPrinter(printerName: String) =
         try {
             IppPrinter(printerUri = cupsPrinterUri(printerName), ippClient = ippClient)
-                .apply { workDirectory = cupsClientWorkDirectory }
+                .apply { printerDirectory = File(cupsDirectory, printerName).createDirectoryIfNotExists() }
         } catch (clientErrorNotFoundException: ClientErrorNotFoundException) {
             with(getPrinters()) {
                 if (isNotEmpty()) logger.warning { "Available CUPS printers: ${map { it.name }}" }
@@ -255,7 +258,7 @@ class CupsClient(
         enable()
         resume()
         updateAttributes()
-        if (savePPD) savePPD(cupsClientWorkDirectory)
+        if (savePPD) savePPD()
     }
 
     // ---------------------------
@@ -273,7 +276,6 @@ class CupsClient(
     ): Collection<IppJob> {
         val numberOfJobsWithoutDocuments = AtomicInteger(0)
         val numberOfSavedDocuments = AtomicInteger(0)
-        with(cupsClientWorkDirectory) { if (!exists()) mkdirs() }
         return getJobs(
             whichJobs,
             requestedAttributes = listOf(
@@ -283,7 +285,7 @@ class CupsClient(
             )
         )
             .onEach {
-                if(updateJobAttributes) it.updateAttributes()
+                if (updateJobAttributes) it.updateAttributes()
                 logger.info { "$it" }
             }
             .onEach {
@@ -293,17 +295,25 @@ class CupsClient(
                     } else {
                         try {
                             useJobOwnerAsUserName = true
-                            cupsGetDocuments(save = true, optionalCommandToHandleFile = commandToHandleSavedFile)
+                            cupsGetDocuments(
+                                save = true,
+                                directory = File(cupsDirectory, printerUri.path.substringAfterLast("/"))
+                                    .apply { if (!exists()) mkdirs() },
+                                optionalCommandToHandleFile = commandToHandleSavedFile
+                            )
                                 .apply { numberOfSavedDocuments.addAndGet(size) }
                         } catch (ippExchangeException: IppExchangeException) {
-                            logger.info { "Get documents for job #$id failed: ${ippExchangeException.message}" }
+                            ippExchangeException.run {
+                                logger.info { "Get documents for job #$id failed: $message" }
+                                if (this is HttpPostException && httpStatus == 426) throw IppException("Server requires TLS encrypted connection")
+                            }
                         }
                     }
                 }
             }
             .apply {
                 logger.info { "Found $size jobs (which=$whichJobs) where $numberOfJobsWithoutDocuments jobs have no documents" }
-                logger.info { "Saved $numberOfSavedDocuments documents of ${size.minus(numberOfJobsWithoutDocuments.toInt())} jobs with documents to directory: ${cupsServer.workDirectory}" }
+                logger.info { "Saved $numberOfSavedDocuments documents of ${size.minus(numberOfJobsWithoutDocuments.toInt())} jobs with documents to directory: $cupsDirectory" }
             }
     }
 

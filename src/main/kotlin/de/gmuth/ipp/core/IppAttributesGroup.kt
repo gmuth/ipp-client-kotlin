@@ -5,8 +5,8 @@ package de.gmuth.ipp.core
  */
 
 import de.gmuth.ipp.core.IppException.IppAttributeNotFoundException
-import java.io.BufferedWriter
 import java.io.File
+import java.io.PrintWriter
 import java.net.URI
 import java.time.Duration
 import java.time.ZoneId
@@ -99,13 +99,13 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     }
 
     @JvmOverloads
-    fun writeText(bufferedWriter: BufferedWriter, title: String = "$tag") = bufferedWriter.run {
-        write(title); newLine()
-        values.forEach { write("  $it"); newLine() }
+    fun writeText(printWriter: PrintWriter, title: String? = "$tag", prefix: String = "  ") = printWriter.run {
+        title?.let { println(it) }
+        values.forEach { println("$prefix$it") }
     }
 
     fun saveText(file: File) = file.apply {
-        bufferedWriter().use { writeText(it) }
+        printWriter().use { writeText(it, "# File: ${file.name}", "") }
         logger.info { "Saved $path" }
     }
 }

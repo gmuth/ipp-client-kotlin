@@ -15,13 +15,13 @@ class IppInspector {
 
     companion object {
         const val pdfA4 = "blank_A4.pdf"
-        var directory: File = File("inspected-printers")
+        var inspectorDirectory: File = File("inspected-printers")
         private val logger = getLogger(IppInspector::class.java.name)
         private fun getModel(printerUri: URI) = StringBuilder().run {
             // use another IppPrinter instance to leave request-id-counter untouched
             with(IppPrinter(printerUri, getPrinterAttributesOnInit = false)) {
                 updateAttributes("cups-version", "printer-make-and-model")
-                if (isCups()) append("CUPS-")
+                if (isCups()) append("CUPS_")
                 append(makeAndModel.text.replace("\\s+".toRegex(), "_"))
             }
             toString()
@@ -48,11 +48,11 @@ class IppInspector {
 
         val printerModel = getModel(printerUri)
         logger.info { "Printer model: $printerModel" }
+        printerDirectory = File(inspectorDirectory, printerModel).createDirectoryIfNotExists()
 
         ippConfig.userName = "ipp-inspector"
         ippClient.saveMessages = true
-        ippClient.saveMessagesDirectory = File(directory, printerModel).createDirectoryIfNotExists()
-        workDirectory = ippClient.saveMessagesDirectory
+        ippClient.saveMessagesDirectory = printerDirectory
 
         logger.info { "> Get printer attributes" }
         updateAttributes()
@@ -75,7 +75,7 @@ class IppInspector {
 
         if (supportsOperations(CupsGetPPD)) {
             logger.info { "> CUPS Get PPD" }
-            savePPD(file = File(workDirectory, "$printerModel.ppd"))
+            savePPD(filename = "$printerModel.ppd")
         }
 
         if (supportsOperations(IdentifyPrinter)) {

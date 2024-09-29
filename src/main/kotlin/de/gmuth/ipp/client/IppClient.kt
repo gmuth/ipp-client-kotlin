@@ -24,6 +24,7 @@ import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.HttpsURLConnection
+import kotlin.io.path.createTempDirectory
 
 typealias IppResponseInterceptor = (request: IppRequest, response: IppResponse) -> Unit
 
@@ -32,7 +33,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
 
     var responseInterceptor: IppResponseInterceptor? = null
     var saveMessages: Boolean = false
-    var saveMessagesDirectory = File("ipp-messages")
+    var saveMessagesDirectory = createTempDirectory().toFile()
     var onExceptionSaveMessages: Boolean = true
     var throwWhenNotSuccessful: Boolean = true
     var disconnectAfterHttpPost: Boolean = false
@@ -72,23 +73,21 @@ open class IppClient(val config: IppConfig = IppConfig()) {
     // Exchange IppRequest for IppResponse
     //------------------------------------
 
-    fun exchange(request: IppRequest) = with(request) {
-        logger.fine { "Send '$operation' request to $printerOrJobUri" }
-        val httpUri = with(printerOrJobUri) {
+    @JvmOverloads
+    fun exchange(request: IppRequest, ippUri: URI = request.printerOrJobUri) = with(request) {
+        logger.fine { "Send '$operation' request to $ippUri" }
+        val httpUri = with(ippUri) {
             URI(
                 scheme.replace("ipp", "http"), userInfo, host,
                 if (port == -1) 631 else port, path, query, fragment
             )
         }
         httpPost(httpUri, request).also {
-            logger.finer { "Req #${request.requestId} @${printerOrJobUri.host}: $request => $it" }
-            if (logger.isLoggable(FINEST)) {
-                request.log(logger, FINEST, ">>> ")
-                it.log(logger, FINEST, "<<< ")
-            }
+            logger.finer { "Exchanged request #$requestId @${ippUri.host}: $request => $it" }
+            log(logger, FINEST, ">>> ") //  this=request
+            it.log(logger, FINEST, "<<< ") // it=response
+            fun file(extension: String) = File(saveMessagesDirectory, "%03d-%s.%s".format(requestId, operation, extension))
             if (saveMessages) {
-                fun file(suffix: String) =
-                    File(saveMessagesDirectory, "%03d-%s.%s".format(requestId, operation, suffix))
                 saveBytes(file("req"))
                 saveText(file("req.txt"))
                 it.saveBytes(file("res"))

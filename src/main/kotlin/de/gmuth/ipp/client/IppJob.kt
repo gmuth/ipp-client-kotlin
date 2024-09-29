@@ -148,7 +148,7 @@ class IppJob(
     fun getNumberOfDocumentsOrDocumentCount(): Int = when {
         attributes.containsKey("number-of-documents") -> numberOfDocuments
         attributes.containsKey("document-count") -> attributes.getValue("document-count")
-        else -> throw IppException("number-of-documents or document-count not found")
+        else -> throw IppException("number-of-documents or document-count not found, try calling ippJob.updateAttributes() first")
     }
 
     //-------------------
@@ -339,23 +339,21 @@ class IppJob(
     @JvmOverloads
     fun cupsGetDocuments(
         save: Boolean = false,
+        directory: File = printer.printerDirectory,
         optionalCommandToHandleFile: String? = null
     ) =
         (1..getNumberOfDocumentsOrDocumentCount())
             .map { cupsGetDocument(it) }
             .onEach { document ->
                 if (save) with(document) {
-                    save(printerDirectory(), overwrite = true)
-                    optionalCommandToHandleFile?.let { runCommand(it) }
+                    save(directory, overwrite = true)
+                    optionalCommandToHandleFile?.let { runtimeExecCommand(it) }
                 }
             }
 
     //-----------------------
     // Delegate to IppPrinter
     //-----------------------
-
-    fun printerDirectory() =
-        printer.printerDirectory(printerUri.toString().substringAfterLast(File.separator))
 
     private fun ippRequest(operation: IppOperation, requestedAttributes: List<String>? = null) =
         printer.ippRequest(

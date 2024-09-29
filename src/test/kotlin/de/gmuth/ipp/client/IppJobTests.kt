@@ -16,6 +16,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.net.URI
 import java.util.logging.Logger.getLogger
+import kotlin.io.path.createTempDirectory
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -170,10 +171,11 @@ class IppJobTests {
     @Test
     fun cupsGetDocument1() {
         ippClientMock.mockResponse(cupsDocumentResponse("application/pdf"))
+
         job.cupsGetDocument().apply {
             logger.info { toString() }
             log(logger)
-            save().delete()
+            save(directory = createTempDirectory().toFile()).delete()
             assertEquals("job-2366-gmuth-A4-blank.pdf", filename())
         }
     }
@@ -182,7 +184,7 @@ class IppJobTests {
     fun cupsGetDocument2() {
         ippClientMock.mockResponse(cupsDocumentResponse("application/postscript"))
         job.cupsGetDocument().run {
-            assertEquals("ps", filenameSuffix())
+            assertEquals("ps", filenameExtension())
         }
     }
 
@@ -197,14 +199,14 @@ class IppJobTests {
             logger.info { "${filename()} (${readBytes().size} bytes)" }
             job.attributes.remove("document-name-supplied")
             logger.info { filename() }
-            assertEquals("bin", filenameSuffix())
+            assertEquals("bin", filenameExtension())
         }
     }
 
     @Test
     fun cupsGetAndSaveDocuments() {
         ippClientMock.mockResponse(cupsDocumentResponse("application/postscript"))
-        job.cupsGetDocuments(save = true)
+        job.cupsGetDocuments(save = true, directory = createTempDirectory().toFile())
     }
 
 }

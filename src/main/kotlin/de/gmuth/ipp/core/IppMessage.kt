@@ -174,30 +174,25 @@ abstract class IppMessage() {
         logger.info { "Saved ${length()} document bytes to file $path" }
     }
 
-    fun saveBytes(file: File) =
-        if (rawBytes == null) {
-            throw IppException("No raw bytes to save. You must call read/decode or write/encode before.")
-        } else {
-            file.writeBytes(rawBytes!!)
-            logger.info { "Saved ${file.path} (${file.length()} bytes)" }
-        }
+    fun writeBytes(outputStream: OutputStream) =
+        if (rawBytes == null) throw IppException("No raw bytes to write. You must call read/decode or write/encode before.")
+        else outputStream.write(rawBytes)
 
-    @JvmOverloads
-    fun writeText(bufferedWriter: BufferedWriter, title: String? = null) = bufferedWriter.run {
-        fun BufferedWriter.writeln(text: String) {
-            write(text); newLine()
-        }
-        title?.also { write(it) }
-        if (rawBytes != null) write(" (decoded ${rawBytes!!.size} raw IPP bytes)")
-        newLine()
-        writeln("version $version")
-        writeln(codeDescription)
-        writeln("request-id $requestId")
-        attributesGroups.forEach { it.writeText(bufferedWriter) }
+    fun saveBytes(file: File) = file.apply {
+        writeBytes(outputStream())
+        logger.info { "Saved $path (${length()} bytes)" }
+    }
+
+    fun writeText(printWriter: PrintWriter, title: String) = printWriter.apply {
+        println("$title ${if (rawBytes != null) "(decoded ${rawBytes!!.size} raw IPP bytes)" else ""}")
+        println("version $version")
+        println(codeDescription)
+        println("request-id $requestId")
+        attributesGroups.forEach { it.writeText(this) }
     }
 
     fun saveText(file: File) = file.apply {
-        bufferedWriter().use { writeText(it, title = "# File: ${file.name}") }
+        printWriter().use { writeText(it, title = "# File: $name") }
         logger.info { "Saved $path (${length()} bytes)" }
     }
 

@@ -32,12 +32,10 @@ class IppPrinter(
     getPrinterAttributesOnInit: Boolean = true,
     requestedAttributesOnInit: List<String>? = null
 ) {
-
     private val logger = getLogger(javaClass.name)
-    var workDirectory: File = createTempDirectory().toFile()
+    lateinit var printerDirectory: File
 
     companion object {
-
         val printerClassAttributes = listOf(
             "printer-name",
             "printer-make-and-model",
@@ -65,6 +63,7 @@ class IppPrinter(
         if (printerUri.scheme == "ipps") ippConfig.trustAnyCertificateAndSSLHostname()
         if (!getPrinterAttributesOnInit) {
             logger.fine { "getPrinterAttributesOnInit disabled => no printer attributes available" }
+            printerDirectory = createTempDirectory().toFile()
         } else if (attributes.isEmpty()) {
             try {
                 updateAttributes(requestedAttributesOnInit)
@@ -85,7 +84,9 @@ class IppPrinter(
                 }
                 throw ippOperationException
             }
-            if (isCups()) workDirectory = File("cups-${printerUri.host}")
+            printerDirectory = File(
+                (if (isCups()) "CUPS_" else "") + makeAndModel.text.replace("\\s+".toRegex(), "_")
+            )
         }
     }
 
@@ -294,14 +295,12 @@ class IppPrinter(
         .apply { copyTo?.let { documentInputStream!!.copyTo(it) } }
 
     fun savePPD(
-        directory: File = workDirectory,
-        filename: String = "$name.ppd",
-        file: File = File(directory, filename)
-    ) =
-        file.also {
-            cupsGetPPD(it.outputStream())
-            logger.info { "Saved $it (${it.length()} bytes)" }
-        }
+        directory: File = printerDirectory,
+        filename: String = "$makeAndModel.ppd"
+    ) = File(directory, filename).also {
+        cupsGetPPD(it.outputStream())
+        logger.info { "Saved $it (${it.length()} bytes)" }
+    }
 
     //------------------------------------------
     // Get-Printer-Attributes
@@ -584,38 +583,34 @@ class IppPrinter(
     // Save printer attributes and printer icons
     // -----------------------------------------
 
-    fun savePrinterAttributes(directory: File = workDirectory) {
-        val printerModel: String = makeAndModel.text.replace("\\s+".toRegex(), "_")
+    fun savePrinterAttributes() =
         exchange(ippRequest(GetPrinterAttributes)).run {
-            saveBytes(File(directory, "$printerModel.bin"))
-            printerGroup.saveText(File(directory, "$printerModel.txt"))
+            saveBytes(File(printerDirectory, "${makeAndModel.text}.bin"))
+            printerGroup.saveText(File(printerDirectory, "${makeAndModel.text}.txt"))
         }
-    }
 
     fun savePrinterIcons(): Collection<File> = attributes
         .getValues<List<URI>>("printer-icons")
         .map { it.save() }
 
-    fun printerDirectory(printerName: String = name.text.replace("\\s+".toRegex(), "_")): File =
-        File(workDirectory, printerName).createDirectoryIfNotExists()
-
+    //fun printerDirectory(printerName: String = name.text.replace("\\s+".toRegex(), "_")): File =
+    //    File(workDirectory, printerName).createDirectoryIfNotExists()
 
     // --------------------------------------------------
     // Internal utilities implemented as Kotlin extension
     // --------------------------------------------------
 
-    internal fun File.createDirectoryIfNotExists(throwOnFailure: Boolean = true) = this.apply {
+    fun File.createDirectoryIfNotExists(throwOnFailure: Boolean = true) = this.apply {
         if (!mkdirs() && !isDirectory) "Failed to create directory: $path".let {
             if (throwOnFailure) throw IOException(it) else logger.warning(it)
         }
     }
 
     internal fun URI.save(
-        directory: File? = workDirectory,
-        fileName: String = Regex(".*/").replace(path, ""),
-        file: File = File(directory, fileName)
-    ) = file.also {
-        toURL().openConnection().inputStream.copyTo(file.outputStream())
-        logger.info { "Saved ${file.absolutePath} (${file.length()} bytes from $this)" }
+        directory: File? = printerDirectory,
+        filename: String = path.substringAfterLast("/")
+    ) = File(directory, filename).also {
+        toURL().openConnection().inputStream.copyTo(it.outputStream())
+        logger.info { "Saved ${it.path} (${it.length()} bytes from $this)" }
     }
 }
