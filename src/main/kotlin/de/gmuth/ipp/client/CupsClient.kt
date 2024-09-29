@@ -305,7 +305,8 @@ class CupsClient(
                         } catch (ippExchangeException: IppExchangeException) {
                             ippExchangeException.run {
                                 logger.info { "Get documents for job #$id failed: $message" }
-                                if (this is HttpPostException && httpStatus == 426) throw IppException("Server requires TLS encrypted connection")
+                                if (this is HttpPostException && httpStatus == 426)
+                                    throw IppException("Server requires TLS encrypted connection")
                             }
                         }
                     }
