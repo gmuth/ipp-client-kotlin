@@ -72,8 +72,8 @@ class IppDocument(
         filename: String = filename(),
         overwrite: Boolean = true
     ) = File(directory, filename).also {
+        if (!directory.exists()) directory.mkdirs()
         if (it.isFile && !overwrite) throw IOException("File '$it' already exists")
-        if (!it.exists()) it.mkdirs()
         copyTo(it.outputStream())
         this.file = it
         logger.info { "Saved $file ${if (attributes.containsKey("document-format")) "($format)" else ""}" }
