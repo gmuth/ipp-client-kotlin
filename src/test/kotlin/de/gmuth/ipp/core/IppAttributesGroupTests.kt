@@ -7,6 +7,7 @@ package de.gmuth.ipp.core
 import de.gmuth.ipp.core.IppAttributesGroup.Companion.replaceEnabled
 import de.gmuth.ipp.core.IppTag.*
 import java.io.File
+import java.io.PrintWriter
 import java.time.ZoneId
 import java.util.logging.Logger.getLogger
 import kotlin.test.Test
@@ -135,6 +136,11 @@ class IppAttributesGroupTests {
     fun saveAttributes() {
         group.attribute("Commodore C", Integer, 64)
         group.saveText(File.createTempFile("tempfiles", ".tmp"))
+    }
+
+    @Test
+    fun writeAttributesWithoutTitle() {
+        group.writeText(PrintWriter(java.lang.System.out), null)
     }
 
     // ------------- interface Map methods ------------

@@ -97,8 +97,13 @@ class IppMessageTests {
         assertEquals("codeDescription []", message.toString())
         message.log(logger)
         assertFailsWith<IppException> { // missing raw bytes
-            message.saveBytes(createTempFile("test", null))
+            message.saveBytes(createTempFile("rawbytes", null))
         }
+    }
+
+    @Test
+    fun writeTest() {
+        message.saveText(createTempFile("text", null))
     }
 
 }

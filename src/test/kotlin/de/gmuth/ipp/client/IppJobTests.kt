@@ -209,4 +209,10 @@ class IppJobTests {
         job.cupsGetDocuments(save = true, directory = createTempDirectory().toFile())
     }
 
+    @Test
+    fun cupsGetDocumentsWithoutSaving() {
+        ippClientMock.mockResponse(cupsDocumentResponse("application/postscript"))
+        job.cupsGetDocuments()
+    }
+
 }
