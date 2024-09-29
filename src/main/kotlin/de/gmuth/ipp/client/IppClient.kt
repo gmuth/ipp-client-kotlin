@@ -83,7 +83,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
             )
         }
         httpPost(httpUri, request).also {
-            logger.finer { "Exchanged request #$requestId @${ippUri.host}: $request => $it" }
+            logger.finer { "Exchanged request #$requestId @${httpUri.host}: $request => $it" }
             log(logger, FINEST, ">>> ") //  this=request
             it.log(logger, FINEST, "<<< ") // it=response
             fun file(extension: String) = File(saveMessagesDirectory, "%03d-%s.%s".format(requestId, operation, extension))
