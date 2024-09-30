@@ -37,11 +37,11 @@ class IppRequestTests {
         assertEquals("2.0", request.version)
         assertEquals(IppOperation.StartupPrinter, request.operation)
         assertEquals(Charsets.UTF_8, request.attributesCharset)
-        assertEquals("en-us", request.operationGroup.getValue("attributes-natural-language"))
+        assertEquals("en", request.operationGroup.getValue("attributes-natural-language"))
         assertEquals("ipp://foo", request.printerOrJobUri.toString())
         assertEquals("Startup-Printer", request.codeDescription)
         val requestEncoded = request.encode()
-        assertEquals(100, requestEncoded.size)
+        assertEquals(97, requestEncoded.size)
     }
 
     @Test
@@ -64,7 +64,7 @@ class IppRequestTests {
             assertNotNull(operationGroup)
             operationGroup.run {
                 assertEquals(Charsets.UTF_8, getValue("attributes-charset"))
-                assertEquals("en-us", getValue("attributes-natural-language"))
+                assertEquals("en", getValue("attributes-natural-language"))
                 assertEquals(URI.create("ipp://printer"), getValue("printer-uri"))
             }
             assertEquals(listOf("one", "two"), requestedAttributes)
