@@ -579,9 +579,9 @@ class IppPrinter(
     fun log(logger: Logger, level: Level = INFO) =
         attributes.log(logger, level, title = "PRINTER $name ($makeAndModel)")
 
-    // -----------------------------------------
-    // Save printer attributes and printer icons
-    // -----------------------------------------
+    // ----------------------------------------------------------
+    // Save printer attributes, printer icons and printer strings
+    // ----------------------------------------------------------
 
     fun savePrinterAttributes() =
         exchange(ippRequest(GetPrinterAttributes)).run {
@@ -592,6 +592,10 @@ class IppPrinter(
     fun savePrinterIcons(): Collection<File> = attributes
         .getValues<List<URI>>("printer-icons")
         .map { it.save() }
+
+    fun savePrinterStrings() = attributes
+        .getValueAsURI("printer-strings-uri")
+        .save()
 
     // --------------------------------------------------
     // Internal utilities implemented as Kotlin extension
@@ -604,7 +608,7 @@ class IppPrinter(
     }
 
     internal fun URI.save(
-        directory: File? = printerDirectory,
+        directory: File? = printerDirectory.createDirectoryIfNotExists(),
         filename: String = path.substringAfterLast("/")
     ) = File(directory, filename).also {
         toURL().openConnection().inputStream.copyTo(it.outputStream())
