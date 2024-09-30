@@ -185,8 +185,8 @@ abstract class IppMessage() {
 
     fun writeText(printWriter: PrintWriter, title: String? = null) = printWriter.apply {
         title?.let { println(it) }
-        print("# ----------------------------------------------------------------")
-        rawBytes?.run { print(" ($size raw bytes)") }
+        print("# ---------------------------------------------------------------------")
+        rawBytes?.run { print(" $size raw bytes ----------") }
         println()
         println("version $version")
         println(codeDescription)
