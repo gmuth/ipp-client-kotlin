@@ -163,7 +163,7 @@ abstract class IppMessage() {
                 documentInputStreamIsConsumed = true
                 if (keepDocumentCopy) {
                     documentBytes = byteArraySavingOutputStream.getSavedBytes()
-                    if (documentBytes!!.isNotEmpty()) logger.info("Keeping ${documentBytes!!.size} document bytes")
+                    if (documentBytes!!.isNotEmpty()) logger.fine("Keeping ${documentBytes!!.size} document bytes")
                 }
                 byteArraySavingOutputStream.close()
             }
@@ -171,7 +171,7 @@ abstract class IppMessage() {
 
     fun saveDocument(file: File) = file.run {
         writeDocument(outputStream())
-        logger.info { "Saved ${length()} document bytes to file $path" }
+        logger.info { "Saved ${length()} document bytes to $path" }
     }
 
     fun writeBytes(outputStream: OutputStream) =
@@ -185,7 +185,7 @@ abstract class IppMessage() {
 
     fun writeText(printWriter: PrintWriter, title: String? = null) = printWriter.apply {
         title?.let { println(it) }
-        print("# ---------------------------------------------------------------------")
+        print("---------------------------------------------------------------------")
         rawBytes?.run { print(" $size raw bytes ----------") }
         println()
         println("version $version")
@@ -195,7 +195,7 @@ abstract class IppMessage() {
     }
 
     fun saveText(file: File) = file.apply {
-        printWriter().use { writeText(it, title = "# File: $name") }
+        printWriter().use { writeText(it, title = "File: $name") }
         logger.info { "Saved $path (${length()} bytes)" }
     }
 
