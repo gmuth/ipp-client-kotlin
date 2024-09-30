@@ -44,7 +44,7 @@ class IppRequest : IppMessage {
         version: String = "2.0",
         requestId: Int = 1,
         charset: Charset = Charsets.UTF_8,
-        naturalLanguage: String = "en-us"
+        naturalLanguage: String = "en"
     ) : super(version, requestId, charset, naturalLanguage) {
         code = operation.code
         operationGroup.run {

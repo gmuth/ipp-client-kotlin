@@ -19,7 +19,7 @@ class IppConfig(
     var userName: String? = System.getProperty("user.name"),
     var ippVersion: String = "2.0",
     var charset: Charset = UTF_8,
-    var naturalLanguage: String = "en-us",
+    var naturalLanguage: String = "en",
 
     // HTTP config
     var timeout: Duration = Duration.ofSeconds(30),

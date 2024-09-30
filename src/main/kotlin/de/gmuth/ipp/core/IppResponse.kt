@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2023 Gerhard Muth
+ * Copyright (c) 2020-2024 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppTag.Unsupported
@@ -38,7 +38,7 @@ class IppResponse : IppMessage {
         version: String = "2.0",
         requestId: Int = 1,
         charset: Charset = Charsets.UTF_8,
-        naturalLanguage: String = "en-us"
+        naturalLanguage: String = "en"
     ) : super(version, requestId, charset, naturalLanguage) {
         code = status.code
     }
