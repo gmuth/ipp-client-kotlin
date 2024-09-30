@@ -529,9 +529,10 @@ class IppPrinter(
         operation: IppOperation,
         requestedAttributes: Collection<String>? = null,
         userName: String? = ippConfig.userName,
-        printerUri: URI? = this.printerUri
+        printerUri: URI? = this.printerUri,
+        naturalLanguage: String = ippConfig.naturalLanguage
     ) = ippClient
-        .ippRequest(operation, printerUri, requestedAttributes, userName)
+        .ippRequest(operation, printerUri, requestedAttributes, userName, naturalLanguage)
 
     fun exchange(request: IppRequest): IppResponse = request.run {
         checkIfValueIsSupported("ipp-versions", version!!, true)
@@ -593,9 +594,17 @@ class IppPrinter(
         .getValues<List<URI>>("printer-icons")
         .map { it.save() }
 
-    fun savePrinterStrings() = attributes
-        .getValueAsURI("printer-strings-uri")
-        .save()
+    fun getPrinterStringsUri(language: String): URI {
+        checkIfValueIsSupported("printer-strings-languages", language, false)
+        return exchange(ippRequest(GetPrinterAttributes, listOf("printer-strings-uri"), naturalLanguage = language))
+            .printerGroup.getValue("printer-strings-uri")
+    }
+
+    fun savePrinterStrings(language: String = "en") =
+        getPrinterStringsUri(language).save(extension = "plist") // Apple property list
+
+    fun saveAllPrinterStrings(): Collection<File>? = attributes["printer-strings-languages-supported"]
+        ?.values?.map { savePrinterStrings(it as String) }
 
     // --------------------------------------------------
     // Internal utilities implemented as Kotlin extension
@@ -609,7 +618,8 @@ class IppPrinter(
 
     internal fun URI.save(
         directory: File? = printerDirectory.createDirectoryIfNotExists(),
-        filename: String = path.substringAfterLast("/")
+        extension: String? = null,
+        filename: String = path.substringAfterLast("/") + if (extension == null) "" else ".$extension"
     ) = File(directory, filename).also {
         toURL().openConnection().inputStream.copyTo(it.outputStream())
         logger.info { "Saved ${it.path} (${it.length()} bytes from $this)" }
