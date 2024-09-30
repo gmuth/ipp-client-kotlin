@@ -183,8 +183,11 @@ abstract class IppMessage() {
         logger.info { "Saved $path (${length()} bytes)" }
     }
 
-    fun writeText(printWriter: PrintWriter, title: String) = printWriter.apply {
-        println("$title ${if (rawBytes != null) "(decoded ${rawBytes!!.size} raw IPP bytes)" else ""}")
+    fun writeText(printWriter: PrintWriter, title: String? = null) = printWriter.apply {
+        title?.let { println(it) }
+        print("# ----------------------------------------------------------------")
+        rawBytes?.run { print(" ($size raw bytes)") }
+        println()
         println("version $version")
         println(codeDescription)
         println("request-id $requestId")
