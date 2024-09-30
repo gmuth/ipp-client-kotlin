@@ -4,8 +4,9 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020-2024 Gerhard Muth
  */
 
-// https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-6
+import java.util.logging.Logger.getLogger
 
+// https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-6
 enum class IppOperation(val code: Int) {
 
     // RFC 8011
@@ -131,7 +132,10 @@ enum class IppOperation(val code: Int) {
     CupsAuthenticateJob(0x400E),
     CupsGetPPD(0x400F),
     CupsGetDocument(0x4027),
-    CupsCreateLocalPrinter(0x4028);
+    CupsCreateLocalPrinter(0x4028),
+
+    // Unknown
+    Unknown(-1);
 
     override fun toString(): String = registeredName()
 
@@ -140,8 +144,10 @@ enum class IppOperation(val code: Int) {
         .replace(Regex("^-"), "")
 
     companion object {
-        fun fromInt(code: Int): IppOperation =
-            values().find { it.code == code } ?: throw IppException("Unknown operation code %04x".format(code))
+        val logger = getLogger(IppOperation::class.java.name)
+        fun fromInt(code: Int): IppOperation = values()
+            .find { it.code == code }
+            ?: Unknown.also { logger.warning("Unknown operation code %04x".format(code)) }
     }
 
 }
