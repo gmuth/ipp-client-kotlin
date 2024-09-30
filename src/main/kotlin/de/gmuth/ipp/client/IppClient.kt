@@ -57,7 +57,8 @@ open class IppClient(val config: IppConfig = IppConfig()) {
         operation: IppOperation,
         printerUri: URI? = null,
         requestedAttributes: Collection<String>? = null,
-        userName: String? = config.userName
+        userName: String? = config.userName,
+        naturalLanguage: String = config.naturalLanguage,
     ) = IppRequest(
         operation,
         printerUri,
@@ -66,7 +67,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
         config.ippVersion,
         requestCounter.getAndIncrement(),
         config.charset,
-        config.naturalLanguage
+        naturalLanguage
     )
 
     //------------------------------------
