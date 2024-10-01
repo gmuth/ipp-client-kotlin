@@ -67,4 +67,17 @@ class IppRequest : IppMessage {
         notifyLeaseDuration?.let { attribute("notify-lease-duration", Integer, it.toSeconds()) }
     }
 
+    override fun toString() = StringBuilder().apply {
+        append("#%05d $operation".format(requestId))
+        val details = attributesGroups
+            .filter { group -> group.tag != Operation || !operation.name.contains("Attributes") }
+            .map { "${it.size} ${it.tag.name.lowercase()} attributes" }
+            .toMutableList()
+        if (containsGroup(Operation) && operationGroup.containsKey("requested-attributes")) {
+            details.add("${requestedAttributes.size} requested-attributes")
+        }
+        if (details.isNotEmpty()) {
+            append(details.joinToString(", ", " (", ")"))
+        }
+    }.toString()
 }

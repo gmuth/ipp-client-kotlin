@@ -4,6 +4,7 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020-2024 Gerhard Muth
  */
 
+import de.gmuth.ipp.core.IppTag.Operation
 import de.gmuth.ipp.core.IppTag.Unsupported
 import java.nio.charset.Charset
 import java.util.logging.Level
@@ -47,4 +48,26 @@ class IppResponse : IppMessage {
         httpServer?.let { logger.log(level) { "${prefix}httpServer = $it" } }
         super.log(logger, level, prefix)
     }
+
+    override fun toString() = StringBuilder().apply {
+        append(status)
+        if (containsGroup(Operation) && operationGroup.containsKey("status-message"))
+            append(", $statusMessage")
+
+        val statesAndReasons = attributesGroups
+            .flatMap { group -> group.values }
+            .filter { attribute -> Regex(".*-state(-reasons)?").matches(attribute.name) }
+            .sortedBy { it.name }
+            .map { it.valuesToString() }
+            .filter { it.isNotEmpty() && it != "none" }
+        if (statesAndReasons.isNotEmpty())
+            append(statesAndReasons.joinToString(", ", " [", "]"))
+
+        val groups = attributesGroups
+            .filter { group -> group.tag != Operation }
+            .map { "${it.size} ${it.tag.name.lowercase()} attributes" }
+        if (groups.isNotEmpty())
+            append(groups.joinToString(", ", " (", ")"))
+
+    }.toString()
 }
