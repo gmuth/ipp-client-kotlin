@@ -19,6 +19,7 @@ import java.util.logging.Logger.getLogger
 class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*>>() {
 
     private val logger = getLogger(javaClass.name)
+    val name = "${tag.name.lowercase()} group"
 
     companion object {
         var replaceEnabled: Boolean = true
@@ -84,7 +85,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     fun put(attributesGroup: IppAttributesGroup) =
         attributesGroup.values.forEach { put(it) }
 
-    override fun toString() = "'$tag' $size attributes"
+    override fun toString() = "$name ($size attributes)"
 
     fun toValuesString() =
         values.joinToString(" ") { it.valuesToString() }
@@ -93,13 +94,13 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
         values.joinToString(" ") { it.toCompactString() }
 
     @JvmOverloads
-    fun log(logger: Logger, level: Level = INFO, prefix: String = "", title: String = "$tag") {
+    fun log(logger: Logger, level: Level = INFO, title: String = toString(), prefix: String = "") {
         logger.log(level) { "${prefix}$title" }
         keys.forEach { logger.log(level) { "$prefix  ${get(it)}" } }
     }
 
     @JvmOverloads
-    fun writeText(printWriter: PrintWriter, title: String? = "$tag", prefix: String = "  ") = printWriter.run {
+    fun writeText(printWriter: PrintWriter, title: String? = toString(), prefix: String = "  ") = printWriter.run {
         title?.let { println(it) }
         values.forEach { println("$prefix$it") }
     }
