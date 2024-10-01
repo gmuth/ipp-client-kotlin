@@ -198,8 +198,10 @@ class IppPrinter(
             .getValues<List<IppCollection>>("media-col-ready")
             .map { MediaCollection.fromIppCollection(it) }
 
-    fun getMediaColDatabase() = // must be fetched explicitly from printer
-        MediaColDatabase.fromAttributes(getPrinterAttributes("media-col-database"))
+    fun getMediaColDatabase() = MediaColDatabase.fromAttributes(
+        getPrinterAttributesOrNull("media-col-database")
+            ?: throw IppException("Printer does not support media-col-database")
+    )
 
     // ----------------------------------------------
     // Extensions supported by cups and some printers
@@ -307,14 +309,15 @@ class IppPrinter(
     // names of attribute groups: RFC 8011 4.2.5
     //------------------------------------------
 
-    fun getPrinterAttributes(requestedAttributes: Collection<String>? = null) =
-        exchange(ippRequest(GetPrinterAttributes, requestedAttributes = requestedAttributes)).printerGroup
+    fun getPrinterAttributesOrNull(requestedAttributes: Collection<String>? = null) =
+        exchange(ippRequest(GetPrinterAttributes, requestedAttributes))
+            .attributesGroups.find { it.tag == Printer }
 
-    fun getPrinterAttributes(vararg requestedAttributes: String) =
-        getPrinterAttributes(requestedAttributes.toList())
+    fun getPrinterAttributesOrNull(vararg requestedAttributes: String) =
+        getPrinterAttributesOrNull(requestedAttributes.toList())
 
     fun updateAttributes(requestedAttributes: List<String>? = null) =
-        attributes.put(getPrinterAttributes(requestedAttributes))
+        getPrinterAttributesOrNull(requestedAttributes)?.let { attributes.put(it) }
 
     fun updateAttributes(vararg requestedAttributes: String) =
         updateAttributes(requestedAttributes.toList())
@@ -525,7 +528,7 @@ class IppPrinter(
     // delegate to IppClient
     //----------------------
 
-    internal fun ippRequest(
+    fun ippRequest(
         operation: IppOperation,
         requestedAttributes: Collection<String>? = null,
         userName: String? = ippConfig.userName,
