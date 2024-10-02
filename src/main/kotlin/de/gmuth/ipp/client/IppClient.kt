@@ -5,6 +5,7 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.ipp.client.IppOperationException.ClientErrorNotFoundException
+import de.gmuth.ipp.core.IppException
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppResponse
@@ -16,6 +17,7 @@ import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
+import java.net.SocketException
 import java.net.URI
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.logging.Level.FINEST
@@ -121,6 +123,8 @@ open class IppClient(val config: IppConfig = IppConfig()) {
                 }
                 return decodeContentStream(request, responseContentStream)
                     .apply { httpServer = getHeaderField("Server") }
+            } catch(socketException: SocketException) {
+                throw IppException("HTTP communication with $httpUri failed", socketException)
             } finally {
                 if (disconnectAfterHttpPost) disconnect()
             }
