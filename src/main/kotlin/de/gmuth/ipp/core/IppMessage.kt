@@ -66,6 +66,11 @@ abstract class IppMessage() {
     fun containsGroup(tag: IppTag) =
         attributesGroups.map { it.tag }.contains(tag)
 
+    @Suppress("UNCHECKED_CAST")
+    fun <T> getAttributeValuesOrNull(groupTag: IppTag, attributeName: String) =
+        if (containsGroup(groupTag)) getSingleAttributesGroup(groupTag).getValuesOrNull(attributeName) as T?
+        else null
+
     // factory method for IppAttributesGroup
     fun createAttributesGroup(tag: IppTag) =
         IppAttributesGroup(tag).apply { attributesGroups.add(this) }
@@ -120,7 +125,8 @@ abstract class IppMessage() {
         val bufferedInputStream = byteArraySavingInputStream.buffered()
         try {
             IppInputStream(bufferedInputStream).readMessage(this)
-            documentInputStream = bufferedInputStream
+            if (bufferedInputStream.available() > 0) documentInputStream = bufferedInputStream
+            else logger.finest { "No document bytes available from bufferedInputStream after readMessage" }
         } finally {
             rawBytes = byteArrayOutputStream.toByteArray()
         }
