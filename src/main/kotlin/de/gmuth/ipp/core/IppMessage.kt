@@ -127,7 +127,7 @@ abstract class IppMessage() {
         try {
             IppInputStream(bufferedInputStream).readMessage(this)
             if (bufferedInputStream.available() > 0) documentInputStream = bufferedInputStream
-            else logger.fine { "No document bytes available from bufferedInputStream after readMessage()" }
+            else logger.finest { "No document bytes available from bufferedInputStream after readMessage()" }
         } finally {
             rawBytes = byteArrayOutputStream.toByteArray()
         }
