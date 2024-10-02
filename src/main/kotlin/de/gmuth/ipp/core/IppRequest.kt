@@ -11,6 +11,7 @@ import java.time.Duration
 import java.util.logging.Level
 import java.util.logging.Logger
 
+@Suppress("kotlin:S1192")
 class IppRequest : IppMessage {
     private val logger = Logger.getLogger(javaClass.name)
 
@@ -73,9 +74,8 @@ class IppRequest : IppMessage {
             .filter { group -> group.tag != Operation || !operation.name.contains("Attributes") }
             .map { "${it.size} ${it.tag.name.lowercase()} attributes" }
             .toMutableList()
-        if (containsGroup(Operation) && operationGroup.containsKey("requested-attributes")) {
-            details.add("${requestedAttributes.size} requested-attributes")
-        }
+        getAttributeValuesOrNull<List<String>>(Operation, "requested-attributes")
+            ?.run { details.add("$size requested-attributes") }
         if (details.isNotEmpty()) {
             append(details.joinToString(", ", " (", ")"))
         }
