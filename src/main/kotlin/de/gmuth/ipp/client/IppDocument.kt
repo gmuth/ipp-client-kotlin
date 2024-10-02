@@ -15,6 +15,7 @@ import java.util.logging.Level
 import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
 
+@Suppress("kotlin:S1192")
 class IppDocument(
     val job: IppJob,
     val attributes: IppAttributesGroup,
@@ -22,13 +23,15 @@ class IppDocument(
 ) {
 
     companion object {
-        fun filenameExtension(mediaType: String) = when (mediaType) {
+        fun getFilenameExtension(mediaType: String) = when (mediaType) {
             "application/postscript", "application/vnd.cups-postscript", "application/vnd.adobe-reader-postscript" -> "ps"
             "application/pdf", "application/vnd.cups-pdf" -> "pdf"
             "application/octet-stream" -> "bin"
             "text/plain" -> "txt"
             else -> mediaType.split("/")[1]
         }
+        fun getDocumentFormatFilenameExtension(attributes: IppAttributesGroup) =
+            getFilenameExtension(attributes.getValueAsString("document-format"))
     }
 
     private val logger = getLogger(javaClass.name)
@@ -48,7 +51,7 @@ class IppDocument(
         .also { logger.fine { "Read ${it.size} bytes of $this" } }
 
     fun filename() = StringBuilder().apply {
-        var extension: String? = filenameExtension(format)
+        var extension: String? = getFilenameExtension(format)
         job.run {
             append("job-$id")
             getNumberOfDocumentsOrDocumentCount().let { if (it > 1) append("-doc-$it") }
@@ -93,5 +96,4 @@ class IppDocument(
     @JvmOverloads
     fun log(logger: Logger, level: Level = Level.INFO) =
         attributes.log(logger, level, title = "DOCUMENT #$number")
-
 }
