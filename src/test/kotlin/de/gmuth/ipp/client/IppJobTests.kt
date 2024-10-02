@@ -6,7 +6,7 @@ package de.gmuth.ipp.client
 
 import de.gmuth.ipp.attributes.JobState
 import de.gmuth.ipp.attributes.PrinterState
-import de.gmuth.ipp.client.IppDocument.Companion.filenameExtension
+import de.gmuth.ipp.client.IppDocument.Companion.getFilenameExtension
 import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppStatus.SuccessfulOk
 import de.gmuth.ipp.core.IppString
@@ -185,7 +185,7 @@ class IppJobTests {
     fun cupsGetDocument2() {
         ippClientMock.mockResponse(cupsDocumentResponse("application/postscript"))
         job.cupsGetDocument().run {
-            assertEquals("ps", filenameExtension(format))
+            assertEquals("ps", getFilenameExtension(format))
         }
     }
 
@@ -200,7 +200,7 @@ class IppJobTests {
             logger.info { "${filename()} (${readBytes().size} bytes)" }
             job.attributes.remove("document-name-supplied")
             logger.info { filename() }
-            assertEquals("bin", filenameExtension(format))
+            assertEquals("bin", getFilenameExtension(format))
         }
     }
 
