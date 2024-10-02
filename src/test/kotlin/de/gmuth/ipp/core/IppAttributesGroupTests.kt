@@ -10,10 +10,7 @@ import java.io.File
 import java.io.PrintWriter
 import java.time.ZoneId
 import java.util.logging.Logger.getLogger
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class IppAttributesGroupTests {
 
@@ -70,7 +67,7 @@ class IppAttributesGroupTests {
 
     @Test
     fun toStringValue() {
-        assertEquals("'operation-attributes-tag' 0 attributes", group.toString())
+        assertEquals("operation group (0 attributes)", group.toString())
     }
 
     @Test
@@ -139,7 +136,7 @@ class IppAttributesGroupTests {
     }
 
     @Test
-    fun writeAttributesWithoutTitle() {
+    fun writeTextWithoutTitle() {
         group.writeText(PrintWriter(java.lang.System.out), null)
     }
 
