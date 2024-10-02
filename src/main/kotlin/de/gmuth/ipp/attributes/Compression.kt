@@ -18,4 +18,9 @@ enum class Compression(private val keyword: String) : IppAttributeBuilder {
 
     override fun buildIppAttribute(printerAttributes: IppAttributesGroup) =
         IppAttribute("compression", Keyword, keyword)
+
+    companion object {
+        fun fromString(string: String) =
+            Compression.values().single { it.keyword == string }
+    }
 }
