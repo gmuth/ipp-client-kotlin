@@ -4,6 +4,7 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020-2024 Gerhard Muth
  */
 
+import de.gmuth.ipp.attributes.Compression
 import de.gmuth.ipp.core.IppTag.*
 import java.net.URI
 import java.nio.charset.Charset
@@ -34,6 +35,9 @@ class IppRequest : IppMessage {
 
     val requestedAttributes: List<String>
         get() = operationGroup.getValues("requested-attributes")
+
+    val compression: Compression
+        get() = Compression.fromString(operationGroup.getValueAsString("compression"))
 
     constructor() : super()
 
