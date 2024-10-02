@@ -21,6 +21,16 @@ class IppDocument(
     private val inputStream: InputStream
 ) {
 
+    companion object {
+        fun filenameExtension(mediaType: String) = when (mediaType) {
+            "application/postscript", "application/vnd.cups-postscript", "application/vnd.adobe-reader-postscript" -> "ps"
+            "application/pdf", "application/vnd.cups-pdf" -> "pdf"
+            "application/octet-stream" -> "bin"
+            "text/plain" -> "txt"
+            else -> mediaType.split("/")[1]
+        }
+    }
+
     private val logger = getLogger(javaClass.name)
 
     val number: Int
@@ -37,32 +47,22 @@ class IppDocument(
     fun readBytes() = inputStream.readBytes()
         .also { logger.fine { "Read ${it.size} bytes of $this" } }
 
-    internal fun filenameExtension() = when (format) {
-        "application/postscript", "application/vnd.cups-postscript", "application/vnd.adobe-reader-postscript" -> "ps"
-        "application/pdf", "application/vnd.cups-pdf" -> "pdf"
-        "application/octet-stream" -> "bin"
-        "image/jpeg" -> "jpg"
-        "text/plain" -> "txt"
-        else -> format.split("/")[1]
-    }
-
-    fun filename() = StringBuilder().run {
-        var extension: String? = filenameExtension()
+    fun filename() = StringBuilder().apply {
+        var extension: String? = filenameExtension(format)
         job.run {
             append("job-$id")
-            getNumberOfDocumentsOrDocumentCount().also { if (it > 1) append("-doc-$it") }
-            job.getOriginatingUserNameOrAppleJobOwnerOrNull()?.let { append("-$it") }
+            getNumberOfDocumentsOrDocumentCount().let { if (it > 1) append("-doc-$it") }
+            getOriginatingUserNameOrAppleJobOwnerOrNull()?.let { append("-$it") }
             if (attributes.containsKey("com.apple.print.JobInfo.PMApplicationName")) {
                 append("-${attributes.getValueAsString("com.apple.print.JobInfo.PMApplicationName")}")
             }
-            job.getJobNameOrDocumentNameSuppliedOrAppleJobNameOrNull()?.let {
-                append("-${it.take(100)}")
-                if (it.lowercase().endsWith(".$extension")) extension = null
+            getJobNameOrDocumentNameSuppliedOrAppleJobNameOrNull()?.run {
+                append("-${take(100)}")
+                if (lowercase().endsWith(".$extension")) extension = null
             }
         }
         extension?.let { append(".$it") }
-        toString().replace('/', '_')
-    }
+    }.toString().replace(File.separator, "_")
 
     fun copyTo(outputStream: OutputStream) =
         inputStream.copyTo(outputStream)
