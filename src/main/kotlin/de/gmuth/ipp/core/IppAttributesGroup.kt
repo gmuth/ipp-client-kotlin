@@ -31,8 +31,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
 
     fun put(attribute: IppAttribute<*>) {
         if (containsKey(attribute.name)) {
-            // some implementations do not follow the IPP specification
-            if (replaceEnabled) {
+            if (replaceEnabled) { // some implementations do not follow the IPP specification
                 put(attribute.name, attribute).also {
                     logger.fine { "replaced '$it' with '${attribute.values.joinToString(",")}' in $name" }
                 }
@@ -60,27 +59,30 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getValue(name: String) =
-        get(name)?.value as T ?: throw IppAttributeNotFoundException(name, tag)
+        get(name)?.value as T ?: throwIppAttributeNotFoundException()
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getValues(name: String) =
-        get(name)?.values as T ?: throw IppAttributeNotFoundException(name, tag)
+        get(name)?.values as T ?: throwIppAttributeNotFoundException()
 
     fun getValueAsURI(name: String) =
         getValue<URI>(name)
 
     fun getValueAsString(name: String) =
-        getValue<IppString>(name).text
+        get(name)?.getStringValue() ?: throwIppAttributeNotFoundException()
 
     fun getValuesAsListOfStrings(name: String) =
-        get(name)?.getStringValues() ?: throw IppAttributeNotFoundException(name, tag)
+        get(name)?.getStringValues() ?: throwIppAttributeNotFoundException()
 
     fun getValueAsZonedDateTime(name: String, zoneId: ZoneId = ZoneId.systemDefault()): ZonedDateTime =
         get(name)?.getValueAsZonedDateTime()?.withZoneSameInstant(zoneId)
             ?: throw IppAttributeNotFoundException(name, tag)
 
     fun getValueAsDurationOfSeconds(name: String): Duration =
-        get(name)?.getValueAsDurationOfSeconds() ?: throw IppAttributeNotFoundException(name, tag)
+        get(name)?.getValueAsDurationOfSeconds() ?: throwIppAttributeNotFoundException()
+
+    private fun throwIppAttributeNotFoundException(): Nothing =
+        throw IppAttributeNotFoundException(name, tag)
 
     fun put(attributesGroup: IppAttributesGroup) =
         attributesGroup.values.forEach { put(it) }
