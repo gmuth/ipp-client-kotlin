@@ -18,7 +18,7 @@ abstract class IppMessage() {
         var keepDocumentCopy: Boolean = false
     }
 
-    private val logger = getLogger(javaClass.name)
+    private val logger = getLogger(IppMessage::class.java.name)
     var code: Int? = null // unsigned short (16 bits)
     var requestId: Int? = null
     var version: String? = null
@@ -169,7 +169,7 @@ abstract class IppMessage() {
                 documentInputStreamIsConsumed = true
                 if (keepDocumentCopy) {
                     documentBytes = byteArraySavingOutputStream.getSavedBytes()
-                    if (documentBytes!!.isNotEmpty()) logger.fine("Keeping ${documentBytes!!.size} document bytes")
+                    if (documentBytes!!.isNotEmpty()) logger.finer("Keeping ${documentBytes!!.size} document bytes")
                 }
                 byteArraySavingOutputStream.close()
             }
