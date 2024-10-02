@@ -69,7 +69,7 @@ class IppRequest : IppMessage {
     }
 
     override fun toString() = StringBuilder().apply {
-        append("#%05d $operation".format(requestId))
+        append(operation)
         val details = attributesGroups
             .filter { group -> group.tag != Operation || !operation.name.contains("Attributes") }
             .map { "${it.size} ${it.tag.name.lowercase()} attributes" }
