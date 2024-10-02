@@ -34,7 +34,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
             // some implementations do not follow the IPP specification
             if (replaceEnabled) {
                 put(attribute.name, attribute).also {
-                    logger.fine { "replaced '$it' with '${attribute.values.joinToString(",")}' in group $tag" }
+                    logger.fine { "replaced '$it' with '${attribute.values.joinToString(",")}' in $name" }
                 }
             } else {
                 logger.fine { "ignored replacement attribute: $attribute" }
