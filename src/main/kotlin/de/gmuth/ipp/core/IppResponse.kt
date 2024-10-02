@@ -51,8 +51,6 @@ class IppResponse : IppMessage {
 
     override fun toString() = StringBuilder().apply {
         append(status)
-        if (containsGroup(Operation) && operationGroup.containsKey("status-message"))
-            append(", $statusMessage")
 
         val statesAndReasons = attributesGroups
             .flatMap { group -> group.values }
