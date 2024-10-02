@@ -5,6 +5,7 @@ package de.gmuth.ipp.core
  */
 
 import de.gmuth.ipp.core.IppTag.*
+import de.gmuth.ipp.iana.IppRegistrationsSection2
 import de.gmuth.ipp.iana.IppRegistrationsSection2.attributeIs1setOf
 import de.gmuth.ipp.iana.IppRegistrationsSection6.getEnumName
 import java.nio.charset.Charset
@@ -32,6 +33,11 @@ data class IppAttribute<T>(val name: String, val tag: IppTag) : IppAttributeBuil
     }
 
     constructor(name: String, tag: IppTag, vararg values: T) : this(name, tag, values.toList())
+
+    constructor(name: String, vararg values: T) : this(name, NoValue, values.toList()) {
+        val tag = IppRegistrationsSection2.tagForAttribute(name) ?: throw IppException("No tag found for '$name'")
+        throw IllegalArgumentException("Use constructor with tag: IppAttribute(\"$name\", IppTag.${tag.name}, ...)")
+    }
 
     val value: T
         get() =
