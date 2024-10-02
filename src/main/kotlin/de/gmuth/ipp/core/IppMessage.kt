@@ -10,6 +10,7 @@ import java.util.logging.Level
 import java.util.logging.Level.INFO
 import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
+import java.util.zip.GZIPOutputStream
 import java.nio.charset.Charset as javaCharset
 
 abstract class IppMessage() {
@@ -126,7 +127,7 @@ abstract class IppMessage() {
         try {
             IppInputStream(bufferedInputStream).readMessage(this)
             if (bufferedInputStream.available() > 0) documentInputStream = bufferedInputStream
-            else logger.finest { "No document bytes available from bufferedInputStream after readMessage" }
+            else logger.fine { "No document bytes available from bufferedInputStream after readMessage()" }
         } finally {
             rawBytes = byteArrayOutputStream.toByteArray()
         }
@@ -146,16 +147,29 @@ abstract class IppMessage() {
     // DOCUMENT and IPP-MESSAGE
     // ------------------------
 
-    fun writeDocument(outputStream: OutputStream) {
+    fun writeDocument(notCompressingOutputStream: OutputStream) {
         if (documentInputStreamIsConsumed) {
-            if (keepDocumentCopy) outputStream.use { it.write(documentBytes!!) }
-            else throw IppException(
-                "DocumentInputStream is consumed. Enable IppMessage.keepDocumentCopy in order to keep documentBytes."
-            )
+            throw IppException("documentInputStream is consumed")
+            // write documentBytes? take care of compression!
         } else {
+            val outputStream = if (operationGroup.containsKey("compression")) {
+                getCompressingOutputStream(notCompressingOutputStream)
+            } else {
+                notCompressingOutputStream
+            }
+            logger.fine { "Write document using ${outputStream.javaClass.simpleName}" }
             copyUnconsumedDocumentInputStream(outputStream)
+            outputStream.close() // starts optional compression
         }
     }
+
+    private fun getCompressingOutputStream(uncompressedOutputStream: OutputStream) =
+        with(operationGroup.getValueAsString("compression")) {
+            when (this) {
+                "gzip" -> GZIPOutputStream(uncompressedOutputStream)
+                else -> throw NotImplementedError("compression '$this'")
+            }
+        }
 
     private fun copyUnconsumedDocumentInputStream(outputStream: OutputStream): Long {
         if (hasDocument() && documentInputStreamIsConsumed) {
@@ -175,8 +189,9 @@ abstract class IppMessage() {
             }
     }
 
-    fun saveDocument(file: File) = file.run {
-        writeDocument(outputStream())
+    fun saveDocumentBytes(file: File) = file.run {
+        if (documentBytes == null || documentBytes!!.isEmpty()) throw IppException("No documentBytes available")
+        ByteArrayInputStream(documentBytes).copyTo(outputStream())
         logger.info { "Saved ${length()} document bytes to $path" }
     }
 
@@ -216,12 +231,6 @@ abstract class IppMessage() {
     // -------
     // LOGGING
     // -------
-
-    override fun toString() = "%s %s%s".format(
-        codeDescription,
-        attributesGroups.map { "${it.values.size} ${it.tag}" },
-        if (rawBytes == null) "" else " (${rawBytes!!.size} bytes)"
-    )
 
     @JvmOverloads
     open fun log(logger: Logger, level: Level = INFO, prefix: String = "") {

@@ -74,14 +74,17 @@ class IppMessageTests {
             requestId = 7
             code = 0
             documentInputStream = "Lorem ipsum dolor sit amet".byteInputStream()
+            val tmpFile0 = createTempFile("test", null)
             val tmpFile1 = createTempFile("test", null)
             val tmpFile2 = createTempFile("test", null)
             try {
                 IppMessage.keepDocumentCopy = true
+                write(tmpFile0.outputStream())
                 assertTrue(hasDocument())
-                saveDocument(tmpFile1)
+                saveDocumentBytes(tmpFile1)
                 assertEquals(26, tmpFile1.length())
-                encode(appendDocumentIfAvailable = true) // save raw bytes
+                val ippBytes = encode(appendDocumentIfAvailable = false) // trigger saving raw bytes
+                assertEquals(38, ippBytes.size)
                 saveBytes(tmpFile2)
                 assertEquals(38, tmpFile2.length())
             } finally {
@@ -94,7 +97,6 @@ class IppMessageTests {
 
     @Test
     fun withoutRawBytes() {
-        assertEquals("codeDescription []", message.toString())
         message.log(logger)
         assertFailsWith<IppException> { // missing raw bytes
             message.saveBytes(createTempFile("rawbytes", null))
