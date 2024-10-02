@@ -36,7 +36,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
     var responseInterceptor: IppResponseInterceptor? = null
     var saveMessages: Boolean = false
     var saveMessagesDirectory = createTempDirectory().toFile()
-    var onExceptionSaveMessages: Boolean = true
+    var onExceptionSaveMessages: Boolean = false
     var throwWhenNotSuccessful: Boolean = true
     var disconnectAfterHttpPost: Boolean = false
 
@@ -123,8 +123,8 @@ open class IppClient(val config: IppConfig = IppConfig()) {
                 }
                 return decodeContentStream(request, responseContentStream)
                     .apply { httpServer = getHeaderField("Server") }
-            } catch(socketException: SocketException) {
-                throw IppException("HTTP communication with $httpUri failed", socketException)
+            } catch(ioException: IOException) {
+                throw IppException("HTTP communication with $httpUri failed", ioException)
             } finally {
                 if (disconnectAfterHttpPost) disconnect()
             }
