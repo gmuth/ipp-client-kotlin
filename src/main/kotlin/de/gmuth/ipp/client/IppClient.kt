@@ -5,7 +5,6 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.ipp.client.IppOperationException.ClientErrorNotFoundException
-import de.gmuth.ipp.core.IppException
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppResponse
@@ -124,10 +123,12 @@ open class IppClient(val config: IppConfig = IppConfig()) {
                 return decodeContentStream(request, responseContentStream)
                     .apply { httpServer = getHeaderField("Server") }
             } catch (ioException: IOException) {
-                val compression =
-                    if (request.operationGroup.containsKey("compression")) ", compression=${request.compression.name}"
-                    else ""
-                throw IppException("HTTP communication with $httpUri failed$compression", ioException)
+                throw HttpPostException(
+                    request, cause = ioException, message = StringBuilder().apply {
+                        append("HTTP communication with $httpUri failed")
+                        request.operationGroup.ifContainsKeyAppend("compression", this)
+                    }.toString()
+                )
             } finally {
                 if (disconnectAfterHttpPost) disconnect()
             }
