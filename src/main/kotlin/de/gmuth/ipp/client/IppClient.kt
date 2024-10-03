@@ -17,7 +17,6 @@ import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
-import java.net.SocketException
 import java.net.URI
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.logging.Level.FINEST
@@ -89,7 +88,8 @@ open class IppClient(val config: IppConfig = IppConfig()) {
             logger.finer { "Exchanged request #$requestId @${httpUri.host}: $request => $it" }
             log(logger, FINEST, ">>> ") //  this=request
             it.log(logger, FINEST, "<<< ") // it=response
-            fun file(extension: String) = File(saveMessagesDirectory, "%03d-%s.%s".format(requestId, operation, extension))
+            fun file(extension: String) =
+                File(saveMessagesDirectory, "%03d-%s.%s".format(requestId, operation, extension))
             if (saveMessages) {
                 saveBytes(file("req"))
                 saveText(file("req.txt"))
@@ -123,8 +123,11 @@ open class IppClient(val config: IppConfig = IppConfig()) {
                 }
                 return decodeContentStream(request, responseContentStream)
                     .apply { httpServer = getHeaderField("Server") }
-            } catch(ioException: IOException) {
-                throw IppException("HTTP communication with $httpUri failed", ioException)
+            } catch (ioException: IOException) {
+                val compression =
+                    if (request.operationGroup.containsKey("compression")) ", compression=${request.compression.name}"
+                    else ""
+                throw IppException("HTTP communication with $httpUri failed$compression", ioException)
             } finally {
                 if (disconnectAfterHttpPost) disconnect()
             }
