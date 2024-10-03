@@ -65,32 +65,38 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     fun <T> getValue(name: String): T = get(name)?.run {
         if (tag.isValueTagAndIsNotOutOfBandTag()) value as T
         else throw IppException("'$name' value is out-of-band: tag=$tag")
-    } ?: throwIppAttributeNotFoundException()
+    } ?: throwIppAttributeNotFoundException(name)
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getValues(name: String): T = get(name)?.run {
         if (tag.isValueTagAndIsNotOutOfBandTag()) values as T
         else throw IppException("'$name' values are out-of-band: tag=$tag")
-    } ?: throwIppAttributeNotFoundException()
+    } ?: throwIppAttributeNotFoundException(name)
 
     fun getValueAsURI(name: String) =
         getValue<URI>(name)
 
     fun getValueAsString(name: String) =
-        get(name)?.getStringValue() ?: throwIppAttributeNotFoundException()
+        get(name)?.getStringValue() ?: throwIppAttributeNotFoundException(name)
 
     fun getValuesAsListOfStrings(name: String) =
-        get(name)?.getStringValues() ?: throwIppAttributeNotFoundException()
+        get(name)?.getStringValues() ?: throwIppAttributeNotFoundException(name)
 
     fun getValueAsZonedDateTime(name: String, zoneId: ZoneId = ZoneId.systemDefault()): ZonedDateTime =
         get(name)?.getValueAsZonedDateTime()?.withZoneSameInstant(zoneId)
             ?: throw IppAttributeNotFoundException(name, tag)
 
     fun getValueAsDurationOfSeconds(name: String): Duration =
-        get(name)?.getValueAsDurationOfSeconds() ?: throwIppAttributeNotFoundException()
+        get(name)?.getValueAsDurationOfSeconds() ?: throwIppAttributeNotFoundException(name)
 
-    private fun throwIppAttributeNotFoundException(): Nothing =
-        throw IppAttributeNotFoundException(name, tag)
+    private fun throwIppAttributeNotFoundException(attributeName: String): Nothing =
+        throw IppAttributeNotFoundException(attributeName, tag)
+
+    fun `remove attributes where tag is not ValueTag or tag is OutOfBandTag`() = values
+        .filter { !it.tag.isValueTagAndIsNotOutOfBandTag() }
+        .map { remove(it.name) }
+        .onEach { logger.finer { "removed attribute from $name: $it" } }
+        .apply { if (isNotEmpty()) logger.fine { "removed $size attributes from $name: ${joinToString(",") { it!!.name }}" } }
 
     fun put(attributesGroup: IppAttributesGroup) =
         attributesGroup.values.forEach { put(it) }
