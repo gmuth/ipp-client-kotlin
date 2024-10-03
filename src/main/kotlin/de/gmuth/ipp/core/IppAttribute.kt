@@ -94,7 +94,7 @@ data class IppAttribute<T>(val name: String, val tag: IppTag) : IppAttributeBuil
     fun toCompactString() = "$name=${valuesToString()}"
 
     fun valuesToString() =
-        if (values.isEmpty()) "no-value" else values.joinToString(",") { valueToString(it) }
+        if (values.isEmpty()) "no-values" else values.joinToString(",") { valueToString(it) }
 
     private fun valueToString(value: T) = when {
         tag == Charset -> with(value as Charset) { name().lowercase() }
