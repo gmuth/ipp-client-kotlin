@@ -110,6 +110,18 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     fun toCompactString() =
         values.joinToString(" ") { it.toCompactString() }
 
+    fun ifContainsKeyAppend(
+        attributeName: String,
+        stringBuilder: StringBuilder,
+        compactString: Boolean = true,
+        separator: String = ", "
+    ) {
+        if (containsKey(attributeName)) stringBuilder.run {
+            append(separator)
+            append(get(attributeName)!!.run { if (compactString) toCompactString() else toString() })
+        }
+    }
+
     @JvmOverloads
     fun log(logger: Logger, level: Level = INFO, title: String = toString(), prefix: String = "") {
         logger.log(level) { "${prefix}$title" }
