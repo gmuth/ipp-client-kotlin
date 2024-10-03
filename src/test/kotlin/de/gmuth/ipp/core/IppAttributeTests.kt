@@ -71,7 +71,7 @@ class IppAttributeTests {
     @Test
     fun toStringNoValue() {
         attribute.values.clear()
-        assertTrue(attribute.toString().endsWith("no-value"))
+        assertEquals("no-values", attribute.valuesToString())
     }
 
     @Test
