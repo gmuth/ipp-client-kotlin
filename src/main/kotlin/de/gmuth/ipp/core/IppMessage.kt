@@ -10,6 +10,7 @@ import java.util.logging.Level
 import java.util.logging.Level.INFO
 import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
+import java.util.zip.DeflaterOutputStream
 import java.util.zip.GZIPOutputStream
 import java.nio.charset.Charset as javaCharset
 
@@ -166,7 +167,9 @@ abstract class IppMessage() {
     private fun getCompressingOutputStream(uncompressedOutputStream: OutputStream) =
         with(operationGroup.getValueAsString("compression")) {
             when (this) {
+                "none" -> uncompressedOutputStream
                 "gzip" -> GZIPOutputStream(uncompressedOutputStream)
+                "deflate" -> DeflaterOutputStream(uncompressedOutputStream)
                 else -> throw NotImplementedError("compression '$this'")
             }
         }
