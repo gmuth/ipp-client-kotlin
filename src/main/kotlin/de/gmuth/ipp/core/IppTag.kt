@@ -4,7 +4,9 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020-2023 Gerhard Muth
  */
 
-// [RFC 8010] and [RFC 3380]
+// RFC 8010 and RFC 3380
+
+@Suppress("kotlin:S100")
 enum class IppTag(
     val code: Byte,
     val registeredName: String,
@@ -66,7 +68,7 @@ enum class IppTag(
     fun isOutOfBandTag() = code in 0x10..0x1f
     fun isMemberAttrName() = this == MemberAttrName
     fun isMemberAttrValue() = this != MemberAttrName && isValueTag() && this != EndCollection
-    fun isValueTagAndIsNotOutOfBandTag() = isValueTag() && !isOutOfBandTag()
+    fun `is ValueTag and is not OutOfBandTag`() = isValueTag() && !isOutOfBandTag()
 
     override fun toString() = registeredName
 
