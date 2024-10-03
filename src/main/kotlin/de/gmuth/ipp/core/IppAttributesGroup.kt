@@ -92,6 +92,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     private fun throwIppAttributeNotFoundException(attributeName: String): Nothing =
         throw IppAttributeNotFoundException(attributeName, tag)
 
+    @Suppress("kotlin:S100") // do not match ^[a-zA-Z][a-zA-Z0-9]*$
     fun `remove attributes where tag is not ValueTag or tag is OutOfBandTag`() = values
         .filter { !it.tag.isValueTagAndIsNotOutOfBandTag() }
         .map { remove(it.name) }
