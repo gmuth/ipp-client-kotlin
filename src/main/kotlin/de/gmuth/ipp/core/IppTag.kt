@@ -66,6 +66,7 @@ enum class IppTag(
     fun isOutOfBandTag() = code in 0x10..0x1f
     fun isMemberAttrName() = this == MemberAttrName
     fun isMemberAttrValue() = this != MemberAttrName && isValueTag() && this != EndCollection
+    fun isValueTagAndIsNotOutOfBandTag() = isValueTag() && !isOutOfBandTag()
 
     override fun toString() = registeredName
 

@@ -50,20 +50,28 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
         put(IppAttribute(name, tag, values))
 
     @Suppress("UNCHECKED_CAST")
-    fun <T> getValueOrNull(name: String) =
-        get(name)?.value as T?
+    fun <T> getValueOrNull(name: String): T? = get(name)?.run {
+        if (tag.isValueTagAndIsNotOutOfBandTag()) value as T?
+        else null
+    }
 
     @Suppress("UNCHECKED_CAST")
-    fun <T> getValuesOrNull(name: String) =
-        get(name)?.values as T?
+    fun <T> getValuesOrNull(name: String): T? = get(name)?.run {
+        if (tag.isValueTagAndIsNotOutOfBandTag()) values as T?
+        else null
+    }
 
     @Suppress("UNCHECKED_CAST")
-    fun <T> getValue(name: String) =
-        get(name)?.value as T ?: throwIppAttributeNotFoundException()
+    fun <T> getValue(name: String): T = get(name)?.run {
+        if (tag.isValueTagAndIsNotOutOfBandTag()) value as T
+        else throw IppException("'$name' value is out-of-band: tag=$tag")
+    } ?: throwIppAttributeNotFoundException()
 
     @Suppress("UNCHECKED_CAST")
-    fun <T> getValues(name: String) =
-        get(name)?.values as T ?: throwIppAttributeNotFoundException()
+    fun <T> getValues(name: String): T = get(name)?.run {
+        if (tag.isValueTagAndIsNotOutOfBandTag()) values as T
+        else throw IppException("'$name' values are out-of-band: tag=$tag")
+    } ?: throwIppAttributeNotFoundException()
 
     fun getValueAsURI(name: String) =
         getValue<URI>(name)
