@@ -4,8 +4,7 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020-2024 Gerhard Muth
  */
 
-import de.gmuth.ipp.core.IppTag.Operation
-import de.gmuth.ipp.core.IppTag.Unsupported
+import de.gmuth.ipp.core.IppTag.*
 import java.nio.charset.Charset
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -39,9 +38,13 @@ class IppResponse : IppMessage {
         version: String = "2.0",
         requestId: Int = 1,
         charset: Charset = Charsets.UTF_8,
-        naturalLanguage: String = "en"
+        naturalLanguage: String = "en",
+        statusMessage: IppString? = null,
     ) : super(version, requestId, charset, naturalLanguage) {
         code = status.code
+        with(operationGroup) {
+            statusMessage?.let { attribute("status-message", TextWithLanguage, it) }
+        }
     }
 
     override fun log(logger: Logger, level: Level, prefix: String) {
@@ -51,6 +54,9 @@ class IppResponse : IppMessage {
 
     override fun toString() = StringBuilder().apply {
         append(status)
+        if (!status.isSuccessful() && operationGroup.containsKey("status-message")) {
+            append(", '$statusMessage'")
+        }
 
         val statesAndReasons = attributesGroups
             .flatMap { group -> group.values }
