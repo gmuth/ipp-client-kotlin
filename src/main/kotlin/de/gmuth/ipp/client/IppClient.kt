@@ -18,8 +18,7 @@ import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URI
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.logging.Level.FINEST
-import java.util.logging.Level.SEVERE
+import java.util.logging.Level.*
 import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
 import javax.net.ssl.HostnameVerifier
@@ -137,8 +136,8 @@ open class IppClient(val config: IppConfig = IppConfig()) {
 
     private fun validateIppResponse(request: IppRequest, response: IppResponse) = response.run {
         if (status == ClientErrorBadRequest) {
-            request.log(logger, SEVERE, prefix = "REQUEST: ")
-            response.log(logger, SEVERE, prefix = "RESPONSE: ")
+            request.log(logger, WARNING, prefix = "REQUEST: ")
+            response.log(logger, WARNING, prefix = "RESPONSE: ")
         }
         if (containsGroup(Unsupported)) unsupportedGroup.values.forEach { logger.warning() { "Unsupported: $it" } }
         if (!isSuccessful()) {
