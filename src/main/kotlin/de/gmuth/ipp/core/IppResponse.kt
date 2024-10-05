@@ -9,6 +9,7 @@ import java.nio.charset.Charset
 import java.util.logging.Level
 import java.util.logging.Logger
 
+@Suppress("kotlin:S1192")
 class IppResponse : IppMessage {
 
     var httpServer: String? = null
