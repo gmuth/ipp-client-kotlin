@@ -77,9 +77,9 @@ class IppPrinter(
                     logger.severe { ippOperationException.message }
                 else {
                     logger.severe { "Failed to get printer attributes on init. Workaround: getPrinterAttributesOnInit=false" }
-                    ippOperationException.response.let {
-                        if (it.containsGroup(Printer)) logger.info { "${it.printerGroup.size} attributes parsed" }
-                        else logger.warning { "RESPONSE: $it" }
+                    ippOperationException.response.apply {
+                        logger.warning { toString() } // IppClient logs request and response
+                        if (containsGroup(Printer)) logger.warning { "${printerGroup.size} attributes parsed" }
                     }
                 }
                 throw ippOperationException
