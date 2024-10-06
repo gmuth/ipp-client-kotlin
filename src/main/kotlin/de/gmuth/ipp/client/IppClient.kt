@@ -18,7 +18,8 @@ import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URI
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.logging.Level.*
+import java.util.logging.Level.FINEST
+import java.util.logging.Level.WARNING
 import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
 import javax.net.ssl.HostnameVerifier
@@ -124,7 +125,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
             } catch (ioException: IOException) {
                 throw HttpPostException(
                     request, cause = ioException, message = StringBuilder().apply {
-                        append("HTTP communication with $httpUri failed")
+                        with(ioException) { append("$httpUri: ${javaClass.simpleName}: $message") }
                         request.operationGroup.ifContainsKeyAppend("compression", this)
                     }.toString()
                 )
