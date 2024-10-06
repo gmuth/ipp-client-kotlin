@@ -8,6 +8,7 @@ import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppStatus
 import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
+import de.gmuth.ipp.core.IppString
 import de.gmuth.ipp.core.IppTag.Operation
 import java.io.File
 import java.util.logging.Level
@@ -20,6 +21,19 @@ open class IppOperationException(
     cause: Throwable? = null
 ) : IppExchangeException(request, message, cause) {
 
+    constructor(
+        request: IppRequest,
+        status: IppStatus,
+        message: String,
+        messageLanguage: String = "en",
+        cause: Throwable? = null
+    ) : this(
+        request,
+        IppResponse(status, statusMessage = IppString("$message: ${cause?.message}", messageLanguage)),
+        message,
+        cause
+    )
+
     class ClientErrorNotFoundException(request: IppRequest, response: IppResponse) :
         IppOperationException(request, response) {
         init {
@@ -29,7 +43,7 @@ open class IppOperationException(
     }
 
     companion object {
-        fun defaultMessage(request: IppRequest, response: IppResponse) = StringBuilder().run {
+        fun defaultMessage(request: IppRequest, response: IppResponse) = StringBuilder().apply {
             append("${request.operation} failed")
             with(response) {
                 append(": '$status'")
@@ -37,8 +51,7 @@ open class IppOperationException(
                     append(", $statusMessage")
                 }
             }
-            toString()
-        }
+        }.toString()
     }
 
     fun statusIs(status: IppStatus) = response.status == status
