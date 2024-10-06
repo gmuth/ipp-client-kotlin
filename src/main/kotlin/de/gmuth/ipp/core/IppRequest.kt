@@ -6,6 +6,7 @@ package de.gmuth.ipp.core
 
 import de.gmuth.ipp.attributes.Compression
 import de.gmuth.ipp.client.IppOperationException
+import de.gmuth.ipp.core.IppStatus.ClientErrorBadRequest
 import de.gmuth.ipp.core.IppTag.*
 import java.net.URI
 import java.nio.charset.Charset
@@ -73,12 +74,13 @@ class IppRequest : IppMessage {
         notifyLeaseDuration?.let { attribute("notify-lease-duration", Integer, it.toSeconds()) }
     }
 
-    fun decodeOrThrowIppOperationException(byteArray: ByteArray, status: IppStatus) = try {
-        apply { decode(byteArray) }
-    } catch (throwable: Throwable) {
-        logger.severe { "IppRequest.decode() failed: $throwable" }
-        throw IppOperationException(this, status, "Failed to decode IPP request", cause = throwable)
-    }
+    fun decodeOrThrowIppOperationException(byteArray: ByteArray, status: IppStatus = ClientErrorBadRequest) =
+        try {
+            apply { decode(byteArray) }
+        } catch (throwable: Throwable) {
+            logger.severe { "Decoding IPP request failed: $throwable" }
+            throw IppOperationException(this, status, "Failed to decode IPP request", cause = throwable)
+        }
 
     override fun toString() = StringBuilder().apply {
         append(operation)
