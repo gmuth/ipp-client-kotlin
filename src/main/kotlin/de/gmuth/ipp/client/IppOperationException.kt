@@ -4,11 +4,8 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020-2024 Gerhard Muth
  */
 
-import de.gmuth.ipp.core.IppRequest
-import de.gmuth.ipp.core.IppResponse
-import de.gmuth.ipp.core.IppStatus
+import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
-import de.gmuth.ipp.core.IppString
 import de.gmuth.ipp.core.IppTag.Operation
 import java.io.File
 import java.util.logging.Level
@@ -25,11 +22,14 @@ open class IppOperationException(
         request: IppRequest,
         status: IppStatus,
         message: String,
-        messageLanguage: String = "en",
         cause: Throwable? = null
     ) : this(
         request,
-        IppResponse(status, statusMessage = IppString("$message: ${cause?.message}", messageLanguage)),
+        IppResponse(
+            status = status,
+            requestId = request.requestId ?: 9999,
+            statusMessageWithoutLanguage = "$message: ${cause?.message}"
+        ),
         message,
         cause
     )
