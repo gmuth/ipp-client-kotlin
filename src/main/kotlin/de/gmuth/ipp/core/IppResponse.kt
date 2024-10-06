@@ -56,7 +56,7 @@ class IppResponse : IppMessage {
     override fun toString() = StringBuilder().apply {
         append(status)
         if (!status.isSuccessful() && operationGroup.containsKey("status-message")) {
-            append(", '$statusMessage'")
+            append(", '${statusMessage.text}'")
         }
 
         val statesAndReasons = attributesGroups
