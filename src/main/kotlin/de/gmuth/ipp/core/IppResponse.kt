@@ -48,6 +48,17 @@ class IppResponse : IppMessage {
         }
     }
 
+    constructor(
+        status: IppStatus,
+        requestId: Int,
+        statusMessageWithoutLanguage: String,
+        statusMessageLanguage: String = "en"
+    ) : this(
+        status = status,
+        requestId = requestId,
+        statusMessage = IppString(statusMessageWithoutLanguage, statusMessageLanguage)
+    )
+
     override fun log(logger: Logger, level: Level, prefix: String) {
         httpServer?.let { logger.log(level) { "${prefix}httpServer = $it" } }
         super.log(logger, level, prefix)
