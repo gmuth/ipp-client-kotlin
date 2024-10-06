@@ -18,6 +18,8 @@ import java.util.logging.Logger
 class IppRequest : IppMessage {
     private val logger = Logger.getLogger(javaClass.name)
 
+    var httpUserAgent: String? = null
+
     val printerOrJobUri: URI
         @SuppressWarnings("kotlin:S1192")
         get() = operationGroup.run {
