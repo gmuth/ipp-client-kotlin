@@ -6,7 +6,7 @@ package de.gmuth.ipp.core
 
 open class IppException(message: String, cause: Throwable? = null) : RuntimeException(message, cause) {
 
-    class IppAttributeNotFoundException(attributeName: String, tag: IppTag) :
-        IppException("attribute '$attributeName' not found in ${tag.name} group")
+    class IppAttributeNotFoundException(val attributeName: String, val groupTag: IppTag) :
+        IppException("attribute '$attributeName' not found in ${groupTag.name} group")
 
 }
