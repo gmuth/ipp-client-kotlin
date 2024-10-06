@@ -4,6 +4,9 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020-2023 Gerhard Muth
  */
 
+import java.util.logging.Level
+import java.util.logging.Level.*
+
 // https://www.rfc-editor.org/rfc/rfc8011.html#appendix-B
 // https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xml#ipp-registrations-11
 
@@ -69,6 +72,12 @@ enum class IppStatus(val code: Int) {
     override fun toString() = name
         .replace(Regex("[A-Z]+")) { "-" + it.value.lowercase() }
         .replace(Regex("^-"), "")
+
+    fun logLevel(): Level = when {
+        isClientError() -> WARNING
+        isServerError() -> SEVERE
+        else -> INFO
+    }
 
     companion object {
         fun fromInt(code: Int): IppStatus =
