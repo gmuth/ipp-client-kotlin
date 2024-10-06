@@ -70,8 +70,8 @@ enum class IppStatus(val code: Int) {
     fun isServerError() = code in 0x0500..0x05FF
 
     override fun toString() = name
-        .replace(Regex("[A-Z]+")) { "-" + it.value.lowercase() }
-        .replace(Regex("^-"), "")
+        .replace(Regex("(.)([A-Z])")) { it.groups[1]!!.value + "-" + it.groups[2]!!.value }
+        .lowercase()
 
     fun logLevel(): Level = when {
         isClientError() -> WARNING
