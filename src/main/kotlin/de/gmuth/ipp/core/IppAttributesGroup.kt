@@ -45,10 +45,10 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     }
 
     fun attribute(name: String, tag: IppTag, vararg values: Any) =
-        put(IppAttribute(name, tag, values.toList()))
+        IppAttribute(name, tag, values.toList()).also { put(it) }
 
     fun attribute(name: String, tag: IppTag, values: Collection<Any>) =
-        put(IppAttribute(name, tag, values))
+        IppAttribute(name, tag, values).also { put(it) }
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getValueOrNull(name: String): T? = get(name)?.run {
