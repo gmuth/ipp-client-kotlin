@@ -4,6 +4,7 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020-2024 Gerhard Muth
  */
 
+import de.gmuth.ipp.attributes.DocumentFormat
 import de.gmuth.ipp.attributes.JobState
 import de.gmuth.ipp.attributes.JobState.*
 import de.gmuth.ipp.core.*
@@ -229,9 +230,10 @@ class IppJob(
         inputStream: InputStream,
         lastDocument: Boolean = true,
         documentName: String? = null,
-        documentNaturalLanguage: String? = null
+        documentNaturalLanguage: String? = null,
+        documentFormat: DocumentFormat? = null
     ) {
-        val request = documentRequest(SendDocument, lastDocument, documentName, documentNaturalLanguage)
+        val request = documentRequest(SendDocument, lastDocument, documentName, documentNaturalLanguage, documentFormat)
             .apply { documentInputStream = inputStream }
         attributes.put(exchange(request).jobGroup)
     }
@@ -241,8 +243,9 @@ class IppJob(
         file: File,
         lastDocument: Boolean = true,
         documentName: String? = null,
-        documentNaturalLanguage: String? = null
-    ) = sendDocument(FileInputStream(file), lastDocument, documentName, documentNaturalLanguage)
+        documentNaturalLanguage: String? = null,
+        documentFormat: DocumentFormat? = null
+    ) = sendDocument(FileInputStream(file), lastDocument, documentName, documentNaturalLanguage, documentFormat)
 
     //----------------------
     // Send-URI (depreacted)
@@ -255,9 +258,10 @@ class IppJob(
         documentUri: URI,
         lastDocument: Boolean = true,
         documentName: String? = null,
-        documentNaturalLanguage: String? = null
+        documentNaturalLanguage: String? = null,
+        documentFormat: DocumentFormat? = null
     ) {
-        val request = documentRequest(SendURI, lastDocument, documentName, documentNaturalLanguage)
+        val request = documentRequest(SendURI, lastDocument, documentName, documentNaturalLanguage, documentFormat)
             .apply { operationGroup.attribute("document-uri", Uri, documentUri) }
         attributes.put(exchange(request).jobGroup)
     }
@@ -266,14 +270,19 @@ class IppJob(
         operation: IppOperation,
         lastDocument: Boolean,
         documentName: String?,
-        documentNaturalLanguage: String?
+        documentNaturalLanguage: String?,
+        documentFormat: DocumentFormat?
     ) = ippRequest(operation).apply {
         operationGroup.run {
             attribute("last-document", IppTag.Boolean, lastDocument)
             documentName?.let { attribute("document-name", NameWithoutLanguage, it) }
             documentNaturalLanguage?.let { attribute("document-natural-language", NaturalLanguage, it) }
+            put(documentFormat)
         }
     }
+
+    private fun IppAttributesGroup.put(attributeBuilder: IppAttributeBuilder?) =
+        attributeBuilder?.let { put(printer.buildIppAttribute(it)) }
 
     //--------------
     // CUPS-Move-Job
