@@ -58,9 +58,12 @@ class IppPrinter(
     }
 
     init {
-        logger.fine { "create IppPrinter for $printerUri" }
-        require(printerUri.scheme.startsWith("ipp")) { "uri scheme unsupported: ${printerUri.scheme}" }
-        if (printerUri.scheme == "ipps") ippConfig.trustAnyCertificateAndSSLHostname()
+        logger.fine { "Create IppPrinter for $printerUri" }
+        with(printerUri.scheme) {
+            require(startsWith("ipp") || startsWith("http")) {
+                "URI scheme unsupported: $this"
+            }
+        }
         if (!getPrinterAttributesOnInit) {
             logger.fine { "getPrinterAttributesOnInit disabled => no printer attributes available" }
             printerDirectory = createTempDirectory().toFile()
@@ -402,16 +405,21 @@ class IppPrinter(
         operation: IppOperation,
         attributeBuilders: Collection<IppAttributeBuilder>
     ) = ippRequest(operation).apply {
-        for (attributeBuilder in attributeBuilders) {
-            val attribute = attributeBuilder.buildIppAttribute(attributes)
-            checkIfValueIsSupported(attribute.name, attribute.values, false)
+        for (attributeBuilder in attributeBuilders) with(attributeBuilder.build()) {
+            checkIfValueIsSupported(name, values, false)
             // put attribute in operation or job group?
-            val groupTag = IppRegistrationsSection2.selectGroupForAttribute(attribute.name) ?: Job
+            val groupTag = IppRegistrationsSection2.selectGroupForAttribute(name) ?: Job
             if (!containsGroup(groupTag)) createAttributesGroup(groupTag)
-            logger.finer { "$groupTag put $attribute" }
-            getSingleAttributesGroup(groupTag).put(attribute)
+            logger.finer { "$groupTag put $this" }
+            getSingleAttributesGroup(groupTag).put(this)
         }
     }
+
+    private fun IppAttributeBuilder.build() =
+        buildIppAttribute(attributes)
+
+    fun buildIppAttribute(attributeBuilder: IppAttributeBuilder) =
+        attributeBuilder.buildIppAttribute(attributes)
 
     //-------------------------------
     // Get-Job-Attributes (as IppJob)
