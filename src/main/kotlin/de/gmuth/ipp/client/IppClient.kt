@@ -110,7 +110,10 @@ open class IppClient(val config: IppConfig = IppConfig()) {
                 sslSocketFactory = config.sslContext!!.socketFactory
                 if (!config.verifySSLHostname) hostnameVerifier = HostnameVerifier { _, _ -> true }
             }
-            configure(chunked = request.hasDocument())
+            configure(
+                chunked = request.hasDocument(),
+                userAgent = request.httpUserAgent ?: config.userAgent
+            )
             try {
                 request.write(outputStream)
                 val responseContentStream = try {
@@ -153,11 +156,10 @@ open class IppClient(val config: IppConfig = IppConfig()) {
         }
     }
 
-    private fun HttpURLConnection.configure(chunked: Boolean) {
+    private fun HttpURLConnection.configure(chunked: Boolean, userAgent: String?) {
         config.run {
             connectTimeout = timeout.toMillis().toInt()
             readTimeout = timeout.toMillis().toInt()
-            userAgent?.let { setRequestProperty("User-Agent", it) }
             if (password != null) setRequestProperty("Authorization", authorization())
         }
         doOutput = true // POST
@@ -165,6 +167,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
         setRequestProperty("Content-Type", APPLICATION_IPP)
         setRequestProperty("Accept", APPLICATION_IPP)
         setRequestProperty("Accept-Encoding", "identity") // avoid 'gzip' with Androids OkHttp
+        userAgent?.let { setRequestProperty("User-Agent", it) }
     }
 
     private fun HttpURLConnection.validateHttpResponse(
