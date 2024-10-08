@@ -34,10 +34,10 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
         if (containsKey(attribute.name)) {
             if (replaceEnabled) { // some implementations do not follow the IPP specification
                 put(attribute.name, attribute).also {
-                    logger.fine { "replaced '$it' with '${attribute.values.joinToString(",")}' in $name" }
+                    logger.fine { "$name: '$it' replaced with '${attribute.values.joinToString(",")}'" }
                 }
             } else {
-                logger.fine { "ignored replacement attribute: $attribute" }
+                logger.fine { "Ignored replacement attribute: $attribute" }
             }
         } else {
             put(attribute.name, attribute)
@@ -96,8 +96,8 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     fun `remove attributes where tag is not ValueTag or tag is OutOfBandTag`() = values
         .filter { !it.tag.`is ValueTag and is not OutOfBandTag`() }
         .map { remove(it.name) }
-        .onEach { logger.finer { "removed attribute from $name: $it" } }
-        .apply { if (isNotEmpty()) logger.fine { "removed $size attributes from $name: ${joinToString(",") { it!!.name }}" } }
+        .onEach { logger.finer { "$name: Removed attribute $it" } }
+        .apply { if (isNotEmpty()) logger.fine { "$name: Removed $size attributes  ${joinToString(",") { it!!.name }}" } }
 
     fun put(attributesGroup: IppAttributesGroup) =
         attributesGroup.values.forEach { put(it) }
@@ -135,7 +135,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     }
 
     fun saveText(file: File) = file.apply {
-        printWriter().use { writeText(it, "# File: ${file.name}", "") }
+        printWriter().use { writeText(it, "File: $name", "") }
         logger.info { "Saved $path" }
     }
 }
