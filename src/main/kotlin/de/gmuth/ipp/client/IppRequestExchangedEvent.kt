@@ -59,9 +59,10 @@ class IppRequestExchangedEvent(val request: IppRequest, val response: IppRespons
             if (saveEvent) file("txt").run {
                 printWriter().use {
                     request.writeText(it, "File: $name")
-                    request.httpUserAgent?.let { println("UserAgent: $it") }
                     response.writeText(it)
-                    response.httpServer?.let { println("Server: $it") }
+                    it.println("---------------------------------------------------------------------")
+                    request.httpUserAgent?.run { it.println("UserAgent: $this") }
+                    response.httpServer?.run { it.println("Server: $this") }
                 }
                 logger.fine("Saved $name (${length()} bytes)")
             }
