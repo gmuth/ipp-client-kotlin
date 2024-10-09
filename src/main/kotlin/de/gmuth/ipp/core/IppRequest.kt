@@ -84,6 +84,9 @@ class IppRequest : IppMessage {
             throw IppOperationException(this, status, "Failed to decode IPP request", cause = throwable)
         }
 
+    fun connectionName() =
+        "${httpUserAgent ?: "unknown"} -- " + with(printerOrJobUri) { "$scheme:$host:$port$path" }
+
     override fun toString() = StringBuilder().apply {
         append(operation)
         val details = attributesGroups
