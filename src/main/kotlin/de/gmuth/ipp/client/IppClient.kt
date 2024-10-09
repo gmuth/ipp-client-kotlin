@@ -100,6 +100,9 @@ open class IppClient(val config: IppConfig = IppConfig()) {
         }
     }
 
+    fun exchangeForEvent(request: IppRequest) =
+        IppRequestExchangedEvent(request, exchange(request))
+
     //----------------------------------------------
     // HTTP post IPP request and decode IPP response
     //----------------------------------------------
