@@ -39,7 +39,7 @@ enum class IppTag(
     // Integer
     Integer(0x21, "integer", { it is Number }),
     Boolean(0x22, "boolean", { it is kotlin.Boolean }),
-    Enum(0x23, "enum", { it is Int }),
+    Enum(0x23, "enum", { it is Number }),
 
     // Misc
     OctetString(0x30, "octetString", { it is String }),
