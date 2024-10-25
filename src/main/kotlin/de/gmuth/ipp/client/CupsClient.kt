@@ -254,7 +254,7 @@ class CupsClient(
         deviceUri: URI,
         printerInfo: String? = null,
         printerLocation: String? = // get location from ipp device
-            IppPrinter(deviceUri, ippConfig = IppConfig().apply { trustAnyCertificateAndSSLHostname() }).location?.text,
+            IppPrinter(deviceUri, ippConfig = IppConfig().apply { trustAnyCertificateAndSSLHostname() }).location.text,
         savePPD: Boolean = false
     ) = createLocalPrinter(
         printerName,
