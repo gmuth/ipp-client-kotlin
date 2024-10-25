@@ -34,6 +34,7 @@ class IppPrinter(
 ) {
     private val logger = getLogger(javaClass.name)
     lateinit var printerDirectory: File
+    var throwIfSupportedAttributeIsNotAvailable: Boolean = true
 
     companion object {
         val printerClassAttributes = listOf(
@@ -546,9 +547,9 @@ class IppPrinter(
         .ippRequest(operation, printerUri, requestedAttributes, userName, naturalLanguage)
 
     fun exchange(request: IppRequest): IppResponse = request.run {
-        checkIfValueIsSupported("ipp-versions", version!!, true)
-        checkIfValueIsSupported("operations", code!!.toInt(), true)
-        checkIfValueIsSupported("charset", attributesCharset, true)
+        checkIfValueIsSupported("ipp-versions", version!!, throwIfSupportedAttributeIsNotAvailable)
+        checkIfValueIsSupported("operations", code!!.toInt(), throwIfSupportedAttributeIsNotAvailable)
+        checkIfValueIsSupported("charset", attributesCharset, throwIfSupportedAttributeIsNotAvailable)
         ippClient.exchange(this)
     }
 
