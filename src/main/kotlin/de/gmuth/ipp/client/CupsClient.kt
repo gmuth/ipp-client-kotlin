@@ -6,6 +6,7 @@ package de.gmuth.ipp.client
 
 import de.gmuth.ipp.client.IppOperationException.ClientErrorNotFoundException
 import de.gmuth.ipp.client.WhichJobs.All
+import de.gmuth.ipp.core.IppException
 import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppOperation.*
 import de.gmuth.ipp.core.IppRequest
@@ -108,6 +109,26 @@ class CupsClient(
             ppdInputStream
         )
     )
+
+    fun addPrinterWithPPD(
+        printerName: String,
+        deviceUri: URI,
+        printerInfo: String? = null,
+        printerLocation: String? = null,
+        ppdFile: File
+    ) = addModifyPrinter(
+        printerName,
+        deviceUri,
+        printerInfo,
+        printerLocation,
+        ppdInputStream = ppdFile.inputStream()
+    ).run {
+        getPrinter(printerName).apply {
+            enable()
+            resume()
+            updateAttributes()
+        }
+    }
 
     fun deletePrinter(printerName: String) =
         exchange(cupsPrinterRequest(CupsDeletePrinter, printerName))
@@ -232,7 +253,8 @@ class CupsClient(
         printerName: String,
         deviceUri: URI,
         printerInfo: String? = null,
-        printerLocation: String? = IppPrinter(deviceUri).location.text,
+        printerLocation: String? = // get location from ipp device
+            IppPrinter(deviceUri, ippConfig = IppConfig().apply { trustAnyCertificateAndSSLHostname() }).location?.text,
         savePPD: Boolean = false
     ) = createLocalPrinter(
         printerName,
@@ -241,13 +263,20 @@ class CupsClient(
         printerLocation,
         ppdName = "everywhere"
     ).apply {
+        throwIfSupportedAttributeIsNotAvailable = false
         updateAttributes("printer-name")
         logger.info(toString())
-        logger.info { "CUPS now generates IPP Everywhere PPD." } // https://github.com/apple/cups/issues/5919
-        do {
-            updateAttributes("printer-make-and-model")
-            Thread.sleep(500)
-        } while (!makeAndModel.text.lowercase().contains("everywhere"))
+        // https://github.com/apple/cups/issues/5919
+        logger.info { "CUPS now should generate an everywhere PPD. Waiting for 'everywhere' in printer-make-and-model." }
+        try {
+            do {
+                updateAttributes("printer-make-and-model")
+                Thread.sleep(500)
+            } while (!makeAndModel.text.lowercase().contains("everywhere"))
+        } catch (exception: ClientErrorNotFoundException) {
+            logger.warning { "Check your CUPS log files - it looks like the everywhere PPD wasn't generated..." }
+            throw IppException("Failed to createIppEverywherePrinter() as described here: https://github.com/apple/cups/issues/5919")
+        }
         logger.info { "Make printer permanent." }
         exchange(
             cupsPrinterRequest(CupsAddModifyPrinter, printerName)
