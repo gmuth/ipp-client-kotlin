@@ -612,11 +612,15 @@ class IppPrinter(
             .printerGroup.getValue("printer-strings-uri")
     }
 
-    fun savePrinterStrings(language: String = "en") =
+    fun savePrinterStrings(language: String = "en") = try {
         getPrinterStringsUri(language).save(extension = "plist") // Apple property list
+    } catch (fileNotFoundException: FileNotFoundException) {
+        logger.warning { "Printer strings file not found: ${fileNotFoundException.message}" }
+        null
+    }
 
     fun saveAllPrinterStrings(): Collection<File>? = attributes["printer-strings-languages-supported"]
-        ?.values?.map { savePrinterStrings(it as String) }
+        ?.values?.mapNotNull { savePrinterStrings(it as String) }
 
     // --------------------------------------------------
     // Internal utilities implemented as Kotlin extension
