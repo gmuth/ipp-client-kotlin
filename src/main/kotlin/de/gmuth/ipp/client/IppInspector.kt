@@ -68,6 +68,7 @@ class IppInspector {
             savePrinterIcons()
         }
 
+        ippClient.saveMessages = false
         if(attributes.containsKey("printer-strings-languages-supported")) {
             logger.info { "> Save all printer strings" }
             saveAllPrinterStrings()
@@ -77,6 +78,7 @@ class IppInspector {
                 savePrinterStrings(it)
             }
         }
+        ippClient.saveMessages = true
 
         if (supportsOperations(CupsGetPPD)) {
             logger.info { "> CUPS Get PPD" }
