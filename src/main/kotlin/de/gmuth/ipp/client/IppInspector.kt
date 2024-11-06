@@ -28,13 +28,8 @@ class IppInspector {
         }
     }
 
-    fun inspect(
-        printerUri: URI,
-        cancelJob: Boolean = true,
-        savePrinterIcons: Boolean = true
-    ) =
-        IppPrinter(printerUri, getPrinterAttributesOnInit = false)
-            .inspect(cancelJob, savePrinterIcons)
+    fun inspect(printerUri: URI, cancelJob: Boolean = true) =
+        IppPrinter(printerUri, getPrinterAttributesOnInit = false).inspect(cancelJob)
 
     /**
      * Exchange a few IPP requests and save the IPP responses returned by the printer.
@@ -43,7 +38,7 @@ class IppInspector {
      * - Print-Job, Get-Jobs, Get-Job-Attributes
      * - Hold-Job, Release-Job, Cancel-Job
      */
-    private fun IppPrinter.inspect(cancelJob: Boolean, savePrinterIcons: Boolean) {
+    private fun IppPrinter.inspect(cancelJob: Boolean) {
         logger.info { "Inspect printer $printerUri" }
 
         val printerModel = getModel(printerUri)
@@ -68,9 +63,19 @@ class IppInspector {
             logger.info { "Document formats: $documentFormatSupported" }
         }
 
-        if (savePrinterIcons && attributes.containsKey("printer-icons")) {
-            logger.info { "> Save Printer icons" }
+        if (attributes.containsKey("printer-icons")) {
+            logger.info { "> Save printer icons" }
             savePrinterIcons()
+        }
+
+        if(attributes.containsKey("printer-strings-languages-supported")) {
+            logger.info { "> Save all printer strings" }
+            saveAllPrinterStrings()
+        } else if(attributes.containsKey("printer-strings-uri")) {
+            attributes.getValueOrNull<String>("natural-language-configured")?.also {
+                logger.info { "> Save printer strings for configured language $it"}
+                savePrinterStrings(it)
+            }
         }
 
         if (supportsOperations(CupsGetPPD)) {
