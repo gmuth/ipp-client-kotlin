@@ -49,6 +49,10 @@ object TemplateAttributes {
         IppAttribute("finishings", IppTag.Enum, values.map { it.code })
 
     @JvmStatic
+    fun orientationRequested(orientation: Orientation) =
+        IppAttribute("orientation-requested", IppTag.Enum, orientation.code)
+
+    @JvmStatic
     fun mediaSource(keyword: String) =
         IppAttribute("media-source", Keyword, keyword)
 

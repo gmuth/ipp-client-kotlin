@@ -1,29 +1,29 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2021-2023 Gerhard Muth
+ * Copyright (c) 2021-2024 Gerhard Muth
  */
 
 import de.gmuth.ipp.attributes.*
 import de.gmuth.ipp.attributes.Finishing.Punch
 import de.gmuth.ipp.attributes.Finishing.Staple
+import de.gmuth.ipp.attributes.Orientation.Portrait
 import de.gmuth.ipp.attributes.PrinterType.Capability.CanPunchOutput
 import de.gmuth.ipp.attributes.TemplateAttributes.copies
 import de.gmuth.ipp.attributes.TemplateAttributes.finishings
 import de.gmuth.ipp.attributes.TemplateAttributes.jobName
 import de.gmuth.ipp.attributes.TemplateAttributes.jobPriority
 import de.gmuth.ipp.attributes.TemplateAttributes.numberUp
+import de.gmuth.ipp.attributes.TemplateAttributes.orientationRequested
 import de.gmuth.ipp.attributes.TemplateAttributes.pageRanges
 import de.gmuth.ipp.attributes.TemplateAttributes.printerResolution
 import de.gmuth.ipp.client.WhichJobs.Completed
 import de.gmuth.ipp.core.IppOperation.GetPrinterAttributes
-import de.gmuth.ipp.attributes.Marker
 import java.io.File
 import java.io.FileInputStream
 import java.net.URI
 import java.util.logging.Logger.getLogger
 import kotlin.io.path.createTempDirectory
-import kotlin.io.path.pathString
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -120,7 +120,7 @@ class IppPrinterTests {
             numberUp(1),
             pageRanges(1..5),
             printerResolution(600),
-            OrientationRequested.Portrait,
+            orientationRequested(Portrait),
             ColorMode.Monochrome,
             Sides.TwoSidedLongEdge,
             PrintQuality.High,
