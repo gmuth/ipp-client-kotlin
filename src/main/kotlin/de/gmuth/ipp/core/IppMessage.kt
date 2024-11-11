@@ -109,9 +109,9 @@ abstract class IppMessage() {
         write(FileOutputStream(file))
 
     @JvmOverloads
-    fun encode(appendDocumentIfAvailable: Boolean = true) = ByteArrayOutputStream().run {
-        write(this, appendDocumentIfAvailable)
-        toByteArray()
+    fun encode(appendDocumentIfAvailable: Boolean = true) = ByteArrayOutputStream().use {
+        write(it, appendDocumentIfAvailable)
+        it.toByteArray()
     }
 
     // --------
@@ -194,7 +194,7 @@ abstract class IppMessage() {
 
     fun saveDocumentBytes(file: File) = file.run {
         if (documentBytes == null || documentBytes!!.isEmpty()) throw IppException("No documentBytes available")
-        ByteArrayInputStream(documentBytes).copyTo(outputStream())
+        outputStream().use { ByteArrayInputStream(documentBytes).copyTo(it)}
         logger.info { "Saved ${length()} document bytes to $path" }
     }
 
@@ -203,7 +203,7 @@ abstract class IppMessage() {
         else outputStream.write(rawBytes)
 
     fun saveBytes(file: File) = file.apply {
-        writeBytes(outputStream())
+        outputStream().use { writeBytes(it) }
         logger.info { "Saved $path (${length()} bytes)" }
     }
 
