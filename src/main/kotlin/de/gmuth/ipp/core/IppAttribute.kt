@@ -40,9 +40,11 @@ data class IppAttribute<T>(val name: String, val tag: IppTag) : IppAttributeBuil
     }
 
     val value: T
-        get() =
-            if (attributeIs1setOf(name) == true) throw IppException("'$name' is registered as '1setOf', use 'values' instead")
-            else values.single()
+        get() = when {
+            attributeIs1setOf(name) == true -> throw IppException("'$name' is registered as '1setOf', use 'values' instead")
+            values.size > 1 -> throw IppException("'$name' has ${values.size} values, use 'values' instead")
+            else -> values.single()
+        }
 
     @Suppress("UNCHECKED_CAST")
     fun additionalValue(attribute: IppAttribute<*>) {
