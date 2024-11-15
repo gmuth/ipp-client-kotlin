@@ -2,7 +2,7 @@
 
 A client implementation of the ipp protocol for java and kotlin.
 RFCs 
-[3392](https://datatracker.ietf.org/doc/html/rfc3382),
+[3382](https://datatracker.ietf.org/doc/html/rfc3382),
 [3995](https://datatracker.ietf.org/doc/html/rfc3995),
 [3996](https://datatracker.ietf.org/doc/html/rfc3996),
 [8010](https://tools.ietf.org/html/rfc8010) and
