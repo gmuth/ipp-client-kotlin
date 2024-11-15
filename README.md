@@ -1,10 +1,12 @@
 # ipp-client v3.2
 
 A client implementation of the ipp protocol for java and kotlin.
-RFCs [8010](https://tools.ietf.org/html/rfc8010),
-[8011](https://tools.ietf.org/html/rfc8011),
-[3995](https://datatracker.ietf.org/doc/html/rfc3995) and
-[3996](https://datatracker.ietf.org/doc/html/rfc3996)
+RFCs 
+[3392](https://datatracker.ietf.org/doc/html/rfc3382),
+[3995](https://datatracker.ietf.org/doc/html/rfc3995),
+[3996](https://datatracker.ietf.org/doc/html/rfc3996),
+[8010](https://tools.ietf.org/html/rfc8010) and
+[8011](https://tools.ietf.org/html/rfc8011)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?label=license)](https://github.com/gmuth/ipp-client-kotlin/blob/master/LICENSE)
 [![Build](https://github.com/gmuth/ipp-client-kotlin/workflows/build/badge.svg)](https://github.com/gmuth/ipp-client-kotlin/actions?query=workflow%3Abuild)
