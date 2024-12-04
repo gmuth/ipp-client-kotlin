@@ -17,6 +17,8 @@ import de.gmuth.ipp.iana.IppRegistrationsSection2
 import java.io.*
 import java.net.URI
 import java.time.Duration
+import java.time.Instant
+import java.time.Instant.now
 import java.util.logging.Level
 import java.util.logging.Level.*
 import java.util.logging.Logger
@@ -236,21 +238,28 @@ class IppPrinter(
 
     //-------------------------------------------------------
 
-    fun isIdle() = state == Idle
-    fun isStopped() = state == Stopped
-    fun isProcessing() = state == Processing
+    private fun stateIs(updateStateAttributes: Boolean, expectedState: PrinterState): Boolean {
+        if (updateStateAttributes) updateStateAttributes()
+        return state == expectedState
+    }
+
+    fun isIdle(updateStateAttributes: Boolean = false) = stateIs(updateStateAttributes, Idle)
+    fun isStopped(updateStateAttributes: Boolean = false) = stateIs(updateStateAttributes, Stopped)
+    fun isProcessing(updateStateAttributes: Boolean = false) = stateIs(updateStateAttributes, Processing)
+
     fun isPaused() = stateReasons.contains("paused")
     fun isOffline() = stateReasons.contains("offline-report") // reported by CUPS
-    fun isDuplexSupported() = sidesSupported.any { it.startsWith("two-sided") }
-    fun supportsOperations(vararg operations: IppOperation) = operationsSupported.containsAll(operations.toList())
-    fun supportsVersion(version: String) = versionsSupported.contains(version)
-    fun isCups() = attributes.contains("cups-version")
     fun isTonerLow() = stateReasons.contains("toner-low")
     fun isTonerEmpty() = stateReasons.any { it.contains("toner-empty") } // toner-empty-error
     fun isMediaJam() = stateReasons.contains("media-jam")
     fun isMediaLow() = stateReasons.contains("media-low")
     fun isMediaEmpty() = stateReasons.any { it.contains("media-empty") } // media-empty-report
     fun isMediaNeeded() = stateReasons.contains("media-needed")
+
+    fun isDuplexSupported() = sidesSupported.any { it.startsWith("two-sided") }
+    fun supportsOperations(vararg operations: IppOperation) = operationsSupported.containsAll(operations.toList())
+    fun supportsVersion(version: String) = versionsSupported.contains(version)
+    fun isCups() = attributes.contains("cups-version")
 
     fun isMediaSizeSupported(size: MediaSize) = mediaSizeSupported.supports(size)
 
@@ -315,16 +324,32 @@ class IppPrinter(
 
     fun getPrinterAttributesOrNull(requestedAttributes: Collection<String>? = null) =
         exchange(ippRequest(GetPrinterAttributes, requestedAttributes))
-            .attributesGroups.find { it.tag == Printer }
+            .attributesGroups.singleOrNull { it.tag == Printer }
 
     fun getPrinterAttributesOrNull(vararg requestedAttributes: String) =
         getPrinterAttributesOrNull(requestedAttributes.toList())
 
+    private lateinit var stateAttributesLastUpdated: Instant
+
     fun updateAttributes(requestedAttributes: List<String>? = null) =
-        getPrinterAttributesOrNull(requestedAttributes)?.let { attributes.put(it) }
+        getPrinterAttributesOrNull(requestedAttributes)?.let {
+            attributes.put(it)
+            stateAttributesLastUpdated = now()
+        }
 
     fun updateAttributes(vararg requestedAttributes: String) =
         updateAttributes(requestedAttributes.toList())
+
+    fun updateStateAttributes() = updateAttributes(
+        "printer-state", "printer-state-reasons", "printer-state-message",
+        "printer-is-accepting-jobs", "media-ready"
+    )
+
+    var stateAttributesExpireAfter: Duration? = null
+
+    fun stateAttributesExpired() =
+        if (stateAttributesExpireAfter == null) false // never expire
+        else now().isAfter(stateAttributesLastUpdated.plus(stateAttributesExpireAfter))
 
     //-------------
     // Validate-Job
