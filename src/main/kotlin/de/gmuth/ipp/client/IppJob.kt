@@ -189,9 +189,7 @@ class IppJob(
                 logger.info { lastJobString }
             }
             if (!isProcessing() || lastPrinterString.isNotEmpty()) {
-                printer.updateAttributes(
-                    "printer-state", "printer-state-reasons", "printer-state-message", "printer-is-accepting-jobs"
-                )
+                printer.updateStateAttributes()
                 if (printer.toString() != lastPrinterString) {
                     lastPrinterString = printer.toString()
                     logger.info { lastPrinterString }
