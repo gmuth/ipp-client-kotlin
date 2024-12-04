@@ -345,12 +345,6 @@ class IppPrinter(
         "printer-is-accepting-jobs", "media-ready"
     )
 
-    var stateAttributesExpireAfter: Duration? = null
-
-    fun stateAttributesExpired() =
-        if (stateAttributesExpireAfter == null) false // never expire
-        else now().isAfter(stateAttributesLastUpdated.plus(stateAttributesExpireAfter))
-
     //-------------
     // Validate-Job
     //-------------
