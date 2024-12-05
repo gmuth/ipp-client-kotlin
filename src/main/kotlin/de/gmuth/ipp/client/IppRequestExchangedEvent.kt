@@ -70,7 +70,10 @@ class IppRequestExchangedEvent(val request: IppRequest, val response: IppRespons
             // Save document
             if (saveDocument && request.hasDocument()) {
                 logger.fine { "Save document" }
-                request.saveDocumentBytes(file(request.getDocumentFormatFilenameExtension()))
+                val filenameExtension = with(request) {
+                    if (operationGroup.containsKey("document-format")) getDocumentFormatFilenameExtension() else "bin"
+                }
+                request.saveDocumentBytes(file(filenameExtension))
             }
 
         } catch (throwable: Throwable) {
