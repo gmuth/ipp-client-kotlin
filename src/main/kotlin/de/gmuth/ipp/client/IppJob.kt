@@ -176,8 +176,8 @@ class IppJob(
     //------------------------------------------
 
     @JvmOverloads
-    fun waitForTermination(delay: Duration = defaultDelay) {
-        logger.info { "Wait for termination of job #$id" }
+    fun waitForTermination(delay: Duration = defaultDelay, jobProgressLogLevel: Level = Level.INFO) {
+        logger.info { "Wait for termination of Job #$id" }
         var lastPrinterString = ""
         var lastJobString = toString()
         logger.info { lastJobString }
@@ -186,7 +186,7 @@ class IppJob(
             updateAttributes()
             if (toString() != lastJobString) {
                 lastJobString = toString()
-                logger.info { lastJobString }
+                logger.log(jobProgressLogLevel) { lastJobString }
             }
             if (!isProcessing() || lastPrinterString.isNotEmpty()) {
                 printer.updateStateAttributes()
