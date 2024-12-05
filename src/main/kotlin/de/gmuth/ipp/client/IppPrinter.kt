@@ -19,6 +19,8 @@ import java.net.URI
 import java.time.Duration
 import java.time.Instant
 import java.time.Instant.now
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter.ofPattern
 import java.util.logging.Level
 import java.util.logging.Level.*
 import java.util.logging.Logger
@@ -93,6 +95,7 @@ class IppPrinter(
             printerDirectory = File(
                 (if (isCups()) "CUPS_" else "") + makeAndModel.text.replace("\\s+".toRegex(), "_")
             )
+            ippClient.saveMessagesDirectory = File(printerDirectory, ofPattern("HHmmss").format(LocalDateTime.now()))
         }
     }
 
@@ -350,10 +353,12 @@ class IppPrinter(
     //-------------
 
     @Throws(IppExchangeException::class)
-    fun validateJob(vararg attributeBuilders: IppAttributeBuilder): IppResponse {
-        val request = attributeBuildersRequest(ValidateJob, attributeBuilders.toList())
-        return exchange(request)
-    }
+    fun validateJob(attributeBuilders: Collection<IppAttributeBuilder>) =
+        exchange(attributeBuildersRequest(ValidateJob, attributeBuilders))
+
+    @Throws(IppExchangeException::class)
+    fun validateJob(vararg attributeBuilders: IppAttributeBuilder) =
+        validateJob(attributeBuilders.toList())
 
     //--------------------------------------
     // Print-Job (with subscription support)
@@ -375,6 +380,22 @@ class IppPrinter(
         return exchangeForIppJob(request)
     }
 
+    @JvmOverloads
+    fun printJob(
+        byteArray: ByteArray,
+        attributeBuilders: Collection<IppAttributeBuilder>,
+        notifyEvents: List<String>? = null
+    ) =
+        printJob(ByteArrayInputStream(byteArray), attributeBuilders, notifyEvents)
+
+    @JvmOverloads
+    fun printJob(
+        file: File,
+        attributeBuilders: Collection<IppAttributeBuilder>,
+        notifyEvents: List<String>? = null
+    ) =
+        printJob(FileInputStream(file), attributeBuilders, notifyEvents)
+
     // vararg signatures for convenience
 
     @JvmOverloads
@@ -391,11 +412,15 @@ class IppPrinter(
         vararg attributeBuilders: IppAttributeBuilder,
         notifyEvents: List<String>? = null
     ) =
-        printJob(ByteArrayInputStream(byteArray), attributeBuilders.toList(), notifyEvents)
+        printJob(byteArray, attributeBuilders.toList(), notifyEvents)
 
     @JvmOverloads
-    fun printJob(file: File, vararg attributeBuilders: IppAttributeBuilder, notifyEvents: List<String>? = null) =
-        printJob(FileInputStream(file), attributeBuilders.toList(), notifyEvents)
+    fun printJob(
+        file: File,
+        vararg attributeBuilders: IppAttributeBuilder,
+        notifyEvents: List<String>? = null
+    ) =
+        printJob(file, attributeBuilders.toList(), notifyEvents)
 
     //-----------------------
     // Print-URI (deprecated)
