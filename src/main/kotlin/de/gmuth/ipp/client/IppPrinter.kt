@@ -32,7 +32,7 @@ class IppPrinter(
     val printerUri: URI,
     val attributes: IppAttributesGroup = IppAttributesGroup(Printer),
     ippConfig: IppConfig = IppConfig(),
-    internal val ippClient: IppClient = IppClient(ippConfig),
+    val ippClient: IppClient = IppClient(ippConfig),
     getPrinterAttributesOnInit: Boolean = true,
     requestedAttributesOnInit: List<String>? = null
 ) {
@@ -65,13 +65,10 @@ class IppPrinter(
     init {
         logger.fine { "Create IppPrinter for $printerUri" }
         with(printerUri.scheme) {
-            require(startsWith("ipp") || startsWith("http")) {
-                "URI scheme unsupported: $this"
-            }
+            require(startsWith("ipp") || startsWith("http")) { "URI scheme unsupported: $this" }
         }
         if (!getPrinterAttributesOnInit) {
             logger.fine { "getPrinterAttributesOnInit disabled => no printer attributes available" }
-            printerDirectory = createTempDirectory().toFile()
         } else if (attributes.isEmpty()) {
             try {
                 updateAttributes(requestedAttributesOnInit)
@@ -92,11 +89,15 @@ class IppPrinter(
                 }
                 throw ippOperationException
             }
-            printerDirectory = File(
-                (if (isCups()) "CUPS_" else "") + makeAndModel.text.replace("\\s+".toRegex(), "_")
-            )
-            ippClient.saveMessagesDirectory = File(printerDirectory, ofPattern("HHmmss").format(LocalDateTime.now()))
         }
+        initPrinterDirectory()
+    }
+
+    private fun initPrinterDirectory() {
+        printerDirectory =
+            if (attributes.isEmpty()) createTempDirectory().toFile()
+            else File((if (isCups()) "CUPS_" else "") + makeAndModel.text.replace("\\s+".toRegex(), "_"))
+        ippClient.saveMessagesDirectory = File(printerDirectory, ofPattern("HHmmss").format(LocalDateTime.now()))
     }
 
     constructor(printerAttributes: IppAttributesGroup, ippClient: IppClient) : this(
