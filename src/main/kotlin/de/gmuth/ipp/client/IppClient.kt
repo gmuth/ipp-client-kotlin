@@ -12,7 +12,6 @@ import de.gmuth.ipp.core.IppStatus.ClientErrorBadRequest
 import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import de.gmuth.ipp.core.IppTag.Unsupported
 import de.gmuth.ipp.iana.IppRegistrationsSection2
-import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
@@ -32,7 +31,9 @@ open class IppClient(val config: IppConfig = IppConfig()) {
     protected val logger: Logger = getLogger(javaClass.name)
 
     var responseInterceptor: IppResponseInterceptor? = null
+    var saveEvents: Boolean = false
     var saveMessages: Boolean = false
+    var saveDocuments: Boolean = false
     var saveMessagesDirectory = createTempDirectory().toFile()
     var onExceptionSaveMessages: Boolean = false
     var throwWhenNotSuccessful: Boolean = true
@@ -67,7 +68,8 @@ open class IppClient(val config: IppConfig = IppConfig()) {
         config.ippVersion,
         requestCounter.getAndIncrement(),
         config.charset,
-        naturalLanguage
+        naturalLanguage,
+        config.userAgent
     )
 
     //------------------------------------
@@ -76,7 +78,6 @@ open class IppClient(val config: IppConfig = IppConfig()) {
 
     @JvmOverloads
     fun exchange(request: IppRequest, ippUri: URI = request.printerOrJobUri) = with(request) {
-        logger.fine { "Send '$operation' request to $ippUri" }
         val httpUri = with(ippUri) {
             URI(
                 scheme.replace("ipp", "http"), userInfo, host,
@@ -84,16 +85,17 @@ open class IppClient(val config: IppConfig = IppConfig()) {
             )
         }
         httpPost(httpUri, request).also {
-            logger.finer { "Exchanged request #$requestId @${httpUri.host}: $request => $it" }
             log(logger, FINEST, ">>> ") //  this=request
             it.log(logger, FINEST, "<<< ") // it=response
-            fun file(extension: String) =
-                File(saveMessagesDirectory, "%03d-%s.%s".format(requestId, operation, extension))
-            if (saveMessages) {
-                saveBytes(file("req"))
-                saveText(file("req.txt"))
-                it.saveBytes(file("res"))
-                it.saveText(file("res.txt"))
+            IppRequestExchangedEvent(request, it).run {
+                logger.fine { toString() }
+                if (saveEvents || saveDocuments || saveMessages)
+                    save(
+                        saveMessagesDirectory,
+                        saveEvent = saveEvents,
+                        saveDocument = saveDocuments,
+                        saveRawMessages = saveMessages
+                    )
             }
             responseInterceptor?.invoke(request, it)
             validateIppResponse(request, it)
@@ -115,7 +117,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
             }
             configure(
                 chunked = request.hasDocument(),
-                userAgent = request.httpUserAgent ?: config.userAgent
+                userAgent = request.httpUserAgent
             )
             try {
                 request.write(outputStream)
@@ -191,6 +193,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
             val upgrade = getHeaderField("Upgrade")
             "HTTP status $responseCode, $responseMessage, Try ipps://${request.printerOrJobUri.host}, Upgrade: $upgrade"
         }
+
         responseCode != 200 -> "HTTP request failed: $responseCode, $responseMessage"
         contentType != null && !contentType.startsWith(APPLICATION_IPP) -> "Invalid Content-Type: $contentType"
         exception != null -> exception.message
