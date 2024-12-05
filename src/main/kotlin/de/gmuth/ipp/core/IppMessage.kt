@@ -193,7 +193,7 @@ abstract class IppMessage() {
     }
 
     fun saveDocumentBytes(file: File) = file.run {
-        if (documentBytes == null || documentBytes!!.isEmpty()) throw IppException("No documentBytes available")
+        if (documentBytes == null || documentBytes!!.isEmpty()) throw IppException("No documentBytes available. You should enable flag IppMessage.keepDocumentCopy.")
         outputStream().use { ByteArrayInputStream(documentBytes).copyTo(it)}
         logger.info { "Saved ${length()} document bytes to $path" }
     }
