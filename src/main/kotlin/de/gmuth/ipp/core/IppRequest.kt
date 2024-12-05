@@ -53,7 +53,8 @@ class IppRequest : IppMessage {
         version: String = "2.0",
         requestId: Int = 1,
         charset: Charset = Charsets.UTF_8,
-        naturalLanguage: String = "en"
+        naturalLanguage: String = "en",
+        userAgent: String? = null
     ) : super(version, requestId, charset, naturalLanguage) {
         code = operation.code
         operationGroup.run {
@@ -61,6 +62,7 @@ class IppRequest : IppMessage {
             requestedAttributes?.let { attribute("requested-attributes", Keyword, it) }
             requestingUserName?.let { attribute("requesting-user-name", NameWithoutLanguage, IppString(it)) }
         }
+        httpUserAgent = userAgent
     }
 
     fun createSubscriptionAttributesGroup(
