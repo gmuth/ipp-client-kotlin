@@ -333,21 +333,24 @@ class IppPrinter(
     fun getPrinterAttributesOrNull(vararg requestedAttributes: String) =
         getPrinterAttributesOrNull(requestedAttributes.toList())
 
-    private lateinit var stateAttributesLastUpdated: Instant
-
     fun updateAttributes(requestedAttributes: List<String>? = null) =
-        getPrinterAttributesOrNull(requestedAttributes)?.let {
-            attributes.put(it)
-            stateAttributesLastUpdated = now()
-        }
+        getPrinterAttributesOrNull(requestedAttributes)?.let { attributes.put(it) }
 
     fun updateAttributes(vararg requestedAttributes: String) =
         updateAttributes(requestedAttributes.toList())
 
-    fun updateStateAttributes() = updateAttributes(
-        "printer-state", "printer-state-reasons", "printer-state-message",
-        "printer-is-accepting-jobs", "media-ready"
-    )
+    private lateinit var stateAttributesLastUpdated: Instant
+
+    fun updateStateAttributes() {
+        updateAttributes(
+            "printer-state", "printer-state-reasons", "printer-state-message",
+            "printer-is-accepting-jobs", "media-ready"
+        )
+        stateAttributesLastUpdated = now()
+    }
+
+    fun getAgeOfStateAttributes() = Duration.between(stateAttributesLastUpdated, now())
+    fun stateAttributesAreOlderThan(duration: Duration) = getAgeOfStateAttributes() > duration
 
     //-------------
     // Validate-Job
