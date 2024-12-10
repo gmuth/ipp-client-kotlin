@@ -397,22 +397,21 @@ class IppJob(
     // -------
 
     @SuppressWarnings("kotlin:S3776")
-    override fun toString(): String = attributes.run {
-        StringBuilder("Job #$id").run {
-            if (containsKey("job-state")) append(", state=$state")
-            if (containsKey("job-state-reasons")) append(" (reasons=${stateReasons.joinToString(",")})")
-            if (containsKey("job-name")) append(", name=$name")
-            if (containsKey("job-impressions-completed")) append(", impressions-completed=$impressionsCompleted")
-            if (containsKey("job-originating-host-name")) append(", originating-host-name=$originatingHostName")
-            if (containsKey("job-originating-user-name") && get("job-originating-user-name")!!.tag.`is ValueTag and is not OutOfBandTag`())
+    override fun toString(): String = attributes.let {
+        StringBuilder("Job #$id").apply {
+            if (it.containsKey("job-state")) append(", state=$state")
+            if (it.containsKey("job-state-reasons")) append(" (reasons=${stateReasons.joinToString(",")})")
+            if (it.containsKey("job-name")) append(", name=$name")
+            if (it.containsKey("job-impressions-completed")) append(", impressions-completed=$impressionsCompleted")
+            if (it.containsKey("job-originating-host-name")) append(", originating-host-name=$originatingHostName")
+            if (it.containsKey("job-originating-user-name") && it.get("job-originating-user-name")!!.tag.`is ValueTag and is not OutOfBandTag`())
                 append(", originating-user-name=$originatingUserName")
-            if (containsKey("com.apple.print.JobInfo.PMJobOwner")) append(", appleJobOwner=$appleJobOwner")
-            if (containsKey("number-of-documents") || containsKey("document-count"))
+            if (it.containsKey("com.apple.print.JobInfo.PMJobOwner")) append(", appleJobOwner=$appleJobOwner")
+            if (it.containsKey("number-of-documents") || it.containsKey("document-count"))
                 append(", ${getNumberOfDocumentsOrDocumentCount()} documents")
-            if (containsKey("job-printer-uri")) append(", printer-uri=$printerUri")
-            if (containsKey("job-uri")) append(", uri=$uri")
-            toString()
-        }
+            if (it.containsKey("job-printer-uri")) append(", printer-uri=$printerUri")
+            if (it.containsKey("job-uri")) append(", uri=$uri")
+        }.toString()
     }
 
     @JvmOverloads
