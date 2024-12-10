@@ -197,7 +197,10 @@ open class IppClient(val config: IppConfig = IppConfig()) {
         responseCode != 200 -> "HTTP request failed: $responseCode, $responseMessage"
         contentType != null && !contentType.startsWith(APPLICATION_IPP) -> "Invalid Content-Type: $contentType"
         exception != null -> exception.message
-        else -> null // no issues found
+        else -> {
+            headerFields.forEach { (key, values) -> logger.finer {"$key: $values"} }
+            null // no issues found
+        }
     }?.let {
         throw HttpPostException(
             request,
