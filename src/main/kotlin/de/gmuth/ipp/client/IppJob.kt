@@ -88,6 +88,9 @@ class IppJob(
     val documentNameSupplied: IppString
         get() = attributes.getValue("document-name-supplied")
 
+    val documentFormat: String
+        get() = attributes.getValue("document-format")
+
     val timeAtCreation: ZonedDateTime
         get() = attributes.getValueAsZonedDateTime("time-at-creation")
 
@@ -411,6 +414,7 @@ class IppJob(
                 append(", ${getNumberOfDocumentsOrDocumentCount()} documents")
             if (it.containsKey("job-printer-uri")) append(", printer-uri=$printerUri")
             if (it.containsKey("job-uri")) append(", uri=$uri")
+            if (it.containsKey("document-format")) append(", document-format=$documentFormat")
         }.toString()
     }
 
