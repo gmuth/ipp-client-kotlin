@@ -15,7 +15,7 @@ import java.util.logging.Logger
 // https://www.cups.org/doc/spec-ipp.html
 class PrinterType(val value: Int) : IppAttributeBuilder {
 
-    enum class Capability(val bit: Int, val description: String) {
+    enum class Capability(bitNumber: Int, val description: String) {
         IsAPrinterClass(0, "Is a printer class."),
         IsARemoteDestination(1, "Is a remote destination."),
         CanPrintInBlack(2, "Can print in black."),
@@ -43,23 +43,22 @@ class PrinterType(val value: Int) : IppAttributeBuilder {
         QueueWasAutomaticallyDiscoveredAndAdded(24, "Queue was automatically discovered and added."),
         QueueIsAScannerWithNoPrintingCapabilities(25, "Queue is a scanner with no printing capabilities."),
         QueueIsAPrinterWithScanningCapabilities(26, "Queue is a printer with scanning capabilities."),
-        QueueIsAPrinterWith3DCapabilities(27, "Queue is a printer with 3D capabilities.")
+        QueueIsAPrinterWith3DCapabilities(27, "Queue is a printer with 3D capabilities.");
+
+        val value: Int = 1 shl bitNumber // set relevant bit
     }
 
-    fun toSet(): Set<Capability> = Capability
-        .values()
-        .filter { (value shr it.bit) and 1 == 1 }
-        .toSet()
+    fun toSet(): Set<Capability> =
+        Capability.values().filter { value.and(it.value) != 0 }.toSet()
 
-    fun contains(capability: Capability) = toSet().contains(capability)
+    fun contains(capability: Capability) =
+        toSet().contains(capability)
 
     override fun toString() = "$value (${toSet().joinToString(",")})"
 
     fun log(logger: Logger, level: Level = INFO) = logger.run {
         log(level) { "PRINTER-TYPE 0x%08X capabilities:".format(value) }
-        for (capability in toSet()) {
-            log(level) { "* ${capability.description}" }
-        }
+        toSet().forEach { log(level) { "* ${it.description}" } }
     }
 
     override fun buildIppAttribute(printerAttributes: IppAttributesGroup) =
@@ -69,9 +68,7 @@ class PrinterType(val value: Int) : IppAttributeBuilder {
         fun fromAttributes(attributes: IppAttributesGroup) =
             PrinterType(attributes.getValue("printer-type"))
 
-        fun fromCapabilities(capabilities: Set<Capability>) = capabilities
-            .map { 1 shl it.bit }
-            .reduce { c1, c2 -> c1 + c2 }
-            .let { PrinterType(it) }
+        fun fromCapabilities(capabilities: Set<Capability>) =
+            capabilities.map { it.value }.reduce { c1, c2 -> c1 + c2 }.let { PrinterType(it) }
     }
 }
