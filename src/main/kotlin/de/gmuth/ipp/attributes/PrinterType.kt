@@ -1,7 +1,7 @@
 package de.gmuth.ipp.attributes
 
 /**
- * Copyright (c) 2020-2023 Gerhard Muth
+ * Copyright (c) 2020-2024 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppAttribute
@@ -68,6 +68,10 @@ class PrinterType(val value: Int) : IppAttributeBuilder {
     companion object {
         fun fromAttributes(attributes: IppAttributesGroup) =
             PrinterType(attributes.getValue("printer-type"))
-    }
 
+        fun fromCapabilities(capabilities: Set<Capability>) = capabilities
+            .map { 1 shl it.bit }
+            .reduce { c1, c2 -> c1 + c2 }
+            .let { PrinterType(it) }
+    }
 }
