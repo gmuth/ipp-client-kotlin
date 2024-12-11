@@ -150,6 +150,7 @@ class IppJobTests {
                 remove("number-of-documents")
                 remove("job-printer-uri")
                 remove("job-uri")
+                remove ("document-format")
             }
             assertEquals("Job #2366", toString())
         }
