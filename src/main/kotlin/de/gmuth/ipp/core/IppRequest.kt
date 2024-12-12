@@ -40,9 +40,6 @@ class IppRequest : IppMessage {
     val requestedAttributes: List<String>
         get() = operationGroup.getValues("requested-attributes")
 
-    val compression: Compression
-        get() = Compression.fromString(operationGroup.getValueAsString("compression"))
-
     constructor() : super()
 
     constructor(

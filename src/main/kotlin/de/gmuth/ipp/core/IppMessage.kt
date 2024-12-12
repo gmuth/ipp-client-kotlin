@@ -4,14 +4,13 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020-2024 Gerhard Muth
  */
 
+import de.gmuth.ipp.attributes.Compression
 import de.gmuth.ipp.core.IppTag.*
 import java.io.*
 import java.util.logging.Level
 import java.util.logging.Level.INFO
 import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
-import java.util.zip.DeflaterOutputStream
-import java.util.zip.GZIPOutputStream
 import java.nio.charset.Charset as javaCharset
 
 abstract class IppMessage() {
@@ -88,6 +87,9 @@ abstract class IppMessage() {
     val requestingUserName: String
         get() = operationGroup.getValueAsString("requesting-user-name")
 
+    val compression: Compression
+        get() = Compression.fromString(operationGroup.getValue("compression"))
+
     // --------
     // ENCODING
     // --------
@@ -154,7 +156,7 @@ abstract class IppMessage() {
             // write documentBytes? take care of compression!
         } else {
             val outputStream = if (operationGroup.containsKey("compression")) {
-                getCompressingOutputStream(notCompressingOutputStream)
+                compression.getCompressingOutputStream(notCompressingOutputStream)
             } else {
                 notCompressingOutputStream
             }
@@ -163,16 +165,6 @@ abstract class IppMessage() {
             outputStream.close() // starts optional compression
         }
     }
-
-    private fun getCompressingOutputStream(uncompressedOutputStream: OutputStream) =
-        with(operationGroup.getValueAsString("compression")) {
-            when (this) {
-                "none" -> uncompressedOutputStream
-                "gzip" -> GZIPOutputStream(uncompressedOutputStream)
-                "deflate" -> DeflaterOutputStream(uncompressedOutputStream)
-                else -> throw NotImplementedError("compression '$this'")
-            }
-        }
 
     private fun copyUnconsumedDocumentInputStream(outputStream: OutputStream): Long {
         if (hasDocument() && documentInputStreamIsConsumed) {
@@ -194,7 +186,7 @@ abstract class IppMessage() {
 
     fun saveDocumentBytes(file: File) = file.run {
         if (documentBytes == null || documentBytes!!.isEmpty()) throw IppException("No documentBytes available. You should enable flag IppMessage.keepDocumentCopy.")
-        outputStream().use { ByteArrayInputStream(documentBytes).copyTo(it)}
+        outputStream().use { ByteArrayInputStream(documentBytes).copyTo(it) }
         logger.info { "Saved ${length()} document bytes to $path" }
     }
 
