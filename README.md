@@ -48,6 +48,7 @@ val job = ippPrinter.printJob(
     copies(2),
     numberUp(2),
     jobPriority(30),
+    Compression.GZIP,
     jobName(file.name),
     DocumentFormat.PDF,
     pageRanges(2..3, 8..10),
