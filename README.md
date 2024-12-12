@@ -30,6 +30,7 @@ implementation("de.gmuth:ipp-client:3.2")
 ### [IppPrinter](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppPrinter.kt) and [IppJob](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppJob.kt)
 
 Printing a PDF file [requires the printer to support rendering PDF](https://github.com/gmuth/ipp-client-kotlin/issues/15). `ippPrinter.documentFormatSupported` contains a list of formats (pdls) supported by your printer.
+CUPS [supports PDF](https://openprinting.github.io/achievements/#pdf-instead-of-postscript-as-standard-print-job-format).
 
 ```kotlin
 // Initialize printer connection and log printer attributes
