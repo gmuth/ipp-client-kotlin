@@ -29,6 +29,8 @@ implementation("de.gmuth:ipp-client:3.2")
 
 ### [IppPrinter](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppPrinter.kt) and [IppJob](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/client/IppJob.kt)
 
+Printing a PDF file [requires the printer to support rendering PDF](https://github.com/gmuth/ipp-client-kotlin/issues/15). `ippPrinter.documentFormatSupported` contains a list of formats (pdls) supported by your printer.
+
 ```kotlin
 // Initialize printer connection and log printer attributes
 val ippPrinter = IppPrinter(URI.create("ipp://colorjet.local/ipp/printer"))
@@ -38,7 +40,7 @@ ippPrinter.log(logger)
 ippPrinter.markers.forEach { println(it) }
 println("black: ${ippPrinter.marker(BLACK).levelPercent()} %")
 
-// Print file
+// Submit PDF file to a printer that supports rendering PDF
 val file = File("A4-ten-pages.pdf")
 val job = ippPrinter.printJob(
     file,
