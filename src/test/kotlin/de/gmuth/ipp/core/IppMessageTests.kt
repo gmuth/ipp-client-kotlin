@@ -52,7 +52,7 @@ class IppMessageTests {
             documentInputStream = ByteArrayInputStream("01 02 03".toByteArray())
             val tmpFile = createTempFile("test", null)
             try {
-                write(tmpFile)
+                write(tmpFile, true)
             } finally {
                 tmpFile.delete()
             }

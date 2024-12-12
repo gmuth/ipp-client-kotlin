@@ -103,12 +103,17 @@ abstract class IppMessage() {
             rawBytes = byteArraySavingOutputStream.getSavedBytes()
         }
         if (writeDocumentIfAvailable && hasDocument()) {
-            writeDocument(outputStream)
+            val outputStreamWithCompressionSupport =
+                if (operationGroup.containsKey("compression")) compression.getCompressingOutputStream(outputStream)
+                else outputStream
+            logger.fine { "Write document using ${outputStreamWithCompressionSupport.javaClass.simpleName}" }
+            copyUnconsumedDocumentInputStream(outputStreamWithCompressionSupport)
+            outputStreamWithCompressionSupport.close() // finalize compression
         }
     }
 
-    fun write(file: File) =
-        write(FileOutputStream(file))
+    fun write(file: File, writeDocumentIfAvailable: Boolean = false) =
+        write(FileOutputStream(file), writeDocumentIfAvailable)
 
     @JvmOverloads
     fun encode(appendDocumentIfAvailable: Boolean = true) = ByteArrayOutputStream().use {
@@ -129,8 +134,17 @@ abstract class IppMessage() {
         val bufferedInputStream = byteArraySavingInputStream.buffered()
         try {
             IppInputStream(bufferedInputStream).readMessage(this)
-            if (bufferedInputStream.available() > 0) documentInputStream = bufferedInputStream
-            else logger.finest { "No document bytes available from bufferedInputStream after readMessage()" }
+            if (bufferedInputStream.available() == 0) {
+                logger.finest { "No document bytes available from bufferedInputStream after readMessage()" }
+            } else {
+                documentInputStream =
+                    if (operationGroup.containsKey("compression")) {
+                        compression.getUncompressingInputStream(bufferedInputStream)
+                    } else {
+                        bufferedInputStream
+                    }
+                logger.fine { "documentInputStream class: ${documentInputStream!!.javaClass.simpleName}" }
+            }
         } finally {
             rawBytes = byteArrayOutputStream.toByteArray()
         }
@@ -150,38 +164,19 @@ abstract class IppMessage() {
     // DOCUMENT and IPP-MESSAGE
     // ------------------------
 
-    fun writeDocument(notCompressingOutputStream: OutputStream) {
-        if (documentInputStreamIsConsumed) {
-            throw IppException("documentInputStream is consumed")
-            // write documentBytes? take care of compression!
-        } else {
-            val outputStream = if (operationGroup.containsKey("compression")) {
-                compression.getCompressingOutputStream(notCompressingOutputStream)
-            } else {
-                notCompressingOutputStream
-            }
-            logger.fine { "Write document using ${outputStream.javaClass.simpleName}" }
-            copyUnconsumedDocumentInputStream(outputStream)
-            outputStream.close() // starts optional compression
+    private fun copyUnconsumedDocumentInputStream(outputStream: OutputStream) {
+        if (hasDocument() && documentInputStreamIsConsumed) throw IppException("documentInputStream is consumed")
+        val outputStreamWithCopySupport =
+            if (keepDocumentCopy) ByteArraySavingOutputStream(outputStream)
+            else outputStream
+        documentInputStream!!
+            .copyTo(outputStreamWithCopySupport) // returns number of bytes copied
+            .apply { logger.finer { "Consumed documentInputStreamWithUncompressingSupport: $this bytes" } }
+        documentInputStreamIsConsumed = true
+        if (outputStreamWithCopySupport is ByteArraySavingOutputStream) {
+            documentBytes = outputStreamWithCopySupport.getSavedBytes()
+            logger.finer("Keeping ${documentBytes!!.size} document bytes")
         }
-    }
-
-    private fun copyUnconsumedDocumentInputStream(outputStream: OutputStream): Long {
-        if (hasDocument() && documentInputStreamIsConsumed) {
-            throw IppException("documentInputStream is consumed")
-        }
-        val byteArraySavingOutputStream = ByteArraySavingOutputStream(outputStream)
-        return documentInputStream!!
-            .copyTo(if (keepDocumentCopy) byteArraySavingOutputStream else outputStream) // number of bytes copied
-            .apply {
-                logger.finer { "Consumed documentInputStream: $this bytes" }
-                documentInputStreamIsConsumed = true
-                if (keepDocumentCopy) {
-                    documentBytes = byteArraySavingOutputStream.getSavedBytes()
-                    if (documentBytes!!.isNotEmpty()) logger.finer("Keeping ${documentBytes!!.size} document bytes")
-                }
-                byteArraySavingOutputStream.close()
-            }
     }
 
     fun saveDocumentBytes(file: File) = file.run {

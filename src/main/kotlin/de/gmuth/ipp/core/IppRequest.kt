@@ -4,7 +4,6 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020-2024 Gerhard Muth
  */
 
-import de.gmuth.ipp.attributes.Compression
 import de.gmuth.ipp.client.IppOperationException
 import de.gmuth.ipp.core.IppStatus.ClientErrorBadRequest
 import de.gmuth.ipp.core.IppTag.*
