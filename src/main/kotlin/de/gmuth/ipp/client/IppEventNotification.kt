@@ -55,7 +55,7 @@ class IppEventNotification(
         get() = attributes.getValue("printer-name")
 
     val printerState: PrinterState
-        get() = PrinterState.fromAttributes(attributes)
+        get() = PrinterState.fromInt(attributes.getValue("printer-state"))
 
     val printerStateReasons: List<String>
         get() = attributes.getValues("printer-state-reasons")

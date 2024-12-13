@@ -23,7 +23,6 @@ enum class PrinterState(val code: Int) : IppAttributeBuilder {
 
     companion object {
         fun fromInt(code: Int) = values().single { it.code == code }
-        fun fromAttributes(attributes: IppAttributesGroup) = fromInt(attributes.getValue("printer-state"))
     }
 
 }

@@ -142,7 +142,7 @@ class IppPrinter(
         get() = attributes.getValue("printer-is-accepting-jobs")
 
     val state: PrinterState
-        get() = PrinterState.fromAttributes(attributes)
+        get() = PrinterState.fromInt(attributes.getValue("printer-state"))
 
     val stateReasons: List<String>
         get() = attributes.getValues("printer-state-reasons")
