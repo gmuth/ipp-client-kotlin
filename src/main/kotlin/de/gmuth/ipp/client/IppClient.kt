@@ -5,9 +5,7 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.ipp.client.IppOperationException.ClientErrorNotFoundException
-import de.gmuth.ipp.core.IppOperation
-import de.gmuth.ipp.core.IppRequest
-import de.gmuth.ipp.core.IppResponse
+import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppStatus.ClientErrorBadRequest
 import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import de.gmuth.ipp.core.IppTag.Unsupported
@@ -134,7 +132,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
                 throw HttpPostException(
                     request, cause = ioException, message = StringBuilder().apply {
                         with(ioException) { append("$httpUri: ${javaClass.simpleName}: $message") }
-                        request.operationGroup.ifContainsKeyAppend("compression", this)
+                        appendAttributeIfGroupContainsKey(request.operationGroup, "compression")
                     }.toString()
                 )
             } finally {
