@@ -15,6 +15,7 @@ import de.gmuth.ipp.attributes.TemplateAttributes.jobName
 import de.gmuth.ipp.attributes.TemplateAttributes.jobPriority
 import de.gmuth.ipp.attributes.TemplateAttributes.numberUp
 import de.gmuth.ipp.attributes.TemplateAttributes.orientationRequested
+import de.gmuth.ipp.attributes.TemplateAttributes.outputBin
 import de.gmuth.ipp.attributes.TemplateAttributes.pageRanges
 import de.gmuth.ipp.attributes.TemplateAttributes.printerResolution
 import de.gmuth.ipp.client.WhichJobs.Completed
@@ -118,6 +119,7 @@ class IppPrinterTests {
             jobPriority(30),
             copies(1),
             numberUp(1),
+            outputBin("tray-2"),
             pageRanges(1..5),
             printerResolution(600),
             orientationRequested(Portrait),

@@ -255,17 +255,20 @@ class IppPrinter(
     fun isStopped(updateStateAttributes: Boolean = false) = stateIs(updateStateAttributes, Stopped)
     fun isProcessing(updateStateAttributes: Boolean = false) = stateIs(updateStateAttributes, Processing)
 
-    fun isPaused() = stateReasons.contains("paused")
-    fun isOffline() = stateReasons.contains("offline-report") // reported by CUPS
-    fun isTonerLow() = stateReasons.contains("toner-low")
-    fun isTonerEmpty() = stateReasons.any { it.contains("toner-empty") } // toner-empty-error
-    fun isMediaJam() = stateReasons.contains("media-jam")
-    fun isMediaLow() = stateReasons.contains("media-low")
-    fun isMediaEmpty() = stateReasons.any { it.contains("media-empty") } // media-empty-report
-    fun isMediaNeeded() = stateReasons.contains("media-needed")
+    internal fun anyStateReasonContains(reason: String) =
+        stateReasons.any { it.contains(reason) } // support "...-error" and "...-report" values
 
-    fun isDuplexSupported() = sidesSupported.any { it.startsWith("two-sided") }
+    fun isPaused() = anyStateReasonContains("paused")
+    fun isOffline() = anyStateReasonContains("offline")
+    fun isTonerLow() = anyStateReasonContains("toner-low")
+    fun isTonerEmpty() = anyStateReasonContains("toner-empty")
+    fun isMediaJam() = anyStateReasonContains("media-jam")
+    fun isMediaLow() = anyStateReasonContains("media-low")
+    fun isMediaEmpty() = anyStateReasonContains("media-empty")
+    fun isMediaNeeded() = anyStateReasonContains("media-needed")
+
     fun supportsOperations(vararg operations: IppOperation) = operationsSupported.containsAll(operations.toList())
+    fun isDuplexSupported() = sidesSupported.any { it.startsWith("two-sided") }
     fun supportsVersion(version: String) = versionsSupported.contains(version)
     fun isCups() = attributes.contains("cups-version")
 
