@@ -101,7 +101,7 @@ class IppJob(
         get() = attributes.getValueAsZonedDateTime("time-at-completed")
 
     val appleJobOwner: String // only supported by Apple CUPS
-        get() = attributes.getValueAsString("com.apple.print.JobInfo.PMJobOwner")
+        get() = attributes.getValue("com.apple.print.JobInfo.PMJobOwner")
 
     @JvmOverloads
     fun isPending(updateStateAttributes: Boolean = false) = stateIs(updateStateAttributes, Pending)
@@ -145,7 +145,7 @@ class IppJob(
     fun getJobNameOrDocumentNameSuppliedOrAppleJobNameOrNull() = when {
         attributes.containsKey("job-name") -> name.text
         attributes.containsKey("document-name-supplied") -> documentNameSupplied.text
-        attributes.containsKey("com.apple.print.JobInfo.PMJobName") -> attributes.getValueAsString("com.apple.print.JobInfo.PMJobName")
+        attributes.containsKey("com.apple.print.JobInfo.PMJobName") -> attributes.getValue("com.apple.print.JobInfo.PMJobName")
         else -> null
     }
 

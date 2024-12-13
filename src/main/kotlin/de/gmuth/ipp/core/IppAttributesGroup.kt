@@ -77,11 +77,11 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     fun getValueAsURI(name: String) =
         getValue<URI>(name)
 
-    fun getValueAsString(name: String) =
-        get(name)?.getStringValue() ?: throwIppAttributeNotFoundException(name)
+    fun getKeywordOrName(name: String) =
+        get(name)?.getKeywordOrName() ?: throwIppAttributeNotFoundException(name)
 
-    fun getValuesAsListOfStrings(name: String) =
-        get(name)?.getStringValues() ?: throwIppAttributeNotFoundException(name)
+    fun getKeywordsOrNames(name: String) =
+        get(name)?.getKeywordsOrNames() ?: throwIppAttributeNotFoundException(name)
 
     fun getValueAsZonedDateTime(name: String, zoneId: ZoneId = ZoneId.systemDefault()): ZonedDateTime =
         get(name)?.getValueAsZonedDateTime()?.withZoneSameInstant(zoneId)

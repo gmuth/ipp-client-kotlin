@@ -24,7 +24,7 @@ data class IppAttribute<T>(val name: String, val tag: IppTag) : IppAttributeBuil
     val values: MutableCollection<T> = mutableListOf()
 
     init {
-        require (tag.isValueTag()) { "'$tag' is not a value tag"}
+        require(tag.isValueTag()) { "'$tag' is not a value tag" }
     }
 
     constructor(name: String, tag: IppTag, values: Collection<T>) : this(name, tag) {
@@ -64,19 +64,21 @@ data class IppAttribute<T>(val name: String, val tag: IppTag) : IppAttributeBuil
     fun isCollection() = tag == BegCollection
 
     companion object {
-        // Get string value for attributes with tag 'keyword' or 'name'
-        internal fun getStringValue(value: Any): String = when (value) {
+        internal fun getStringOrIppStringText(value: Any): String = when (value) {
             is String -> value
             is IppString -> value.text
             else -> throw IllegalArgumentException("Expected String or IppString value but found ${value.javaClass.name}")
         }
     }
 
-    fun getStringValue(): String =
-        getStringValue(value as Any)
+    internal fun requireTagKeywordOrName() =
+        require(tag in listOf(Keyword, NameWithoutLanguage, NameWithLanguage)) { "Tag is not keyword or name: $tag" }
 
-    fun getStringValues(): List<String> =
-        values.map { getStringValue(it as Any) }
+    fun getKeywordOrName(): String =
+        getStringOrIppStringText(value as Any).apply { requireTagKeywordOrName() }
+
+    fun getKeywordsOrNames(): List<String> =
+        values.map { getStringOrIppStringText(it as Any) }.apply { requireTagKeywordOrName() }
 
     override fun buildIppAttribute(printerAttributes: IppAttributesGroup) = this
 

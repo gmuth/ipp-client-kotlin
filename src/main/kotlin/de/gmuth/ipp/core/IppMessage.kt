@@ -85,7 +85,7 @@ abstract class IppMessage() {
         get() = operationGroup.getValue("attributes-natural-language")
 
     val requestingUserName: String
-        get() = operationGroup.getValueAsString("requesting-user-name")
+        get() = operationGroup.getValue<IppString>("requesting-user-name").text
 
     val compression: Compression
         get() = Compression.fromString(operationGroup.getValue("compression"))

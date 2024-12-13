@@ -31,7 +31,7 @@ class IppDocument(
             else -> mediaType.split("/")[1]
         }
         fun getDocumentFormatFilenameExtension(attributes: IppAttributesGroup) =
-            getFilenameExtension(attributes.getValueAsString("document-format"))
+            getFilenameExtension(attributes.getValue("document-format"))
     }
 
     private val logger = getLogger(javaClass.name)
@@ -57,7 +57,7 @@ class IppDocument(
             getNumberOfDocumentsOrDocumentCount().let { if (it > 1) append("-doc-$it") }
             getOriginatingUserNameOrAppleJobOwnerOrNull()?.let { append("-$it") }
             if (attributes.containsKey("com.apple.print.JobInfo.PMApplicationName")) {
-                append("-${attributes.getValueAsString("com.apple.print.JobInfo.PMApplicationName")}")
+                append("-${attributes.getValue<String>("com.apple.print.JobInfo.PMApplicationName")}")
             }
             getJobNameOrDocumentNameSuppliedOrAppleJobNameOrNull()?.run {
                 append("-${take(100)}")

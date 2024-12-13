@@ -124,21 +124,21 @@ class IppAttributeTests {
     }
 
     @Test
-    fun keywirdStringValues() {
-        assertEquals(listOf("none"), attribute.getStringValues())
+    fun keywordValues() {
+        assertEquals(listOf("none"), attribute.getKeywordsOrNames())
     }
 
     @Test
-    fun nameStringValue() {
+    fun nameValue() {
         IppAttribute("name", NameWithoutLanguage, IppString("mike")).run {
-            assertEquals("mike", getStringValue())
+            assertEquals("mike", getKeywordOrName())
         }
     }
 
     @Test
-    fun exceptionOnStringValue() {
+    fun exceptionOnStringOrIppString() {
         assertFailsWith<IllegalArgumentException> {
-            IppAttribute.getStringValue(0)
+            IppAttribute.getStringOrIppStringText(0)
         }
     }
 

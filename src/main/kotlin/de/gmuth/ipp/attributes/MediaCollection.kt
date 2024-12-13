@@ -51,8 +51,8 @@ data class MediaCollection(
             for (member in mediaIppCollection.members) with(member) {
                 when (name) {
                     "media-size" -> size = MediaSize.fromIppCollection(value as IppCollection)
-                    "media-type" -> type = getStringValue()
-                    "media-source" -> source = MediaSource(getStringValue())
+                    "media-type" -> type = getKeywordOrName()
+                    "media-source" -> source = MediaSource(getKeywordOrName())
                     "duplex-supported" -> duplexSupported = (value as Int) == 1
                     else -> if (!isMediaMargin()) logger.warning { "unsupported member: $member" }
                 }
