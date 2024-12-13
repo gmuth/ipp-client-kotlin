@@ -16,13 +16,13 @@ import de.gmuth.ipp.core.IppTag.*
  */
 object TemplateAttributes {
 
-    // for operation group
+    // For operation group
 
     @JvmStatic
     fun jobName(name: String) =
         IppAttribute("job-name", NameWithoutLanguage, name)
 
-    // for job group
+    // For job group
 
     @JvmStatic
     fun jobPriority(priority: Int) =
@@ -51,6 +51,10 @@ object TemplateAttributes {
     @JvmStatic
     fun orientationRequested(orientation: Orientation) =
         IppAttribute("orientation-requested", IppTag.Enum, orientation.code)
+
+    @JvmStatic
+    fun outputBin(keyword: String) = // PWG 5100.2
+        IppAttribute("output-bin", Keyword, keyword)
 
     @JvmStatic
     fun mediaSource(keyword: String) =

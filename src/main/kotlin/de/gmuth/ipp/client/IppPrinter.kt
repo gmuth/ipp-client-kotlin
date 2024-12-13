@@ -52,6 +52,7 @@ class IppPrinter(
             "printer-state-message",
             "document-format-supported",
             "operations-supported",
+            "output-bin-supported",
             "color-supported",
             "sides-supported",
             "media-supported",
@@ -177,7 +178,7 @@ class IppPrinter(
         get() = attributes.getValues("media-source-supported")
 
     val mediaTypeSupported: List<String>
-        get() = attributes.getValuesAsListOfStrings("media-type-supported")
+        get() = attributes.getKeywordsOrNames("media-type-supported")
 
     val versionsSupported: List<String>
         get() = attributes.getValues("ipp-versions-supported")
@@ -193,6 +194,9 @@ class IppPrinter(
 
     val identifyActionsSupported: List<String>
         get() = attributes.getValues("identify-actions-supported")
+
+    val outputBinSupported: List<String>
+        get() = attributes.getValues("output-bin-supported")
 
     val mediaSizeDefault: MediaSize
         get() = MediaSize.fromIppCollection(attributes.getValue("media-size-default"))
@@ -234,7 +238,7 @@ class IppPrinter(
         printerType.contains(capability)
 
     val cupsVersion: String
-        get() = attributes.getValueAsString("cups-version")
+        get() = attributes.getValue<IppString>("cups-version").text
 
     val supportedAttributes: Collection<IppAttribute<*>> = attributes.values
         .filter { it.name.endsWith("-supported") }

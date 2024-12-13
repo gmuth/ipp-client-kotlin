@@ -49,16 +49,17 @@ val job = ippPrinter.printJob(
     numberUp(2),
     jobPriority(30),
     jobName(file.name),
+    outputBin("tray-10"),
     pageRanges(2..3, 8..10),
     printerResolution(300, DPI),
+    mediaColWithSource("tray-1"),
     finishings(Punch, Staple),
     Sides.TwoSidedLongEdge,
     ColorMode.Monochrome,
+    PrintQuality.NORMAL,
     DocumentFormat.PDF,
-    PrintQuality.High,
     Compression.GZIP,
     Media.ISO_A4,
-    mediaColWithSource("tray-1"),
     notifyEvents = listOf("job-state-changed", "job-progress") // CUPS
 )
 job.subscription?.pollAndHandleNotifications { println(it) }
