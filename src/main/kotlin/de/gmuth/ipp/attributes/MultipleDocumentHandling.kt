@@ -9,10 +9,11 @@ import de.gmuth.ipp.core.IppAttributeBuilder
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppTag.Keyword
 
-enum class MultipleDocumentHandling(private val keyword: String) : IppAttributeBuilder {
+enum class MultipleDocumentHandling(val keyword: String) : IppAttributeBuilder {
 
-    SeparateDocumentsCollatedCopies("separate-documents-collated-copies"),
     SeparateDocumentsUncollatedCopies("separate-documents-uncollated-copies"),
+    SeparateDocumentsCollatedCopies("separate-documents-collated-copies"),
+    SingleDocumentNewSheet("single-document-new-sheet"),
     SingleDocument("single-document");
 
     override fun buildIppAttribute(printerAttributes: IppAttributesGroup) =
