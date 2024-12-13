@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2023 Gerhard Muth
+ * Copyright (c) 2020-2024 Gerhard Muth
  */
 
 import java.util.logging.Level
@@ -42,12 +42,6 @@ data class IppCollection(val members: MutableCollection<IppAttribute<*>> = mutab
     fun <T> getValueOrNull(memberName: String) =
         getMemberOrNull<T>(memberName)?.value
 
-    fun getStringValue(memberName: String): String =
-        members.single { it.name == memberName }.getStringValue()
-
-    fun getTag(memberName: String): IppTag =
-        members.single { it.name == memberName }.tag
-
     val size: Int
         get() = members.size
 
@@ -60,5 +54,4 @@ data class IppCollection(val members: MutableCollection<IppAttribute<*>> = mutab
         if (string.length < 160) logger.log(level) { "$prefix$string" }
         else members.forEach { member -> member.log(logger, level, prefix) }
     }
-
 }
