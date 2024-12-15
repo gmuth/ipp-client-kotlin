@@ -5,6 +5,7 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.ipp.core.IppRequest
+import de.gmuth.ipp.core.IppStatus
 import java.io.InputStream
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -25,5 +26,8 @@ class HttpPostException(
         httpStream?.let { log(level) { "HTTP-Content:\n" + it.bufferedReader().use { it.readText() } } }
         cause?.let { log(level) { "Cause: ${it.message}" } }
     }
+
+    fun toIppOperationException(status: IppStatus) =
+        IppOperationException(request, status, message ?: "", cause)
 
 }
