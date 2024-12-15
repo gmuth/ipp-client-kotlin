@@ -39,7 +39,9 @@ class IppRequest : IppMessage {
     val requestedAttributes: List<String>
         get() = operationGroup.getValues("requested-attributes")
 
-    constructor() : super()
+    constructor(userAgent: String? = null) : super() {
+        httpUserAgent = userAgent
+    }
 
     constructor(
         operation: IppOperation,
@@ -60,6 +62,7 @@ class IppRequest : IppMessage {
         }
         httpUserAgent = userAgent
     }
+
 
     fun createSubscriptionAttributesGroup(
         notifyEvents: Collection<String>? = null,
