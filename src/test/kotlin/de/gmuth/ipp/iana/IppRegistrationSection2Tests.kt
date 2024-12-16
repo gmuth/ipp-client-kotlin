@@ -31,12 +31,15 @@ class IppRegistrationSection2Tests {
             .attributesMap
             .values
             .filter { it.collection == "Operation" }
-            .map { "\"${it.name}\"" }
-            .filter { it.matchesNot(".*(deprecated|obsolete).*") }
+            .map { it.name }
+            .filter { it.matchesNot(".*(deprecated|obsolete|extension).*") }
             .distinct()
             .sorted()
-            .forEach { println("$it,") }
+            .onEach { println("\"$it\",") }
             //.reduce { list, element -> "$list,$element" }
+            .forEach {
+                assertEquals(Operation, selectGroupForAttribute(it), "operation group required for $it")
+            }
     }
 
     @Test

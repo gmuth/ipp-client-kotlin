@@ -4,10 +4,7 @@ package de.gmuth.ipp.iana
  * Copyright (c) 2020-2024 Gerhard Muth
  */
 
-import de.gmuth.ipp.core.IppAttribute
-import de.gmuth.ipp.core.IppCollection
-import de.gmuth.ipp.core.IppMessage
-import de.gmuth.ipp.core.IppTag
+import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppTag.*
 import java.util.logging.Logger.getLogger
 
@@ -119,13 +116,15 @@ object IppRegistrationsSection2 {
 
     fun selectGroupForAttribute(name: String) =
         getAttribute(name, false)?.collectionGroupTag().also {
-            // Also lookup via hard coded list. In the future I might remove the rather large csv file.
+            // Also lookup via hard coded list. In the future I might remove the rather large csv files.
             val groupTagWithoutCSV = if (attributesForGroupOperation.contains(name)) Operation else Job
-            if (it != groupTagWithoutCSV) logger.warning {
-                "Incorrect attribute group for attribute '$name': is $groupTagWithoutCSV, expected $it. " +
-                        if (it == null) "" else
-                            "This needs to be fixed in IppRegistrationSection2.attributesForGroupOperation!" +
-                                    " (Please open a bug ticket on https://github.com/gmuth/ipp-client-kotlin/issues)."
+            if (it != groupTagWithoutCSV) StringBuilder().run {
+                append("Incorrect attribute group for attribute '$name': is $groupTagWithoutCSV, expected $it.")
+                it?.run {
+                    append(" This needs to be fixed in IppRegistrationSection2.attributesForGroupOperation!")
+                    append(" Please open a bug ticket on https://github.com/gmuth/ipp-client-kotlin/issues.")
+                }
+                throw IppException(toString())
             }
         }
 
@@ -234,9 +233,11 @@ object IppRegistrationsSection2 {
         "job-pages-col",
         "job-password",
         "job-password-encryption",
+        "job-release-action",
         "job-state",
         "job-state-message",
         "job-state-reasons",
+        "job-storage",
         "job-uri",
         "last-document",
         "limit",
