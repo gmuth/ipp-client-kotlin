@@ -49,7 +49,7 @@ object IppRegistrationsSection4 {
         .forEach { logger.info { it.value.joinToString(", ") } }
 
     fun listKeywordValuesForAttribute(attribute: String) {
-        IppRegistrationsSection2.getAttribute(attribute)!!.apply {
+        IppRegistrationsSection2.getAttribute(attribute)?.apply {
             logger.info { "keyword values for $name ($syntax), $collection, $reference}" }
         }
         getKeywordValuesForAttribute(attribute)
