@@ -34,7 +34,7 @@ object IppRegistrationsSection4 {
 
     fun getKeywordAttributeValuesForAttribute(attribute: String) = allKeywordAttributeValues
         .filter { it.attribute == attribute }
-        .apply { if(isEmpty()) throw IppException("Attribute not found: $attribute") }
+        .apply { if (isEmpty()) throw IppException("Attribute not found: $attribute") }
 
     fun getKeywordValuesForAttribute(attribute: String) = getKeywordAttributeValuesForAttribute(attribute)
         .filterNot { it.keywordValue.isBlank() || it.keywordValue.contains("Any") }
@@ -53,7 +53,7 @@ object IppRegistrationsSection4 {
             logger.info { "keyword values for $name ($syntax), $collection, $reference}" }
         }
         getKeywordValuesForAttribute(attribute)
-            .groupBy { it.substring(0, 3) }
-            .forEach { logger.info { "- ${it.value.joinToString(", ")}" } }
+            .groupBy { it.take(3) }
+            .forEach { logger.info { it.value.joinToString(", ") } }
     }
 }
