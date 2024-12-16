@@ -80,91 +80,89 @@ class IppOutputStream(outputStream: OutputStream) : DataOutputStream(outputStrea
         }
     }
 
-    internal fun writeAttributeValue(tag: IppTag, value: Any) {
-        when (tag) {
+    internal fun writeAttributeValue(tag: IppTag, value: Any) = when (tag) {
 
-            IppTag.Boolean -> with(value as Boolean) {
-                writeShort(1)
-                writeBoolean(value)
-            }
-
-            Integer,
-            IppTag.Enum -> with(value as Number) { // Int or Short expected
-                writeShort(4)
-                writeInt(value.toInt())
-            }
-
-            RangeOfInteger -> with(value as IntRange) {
-                writeShort(8)
-                writeInt(start)
-                writeInt(endInclusive)
-            }
-
-            Resolution -> with(value as IppResolution) {
-                writeShort(9)
-                writeInt(x)
-                writeInt(y)
-                writeByte(unit)
-            }
-
-            Charset -> with(value as Charset) {
-                writeString(name().lowercase())
-            }
-
-            Uri -> with(value as URI) {
-                writeString(value.toString())
-            }
-
-            Keyword,
-            UriScheme,
-            OctetString,
-            MimeMediaType,
-            MemberAttrName,
-            NaturalLanguage -> with(value as String) {
-                writeString(value)
-            }
-
-            TextWithoutLanguage,
-            NameWithoutLanguage -> when (value) {
-                is String -> writeString(value, charset)
-                is IppString -> writeString(value.text, charset)
-                else -> throw IppException("expecting value class String or IppString")
-            }
-
-            TextWithLanguage,
-            NameWithLanguage -> with(value as IppString) {
-                if (language == null) throw IppException("expecting IppString with language")
-                writeShort(4 + text.length + language.length)
-                writeString(language, charset)
-                writeString(text, charset)
-            }
-
-            DateTime -> with(value as IppDateTime) {
-                writeShort(11)
-                writeShort(year)
-                writeByte(month)
-                writeByte(day)
-                writeByte(hour)
-                writeByte(minutes)
-                writeByte(seconds)
-                writeByte(deciSeconds)
-                writeByte(directionFromUTC.code)
-                writeByte(hoursFromUTC)
-                writeByte(minutesFromUTC)
-            }
-
-            BegCollection -> with(value as IppCollection) {
-                writeShort(0)
-                for (member in members) {
-                    writeAttribute(IppAttribute("", MemberAttrName, member.name))
-                    for (memberValue in member.values) {
-                        writeAttribute(IppAttribute("", member.tag, memberValue))
-                    }
-                }
-                writeAttribute(IppAttribute<Unit>("", EndCollection))
-            }
-
-            else -> throw IppException("Unknown tag 0x%02X %s".format(tag.code, tag))
+        IppTag.Boolean -> with(value as Boolean) {
+            writeShort(1)
+            writeBoolean(value)
         }
+
+        Integer,
+        IppTag.Enum -> with(value as Number) { // Int or Short expected
+            writeShort(4)
+            writeInt(value.toInt())
+        }
+
+        RangeOfInteger -> with(value as IntRange) {
+            writeShort(8)
+            writeInt(start)
+            writeInt(endInclusive)
+        }
+
+        Resolution -> with(value as IppResolution) {
+            writeShort(9)
+            writeInt(x)
+            writeInt(y)
+            writeByte(unit)
+        }
+
+        Charset -> with(value as Charset) {
+            writeString(name().lowercase())
+        }
+
+        Uri -> with(value as URI) {
+            writeString(value.toString())
+        }
+
+        Keyword,
+        UriScheme,
+        OctetString,
+        MimeMediaType,
+        MemberAttrName,
+        NaturalLanguage -> with(value as String) {
+            writeString(value)
+        }
+
+        TextWithoutLanguage,
+        NameWithoutLanguage -> when (value) {
+            is String -> writeString(value, charset)
+            is IppString -> writeString(value.text, charset)
+            else -> throw IppException("expecting value class String or IppString")
+        }
+
+        TextWithLanguage,
+        NameWithLanguage -> with(value as IppString) {
+            if (language == null) throw IppException("expecting IppString with language")
+            writeShort(4 + text.length + language.length)
+            writeString(language, charset)
+            writeString(text, charset)
+        }
+
+        DateTime -> with(value as IppDateTime) {
+            writeShort(11)
+            writeShort(year)
+            writeByte(month)
+            writeByte(day)
+            writeByte(hour)
+            writeByte(minutes)
+            writeByte(seconds)
+            writeByte(deciSeconds)
+            writeByte(directionFromUTC.code)
+            writeByte(hoursFromUTC)
+            writeByte(minutesFromUTC)
+        }
+
+        BegCollection -> with(value as IppCollection) {
+            writeShort(0)
+            for (member in members) {
+                writeAttribute(IppAttribute("", MemberAttrName, member.name))
+                for (memberValue in member.values) {
+                    writeAttribute(IppAttribute("", member.tag, memberValue))
+                }
+            }
+            writeAttribute(IppAttribute<Unit>("", EndCollection))
+        }
+
+        else -> throw IppException("Unknown tag 0x%02X %s".format(tag.code, tag))
     }
 }

@@ -84,112 +84,111 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
         if (name == "attributes-charset") attributesCharset = value as Charset
     }
 
-    internal fun readAttributeValue(tag: IppTag): Any =
-        when (tag) {
+    internal fun readAttributeValue(tag: IppTag): Any = when (tag) {
 
-            IppTag.Boolean -> {
-                readExpectedValueLength(1)
-                readBoolean()
+        IppTag.Boolean -> {
+            readExpectedValueLength(1)
+            readBoolean()
+        }
+
+        Integer,
+        IppTag.Enum -> {
+            readExpectedValueLength(4)
+            readInt()
+        }
+
+        RangeOfInteger -> {
+            readExpectedValueLength(8)
+            IntRange(
+                start = readInt(),
+                endInclusive = readInt()
+            )
+        }
+
+        Resolution -> {
+            readExpectedValueLength(9)
+            IppResolution(
+                x = readInt(),
+                y = readInt(),
+                unit = readByte().toInt()
+            )
+        }
+
+        Charset -> {
+            Charset.forName(readString())
+        }
+
+        Uri -> {
+            val uriString = readString().replace(" ", "%20")
+            try {
+                URI.create(uriString)
+            } catch (throwable: Throwable) {
+                logger.fine { "readAttributeValue($tag): $throwable" }
+                uriString // workaround: return String instead of URI
             }
+        }
 
-            Integer,
-            IppTag.Enum -> {
-                readExpectedValueLength(4)
-                readInt()
+        // String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
+        Keyword,
+        UriScheme,
+        OctetString,
+        MimeMediaType,
+        MemberAttrName,
+        NaturalLanguage -> {
+            readString()
+        }
+
+        TextWithoutLanguage,
+        NameWithoutLanguage -> {
+            IppString(readString(attributesCharset))
+        }
+
+        TextWithLanguage,
+        NameWithLanguage -> {
+            mark(2)
+            readShort().let { if (it < 6) reset() } // HP M175nw: support invalid ipp response
+            IppString(
+                language = readString(attributesCharset),
+                text = readString(attributesCharset)
+            )
+        }
+
+        DateTime -> {
+            readExpectedValueLength(11)
+            IppDateTime(
+                year = readShort().toInt(),
+                month = readUnsignedByte(),
+                day = readUnsignedByte(),
+                hour = readUnsignedByte(),
+                minutes = readUnsignedByte(),
+                seconds = readUnsignedByte(),
+                deciSeconds = readUnsignedByte(),
+                directionFromUTC = readByte().toInt().toChar(),
+                hoursFromUTC = readUnsignedByte(),
+                minutesFromUTC = readUnsignedByte()
+            )
+        }
+
+        BegCollection -> {
+            if (readExpectedValueLength(0, throwException = false)) {
+                readCollection()
+            } else {
+                // Xerox B210: workaround for invalid 'media-col' without members
+                logger.warning { "Invalid value length for IppCollection, trying to recover" }
+                IppCollection()
             }
+        }
 
-            RangeOfInteger -> {
-                readExpectedValueLength(8)
-                IntRange(
-                    start = readInt(),
-                    endInclusive = readInt()
-                )
-            }
-
-            Resolution -> {
-                readExpectedValueLength(9)
-                IppResolution(
-                    x = readInt(),
-                    y = readInt(),
-                    unit = readByte().toInt()
-                )
-            }
-
-            Charset -> {
-                Charset.forName(readString())
-            }
-
-            Uri -> {
-                val uriString = readString().replace(" ", "%20")
-                try {
-                    URI.create(uriString)
-                } catch (throwable: Throwable) {
-                    logger.fine { "readAttributeValue($tag): $throwable" }
-                    uriString // workaround: return String instead of URI
-                }
-            }
-
-            // String with rfc 8011 3.9 and rfc 8011 4.1.4.1 attribute value encoding
-            Keyword,
-            UriScheme,
-            OctetString,
-            MimeMediaType,
-            MemberAttrName,
-            NaturalLanguage -> {
-                readString()
-            }
-
-            TextWithoutLanguage,
-            NameWithoutLanguage -> {
-                IppString(readString(attributesCharset))
-            }
-
-            TextWithLanguage,
-            NameWithLanguage -> {
-                mark(2)
-                readShort().let { if (it < 6) reset() } // HP M175nw: support invalid ipp response
-                IppString(
-                    language = readString(attributesCharset),
-                    text = readString(attributesCharset)
-                )
-            }
-
-            DateTime -> {
-                readExpectedValueLength(11)
-                IppDateTime(
-                    year = readShort().toInt(),
-                    month = readUnsignedByte(),
-                    day = readUnsignedByte(),
-                    hour = readUnsignedByte(),
-                    minutes = readUnsignedByte(),
-                    seconds = readUnsignedByte(),
-                    deciSeconds = readUnsignedByte(),
-                    directionFromUTC = readByte().toInt().toChar(),
-                    hoursFromUTC = readUnsignedByte(),
-                    minutesFromUTC = readUnsignedByte()
-                )
-            }
-
-            BegCollection -> {
-                if (readExpectedValueLength(0, throwException = false)) {
-                    readCollection()
-                } else {
-                    // Xerox B210: workaround for invalid 'media-col' without members
-                    logger.warning { "Invalid value length for IppCollection, trying to recover" }
-                    IppCollection()
-                }
-            }
-
-            // for all other tags (including out-of-bound), read raw bytes (if present at all)
-            else -> { // ByteArray - possibly empty
-                readLengthAndValue().apply {
-                    if (isNotEmpty()) {
-                        logger.finest { "Ignore $size value bytes tagged '$tag'" }
-                        hexdump { logger.finest { it } }
-                    }
+        // for all other tags (including out-of-bound), read raw bytes (if present at all)
+        else -> { // ByteArray - possibly empty
+            readLengthAndValue().apply {
+                if (isNotEmpty()) {
+                    logger.finest { "Ignore $size value bytes tagged '$tag'" }
+                    hexdump { logger.finest { it } }
                 }
             }
         }
+    }
 
     internal fun readCollection() = IppCollection().apply {
         lateinit var currentMemberAttribute: IppAttribute<Any>
