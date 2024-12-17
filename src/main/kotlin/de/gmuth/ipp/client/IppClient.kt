@@ -53,6 +53,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
 
     private val requestCounter = AtomicInteger(1)
 
+    @JvmOverloads
     fun ippRequest(
         operation: IppOperation,
         printerUri: URI? = null,

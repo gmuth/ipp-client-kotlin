@@ -28,7 +28,7 @@ import java.util.logging.Logger.getLogger
 import kotlin.io.path.createTempDirectory
 
 @SuppressWarnings("kotlin:S1192")
-class IppPrinter(
+open class IppPrinter(
     val printerUri: URI,
     val attributes: IppAttributesGroup = IppAttributesGroup(Printer),
     ippConfig: IppConfig = IppConfig(),
@@ -107,9 +107,12 @@ class IppPrinter(
         ippClient = ippClient
     )
 
-    // constructors for java usage
-    constructor(printerUri: String) : this(URI.create(printerUri))
-    constructor(printerUri: String, ippConfig: IppConfig) : this(URI.create(printerUri), ippConfig = ippConfig)
+    constructor(printerUri: String, ippConfig: IppConfig) :
+            this(URI.create(printerUri), ippConfig = ippConfig)
+
+    @JvmOverloads
+    constructor(printerUri: String, getPrinterAttributesOnInit: Boolean = true) :
+            this(URI.create(printerUri), getPrinterAttributesOnInit = getPrinterAttributesOnInit)
 
     val ippConfig: IppConfig
         get() = ippClient.config
