@@ -10,6 +10,7 @@ import de.gmuth.ipp.core.IppStatus.ClientErrorBadRequest
 import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import de.gmuth.ipp.core.IppTag.Unsupported
 import de.gmuth.ipp.iana.IppRegistrationsSection2
+import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
@@ -32,7 +33,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
     var saveEvents: Boolean = false
     var saveMessages: Boolean = false
     var saveDocuments: Boolean = false
-    var saveMessagesDirectory = createTempDirectory().toFile()
+    var saveMessagesDirectory: File = createTempDirectory().toFile()
     var onExceptionSaveMessages: Boolean = false
     var throwWhenNotSuccessful: Boolean = true
     var disconnectAfterHttpPost: Boolean = false
