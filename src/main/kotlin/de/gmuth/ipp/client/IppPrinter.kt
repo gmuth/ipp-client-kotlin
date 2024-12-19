@@ -273,7 +273,7 @@ open class IppPrinter(
     fun supportsOperations(vararg operations: IppOperation) = operationsSupported.containsAll(operations.toList())
     fun isDuplexSupported() = sidesSupported.any { it.startsWith("two-sided") }
     fun supportsVersion(version: String) = versionsSupported.contains(version)
-    fun isCups() = attributes.contains("cups-version")
+    fun isCups() = attributes.containsKey("cups-version")
 
     fun isMediaSizeSupported(size: MediaSize) = mediaSizeSupported.supports(size)
 
