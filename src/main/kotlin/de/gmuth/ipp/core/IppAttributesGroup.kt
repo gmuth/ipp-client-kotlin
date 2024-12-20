@@ -30,7 +30,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
         require(tag.isGroupTag(), { "'$tag' is not a group tag" })
     }
 
-    fun put(attribute: IppAttribute<*>) {
+    fun put(attribute: IppAttribute<*>) =
         if (containsKey(attribute.name)) {
             if (replaceEnabled) { // some implementations do not follow the IPP specification
                 put(attribute.name, attribute).also {
@@ -38,11 +38,11 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
                 }
             } else {
                 logger.fine { "Ignored replacement attribute: $attribute" }
+                null
             }
         } else {
             put(attribute.name, attribute)
         }
-    }
 
     fun attribute(name: String, tag: IppTag, vararg values: Any) =
         IppAttribute(name, tag, values.toList()).also { put(it) }
