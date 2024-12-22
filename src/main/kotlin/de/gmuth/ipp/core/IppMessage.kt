@@ -76,7 +76,7 @@ abstract class IppMessage() {
     fun createAttributesGroup(tag: IppTag) =
         IppAttributesGroup(tag).apply { attributesGroups.add(this) }
 
-    fun hasDocument() = documentInputStream != null
+    fun hasDocument() = documentInputStream != null && documentInputStream!!.available() > 0
 
     val attributesCharset: javaCharset
         get() = operationGroup.getValue("attributes-charset")
