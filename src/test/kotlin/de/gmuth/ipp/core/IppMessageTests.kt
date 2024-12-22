@@ -4,6 +4,7 @@ package de.gmuth.ipp.core
  * Copyright (c) 2020-2024 Gerhard Muth
  */
 
+import de.gmuth.log.Logging
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File.createTempFile
@@ -16,6 +17,9 @@ internal fun IppMessage.readTestResource(resource: String) =
 class IppMessageTests {
 
     private val logger = getLogger(javaClass.name)
+
+    @BeforeTest
+    fun setUp() { Logging.configure() }
 
     private val message = object : IppMessage() {
         override val codeDescription: String
@@ -56,10 +60,11 @@ class IppMessageTests {
             } finally {
                 tmpFile.delete()
             }
-            assertTrue(documentInputStreamIsConsumed)
             assertEquals(38, rawBytes!!.size)
             assertFailsWith<IppException> {
                 write(ByteArrayOutputStream())
+            }.apply {
+                logger.info(toString())
             }
             toString() // cover toString
             log(logger) // cover log
@@ -79,8 +84,8 @@ class IppMessageTests {
             val tmpFile2 = createTempFile("test", null)
             try {
                 IppMessage.keepDocumentCopy = true
-                write(tmpFile0.outputStream())
                 assertTrue(hasDocument())
+                write(tmpFile0.outputStream(), true)
                 saveDocumentBytes(tmpFile1)
                 assertEquals(26, tmpFile1.length())
                 val ippBytes = encode(appendDocumentIfAvailable = false) // trigger saving raw bytes
@@ -91,7 +96,6 @@ class IppMessageTests {
                 tmpFile1.delete()
                 tmpFile2.delete()
             }
-            assertTrue(documentInputStreamIsConsumed)
         }
     }
 

@@ -29,7 +29,6 @@ abstract class IppMessage() {
         }
     val attributesGroups = mutableListOf<IppAttributesGroup>()
     var documentInputStream: InputStream? = null
-    var documentInputStreamIsConsumed: Boolean = false
     var rawBytes: ByteArray? = null
     var documentBytes: ByteArray? = null
 
@@ -76,7 +75,7 @@ abstract class IppMessage() {
     fun createAttributesGroup(tag: IppTag) =
         IppAttributesGroup(tag).apply { attributesGroups.add(this) }
 
-    fun hasDocument() = documentInputStream != null && documentInputStream!!.available() > 0
+    fun hasDocument() = documentInputStream != null
 
     val attributesCharset: javaCharset
         get() = operationGroup.getValue("attributes-charset")
@@ -165,14 +164,13 @@ abstract class IppMessage() {
     // ------------------------
 
     private fun copyUnconsumedDocumentInputStream(outputStream: OutputStream) {
-        if (hasDocument() && documentInputStreamIsConsumed) throw IppException("documentInputStream is consumed")
+        if (hasDocument() && documentInputStream!!.available() == 0) throw IppException("documentInputStream is consumed")
         val outputStreamWithCopySupport =
             if (keepDocumentCopy) ByteArraySavingOutputStream(outputStream)
             else outputStream
         documentInputStream!!
             .copyTo(outputStreamWithCopySupport) // returns number of bytes copied
             .apply { logger.finer { "Consumed documentInputStreamWithUncompressingSupport: $this bytes" } }
-        documentInputStreamIsConsumed = true
         if (outputStreamWithCopySupport is ByteArraySavingOutputStream) {
             documentBytes = outputStreamWithCopySupport.getSavedBytes()
             logger.finer("Keeping ${documentBytes!!.size} document bytes")
