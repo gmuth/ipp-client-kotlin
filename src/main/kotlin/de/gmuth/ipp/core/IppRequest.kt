@@ -43,6 +43,7 @@ class IppRequest : IppMessage {
         httpUserAgent = userAgent
     }
 
+    @JvmOverloads
     constructor(
         operation: IppOperation,
         printerUri: URI? = null,
@@ -63,7 +64,7 @@ class IppRequest : IppMessage {
         httpUserAgent = userAgent
     }
 
-
+    @JvmOverloads
     fun createSubscriptionAttributesGroup(
         notifyEvents: Collection<String>? = null,
         notifyLeaseDuration: Duration? = null,

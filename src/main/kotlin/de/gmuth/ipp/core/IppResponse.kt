@@ -34,6 +34,7 @@ class IppResponse : IppMessage {
 
     constructor() : super()
 
+    @JvmOverloads
     constructor(
         status: IppStatus,
         version: String = "2.0",
@@ -48,6 +49,7 @@ class IppResponse : IppMessage {
         }
     }
 
+    @JvmOverloads
     constructor(
         status: IppStatus,
         requestId: Int,
