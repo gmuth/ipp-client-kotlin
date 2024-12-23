@@ -19,8 +19,6 @@ data class MediaCollection(
     var margin: MediaMargin? = null,
     var source: MediaSource? = null,
     var type: String? = null, // Job Template,media-col,media-type,,type2 keyword | name(MAX),[PWG5100.7]
-    var duplexSupported: Boolean? = null
-
 ) : IppAttributeBuilder {
 
     private val logger = Logger.getLogger(javaClass.name)
@@ -39,7 +37,6 @@ data class MediaCollection(
         size?.let { append(" size=$it") }
         margin?.let { append(" margin=$it") }
         source?.let { append(" source=$it") }
-        duplexSupported?.let { append(" duplex=$it") }
         type?.let { append(" type=$it") }
     }.toString()
 
@@ -53,7 +50,6 @@ data class MediaCollection(
                     "media-size" -> size = MediaSize.fromIppCollection(value as IppCollection)
                     "media-type" -> type = getKeywordOrName()
                     "media-source" -> source = MediaSource(getKeywordOrName())
-                    "duplex-supported" -> duplexSupported = (value as Int) == 1
                     else -> if (!isMediaMargin()) logger.warning { "unsupported member: $member" }
                 }
             }
