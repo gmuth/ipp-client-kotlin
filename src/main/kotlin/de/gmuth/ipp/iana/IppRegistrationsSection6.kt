@@ -1,11 +1,15 @@
 package de.gmuth.ipp.iana
 
+import java.util.logging.Logger.getLogger
+
 /**
  * Copyright (c) 2020-2023 Gerhard Muth
  */
 
 // https://www.iana.org/assignments/ipp-registrations/ipp-registrations.xhtml#ipp-registrations-6
 object IppRegistrationsSection6 {
+
+    private val logger = getLogger(javaClass.name)
 
     data class EnumAttributeValue(
         val attribute: String,
@@ -55,5 +59,11 @@ object IppRegistrationsSection6 {
         } else {
             getEnumAttributeValue(aliasMap[attribute] ?: attribute, value)?.name
         } ?: value
+
+    fun listEnumValues(attribute: String) {
+        enumAttributeValuesMap.values
+            .filter { it.attribute == attribute }
+            .forEach { logger.info { it.toString() } }
+    }
 
 }
