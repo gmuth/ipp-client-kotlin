@@ -5,11 +5,15 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.ipp.client.IppOperationException.ClientErrorNotFoundException
-import de.gmuth.ipp.core.*
+import de.gmuth.ipp.core.IppOperation
+import de.gmuth.ipp.core.IppRequest
+import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppStatus.ClientErrorBadRequest
 import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import de.gmuth.ipp.core.IppTag.Unsupported
+import de.gmuth.ipp.core.appendAttributeIfGroupContainsKey
 import de.gmuth.ipp.iana.IppRegistrationsSection2
+import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
@@ -37,6 +41,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
     var onExceptionSaveMessages: Boolean = false
     var throwWhenNotSuccessful: Boolean = true
     var disconnectAfterHttpPost: Boolean = false
+    var defaultPrinterUri: URI? = URI.create("ipp://0:12345/ippbin")
 
     fun basicAuth(user: String, password: String) {
         config.userName = user
@@ -56,7 +61,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
     @JvmOverloads
     fun ippRequest(
         operation: IppOperation,
-        printerUri: URI? = null,
+        printerUri: URI? = defaultPrinterUri,
         requestedAttributes: Collection<String>? = null,
         userName: String? = config.userName,
         naturalLanguage: String = config.naturalLanguage,
@@ -71,6 +76,9 @@ open class IppClient(val config: IppConfig = IppConfig()) {
         naturalLanguage,
         config.userAgent
     )
+
+    fun wrap(request: IppRequest, response: IppResponse): IppRequest = ippRequest(request.operation)
+        .apply { documentInputStream = ByteArrayInputStream(response.rawBytes) }
 
     //------------------------------------
     // Exchange IppRequest for IppResponse
@@ -104,6 +112,15 @@ open class IppClient(val config: IppConfig = IppConfig()) {
 
     fun exchangeForEvent(request: IppRequest) =
         IppRequestExchangedEvent(request, exchange(request))
+
+    @SuppressWarnings("kotlin:S108")
+    fun exchangeWrapped(request: IppRequest) = exchange(request).also {
+        try {
+            exchange(wrap(request, it))
+        } catch (throwable: Throwable) {
+            logger.finer(throwable.cause.toString())
+        }
+    }
 
     //----------------------------------------------
     // HTTP post IPP request and decode IPP response
@@ -198,7 +215,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
         contentType != null && !contentType.startsWith(APPLICATION_IPP) -> "Invalid Content-Type: $contentType"
         exception != null -> exception.message
         else -> {
-            headerFields.forEach { (key, values) -> logger.finer {"$key: $values"} }
+            headerFields.forEach { (key, values) -> logger.finer { "$key: $values" } }
             null // no issues found
         }
     }?.let {

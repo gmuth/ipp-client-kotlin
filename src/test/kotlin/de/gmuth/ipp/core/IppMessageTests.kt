@@ -86,7 +86,7 @@ class IppMessageTests {
                 IppMessage.keepDocumentCopy = true
                 assertTrue(hasDocument())
                 write(tmpFile0.outputStream(), true)
-                saveDocumentBytes(tmpFile1)
+                saveDocument(tmpFile1)
                 assertEquals(26, tmpFile1.length())
                 val ippBytes = encode(appendDocumentIfAvailable = false) // trigger saving raw bytes
                 assertEquals(38, ippBytes.size)

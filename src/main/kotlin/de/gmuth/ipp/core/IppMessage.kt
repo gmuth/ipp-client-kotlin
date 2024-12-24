@@ -177,9 +177,17 @@ abstract class IppMessage() {
         }
     }
 
-    fun saveDocumentBytes(file: File) = file.run {
-        if (documentBytes == null || documentBytes!!.isEmpty()) throw IppException("No documentBytes available. You should enable flag IppMessage.keepDocumentCopy.")
-        outputStream().use { ByteArrayInputStream(documentBytes).copyTo(it) }
+    fun writeDocument(outputStream: OutputStream) {
+        if (documentInputStream!!.available() == 0) { // documentInputStreamConsumed
+            if (documentBytes == null || documentBytes!!.isEmpty()) throw IppException(
+                "Nothing available from documentInputStream. Enable IppMessage.keepDocumentCopy in order to keep documentBytes."
+            )
+            else outputStream.use { it.write(documentBytes!!) }
+        } else copyUnconsumedDocumentInputStream(outputStream)
+    }
+
+    fun saveDocument(file: File) = file.apply {
+        writeDocument(outputStream())
         logger.info { "Saved ${length()} document bytes to $path" }
     }
 
