@@ -37,7 +37,7 @@ enum class Compression(val keyword: String) : IppAttributeBuilder {
         else -> throw NotImplementedError("compression '$this'")
     }
 
-    fun getUncompressingInputStream(inputStream: InputStream) = when (this) {
+    fun getDecompressingInputStream(inputStream: InputStream) = when (this) {
         NONE -> inputStream
         GZIP -> GZIPInputStream(inputStream)
         DEFLATE -> DeflaterInputStream(inputStream)

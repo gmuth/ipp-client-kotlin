@@ -138,7 +138,7 @@ abstract class IppMessage() {
             } else {
                 documentInputStream =
                     if (operationGroup.containsKey("compression")) {
-                        compression.getUncompressingInputStream(bufferedInputStream)
+                        compression.getDecompressingInputStream(bufferedInputStream)
                     } else {
                         bufferedInputStream
                     }

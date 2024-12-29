@@ -39,6 +39,7 @@ class IppRequest : IppMessage {
     val requestedAttributes: List<String>
         get() = operationGroup.getValues("requested-attributes")
 
+    @JvmOverloads
     constructor(userAgent: String? = null) : super() {
         httpUserAgent = userAgent
     }
