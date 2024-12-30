@@ -125,11 +125,7 @@ abstract class IppMessage() {
     // --------
 
     fun read(inputStream: InputStream) {
-        val byteArrayOutputStream = ByteArrayOutputStream()
-        val byteArraySavingInputStream = object : InputStream() {
-            override fun read() = inputStream.read()
-                .also { if (it != -1) byteArrayOutputStream.write(it) }
-        }
+        val byteArraySavingInputStream = ByteArraySavingInputStream(inputStream)
         val bufferedInputStream = byteArraySavingInputStream.buffered()
         try {
             IppInputStream(bufferedInputStream).readMessage(this)
@@ -145,7 +141,8 @@ abstract class IppMessage() {
                 logger.fine { "documentInputStream class: ${documentInputStream!!.javaClass.simpleName}" }
             }
         } finally {
-            rawBytes = byteArrayOutputStream.toByteArray()
+            // radar: could this include potentially buffered document bytes?
+            rawBytes = byteArraySavingInputStream.getSavedBytes()
         }
     }
 
@@ -239,10 +236,19 @@ abstract class IppMessage() {
         }
     }
 
+    // --- ByteArraySavingStreams keep a copy of the data read or written ---
+
     private class ByteArraySavingOutputStream(private val outputStream: OutputStream) : OutputStream() {
         val byteArrayOutputStream = ByteArrayOutputStream()
         fun getSavedBytes(): ByteArray = byteArrayOutputStream.toByteArray()
         override fun write(byte: Int) = outputStream.write(byte)
             .also { byteArrayOutputStream.write(byte) }
+    }
+
+    private class ByteArraySavingInputStream(private val inputStream: InputStream) : InputStream() {
+        var byteArrayOutputStream = ByteArrayOutputStream()
+        fun getSavedBytes(): ByteArray = byteArrayOutputStream.toByteArray()
+        override fun read() = inputStream.read()
+            .also { if (it != -1) byteArrayOutputStream.write(it) }
     }
 }
