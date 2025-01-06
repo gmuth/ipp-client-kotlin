@@ -9,9 +9,9 @@ import java.io.InputStream
 // https://tools.ietf.org/html/rfc4180
 
 class CSVTable<T>(
-        inputStream: InputStream? = null,
-        val buildRow: (columns: List<String>) -> T,
-        skipHeader: Boolean = true
+    inputStream: InputStream? = null,
+    val buildRow: (columns: List<String>) -> T,
+    skipHeader: Boolean = true
 ) {
 
     val rows: MutableList<T> = mutableListOf()
@@ -24,8 +24,9 @@ class CSVTable<T>(
     constructor(resourcePath: String, rowFactory: (columns: List<String>) -> T) :
             this(CSVTable::class.java.getResourceAsStream(resourcePath), rowFactory)
 
-    fun updateMaxLengthMap(columnIndex: Int, columnLength: Int) =
-            with(maxLengthMap[columnIndex]) { if (this == null || this < columnLength) maxLengthMap[columnIndex] = columnLength }
+    fun updateMaxLengthMap(columnIndex: Int, columnLength: Int) = with(maxLengthMap[columnIndex]) {
+        if (this == null || this < columnLength) maxLengthMap[columnIndex] = columnLength
+    }
 
     fun read(inputStream: InputStream, skipHeader: Boolean) {
         if (skipHeader) parseRow(inputStream)
@@ -79,19 +80,16 @@ class CSVTable<T>(
     }
 
     companion object {
-
-        fun print(inputStream: InputStream, delimiter: String = "|") =
-                CSVTable(inputStream, { it }).run {
-                    for (row in rows) with(StringBuffer(delimiter)) {
-                        for ((columnIndex, column) in row.withIndex()) {
-                            append("%-${maxLengthMap[columnIndex]}s%s".format(column, delimiter))
-                        }
-                        println(toString())
-                    }
+        fun print(inputStream: InputStream, delimiter: String = "|") = CSVTable(inputStream, { it }).run {
+            for (row in rows) with(StringBuffer(delimiter)) {
+                for ((columnIndex, column) in row.withIndex()) {
+                    append("%-${maxLengthMap[columnIndex]}s%s".format(column, delimiter))
                 }
+                println(toString())
+            }
+        }
 
         fun print(resourcePath: String, delimiter: String = "|") =
-                print(CSVTable::class.java.getResourceAsStream(resourcePath), delimiter)
-
+            print(CSVTable::class.java.getResourceAsStream(resourcePath)!!, delimiter)
     }
 }
