@@ -215,7 +215,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
         contentType != null && !contentType.startsWith(APPLICATION_IPP) -> "Invalid Content-Type: $contentType"
         exception != null -> exception.message
         else -> {
-            headerFields.forEach { (key, values) -> logger.finer { "$key: $values" } }
+            headerFields.forEach { (key, values) -> logger.finest { "$key: $values" } }
             null // no issues found
         }
     }?.let {
