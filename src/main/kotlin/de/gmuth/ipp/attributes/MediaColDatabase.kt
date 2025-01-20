@@ -31,7 +31,13 @@ class MediaColDatabase(val mediaCollections: List<MediaCollection>) {
         mediaCollections.filter { it.sizeEqualsByDimensions(size) }
 
     fun findByMediaSizeNameContaining(text: String) =
-        mediaCollections.filter { it.size?.name?.contains(text) ?: false }
+        mediaCollections.filter { it.sizeName?.contains(text) ?: false }
+
+    fun findByMediaKeyContaining(text: String) =
+        mediaCollections.filter { it.key?.contains(text) ?: false }
+
+    val distinctMediaKeys: List<String>
+        get() = mediaCollections.mapNotNull { it.key }.distinct().toList()
 
     val distinctMediaTypes: List<String>
         get() = mediaCollections.mapNotNull { it.type }.distinct().toList()
@@ -47,6 +53,7 @@ class MediaColDatabase(val mediaCollections: List<MediaCollection>) {
         append(", ${distinctMediaSources.size} distinct sources")
         append(", ${distinctMediaSizes.size} distinct sizes")
         append(", ${distinctMediaTypes.size} distinct types")
+        append(", ${distinctMediaKeys.size} distinct keys")
     }.toString()
 
     @JvmOverloads
@@ -62,6 +69,10 @@ class MediaColDatabase(val mediaCollections: List<MediaCollection>) {
         }
         distinctMediaTypes.run {
             if (isNotEmpty()) logger.log(level, "media-types:")
+            forEach { logger.log(level, " $it") }
+        }
+        distinctMediaKeys.run {
+            if (isNotEmpty()) logger.log(level, "media-keys:")
             forEach { logger.log(level, " $it") }
         }
     }
