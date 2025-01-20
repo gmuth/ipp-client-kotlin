@@ -48,34 +48,33 @@ data class MediaCollection(
     fun sizeEqualsByDimensions(mediaSize: MediaSize) =
         size?.equalsByDimensions(mediaSize) ?: false
 
-    @Suppress("kotlin:S108", "kotlin:S3776")
     companion object {
         fun fromIppCollection(mediaIppCollection: IppCollection) = MediaCollection().apply {
             for (member in mediaIppCollection.members) with(member) {
                 when (name) {
                     "media-key" -> key = getKeywordOrName()
-                    "media-size" -> (value as IppCollection).also {
-                        if (it.getMember<Any>("x-dimension").tag == IppTag.Integer)
-                            size = MediaSize.fromIppCollection(it)
-                        else
-                            logger.warning { "Ignored unsupported media-size: " + value }
-                    }
-
+                    "media-size" -> setMediaSize(value as IppCollection)
                     "media-size-name" -> sizeName = getKeywordOrName()
                     "media-type" -> type = getKeywordOrName()
                     "media-source" -> source = MediaSource(getKeywordOrName())
                     "media-source-properties" -> sourceProperties =
                         MediaSourceProperties.fromIppCollection(value as IppCollection)
 
-                    else ->
-                        if (!isMediaMargin()) logger.warning { "Ignored unsupported member: $member" }
-                        else {}
+                    else -> if (!isMediaMargin()) logger.warning { "Ignored unsupported member: $member" }
                 }
             }
             if (mediaIppCollection.members.any { it.isMediaMargin() }) {
                 margin = MediaMargin.fromIppCollection(mediaIppCollection)
             }
         }
+    }
+
+    private fun MediaCollection.setMediaSize(ippCollection: IppCollection) {
+        if (ippCollection.getMember<Any>("x-dimension").tag == IppTag.Integer
+            && ippCollection.getMember<Any>("y-dimension").tag == IppTag.Integer)
+            size = MediaSize.fromIppCollection(ippCollection)
+        else
+            logger.warning { "Ignored unsupported media-size: " + ippCollection }
     }
 
     private fun IppAttribute<*>.isMediaMargin() = Regex("media-.*-margin").matches(name)
