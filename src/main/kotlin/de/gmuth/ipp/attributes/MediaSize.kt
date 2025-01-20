@@ -1,27 +1,28 @@
 package de.gmuth.ipp.attributes
 
 /**
- * Copyright (c) 2020-2024 Gerhard Muth
+ * Copyright (c) 2020-2025 Gerhard Muth
  */
 
-import de.gmuth.ipp.core.*
-import de.gmuth.ipp.core.IppTag.*
+import de.gmuth.ipp.core.IppAttribute
+import de.gmuth.ipp.core.IppAttributeBuilder
+import de.gmuth.ipp.core.IppAttributesGroup
+import de.gmuth.ipp.core.IppCollection
+import de.gmuth.ipp.core.IppTag.BegCollection
+import de.gmuth.ipp.core.IppTag.Integer
 
 // Unit: 1/100 mm, e.g. 2540 = 1 inch
-data class MediaSize(val xDimension: Int, val yDimension: Int, val name: String? = null) : IppAttributeBuilder {
+data class MediaSize(val xDimension: Int, val yDimension: Int) : IppAttributeBuilder {
 
     override fun buildIppAttribute(printerAttributes: IppAttributesGroup) = IppAttribute(
         "media-size", BegCollection,
         IppCollection(
             IppAttribute("x-dimension", Integer, xDimension),
             IppAttribute("y-dimension", Integer, yDimension)
-        ).apply {
-            name?.run { addAttribute("media-size-name", NameWithoutLanguage, this) }
-        }
+        )
     )
 
     override fun toString() = StringBuilder().run {
-        name?.let { append("$it ") }
         append("${xDimension}x${yDimension}")
         toString()
     }
@@ -33,8 +34,7 @@ data class MediaSize(val xDimension: Int, val yDimension: Int, val name: String?
         fun fromIppCollection(ippCollection: IppCollection) = ippCollection.run {
             MediaSize(
                 getValue("x-dimension"),
-                getValue("y-dimension"),
-                getValueOrNull<IppString>("media-size-name")?.text
+                getValue("y-dimension")
             )
         }
 
