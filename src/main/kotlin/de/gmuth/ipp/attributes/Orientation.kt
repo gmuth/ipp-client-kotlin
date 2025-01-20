@@ -1,7 +1,7 @@
 package de.gmuth.ipp.attributes
 
 /**
- * Copyright (c) 2020-2024 Gerhard Muth
+ * Copyright (c) 2020-2025 Gerhard Muth
  */
 
 enum class Orientation(val code: Int) {
@@ -10,4 +10,8 @@ enum class Orientation(val code: Int) {
     ReverseLandscape(5),
     ReversePortrait(6),
     None(7); // PWG 5100.13
+
+    companion object {
+        fun fromInt(code: Int) = values().single { it.code == code }
+    }
 }
