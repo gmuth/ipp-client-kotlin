@@ -1,7 +1,7 @@
 package de.gmuth.ipp.iana
 
 /**
- * Copyright (c) 2020-2024 Gerhard Muth
+ * Copyright (c) 2020-2025 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.*
@@ -91,10 +91,6 @@ object IppRegistrationsSection2 {
             put(
                 "media-col/media-source-properties/media-source-feed-direction",
                 "media-col-ready/media-source-properties/media-source-feed-direction"
-            )
-            put(
-                "media-col/media-source-properties/media-source-feed-orientation",
-                "media-col-ready/media-source-properties/media-source-feed-orientation"
             )
         }
     }
