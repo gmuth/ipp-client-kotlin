@@ -48,6 +48,7 @@ data class MediaCollection(
     fun sizeEqualsByDimensions(mediaSize: MediaSize) =
         size?.equalsByDimensions(mediaSize) ?: false
 
+    @Suppress("kotlin:S108", "kotlin:S3776")
     companion object {
         fun fromIppCollection(mediaIppCollection: IppCollection) = MediaCollection().apply {
             for (member in mediaIppCollection.members) with(member) {
