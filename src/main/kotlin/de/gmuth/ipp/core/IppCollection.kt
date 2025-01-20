@@ -46,7 +46,7 @@ data class IppCollection(val members: MutableCollection<IppAttribute<*>> = mutab
         get() = members.size
 
     override fun toString() = members.joinToString(" ", "{", "}") {
-        "${it.name}=${it.values.joinToString(",")}"
+        "${it.name}=${it.valuesToString()}"
     }
 
     fun log(logger: Logger, level: Level = INFO, prefix: String = "") {
