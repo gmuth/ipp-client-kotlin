@@ -139,7 +139,7 @@ Use the `CupsClient` to connect to a CUPS server.
 If you want to access a cups queue you can construct an `IppPrinter` from its uri.
 
 ```kotlin
-// Connect to default ipp://localhost:631
+// Connect to default ipps://localhost:631
 val cupsClient = CupsClient()
 
 // Credentials (e.g. for remote connections)
