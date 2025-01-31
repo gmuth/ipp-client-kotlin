@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020-2024 Gerhard Muth
+ * Copyright (c) 2020-2025 Gerhard Muth
  */
 
 import de.gmuth.ipp.client.IppOperationException.ClientErrorNotFoundException
@@ -21,10 +21,11 @@ import java.util.logging.Logger.getLogger
 
 // https://www.cups.org/doc/spec-ipp.html
 class CupsClient(
-    val cupsUri: URI = URI.create("ipp://localhost"),
+    val cupsUri: URI = URI.create("ipps://localhost"),
     val ippClient: IppClient = IppClient()
 ) {
-    constructor(host: String = "localhost") : this(URI.create("ipp://$host"))
+    @JvmOverloads
+    constructor(printerUri: String = "ipps://localhost") : this(URI.create(printerUri))
 
     private val logger = getLogger(javaClass.name)
     val config: IppConfig by ippClient::config

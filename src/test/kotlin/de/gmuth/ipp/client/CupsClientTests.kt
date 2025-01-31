@@ -22,7 +22,7 @@ class CupsClientTests {
     @Test
     fun constructors() {
         CupsClient()
-        CupsClient("host")
+        CupsClient("ipp://host")
     }
 
     @Test
