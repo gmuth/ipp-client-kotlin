@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020-2024 Gerhard Muth
+ * Copyright (c) 2020-2025 Gerhard Muth
  */
 
 import de.gmuth.ipp.attributes.*
@@ -189,6 +189,11 @@ open class IppPrinter(
 
     val communicationChannelsSupported: List<CommunicationChannel>
         get() = getCommunicationChannelsSupported(attributes)
+
+    val geoLocation: Pair<Double, Double> // Coordinates
+        get() = attributes.getValue<URI>("printer-geo-location")
+            .schemeSpecificPart.split(",")
+            .run { Pair(get(0).toDouble(), get(1).toDouble()) }
 
     val alert: List<String>? // PWG 5100.9
         get() = attributes.getValuesOrNull("printer-alert")
