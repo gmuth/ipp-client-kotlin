@@ -52,7 +52,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getValueOrNull(name: String): T? = get(name)?.run {
-        if (tag.`is ValueTag and is not OutOfBandTag`() and values.isNotEmpty()) value as T?
+        if (tag.`is ValueTag and is not OutOfBandTag`() && values.isNotEmpty()) value as T?
         else null
     }
 
