@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2024 Gerhard Muth
+ * Copyright (c) 2020-2025 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppTag.*
@@ -43,6 +43,7 @@ data class IppAttribute<T>(val name: String, val tag: IppTag) : IppAttributeBuil
         get() = when {
             attributeIs1setOf(name) == true -> throw IppException("'$name' is registered as '1setOf', use 'values' instead")
             values.size > 1 -> throw IppException("'$name' has ${values.size} values, use 'values' instead")
+            values.isEmpty() -> throw IppException("'$name' has no values")
             else -> values.single()
         }
 
