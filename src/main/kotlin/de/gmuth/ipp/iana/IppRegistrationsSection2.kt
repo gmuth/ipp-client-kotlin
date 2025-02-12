@@ -115,9 +115,11 @@ object IppRegistrationsSection2 {
             // Also lookup via hard coded list. In the future I might remove the rather large csv files.
             val groupTagWithoutCSV = if (attributesForGroupOperation.contains(name)) Operation else Job
             if (it != groupTagWithoutCSV) StringBuilder().run {
-                append("Incorrect attribute group for attribute '$name': is $groupTagWithoutCSV, expected $it.")
+                if(name !in listOf("output-mode")) {
+                    append("Incorrect attribute group for attribute '$name': is $groupTagWithoutCSV, expected $it.")
+                }
                 it?.run {
-                    append(" This needs to be fixed in IppRegistrationSection2.attributesForGroupOperation!")
+                    append(" This should to be fixed in IppRegistrationSection2.attributesForGroupOperation!")
                     append(" Please open a bug ticket on https://github.com/gmuth/ipp-client-kotlin/issues.")
                 }
                 throw IppException(toString())
