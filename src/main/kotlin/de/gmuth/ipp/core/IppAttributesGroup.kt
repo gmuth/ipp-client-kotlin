@@ -52,8 +52,13 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getValueOrNull(name: String): T? = get(name)?.run {
-        if (tag.`is ValueTag and is not OutOfBandTag`() && values.isNotEmpty()) value as T?
-        else null
+        if (tag.`is ValueTag and is not OutOfBandTag`()) {
+            if (values.size == 1) value as T?
+            else {
+                logger.warning { "For '$name' one value was expected but found ${values.size} values: $values (ignoring all)" }
+                null // workaround for https://github.com/gmuth/ipp-client-kotlin/issues/36
+            }
+        } else null
     }
 
     @Suppress("UNCHECKED_CAST")
