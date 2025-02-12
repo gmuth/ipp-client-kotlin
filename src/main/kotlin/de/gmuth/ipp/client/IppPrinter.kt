@@ -193,7 +193,7 @@ open class IppPrinter(
     val geoLocation: Pair<Double, Double> // Coordinates
         get() = attributes.getValue<URI>("printer-geo-location")
             .schemeSpecificPart.split(",")
-            .run { Pair(get(0).toDouble(), get(1).toDouble()) }
+            .run { Pair(this[0].toDouble(), this[1].toDouble()) }
 
     val alert: List<String>? // PWG 5100.9
         get() = attributes.getValuesOrNull("printer-alert")
