@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2024 Gerhard Muth
+ * Copyright (c) 2020-2025 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppException.IppAttributeNotFoundException
@@ -52,7 +52,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getValueOrNull(name: String): T? = get(name)?.run {
-        if (tag.`is ValueTag and is not OutOfBandTag`()) value as T?
+        if (tag.`is ValueTag and is not OutOfBandTag`() and values.isNotEmpty()) value as T?
         else null
     }
 
