@@ -65,6 +65,7 @@ open class IppPrinter(
 
     init {
         logger.fine { "Create IppPrinter for $printerUri" }
+        requireNotNull(printerUri.scheme) { "URI scheme required" }
         with(printerUri.scheme) {
             require(startsWith("ipp") || startsWith("http")) { "URI scheme unsupported: $this" }
         }
@@ -110,7 +111,7 @@ open class IppPrinter(
     constructor(printerUri: String, ippConfig: IppConfig) :
             this(URI.create(printerUri), ippConfig = ippConfig)
 
-    @JvmOverloads
+    //@JvmOverloads
     constructor(printerUri: String, getPrinterAttributesOnInit: Boolean = true) :
             this(URI.create(printerUri), getPrinterAttributesOnInit = getPrinterAttributesOnInit)
 
