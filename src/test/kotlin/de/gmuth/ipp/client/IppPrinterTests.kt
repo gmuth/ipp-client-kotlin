@@ -56,6 +56,7 @@ class IppPrinterTests {
             assertTrue(supportsVersion("1.1"))
             assertEquals(URI.create("urf:///20"), deviceUri)
             assertTrue(hasCapability(CanPunchOutput))
+            assertEquals(geoLocation, Pair(37.33182, 122.03118))
             marker(Marker.Color.BLACK).apply {
                 assertEquals(80, level)
                 assertEquals(10, lowLevel)
