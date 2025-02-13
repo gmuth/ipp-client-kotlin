@@ -120,7 +120,7 @@ data class IppAttribute<T>(val name: String, val tag: IppTag) : IppAttributeBuil
         tag == Integer && (name.endsWith("time") || name.startsWith("time")) ->
             "$value (${getValueAsZonedDateTime()})"
 
-        value is ByteArray -> with(value as ByteArray) { if (isEmpty()) "" else "$size bytes" }
+        value is ByteArray -> with(value) { if (isEmpty()) "" else "$size bytes" }
         else -> enumNameOrValue(value as Any).toString()
     }
 
