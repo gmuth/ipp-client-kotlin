@@ -195,9 +195,10 @@ class IppJob(
                 lastJobString = toString()
                 logger.log(jobProgressLogLevel) { lastJobString }
             }
-            if (printerStateLogLevel != null && !isProcessing() || lastPrinterString.isNotEmpty()) {
+            if (!isProcessing() || lastPrinterString.isNotEmpty()) {
+                // Log what is going on with the printer
                 printer.updateStateAttributes()
-                if (printer.toString() != lastPrinterString) {
+                if (printerStateLogLevel != null && printer.toString() != lastPrinterString) {
                     lastPrinterString = printer.toString()
                     logger.log(printerStateLogLevel) { lastPrinterString }
                 }
