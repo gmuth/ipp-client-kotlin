@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020-2024 Gerhard Muth
+ * Copyright (c) 2020-2025 Gerhard Muth
  */
 
 import de.gmuth.ipp.attributes.DocumentFormat
@@ -179,7 +179,11 @@ class IppJob(
     //------------------------------------------
 
     @JvmOverloads
-    fun waitForTermination(delay: Duration = defaultDelay, jobProgressLogLevel: Level = Level.INFO) {
+    fun waitForTermination(
+        delay: Duration = defaultDelay,
+        jobProgressLogLevel: Level? = Level.INFO,
+        printerStateLogLevel: Level? = Level.INFO
+    ) {
         logger.info { "Wait for termination of Job #$id" }
         var lastPrinterString = ""
         var lastJobString = toString()
@@ -187,15 +191,15 @@ class IppJob(
         while (!isTerminated()) {
             Thread.sleep(delay.toMillis()) // no coroutines (http, ssl and stream parsing also require JVM)
             updateAttributes()
-            if (toString() != lastJobString) {
+            if (jobProgressLogLevel != null && toString() != lastJobString) {
                 lastJobString = toString()
                 logger.log(jobProgressLogLevel) { lastJobString }
             }
-            if (!isProcessing() || lastPrinterString.isNotEmpty()) {
+            if (printerStateLogLevel != null && !isProcessing() || lastPrinterString.isNotEmpty()) {
                 printer.updateStateAttributes()
                 if (printer.toString() != lastPrinterString) {
                     lastPrinterString = printer.toString()
-                    logger.info { lastPrinterString }
+                    logger.log(printerStateLogLevel) { lastPrinterString }
                 }
             }
             if (isProcessing() && lastPrinterString.isNotEmpty()) lastPrinterString = ""
