@@ -325,6 +325,8 @@ open class IppPrinter(
     fun releaseHeldNewJobs() = exchange(ippRequest(ReleaseHeldNewJobs))
     fun cancelJobs() = exchange(ippRequest(CancelJobs))
     fun cancelMyJobs() = exchange(ippRequest(CancelMyJobs))
+    fun acceptJobs() = exchange(ippRequest(CupsAcceptJobs))
+    fun rejectJobs() = exchange(ippRequest(CupsRejectJobs))
 
     fun cupsGetPPD(copyTo: OutputStream? = null) = exchange(ippRequest(CupsGetPPD))
         .apply { copyTo?.let { documentInputStream!!.copyTo(it) } }
