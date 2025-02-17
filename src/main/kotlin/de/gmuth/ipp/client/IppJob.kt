@@ -213,8 +213,10 @@ class IppJob(
     //-------------------
 
     fun hold() = exchange(ippRequest(HoldJob))
+    fun close() = exchange(ippRequest(CloseJob))
     fun release() = exchange(ippRequest(ReleaseJob))
     fun restart() = exchange(ippRequest(RestartJob))
+    fun resubmit() = exchange(ippRequest(ResubmitJob))
 
     @JvmOverloads
     fun cancel(messageForOperator: String? = null): IppResponse { // RFC 8011 4.3.3
