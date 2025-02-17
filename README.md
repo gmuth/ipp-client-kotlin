@@ -5,6 +5,7 @@ RFCs
 [3382](https://datatracker.ietf.org/doc/html/rfc3382),
 [3995](https://datatracker.ietf.org/doc/html/rfc3995),
 [3996](https://datatracker.ietf.org/doc/html/rfc3996),
+[7472](https://datatracker.ietf.org/doc/html/rfc7472),
 [8010](https://tools.ietf.org/html/rfc8010) and
 [8011](https://tools.ietf.org/html/rfc8011)
 
