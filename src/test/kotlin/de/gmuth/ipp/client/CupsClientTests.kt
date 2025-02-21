@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020-2023 Gerhard Muth
+ * Copyright (c) 2020-2025 Gerhard Muth
  */
 
 import de.gmuth.ipp.attributes.PrinterState
@@ -22,7 +22,7 @@ class CupsClientTests {
     @Test
     fun constructors() {
         CupsClient()
-        CupsClient("ipp://host")
+        CupsClient(URI("ipps://host"))
     }
 
     @Test

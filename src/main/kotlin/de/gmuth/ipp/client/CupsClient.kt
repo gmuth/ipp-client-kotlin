@@ -24,12 +24,12 @@ class CupsClient(
     val cupsUri: URI = URI.create("ipps://localhost"),
     val ippClient: IppClient = IppClient()
 ) {
-    @JvmOverloads
-    constructor(printerUri: String = "ipps://localhost") : this(URI.create(printerUri))
+    constructor(cupsUri: URI) : this(cupsUri, IppClient())
 
     private val logger = getLogger(javaClass.name)
     val config: IppConfig by ippClient::config
     var userName: String? by config::userName
+
     var cupsDirectory = with(cupsUri) {
         File("CUPS" + (if (host in listOf("localhost", "127.0.0.1")) "-" else File.separator) + host)
     }
@@ -39,6 +39,7 @@ class CupsClient(
             .apply { printerDirectory = cupsDirectory }
 
     init {
+        requireNotNull(cupsUri.scheme) { "URI scheme required" }
         if (cupsUri.scheme == "ipps") config.trustAnyCertificateAndSSLHostname()
     }
 
