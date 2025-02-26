@@ -99,7 +99,8 @@ open class IppPrinter(
         printerDirectory =
             if (attributes.isEmpty()) createTempDirectory().toFile()
             else File((if (isCups()) "CUPS_" else "") + makeAndModel.text.replace("\\s+".toRegex(), "_"))
-        ippClient.saveMessagesDirectory = File(printerDirectory, ofPattern("HHmmss").format(LocalDateTime.now()))
+        ippClient.saveMessagesDirectory =
+            File(printerDirectory, ofPattern("yyyyMMdd-HHmmss").format(LocalDateTime.now()))
     }
 
     constructor(printerAttributes: IppAttributesGroup, ippClient: IppClient) : this(
@@ -275,6 +276,9 @@ open class IppPrinter(
     fun isMediaLow() = anyStateReasonContains("media-low")
     fun isMediaEmpty() = anyStateReasonContains("media-empty")
     fun isMediaNeeded() = anyStateReasonContains("media-needed")
+
+    // HP: reflects that printer is working on the job (https://www.pwg.org/archives/ipp/2015/018400.html)
+    fun isSpoolAreaFull() = anyStateReasonContains("spool-area-full")
 
     fun supportsOperations(vararg operations: IppOperation) = operationsSupported.containsAll(operations.toList())
     fun isDuplexSupported() = sidesSupported.any { it.startsWith("two-sided") }
