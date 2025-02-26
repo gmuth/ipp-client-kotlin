@@ -134,6 +134,7 @@ class IppJob(
     fun stateReasonsContain(reason: String) = stateReasons.contains(reason)
     fun isProcessingToStopPoint() = stateReasonsContain("processing-to-stop-point")
     fun resourcesAreNotReady() = stateReasonsContain("resources-are-not-ready")
+    fun isPrinterStopped() = stateReasonsContain("printer-stopped")
     fun isIncoming() = stateReasonsContain("job-incoming")
 
     fun getOriginatingUserNameOrAppleJobOwnerOrNull() = when {
@@ -185,29 +186,35 @@ class IppJob(
         printerStateLogLevel: Level? = Level.INFO
     ) {
         logger.info { "Wait for termination of Job #$id" }
-        var lastPrinterString = ""
+
         var lastJobString = toString()
-        logger.info { lastJobString }
-        while (!isTerminated()) {
-            Thread.sleep(delay.toMillis()) // no coroutines (http, ssl and stream parsing also require JVM)
-            updateAttributes()
+        fun logJobStringWhenChanged() {
             if (jobProgressLogLevel != null && toString() != lastJobString) {
                 lastJobString = toString()
                 logger.log(jobProgressLogLevel) { lastJobString }
             }
+        }
+
+        var lastPrinterString = ""
+        fun logPrinterStringWhenChanged() {
+            if (printerStateLogLevel != null && printer.toString() != lastPrinterString) {
+                lastPrinterString = printer.toString()
+                logger.log(printerStateLogLevel) { lastPrinterString }
+            }
+        }
+
+        logger.info { lastJobString }
+        while (!isTerminated()) {
+            Thread.sleep(delay.toMillis()) // no coroutines (http, ssl and stream parsing also require JVM)
+            updateAttributes()
+            logJobStringWhenChanged()
             if (!isProcessing() || lastPrinterString.isNotEmpty()) {
-                // Log what is going on with the printer
                 printer.updateStateAttributes()
-                if (printerStateLogLevel != null && printer.toString() != lastPrinterString) {
-                    lastPrinterString = printer.toString()
-                    logger.log(printerStateLogLevel) { lastPrinterString }
-                }
-                if (printer.isStopped()) {
-                    // back off, manual interaction might be required
+                logPrinterStringWhenChanged()
+                if (printer.isStopped()) { // back off, manual interaction might be required
                     Thread.sleep(Duration.ofSeconds(5).toMillis())
                 }
             }
-            if (isProcessing() && lastPrinterString.isNotEmpty()) lastPrinterString = ""
         }
         if (isAborted()) log(logger)
     }
