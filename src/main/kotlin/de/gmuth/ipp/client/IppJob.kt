@@ -202,6 +202,10 @@ class IppJob(
                     lastPrinterString = printer.toString()
                     logger.log(printerStateLogLevel) { lastPrinterString }
                 }
+                if (printer.isStopped()) {
+                    // back off, manual interaction might be required
+                    Thread.sleep(Duration.ofSeconds(5).toMillis())
+                }
             }
             if (isProcessing() && lastPrinterString.isNotEmpty()) lastPrinterString = ""
         }
@@ -349,8 +353,9 @@ class IppJob(
     fun cupsGetDocument(documentNumber: Int = 1): IppDocument {
         logger.fine { "CupsGetDocument #$documentNumber for job #$id" }
         try {
-            val response = exchange(ippRequest(CupsGetDocument)
-                .apply { operationGroup.attribute("document-number", Integer, documentNumber) })
+            val response = exchange(
+                ippRequest(CupsGetDocument)
+                    .apply { operationGroup.attribute("document-number", Integer, documentNumber) })
             return IppDocument(this, response.jobGroup, response.documentInputStream!!)
         } catch (httpPostException: HttpPostException) {
             throw if (httpPostException.httpStatus == 426)
