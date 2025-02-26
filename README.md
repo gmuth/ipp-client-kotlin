@@ -53,6 +53,7 @@ val job = ippPrinter.printJob(
     outputBin("tray-10"),
     pageRanges(2..3, 8..10),
     printerResolution(300, DPI),
+    orientationRequested(Portrait),
     mediaColWithSource("tray-1"),
     finishings(Punch, Staple),
     Sides.TwoSidedLongEdge,
