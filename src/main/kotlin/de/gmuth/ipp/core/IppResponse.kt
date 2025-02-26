@@ -79,7 +79,7 @@ class IppResponse : IppMessage {
             .map { it.valuesToString() }
             .filter { it.isNotEmpty() && it != "none" }
         if (statesAndReasons.isNotEmpty())
-            append(statesAndReasons.joinToString(", ", " [", "]"))
+            append(statesAndReasons.joinToString(",", " [", "]"))
 
         val groups = attributesGroups
             .filter { group -> group.tag != Operation }

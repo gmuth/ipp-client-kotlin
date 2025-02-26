@@ -88,7 +88,7 @@ class IppRequest : IppMessage {
         }
 
     fun connectionName() =
-        "${httpUserAgent ?: "unknown"} -- " + with(printerOrJobUri) { "$scheme:$host:$port$path" }
+        "${httpUserAgent ?: "unknown"} -- $printerOrJobUri".replace("//", "")
 
     override fun toString() = StringBuilder().apply {
         append(operation)
