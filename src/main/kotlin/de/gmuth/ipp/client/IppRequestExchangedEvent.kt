@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2024 Gerhard Muth
+ * Copyright (c) 2024-2025 Gerhard Muth
  */
 
 import de.gmuth.ipp.client.IppDocument.Companion.getDocumentFormatFilenameExtension
@@ -10,11 +10,18 @@ import de.gmuth.ipp.core.IppResponse
 import java.io.File
 import java.io.File.separator
 import java.io.IOException
+import java.nio.file.Path
 import java.time.LocalDateTime.now
 import java.time.format.DateTimeFormatter.ofPattern
 import java.util.logging.Logger
+import kotlin.io.path.inputStream
 
 class IppRequestExchangedEvent(val request: IppRequest, val response: IppResponse) {
+
+    constructor(requestPath: Path, responsePath: Path) : this(
+        IppRequest().apply { read(requestPath.inputStream()) },
+        IppResponse().apply { read(responsePath.inputStream()) }
+    )
 
     private val logger = Logger.getLogger(IppRequestExchangedEvent::class.qualifiedName)
 
@@ -32,7 +39,9 @@ class IppRequestExchangedEvent(val request: IppRequest, val response: IppRespons
         try {
             val connectionDirectory = File(
                 directory,
-                request.connectionName().replace(separator, "_")
+                request.connectionName()
+                    .replace(separator, "_")
+                    .replace(":", "_")
             ).createDirectoryIfNotExists()
 
             fun filename(extension: String) = StringBuilder().run {
