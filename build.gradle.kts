@@ -3,15 +3,19 @@ import org.jetbrains.dokka.gradle.DokkaTask
 // how to build? run ./gradlew
 // where is the jar? build/lib/ipp-client-kotlin...jar
 
+// update gradle wrapper
+// ./gradlew wrapper --gradle-version 7.6.4
+// gradle 8? should be done when moved to kotlin.jvm plugin 1.9.x (to remove deprecation warnings)
+
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.7.22"
-    id("org.jetbrains.dokka") version "1.7.20"
-    id("org.sonarqube") version "5.0.0.4638" // https://plugins.gradle.org/plugin/org.sonarqube
-    //id("org.sonarqube") version "3.5.0.2730" // supports java 8, dropped with 4.1
-    id("maven-publish")
-    id("java-library")
-    id("signing")
-    id("jacoco")
+    id("org.jetbrains.kotlin.jvm") version "1.7.22" // https://kotlinlang.org/docs/gradle-configure-project.html
+    id("org.jetbrains.dokka") version "1.7.20"      // https://kotlinlang.org/docs/dokka-get-started.html
+    id("org.sonarqube") version "5.0.0.4638"        // https://plugins.gradle.org/plugin/org.sonarqube
+    //id("org.sonarqube") version "3.5.0.2730"      // supports java 8, dropped with 4.1
+    id("maven-publish")                             // https://docs.gradle.org/7.6.2/userguide/publishing_maven.html
+    id("java-library")                              // https://docs.gradle.org/7.6.2/userguide/java_library_plugin.html
+    id("signing")                                   // https://docs.gradle.org/7.6.2/userguide/signing_plugin.html
+    id("jacoco")                                    // https://docs.gradle.org/7.6.2/userguide/jacoco_plugin.html
 }
 
 group = "de.gmuth"
@@ -20,10 +24,6 @@ version = "3.3-SNAPSHOT"
 repositories {
     mavenCentral()
 }
-
-// update gradle wrapper
-// ./gradlew wrapper --gradle-version 7.6.4
-// gradle 8? should be done when moved to kotlin.jvm plugin 1.9.x (to remove deprecation warnings)
 
 dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test")
