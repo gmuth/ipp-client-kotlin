@@ -34,33 +34,33 @@ dependencies {
 defaultTasks("assemble")
 
 // https://docs.gradle.org/current/userguide/compatibility.html
-val javaVersion = "11"
+// val javaVersion = JvmTarget.JVM_11 // default depends on kotlin release, should be 8 for now
 val kotlinVersion = "1.7"
 tasks.apply {
 
     // Kotlin
     compileKotlin {
         kotlinOptions {
-            jvmTarget = javaVersion
+            //jvmTarget = javaVersion
             languageVersion = kotlinVersion
         }
     }
     compileTestKotlin {
         kotlinOptions {
-            jvmTarget = javaVersion
+            //jvmTarget = javaVersion
             languageVersion = kotlinVersion
         }
     }
 
-    // Java
-    compileJava {
-        sourceCompatibility = javaVersion
-        targetCompatibility = javaVersion
-    }
-    compileTestJava {
-        sourceCompatibility = javaVersion
-        targetCompatibility = javaVersion
-    }
+// Java
+//    compileJava {
+//        sourceCompatibility = javaVersion
+//        targetCompatibility = javaVersion
+//    }
+//    compileTestJava {
+//        sourceCompatibility = javaVersion
+//        targetCompatibility = javaVersion
+//    }
 }
 
 // ================= PUBLISHING ================
