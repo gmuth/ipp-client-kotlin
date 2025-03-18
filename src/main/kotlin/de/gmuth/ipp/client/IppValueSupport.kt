@@ -46,6 +46,7 @@ object IppValueSupport {
         }
     }
 
+    @SuppressWarnings("kotlin:S2175")
     private fun isAttributeValueSupported(
         printerAttributes: IppAttributesGroup,
         attributeName: String,
