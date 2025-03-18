@@ -30,10 +30,10 @@ class IppRequestExchangedEvent(val request: IppRequest, val response: IppRespons
 
     fun save(
         directory: File,
-        maxFilenameLength: Int = 200,
         saveEvent: Boolean = false,
         saveDocument: Boolean = false,
-        saveRawMessages: Boolean = true
+        saveRawMessages: Boolean = true,
+        maxFilenameLength: Int = 200
     ) {
         logger.fine("Save files in ${directory.path}")
         try {

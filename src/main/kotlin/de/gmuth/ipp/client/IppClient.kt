@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020-2024 Gerhard Muth
+ * Copyright (c) 2020-2025 Gerhard Muth
  */
 
 import de.gmuth.ipp.client.IppOperationException.ClientErrorNotFoundException
@@ -41,7 +41,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
     var onExceptionSaveMessages: Boolean = false
     var throwWhenNotSuccessful: Boolean = true
     var disconnectAfterHttpPost: Boolean = false
-    var defaultPrinterUri: URI? = URI.create("ipp://0:12345/ippbin")
+    var defaultPrinterUri: URI? = URI.create("ipp://ippbin:12345")
 
     fun basicAuth(user: String, password: String) {
         config.userName = user
@@ -98,12 +98,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
             IppRequestExchangedEvent(request, it).run {
                 logger.fine { toString() }
                 if (saveEvents || saveDocuments || saveMessages)
-                    save(
-                        saveMessagesDirectory,
-                        saveEvent = saveEvents,
-                        saveDocument = saveDocuments,
-                        saveRawMessages = saveMessages
-                    )
+                    save(saveMessagesDirectory, saveEvents, saveDocuments, saveMessages)
             }
             responseInterceptor?.invoke(request, it)
             validateIppResponse(request, it)
@@ -234,8 +229,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
             read(contentStream)
         } catch (throwable: Throwable) {
             throw IppOperationException(request, this, "Failed to decode ipp response", throwable).apply {
-                if (onExceptionSaveMessages)
-                    saveMessages("decoding_ipp_response_${request.requestId}_failed")
+                if (onExceptionSaveMessages) saveMessages("decoding_ipp_response_${request.requestId}_failed")
             }
         }
     }
