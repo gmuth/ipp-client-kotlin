@@ -1,12 +1,15 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2021-2024 Gerhard Muth
+ * Copyright (c) 2021-2025 Gerhard Muth
  */
 
 import de.gmuth.ipp.client.IppOperationException.ClientErrorNotFoundException
-import de.gmuth.ipp.core.*
+import de.gmuth.ipp.core.IppAttributesGroup
+import de.gmuth.ipp.core.IppOperation
 import de.gmuth.ipp.core.IppOperation.*
+import de.gmuth.ipp.core.IppRequest
+import de.gmuth.ipp.core.IppString
 import de.gmuth.ipp.core.IppTag.EventNotification
 import de.gmuth.ipp.core.IppTag.Integer
 import java.time.Duration
@@ -65,7 +68,7 @@ class IppSubscription(
     // BUG: CUPS ignores unsupported requested attributes, e.g. notify-lease-expiration-time
     @JvmOverloads
     fun getSubscriptionAttributes(requestedAttributes: Collection<String>? = null) = exchange(
-        subscriptionRequest(GetSubscriptionAttributes, requestedAttributes = requestedAttributes)
+        ippRequest(GetSubscriptionAttributes, requestedAttributes = requestedAttributes)
     )
 
     fun updateAttributes() {
@@ -78,7 +81,7 @@ class IppSubscription(
 
     @JvmOverloads
     fun getNotifications(notifySequenceNumber: Int? = lastSequenceNumber + 1): List<IppEventNotification> {
-        val request = subscriptionRequest(GetNotifications).apply {
+        val request = ippRequest(GetNotifications, includeSubscriptionId = false).apply {
             operationGroup.run {
                 attribute("notify-subscription-ids", Integer, id)
                 notifySequenceNumber?.let { attribute("notify-sequence-numbers", Integer, it) }
@@ -94,7 +97,7 @@ class IppSubscription(
     // Cancel-Subscription
     //--------------------
 
-    fun cancel() = exchange(subscriptionRequest(CancelSubscription))
+    fun cancel() = exchange(ippRequest(CancelSubscription))
         .also { logger.info { "Canceled $this" } }
 
     //-------------------
@@ -103,7 +106,7 @@ class IppSubscription(
 
     @JvmOverloads
     fun renew(leaseDuration: Duration? = null) = exchange(
-        subscriptionRequest(RenewSubscription).apply {
+        ippRequest(RenewSubscription).apply {
             createSubscriptionAttributesGroup(notifyLeaseDuration = leaseDuration)
         }
     ).also {
@@ -116,9 +119,13 @@ class IppSubscription(
     // Delegate to IppPrinter
     //-----------------------
 
-    private fun subscriptionRequest(operation: IppOperation, requestedAttributes: Collection<String>? = null) =
-        printer.ippRequest(operation, requestedAttributes = requestedAttributes)
-            .apply { operationGroup.attribute("notify-subscription-id", Integer, id) }
+    private fun ippRequest(
+        operation: IppOperation,
+        requestedAttributes: Collection<String>? = null,
+        includeSubscriptionId: Boolean = true
+    ) = printer.ippRequest(operation, requestedAttributes = requestedAttributes).apply {
+        if (includeSubscriptionId) operationGroup.attribute("notify-subscription-id", Integer, id)
+    }
 
     private fun exchange(request: IppRequest) = printer.exchange(request)
 
