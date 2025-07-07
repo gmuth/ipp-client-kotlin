@@ -19,7 +19,7 @@ plugins {
 }
 
 group = "de.gmuth"
-version = "3.3-SNAPSHOT"
+version = "3.3"
 
 repositories {
     mavenCentral()
@@ -90,14 +90,22 @@ publishing {
         if (repo == "sonatype") {
             println("> maven repo sonatype")
             maven {
-                name = "Sonatype"
+                name = "ossrh-staging-api"
                 //val snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
                 //val releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
                 //url = uri(if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl)
-                val host = "https://s01.oss.sonatype.org"
-                val path = if (version.toString().endsWith("SNAPSHOT")) "/content/repositories/snapshots/"
-                else "/service/local/staging/deploy/maven2/"
-                url = uri(host.plus(path))
+                // val host = "https://s01.oss.sonatype.org"
+                // val path = if (version.toString().endsWith("SNAPSHOT")) "/content/repositories/snapshots/"
+                // else "/service/local/staging/deploy/maven2/"
+                // url = uri(host.plus(path))
+                // new in 2025:
+                // https://central.sonatype.org/publish/publish-portal-snapshots/#publishing-snapshot-releases-for-your-project
+                // https://central.sonatype.com/repository/maven-snapshots/
+                // https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/
+                url = uri(
+                    if (version.toString().endsWith("-SNAPSHOT")) "https://central.sonatype.com/repository/maven-snapshots/"
+                    else "https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/"
+                )
                 println("> publish.url: $url")
                 credentials {
                     username = project.findProperty("ossrh.username") as String?
