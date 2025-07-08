@@ -31,8 +31,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
           cache: 'gradle'
-          cache-dependency-path: | # optional
-            .gradle/*
 
       # https://github.com/marketplace/actions/build-with-gradle
       #- name: Setup Gradle
