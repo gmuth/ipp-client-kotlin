@@ -19,7 +19,7 @@ plugins {
 }
 
 group = "de.gmuth"
-version = "3.3"
+version = "3.4-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -34,20 +34,20 @@ dependencies {
 defaultTasks("assemble")
 
 // https://docs.gradle.org/current/userguide/compatibility.html
-// val javaVersion = JvmTarget.JVM_11 // default depends on kotlin release, should be 8 for now
+val javaVersion = "1.8" // JvmTarget.JVM_1_6, default depends on kotlin release
 val kotlinVersion = "1.7"
 tasks.apply {
 
     // Kotlin
     compileKotlin {
         kotlinOptions {
-            //jvmTarget = javaVersion
+            jvmTarget = javaVersion
             languageVersion = kotlinVersion
         }
     }
     compileTestKotlin {
         kotlinOptions {
-            //jvmTarget = javaVersion
+            jvmTarget = javaVersion
             languageVersion = kotlinVersion
         }
     }
