@@ -24,7 +24,8 @@ class CupsClient(
     val cupsUri: URI = URI.create("ipps://localhost"),
     val ippClient: IppClient = IppClient()
 ) {
-    constructor(cupsUri: URI) : this(cupsUri, IppClient())
+    @JvmOverloads
+    constructor(cupsUri: URI = URI.create("ipps://localhost")) : this(cupsUri, IppClient())
 
     private val logger = getLogger(javaClass.name)
     val config: IppConfig by ippClient::config

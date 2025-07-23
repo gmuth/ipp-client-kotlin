@@ -112,7 +112,7 @@ open class IppPrinter(
     constructor(printerUri: String, ippConfig: IppConfig) :
             this(URI.create(printerUri), ippConfig = ippConfig)
 
-    //@JvmOverloads
+    @JvmOverloads
     constructor(printerUri: String, getPrinterAttributesOnInit: Boolean = true) :
             this(URI.create(printerUri), getPrinterAttributesOnInit = getPrinterAttributesOnInit)
 
