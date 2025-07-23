@@ -61,6 +61,15 @@ tasks.apply {
 //        sourceCompatibility = javaVersion
 //        targetCompatibility = javaVersion
 //    }
+    jar {
+        manifest {
+            attributes(
+                "Maven-Artifact-Name" to project.name,
+                "Maven-Artifact-Group" to project.group,
+                "Maven-Artifact-Version" to project.version
+            )
+        }
+    }
 }
 
 // ================= PUBLISHING ================
