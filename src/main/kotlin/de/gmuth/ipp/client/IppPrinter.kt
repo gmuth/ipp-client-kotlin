@@ -61,6 +61,15 @@ open class IppPrinter(
             "media-source-supported",
             "ipp-versions-supported"
         )
+        val cupsGetJobsRequestedAttributes = listOf(
+            "job-id",
+            "job-uri",
+            "job-printer-uri",
+            "job-state",
+            "job-state-reasons",
+            "job-name",
+            "job-originating-user-name"
+        )
     }
 
     init {
@@ -122,10 +131,9 @@ open class IppPrinter(
     fun basicAuth(user: String, password: String) =
         ippClient.basicAuth(user, password)
 
-    var getJobsRequestedAttributes = mutableListOf(
-        "job-id", "job-uri", "job-printer-uri", "job-state", "job-name",
-        "job-state-reasons", "job-originating-user-name"
-    )
+    var getJobsRequestedAttributes: List<String>? =
+        if (isCups()) cupsGetJobsRequestedAttributes
+        else null // Printer or server decides which attributes to return.
 
     //---------------
     // IPP attributes
@@ -511,7 +519,7 @@ open class IppPrinter(
         whichJobs: WhichJobs? = null,
         myJobs: Boolean? = null,
         limit: Int? = null,
-        requestedAttributes: List<String>? = getJobsRequestedAttributes
+        requestedAttributes: List<String>? = getJobsRequestedAttributes // see also RFC 8011 Section 5.3
     ): Collection<IppJob> {
         logger.fine { "getJobs(whichJobs=$whichJobs, requestedAttributes=$requestedAttributes)" }
         val request = ippRequest(GetJobs, requestedAttributes = requestedAttributes).apply {
