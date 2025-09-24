@@ -30,7 +30,10 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'gradle'
+          #cache: 'gradle'
+
+      - name: Show Gradle Version
+        run: gradle --version
 
       # https://github.com/marketplace/actions/build-with-gradle
       - name: Setup Gradle 7
