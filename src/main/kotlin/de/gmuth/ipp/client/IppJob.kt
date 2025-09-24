@@ -426,7 +426,7 @@ class IppJob(
             if (it.containsKey("job-name")) append(", name=$name")
             if (it.containsKey("job-impressions-completed")) append(", impressions-completed=$impressionsCompleted")
             if (it.containsKey("job-originating-host-name")) append(", originating-host-name=$originatingHostName")
-            if (it["job-originating-user-name"]?.tag?.`is ValueTag and is not OutOfBandTag`() == true)
+            if (it["job-originating-user-name"]?.tag?.isValueTagAndIsNotOutOfBandTag() == true)
                 append(", originating-user-name=$originatingUserName")
             if (it.containsKey("com.apple.print.JobInfo.PMJobOwner")) append(", appleJobOwner=$appleJobOwner")
             if (it.containsKey("number-of-documents") || it.containsKey("document-count"))
