@@ -52,7 +52,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getValueOrNull(name: String): T? = get(name)?.run {
-        if (tag.`is ValueTag and is not OutOfBandTag`()) {
+        if (tag.isValueTagAndIsNotOutOfBandTag()) {
             if (values.size == 1) value as T?
             else {
                 logger.warning { "For '$name' one value was expected but found ${values.size} values: $values (ignoring all)" }
@@ -63,19 +63,19 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getValuesOrNull(name: String): T? = get(name)?.run {
-        if (tag.`is ValueTag and is not OutOfBandTag`()) values as T?
+        if (tag.isValueTagAndIsNotOutOfBandTag()) values as T?
         else null
     }
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getValue(name: String): T = get(name)?.run {
-        if (tag.`is ValueTag and is not OutOfBandTag`()) value as T
+        if (tag.isValueTagAndIsNotOutOfBandTag()) value as T
         else throw IppException("'$name' value is out-of-band: tag=$tag")
     } ?: throwIppAttributeNotFoundException(name)
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getValues(name: String): T = get(name)?.run {
-        if (tag.`is ValueTag and is not OutOfBandTag`()) values as T
+        if (tag.isValueTagAndIsNotOutOfBandTag()) values as T
         else throw IppException("'$name' values are out-of-band: tag=$tag")
     } ?: throwIppAttributeNotFoundException(name)
 
@@ -98,8 +98,8 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     private fun throwIppAttributeNotFoundException(attributeName: String): Nothing =
         throw IppAttributeNotFoundException(attributeName, tag)
 
-    fun `remove attributes where tag is not ValueTag or tag is OutOfBandTag`() = values
-        .filter { !it.tag.`is ValueTag and is not OutOfBandTag`() }
+    fun removeAttributesWhereTagIsNotValueTagOrTagIsOutOfBandTag() = values
+        .filter { !it.tag.isValueTagAndIsNotOutOfBandTag() }
         .map { remove(it.name) }
         .onEach { logger.finer { "$name: Removed attribute $it" } }
         .apply { if (isNotEmpty()) logger.fine { "$name: Removed $size attributes  ${joinToString(",") { it!!.name }}" } }
