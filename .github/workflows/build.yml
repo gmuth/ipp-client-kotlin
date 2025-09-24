@@ -32,8 +32,9 @@ jobs:
           java-version: '17'
           #cache: 'gradle'
 
-      - name: Show Gradle Version
-        run: gradle --version
+      #- name: Show Gradle Version
+      #  run: gradle --version
+      # 9.x
 
       # https://github.com/marketplace/actions/build-with-gradle
       - name: Setup Gradle 7
@@ -42,7 +43,7 @@ jobs:
           gradle-version: '7.6.6'
 
       - name: Gradle build and analyse
-        run: gradle --no-daemon sonar
+        run: gradle sonar
 
 #      - name: Publish GitHub Packages
 #        env:
