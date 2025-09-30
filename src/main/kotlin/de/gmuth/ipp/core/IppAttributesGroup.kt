@@ -132,8 +132,8 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     }
 
     @JvmOverloads
-    fun writeText(Writer: Writer, title: String? = toString(), prefix: String = "  ") =
-        writeText(PrintWriter(Writer), title, prefix)
+    fun writeText(writer: Writer, title: String? = toString(), prefix: String = "  ") =
+        writeText(PrintWriter(writer), title, prefix)
 
     fun saveText(file: File) = file.run {
         printWriter().use { writeText(it, "File: $name", "") }
