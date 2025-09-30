@@ -16,6 +16,8 @@ import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import java.io.*
 import java.net.URI
+import java.nio.file.Files
+import java.nio.file.Path
 import java.time.Duration
 import java.time.Instant
 import java.time.Instant.now
@@ -429,6 +431,14 @@ open class IppPrinter(
         notifyEvents: List<String>? = null
     ) =
         printJob(FileInputStream(file), attributeBuilders, notifyEvents)
+
+    @JvmOverloads
+    fun printJob(
+        path: Path,
+        attributeBuilders: Collection<IppAttributeBuilder>,
+        notifyEvents: List<String>? = null
+    ) =
+        printJob(Files.newInputStream(path), attributeBuilders, notifyEvents)
 
     // vararg signatures for convenience
 
