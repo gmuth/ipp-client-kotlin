@@ -76,8 +76,9 @@ class CupsClient(
 
     fun getPrinter(printerName: String) =
         try {
-            IppPrinter(printerUri = cupsPrinterUri(printerName), ippClient = ippClient)
-                .apply { printerDirectory = File(cupsDirectory, printerName).createDirectoryIfNotExists() }
+            IppPrinter(printerUri = cupsPrinterUri(printerName), ippClient = ippClient).apply {
+                printerDirectory = File(cupsDirectory, printerName).createDirectoryIfNotExists(false)
+            }
         } catch (clientErrorNotFoundException: ClientErrorNotFoundException) {
             with(getPrinters()) {
                 if (isNotEmpty()) logger.warning { "Available CUPS printers: ${map { it.name }}" }
