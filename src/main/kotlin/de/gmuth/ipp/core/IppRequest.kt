@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2024 Gerhard Muth
+ * Copyright (c) 2020-2025 Gerhard Muth
  */
 
 import de.gmuth.ipp.client.IppOperationException
@@ -38,6 +38,9 @@ class IppRequest : IppMessage {
 
     val requestedAttributes: List<String>
         get() = operationGroup.getValues("requested-attributes")
+
+    val requestingUserName: String
+        get() = operationGroup.getValue<IppString>("requesting-user-name").text
 
     @JvmOverloads
     constructor(userAgent: String? = null) : super() {
