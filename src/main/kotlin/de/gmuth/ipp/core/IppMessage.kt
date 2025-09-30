@@ -14,6 +14,7 @@ import java.util.logging.Level.INFO
 import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
 import java.nio.charset.Charset
+import kotlin.io.path.createDirectories
 import kotlin.io.path.name
 
 abstract class IppMessage() {
@@ -211,6 +212,7 @@ abstract class IppMessage() {
     }
 
     fun saveBytes(path: Path) {
+        path.parent?.createDirectories()
         Files.newOutputStream(path).use { writeBytes(it) }
         logger.info { "Saved $path (${Files.size(path)} bytes)" }
     }
@@ -232,6 +234,7 @@ abstract class IppMessage() {
     }
 
     fun saveText(path: Path) {
+        path.parent?.createDirectories()
         Files.newBufferedWriter(path).use { writeText(PrintWriter(it), title = "File: ${path.fileName}") }
         logger.info { "Saved $path (${Files.size(path)} bytes)" }
     }
