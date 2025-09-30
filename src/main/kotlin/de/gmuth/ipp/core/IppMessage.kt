@@ -7,13 +7,14 @@ package de.gmuth.ipp.core
 import de.gmuth.ipp.attributes.Compression
 import de.gmuth.ipp.core.IppTag.*
 import java.io.*
+import java.nio.charset.Charset
 import java.nio.file.Files
+import java.nio.file.Files.newBufferedWriter
 import java.nio.file.Path
 import java.util.logging.Level
 import java.util.logging.Level.INFO
 import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
-import java.nio.charset.Charset
 import kotlin.io.path.createDirectories
 import kotlin.io.path.name
 
@@ -206,7 +207,7 @@ abstract class IppMessage() {
         if (rawBytes == null) throw IppException("No raw bytes to write. You must call read/decode or write/encode before.")
         else outputStream.write(rawBytes!!)
 
-    fun saveBytes(file: File) = file.run {
+    fun saveBytes1(file: File) = file.run {
         outputStream().use { writeBytes(it) }
         logger.info { "Saved $path (${length()} bytes)" }
     }
@@ -228,6 +229,9 @@ abstract class IppMessage() {
         attributesGroups.forEach { it.writeText(this) }
     }
 
+    fun writeText(writer: Writer, title: String? = null) =
+        writeText(PrintWriter(writer), title)
+
     fun saveText(file: File) = file.apply {
         printWriter().use { writeText(it, title = "File: $name") }
         logger.info { "Saved $path (${length()} bytes)" }
@@ -235,7 +239,7 @@ abstract class IppMessage() {
 
     fun saveText(path: Path) {
         path.parent?.createDirectories()
-        Files.newBufferedWriter(path).use { writeText(PrintWriter(it), title = "File: ${path.fileName}") }
+        newBufferedWriter(path).use { writeText(it, title = "File: ${path.fileName}") }
         logger.info { "Saved $path (${Files.size(path)} bytes)" }
     }
 

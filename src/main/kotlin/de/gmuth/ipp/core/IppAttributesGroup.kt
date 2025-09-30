@@ -7,7 +7,10 @@ package de.gmuth.ipp.core
 import de.gmuth.ipp.core.IppException.IppAttributeNotFoundException
 import java.io.File
 import java.io.PrintWriter
+import java.io.Writer
 import java.net.URI
+import java.nio.file.Files
+import java.nio.file.Path
 import java.time.Duration
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -15,6 +18,7 @@ import java.util.logging.Level
 import java.util.logging.Level.INFO
 import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
+import kotlin.io.path.createDirectories
 
 @Suppress("kotlin:S100")
 class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*>>() {
@@ -127,9 +131,21 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
         values.forEach { println("$prefix$it") }
     }
 
-    fun saveText(file: File) = file.apply {
+    @JvmOverloads
+    fun writeText(Writer: Writer, title: String? = toString(), prefix: String = "  ") =
+        writeText(PrintWriter(Writer), title, prefix)
+
+    fun saveText(file: File) = file.run {
         printWriter().use { writeText(it, "File: $name", "") }
         logger.info { "Saved $path" }
+    }
+
+    fun saveText(path: Path) {
+        path.parent?.createDirectories()
+        Files.newBufferedWriter(path).use {
+            writeText(it, "File: $name", "")
+            logger.info { "Saved $path" }
+        }
     }
 }
 

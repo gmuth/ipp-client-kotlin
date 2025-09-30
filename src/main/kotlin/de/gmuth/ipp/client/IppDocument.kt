@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2021-2024 Gerhard Muth
+ * Copyright (c) 2021-2025 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppAttributesGroup
@@ -11,9 +11,14 @@ import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
+import java.nio.file.Files
+import java.nio.file.Files.newOutputStream
+import java.nio.file.Path
 import java.util.logging.Level
 import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
+import kotlin.io.path.createDirectories
+import kotlin.io.path.isRegularFile
 
 @Suppress("kotlin:S1192")
 class IppDocument(
@@ -30,6 +35,7 @@ class IppDocument(
             "text/plain" -> "txt"
             else -> mediaType.split("/")[1]
         }
+
         fun getDocumentFormatFilenameExtension(attributes: IppAttributesGroup) =
             getFilenameExtension(attributes.getValue("document-format"))
     }
@@ -45,7 +51,7 @@ class IppDocument(
     val name: IppString
         get() = attributes.getValue("document-name")
 
-    var file: File? = null
+    var file: Path? = null
 
     fun readBytes() = inputStream.readBytes()
         .also { logger.fine { "Read ${it.size} bytes of $this" } }
@@ -71,25 +77,25 @@ class IppDocument(
         inputStream.copyTo(outputStream)
 
     fun save(
-        directory: File = job.printer.printerDirectory,
+        directory: Path = job.printer.printerDirectory,
         filename: String = filename(),
         overwrite: Boolean = true
-    ) = File(directory, filename).also {
-        if (!directory.exists()) directory.mkdirs()
-        if (it.isFile && !overwrite) throw IOException("File '$it' already exists")
-        copyTo(it.outputStream())
+    ) = directory.resolve(filename).also {
+        it.parent?.createDirectories()
+        if (it.isRegularFile() && !overwrite) throw IOException("File '$it' already exists")
+        copyTo(newOutputStream(it))
         this.file = it
         logger.info { "Saved $file ${if (attributes.containsKey("document-format")) "($format)" else ""}" }
     }
 
     fun runtimeExecCommand(commandToHandleFile: String) =
         if (file == null) throw IppException("Missing file to handle.")
-        else Runtime.getRuntime().exec(arrayOf(commandToHandleFile, file!!.absolutePath))
+        else Runtime.getRuntime().exec(arrayOf(commandToHandleFile, file!!.toAbsolutePath().toString()))
 
     override fun toString() = StringBuilder("Document #$number").run {
         append(" ($format) of job #${job.id}")
         if (attributes.containsKey("document-name")) append(" '$name'")
-        if (file != null) append(": $file (${file!!.length()} bytes)")
+        if (file != null) append(": $file (${Files.size(file!!)} bytes)")
         toString()
     }
 

@@ -1,13 +1,14 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2024 Gerhard Muth
+ * Copyright (c) 2020-2025 Gerhard Muth
  */
 
 import de.gmuth.log.Logging
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.io.File.createTempFile
+import java.nio.file.Files
+import java.nio.file.Files.createTempFile
 import java.util.logging.Logger.getLogger
 import kotlin.test.*
 
@@ -58,7 +59,7 @@ class IppMessageTests {
             try {
                 write(tmpFile, true)
             } finally {
-                tmpFile.delete()
+                Files.delete(tmpFile)
             }
             assertEquals(38, rawBytes!!.size)
             assertFailsWith<IppException> {
@@ -82,19 +83,20 @@ class IppMessageTests {
             val tmpFile0 = createTempFile("test", null)
             val tmpFile1 = createTempFile("test", null)
             val tmpFile2 = createTempFile("test", null)
+
             try {
                 IppMessage.keepDocumentCopy = true
                 assertTrue(hasDocument())
-                write(tmpFile0.outputStream(), true)
+                write(Files.newOutputStream(tmpFile0), true)
                 saveDocument(tmpFile1)
-                assertEquals(26, tmpFile1.length())
+                assertEquals(26, Files.size(tmpFile1))
                 val ippBytes = encode(appendDocumentIfAvailable = false) // trigger saving raw bytes
                 assertEquals(38, ippBytes.size)
                 saveBytes(tmpFile2)
-                assertEquals(38, tmpFile2.length())
+                assertEquals(38, Files.size(tmpFile2))
             } finally {
-                tmpFile1.delete()
-                tmpFile2.delete()
+                Files.delete(tmpFile1)
+                Files.delete(tmpFile2)
             }
         }
     }

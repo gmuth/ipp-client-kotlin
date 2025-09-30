@@ -8,13 +8,15 @@ import de.gmuth.ipp.client.IppDocument.Companion.getDocumentFormatFilenameExtens
 import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppResponse
 import java.io.File
-import java.io.File.separator
-import java.io.IOException
+import java.io.PrintWriter
+import java.nio.file.Files
 import java.nio.file.Path
 import java.time.LocalDateTime.now
 import java.time.format.DateTimeFormatter.ofPattern
 import java.util.logging.Logger
 import kotlin.io.path.inputStream
+import java.nio.file.Files.newBufferedWriter
+import kotlin.io.path.createDirectories
 
 class IppRequestExchangedEvent(val request: IppRequest, val response: IppResponse) {
 
@@ -29,20 +31,19 @@ class IppRequestExchangedEvent(val request: IppRequest, val response: IppRespons
         "#%04d %-60s = #%04d %s".format(request.requestId, request, response.requestId, response)
 
     fun save(
-        directory: File,
+        directory: Path,
         saveEvent: Boolean = false,
         saveDocument: Boolean = false,
         saveRawMessages: Boolean = true,
         maxFilenameLength: Int = 200
     ) {
-        logger.fine("Save files in ${directory.path}")
+        logger.fine("Save files in $directory")
         try {
-            val connectionDirectory = File(
-                directory,
+            val connectionDirectory = directory.resolve(
                 request.connectionName()
-                    .replace(separator, "_")
+                    .replace(File.separator, "_")
                     .replace(":", "_")
-            ).createDirectoryIfNotExists()
+            )
 
             fun filename(extension: String) = StringBuilder().run {
                 append(ofPattern("HHmmssSSS").format(now()))
@@ -51,29 +52,31 @@ class IppRequestExchangedEvent(val request: IppRequest, val response: IppRespons
                 toString()
                     .take(maxFilenameLength - 1 - extension.length)
                     .plus(".$extension")
-                    .replace(separator, "_")
+                    .replace(File.separator, "_")
             }
 
-            fun file(extension: String) =
-                File(connectionDirectory, filename(extension))
+            fun fileWithExtension(extension: String) =
+                connectionDirectory.resolve(filename(extension))
 
             // Save raw message bytes
             if (saveRawMessages) {
                 logger.fine { "Save raw IPP messages" }
-                request.saveBytes(file("req"))
-                response.saveBytes(file("res"))
+                request.saveBytes(fileWithExtension("req"))
+                response.saveBytes(fileWithExtension("res"))
             }
 
             // Save decoded request and response to single text file
-            if (saveEvent) file("txt").run {
-                printWriter().use {
-                    request.writeText(it, "File: $name")
-                    response.writeText(it)
-                    it.println("---------------------------------------------------------------------")
-                    request.httpUserAgent?.run { it.println("UserAgent: $this") }
-                    response.httpServer?.run { it.println("Server: $this") }
+            if (saveEvent) fileWithExtension("txt").run {
+                parent?.createDirectories()
+                newBufferedWriter(this).use {
+                    val printWriter = PrintWriter(it)
+                    request.writeText(printWriter, "File: $this")
+                    response.writeText(printWriter)
+                    printWriter.println("---------------------------------------------------------------------")
+                    request.httpUserAgent?.run { printWriter.println("UserAgent: $this") }
+                    response.httpServer?.run { printWriter.println("Server: $this") }
                 }
-                logger.fine("Saved $name (${length()} bytes)")
+                logger.fine("Saved ${toAbsolutePath()} (${Files.size(this)} bytes)")
             }
 
             // Save document
@@ -82,7 +85,7 @@ class IppRequestExchangedEvent(val request: IppRequest, val response: IppRespons
                 val filenameExtension = with(request) {
                     if (operationGroup.containsKey("document-format")) getDocumentFormatFilenameExtension() else "bin"
                 }
-                request.saveDocument(file(filenameExtension))
+                request.saveDocument(fileWithExtension(filenameExtension))
             }
 
         } catch (throwable: Throwable) {
@@ -92,8 +95,5 @@ class IppRequestExchangedEvent(val request: IppRequest, val response: IppRespons
 
     private fun IppRequest.getDocumentFormatFilenameExtension() =
         getDocumentFormatFilenameExtension(operationGroup)
-
-    private fun File.createDirectoryIfNotExists() = this
-        .apply { if (!mkdirs() && !isDirectory) throw IOException("Failed to create directory: $path") }
 
 }

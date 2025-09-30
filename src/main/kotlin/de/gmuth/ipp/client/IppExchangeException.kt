@@ -1,17 +1,16 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020-2024 Gerhard Muth
+ * Copyright (c) 2020-2025 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppException
 import de.gmuth.ipp.core.IppRequest
-import java.io.File
+import java.nio.file.Path
 import java.util.logging.Level
 import java.util.logging.Level.INFO
 import java.util.logging.Logger
 import kotlin.io.path.createTempDirectory
-import kotlin.io.path.pathString
 
 open class IppExchangeException(
     val request: IppRequest,
@@ -25,10 +24,9 @@ open class IppExchangeException(
     }
 
     open fun saveMessages(
-        fileNameWithoutSuffix: String = "ipp_exchange_exception",
-        directory: String = createTempDirectory("ipp-client-").pathString
-    ) {
-        request.saveBytes(File(directory, "$fileNameWithoutSuffix.request"))
-    }
+        directory: Path = createTempDirectory("ipp-client-"),
+        fileNameWithoutSuffix: String = "ipp_exchange_exception"
+    ) =
+        request.saveBytes(directory.resolve("$fileNameWithoutSuffix.request"))
 
 }

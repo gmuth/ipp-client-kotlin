@@ -15,6 +15,7 @@ import de.gmuth.ipp.core.IppTag.*
 import java.io.File
 import java.io.InputStream
 import java.net.URI
+import java.nio.file.Path
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.logging.Logger.getLogger
@@ -32,7 +33,7 @@ class CupsClient(
     var userName: String? by config::userName
 
     var cupsDirectory = with(cupsUri) {
-        File("CUPS" + (if (host in listOf("localhost", "127.0.0.1")) "-" else File.separator) + host)
+        Path.of("CUPS" + (if (host in listOf("localhost", "127.0.0.1")) "-" else File.separator) + host)
     }
 
     private val cupsServer =
@@ -76,8 +77,8 @@ class CupsClient(
 
     fun getPrinter(printerName: String) =
         try {
-            IppPrinter(printerUri = cupsPrinterUri(printerName), ippClient = ippClient).apply {
-                printerDirectory = File(cupsDirectory, printerName).createDirectoryIfNotExists(false)
+            IppPrinter(cupsPrinterUri(printerName), ippClient = ippClient).apply {
+                printerDirectory = cupsDirectory.resolve(printerName)
             }
         } catch (clientErrorNotFoundException: ClientErrorNotFoundException) {
             with(getPrinters()) {
@@ -329,7 +330,7 @@ class CupsClient(
                             useJobOwnerAsUserName = true
                             cupsGetDocuments(
                                 save = true,
-                                directory = File(cupsDirectory, printerUri.path.substringAfterLast("/")),
+                                directory = cupsDirectory.resolve(printerUri.path.substringAfterLast("/")),
                                 optionalCommandToHandleFile = commandToHandleSavedFile
                             )
                                 .apply { numberOfSavedDocuments.addAndGet(size) }

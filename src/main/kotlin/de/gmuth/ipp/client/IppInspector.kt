@@ -1,21 +1,21 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2023-2024 Gerhard Muth
+ * Copyright (c) 2023-2025 Gerhard Muth
  */
 
 import de.gmuth.ipp.attributes.*
 import de.gmuth.ipp.attributes.TemplateAttributes.jobName
 import de.gmuth.ipp.core.IppOperation.*
-import java.io.File
 import java.net.URI
+import java.nio.file.Path
 import java.util.logging.Logger.getLogger
 
 class IppInspector {
 
     companion object {
         const val pdfA4 = "blank_A4.pdf"
-        var inspectorDirectory: File = File("inspected-printers")
+        var inspectorDirectory: Path = Path.of("inspected-printers")
         private val logger = getLogger(IppInspector::class.java.name)
         private fun getModel(printerUri: URI) = StringBuilder().run {
             // use another IppPrinter instance to leave request-id-counter untouched
@@ -43,9 +43,10 @@ class IppInspector {
 
         val printerModel = getModel(printerUri)
         logger.info { "Printer model: $printerModel" }
-        printerDirectory = File(inspectorDirectory, printerModel).createDirectoryIfNotExists()
+        printerDirectory = inspectorDirectory.resolve(printerModel)
 
         ippConfig.userName = "ipp-inspector"
+        ippClient.saveEvents = true
         ippClient.saveMessages = true
         ippClient.saveMessagesDirectory = printerDirectory
 

@@ -388,7 +388,7 @@ class IppJob(
     @JvmOverloads
     fun cupsGetDocuments(
         save: Boolean = false,
-        directory: File = printer.printerDirectory,
+        directory: Path = printer.printerDirectory,
         optionalCommandToHandleFile: String? = null
     ) =
         (1..getNumberOfDocumentsOrDocumentCount())
