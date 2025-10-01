@@ -13,7 +13,7 @@ RFCs
 [![Build](https://github.com/gmuth/ipp-client-kotlin/workflows/build/badge.svg)](https://github.com/gmuth/ipp-client-kotlin/actions?query=workflow%3Abuild)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=gmuth_ipp-client-kotlin&metric=alert_status)](https://sonarcloud.io/summary/overall?id=gmuth_ipp-client-kotlin)
 [![Sonar Coverage](https://img.shields.io/sonar/coverage/gmuth_ipp-client-kotlin?color=00AA00&server=https%3A%2F%2Fsonarcloud.io)](https://sonarcloud.io/component_measures?metric=Coverage&view=list&id=gmuth_ipp-client-kotlin)
-[![Maven Central](https://img.shields.io/maven-central/v/de.gmuth/ipp-client.svg?label=maven%20central)](https://central.sonatype.com/artifact/de.gmuth/ipp-client/3.2/overview)
+[![Maven Central](https://img.shields.io/maven-central/v/de.gmuth/ipp-client.svg?label=maven%20central)](https://central.sonatype.com/artifact/de.gmuth/ipp-client/3.4/overview)
 
 ## Usage
 
@@ -23,7 +23,7 @@ supports printer lookup by queue name.
 Repository [ipp-samples](https://github.com/gmuth/ipp-samples) contains examples how to use jmDNS.
 
 ```
-implementation("de.gmuth:ipp-client:3.3")
+implementation("de.gmuth:ipp-client:3.4")
 ```
 
 [README.md for version 2.x](https://github.com/gmuth/ipp-client-kotlin/blob/2.5/README.md) is still available.
@@ -219,7 +219,7 @@ Only when the library detects IPP issues through response codes, it consults the
 
 This library implements a different concept then jipp.
 jipp seems very strict about IPP syntax and is not designed to cope with illegal IPP responses.
-My IPP library in contrast is designed for resilience. E.g. it accepts messages and attributes that use wrong IPP tags.
+Library ipp-client in contrast is designed for resilience. E.g. it accepts messages and attributes that use wrong IPP tags.
 I've not yet seen any IPP server implementation without a single encoding bug.
 [IppInputStream](https://github.com/gmuth/ipp-client-kotlin/blob/master/src/main/kotlin/de/gmuth/ipp/core/IppInputStream.kt)
 for example includes workarounds for

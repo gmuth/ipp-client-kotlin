@@ -7,7 +7,10 @@ package de.gmuth.ipp.core
 import de.gmuth.ipp.core.IppException.IppAttributeNotFoundException
 import java.io.File
 import java.io.PrintWriter
+import java.io.Writer
 import java.net.URI
+import java.nio.file.Files
+import java.nio.file.Path
 import java.time.Duration
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -15,6 +18,7 @@ import java.util.logging.Level
 import java.util.logging.Level.INFO
 import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
+import kotlin.io.path.createDirectories
 
 @Suppress("kotlin:S100")
 class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*>>() {
@@ -52,7 +56,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getValueOrNull(name: String): T? = get(name)?.run {
-        if (tag.`is ValueTag and is not OutOfBandTag`()) {
+        if (tag.isValueTagAndIsNotOutOfBandTag()) {
             if (values.size == 1) value as T?
             else {
                 logger.warning { "For '$name' one value was expected but found ${values.size} values: $values (ignoring all)" }
@@ -63,19 +67,19 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getValuesOrNull(name: String): T? = get(name)?.run {
-        if (tag.`is ValueTag and is not OutOfBandTag`()) values as T?
+        if (tag.isValueTagAndIsNotOutOfBandTag()) values as T?
         else null
     }
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getValue(name: String): T = get(name)?.run {
-        if (tag.`is ValueTag and is not OutOfBandTag`()) value as T
+        if (tag.isValueTagAndIsNotOutOfBandTag()) value as T
         else throw IppException("'$name' value is out-of-band: tag=$tag")
     } ?: throwIppAttributeNotFoundException(name)
 
     @Suppress("UNCHECKED_CAST")
     fun <T> getValues(name: String): T = get(name)?.run {
-        if (tag.`is ValueTag and is not OutOfBandTag`()) values as T
+        if (tag.isValueTagAndIsNotOutOfBandTag()) values as T
         else throw IppException("'$name' values are out-of-band: tag=$tag")
     } ?: throwIppAttributeNotFoundException(name)
 
@@ -98,8 +102,8 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     private fun throwIppAttributeNotFoundException(attributeName: String): Nothing =
         throw IppAttributeNotFoundException(attributeName, tag)
 
-    fun `remove attributes where tag is not ValueTag or tag is OutOfBandTag`() = values
-        .filter { !it.tag.`is ValueTag and is not OutOfBandTag`() }
+    fun removeAttributesWhereTagIsNotValueTagOrTagIsOutOfBandTag() = values
+        .filter { !it.tag.isValueTagAndIsNotOutOfBandTag() }
         .map { remove(it.name) }
         .onEach { logger.finer { "$name: Removed attribute $it" } }
         .apply { if (isNotEmpty()) logger.fine { "$name: Removed $size attributes  ${joinToString(",") { it!!.name }}" } }
@@ -127,9 +131,21 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
         values.forEach { println("$prefix$it") }
     }
 
-    fun saveText(file: File) = file.apply {
+    @JvmOverloads
+    fun writeText(writer: Writer, title: String? = toString(), prefix: String = "  ") =
+        writeText(PrintWriter(writer), title, prefix)
+
+    fun saveText(file: File) = file.run {
         printWriter().use { writeText(it, "File: $name", "") }
         logger.info { "Saved $path" }
+    }
+
+    fun saveText(path: Path) {
+        path.parent?.createDirectories()
+        Files.newBufferedWriter(path).use {
+            writeText(it, "File: $name", "")
+            logger.info { "Saved $path" }
+        }
     }
 }
 

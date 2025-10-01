@@ -1,13 +1,15 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020-2024 Gerhard Muth
+ * Copyright (c) 2020-2025 Gerhard Muth
  */
 
-import de.gmuth.ipp.core.*
+import de.gmuth.ipp.core.IppRequest
+import de.gmuth.ipp.core.IppResponse
+import de.gmuth.ipp.core.IppStatus
 import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import de.gmuth.ipp.core.IppTag.Operation
-import java.io.File
+import java.nio.file.Path
 import java.util.logging.Level
 import java.util.logging.Logger
 
@@ -61,12 +63,9 @@ open class IppOperationException(
         response.log(this, level, prefix = "RESPONSE: ")
     }
 
-    override fun saveMessages(
-        fileNameWithoutSuffix: String,
-        directory: String
-    ) {
-        request.saveBytes(File(directory, "$fileNameWithoutSuffix.request"))
-        response.saveBytes(File(directory, "$fileNameWithoutSuffix.response"))
+    override fun saveMessages(directory: Path, fileNameWithoutSuffix: String) {
+        request.saveBytes(directory.resolve("$fileNameWithoutSuffix.req"))
+        response.saveBytes(directory.resolve("$fileNameWithoutSuffix.res"))
     }
 
 }

@@ -87,7 +87,7 @@ class IppPrinterTests {
     @Test
     fun savePrinterAttributes() {
         ippClientMock.mockResponse("Get-Printer-Attributes.ipp")
-        printer.printerDirectory = createTempDirectory().toFile()
+        printer.printerDirectory = createTempDirectory()
         printer.savePrinterAttributes()
     }
 

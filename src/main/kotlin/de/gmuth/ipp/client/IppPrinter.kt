@@ -16,6 +16,9 @@ import de.gmuth.ipp.core.IppTag.*
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import java.io.*
 import java.net.URI
+import java.nio.file.Files
+import java.nio.file.Files.newOutputStream
+import java.nio.file.Path
 import java.time.Duration
 import java.time.Instant
 import java.time.Instant.now
@@ -37,7 +40,7 @@ open class IppPrinter(
     requestedAttributesOnInit: List<String>? = null
 ) {
     private val logger = getLogger(javaClass.name)
-    lateinit var printerDirectory: File
+    lateinit var printerDirectory: Path
     var throwIfSupportedAttributeIsNotAvailable: Boolean = true
 
     companion object {
@@ -61,6 +64,15 @@ open class IppPrinter(
             "media-source-supported",
             "ipp-versions-supported"
         )
+        val cupsGetJobsRequestedAttributes = listOf(
+            "job-id",
+            "job-uri",
+            "job-printer-uri",
+            "job-state",
+            "job-state-reasons",
+            "job-name",
+            "job-originating-user-name"
+        )
     }
 
     init {
@@ -74,11 +86,7 @@ open class IppPrinter(
         } else if (attributes.isEmpty()) {
             try {
                 updateAttributes(requestedAttributesOnInit)
-                if (isStopped()) {
-                    logger.fine { toString() }
-                    alert?.let { logger.info { "alert: $it" } }
-                    alertDescription?.let { logger.info { "alert-description: $it" } }
-                }
+                ifStoppedLogAlertAndAlertdescription()
             } catch (ippOperationException: IppOperationException) {
                 if (ippOperationException.statusIs(ClientErrorNotFound))
                     logger.severe { ippOperationException.message }
@@ -86,21 +94,29 @@ open class IppPrinter(
                     logger.severe { "Failed to get printer attributes on init. Workaround: getPrinterAttributesOnInit=false" }
                     ippOperationException.response.apply {
                         logger.warning { toString() } // IppClient logs request and response
-                        if (containsGroup(Printer)) logger.warning { "${printerGroup.size} attributes parsed" }
+                        if (containsGroup(Printer)) logger.warning { "${printerGroup.size} printer attributes parsed" }
                     }
                 }
                 throw ippOperationException
             }
         }
-        initPrinterDirectory()
+        configurePrinterDirectory()
     }
 
-    private fun initPrinterDirectory() {
+    fun ifStoppedLogAlertAndAlertdescription() {
+        if (isStopped()) {
+            logger.fine { toString() }
+            alert?.let { logger.info { "alert: $it" } }
+            alertDescription?.let { logger.info { "alert-description: $it" } }
+        }
+    }
+
+    private fun configurePrinterDirectory() {
         printerDirectory =
-            if (attributes.isEmpty()) createTempDirectory().toFile()
-            else File((if (isCups()) "CUPS_" else "") + makeAndModel.text.replace("\\s+".toRegex(), "_"))
+            if (attributes.isEmpty()) createTempDirectory()
+            else Path.of((if (isCups()) "CUPS_" else "") + makeAndModel.text.replace("\\s+".toRegex(), "_"))
         ippClient.saveMessagesDirectory =
-            File(printerDirectory, ofPattern("yyyyMMdd-HHmmss").format(LocalDateTime.now()))
+            printerDirectory.resolve(ofPattern("yyyyMMdd-HHmmss").format(LocalDateTime.now()))
     }
 
     constructor(printerAttributes: IppAttributesGroup, ippClient: IppClient) : this(
@@ -112,7 +128,7 @@ open class IppPrinter(
     constructor(printerUri: String, ippConfig: IppConfig) :
             this(URI.create(printerUri), ippConfig = ippConfig)
 
-    //@JvmOverloads
+    @JvmOverloads
     constructor(printerUri: String, getPrinterAttributesOnInit: Boolean = true) :
             this(URI.create(printerUri), getPrinterAttributesOnInit = getPrinterAttributesOnInit)
 
@@ -122,10 +138,9 @@ open class IppPrinter(
     fun basicAuth(user: String, password: String) =
         ippClient.basicAuth(user, password)
 
-    var getJobsRequestedAttributes = mutableListOf(
-        "job-id", "job-uri", "job-printer-uri", "job-state", "job-name",
-        "job-state-reasons", "job-originating-user-name"
-    )
+    var getJobsRequestedAttributes: List<String>? =
+        if (isCups()) cupsGetJobsRequestedAttributes
+        else null // Printer or server decides which attributes to return.
 
     //---------------
     // IPP attributes
@@ -329,18 +344,18 @@ open class IppPrinter(
     fun releaseHeldNewJobs() = exchange(ippRequest(ReleaseHeldNewJobs))
     fun cancelJobs() = exchange(ippRequest(CancelJobs))
     fun cancelMyJobs() = exchange(ippRequest(CancelMyJobs))
-    fun acceptJobs() = exchange(ippRequest(CupsAcceptJobs))
-    fun rejectJobs() = exchange(ippRequest(CupsRejectJobs))
+    fun cupsAcceptJobs() = exchange(ippRequest(CupsAcceptJobs))
+    fun cupsRejectJobs() = exchange(ippRequest(CupsRejectJobs))
 
     fun cupsGetPPD(copyTo: OutputStream? = null) = exchange(ippRequest(CupsGetPPD))
         .apply { copyTo?.let { documentInputStream!!.copyTo(it) } }
 
     fun savePPD(
-        directory: File = printerDirectory,
+        directory: Path = printerDirectory,
         filename: String = "$makeAndModel.ppd"
-    ) = File(directory, filename).also {
-        cupsGetPPD(it.outputStream())
-        logger.info { "Saved $it (${it.length()} bytes)" }
+    ) = directory.resolve(filename).also {
+        cupsGetPPD(newOutputStream(it))
+        logger.info { "Saved $it (${Files.size(it)} bytes)" }
     }
 
     //------------------------------------------
@@ -421,6 +436,14 @@ open class IppPrinter(
         notifyEvents: List<String>? = null
     ) =
         printJob(FileInputStream(file), attributeBuilders, notifyEvents)
+
+    @JvmOverloads
+    fun printJob(
+        path: Path,
+        attributeBuilders: Collection<IppAttributeBuilder>,
+        notifyEvents: List<String>? = null
+    ) =
+        printJob(Files.newInputStream(path), attributeBuilders, notifyEvents)
 
     // vararg signatures for convenience
 
@@ -511,7 +534,7 @@ open class IppPrinter(
         whichJobs: WhichJobs? = null,
         myJobs: Boolean? = null,
         limit: Int? = null,
-        requestedAttributes: List<String>? = getJobsRequestedAttributes
+        requestedAttributes: List<String>? = getJobsRequestedAttributes // see also RFC 8011 Section 5.3
     ): Collection<IppJob> {
         logger.fine { "getJobs(whichJobs=$whichJobs, requestedAttributes=$requestedAttributes)" }
         val request = ippRequest(GetJobs, requestedAttributes = requestedAttributes).apply {
@@ -668,11 +691,11 @@ open class IppPrinter(
 
     fun savePrinterAttributes() =
         exchange(ippRequest(GetPrinterAttributes)).run {
-            saveBytes(File(printerDirectory, "${makeAndModel.text}.bin"))
-            printerGroup.saveText(File(printerDirectory, "${makeAndModel.text}.txt"))
+            saveBytes(printerDirectory.resolve("${makeAndModel.text}.bin"))
+            printerGroup.saveText(printerDirectory.resolve("${makeAndModel.text}.txt"))
         }
 
-    fun savePrinterIcons(): Collection<File> = attributes
+    fun savePrinterIcons(): Collection<Path> = attributes
         .getValues<List<URI>>("printer-icons")
         .map { it.save() }
 
@@ -689,25 +712,15 @@ open class IppPrinter(
         null
     }
 
-    fun saveAllPrinterStrings(): Collection<File>? = attributes["printer-strings-languages-supported"]
+    fun saveAllPrinterStrings(): Collection<Path>? = attributes["printer-strings-languages-supported"]
         ?.values?.mapNotNull { savePrinterStrings(it as String) }
 
-    // --------------------------------------------------
-    // Internal utilities implemented as Kotlin extension
-    // --------------------------------------------------
-
-    fun File.createDirectoryIfNotExists(throwOnFailure: Boolean = true) = this.apply {
-        if (!mkdirs() && !isDirectory) "Failed to create directory: $path".let {
-            if (throwOnFailure) throw IOException(it) else logger.warning(it)
-        }
-    }
-
     internal fun URI.save(
-        directory: File? = printerDirectory.createDirectoryIfNotExists(),
+        directory: Path = printerDirectory,
         extension: String? = null,
         filename: String = path.substringAfterLast("/") + if (extension == null) "" else ".$extension"
-    ) = File(directory, filename).also {
-        toURL().openConnection().inputStream.copyTo(it.outputStream())
-        logger.info { "Saved ${it.path} (${it.length()} bytes from $this)" }
+    ) = directory.resolve(filename).also { // path to save to
+        toURL().openConnection().inputStream.copyTo(newOutputStream(it))
+        logger.info { "Saved $it (${Files.size(it)}) bytes from $this)" }
     }
 }

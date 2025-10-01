@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2023 Gerhard Muth
+ * Copyright (c) 2020-2025 Gerhard Muth
  */
 
 // RFC 8010 and RFC 3380
@@ -68,7 +68,7 @@ enum class IppTag(
     fun isOutOfBandTag() = code in 0x10..0x1f
     fun isMemberAttrName() = this == MemberAttrName
     fun isMemberAttrValue() = this != MemberAttrName && isValueTag() && this != EndCollection
-    fun `is ValueTag and is not OutOfBandTag`() = isValueTag() && !isOutOfBandTag()
+    fun isValueTagAndIsNotOutOfBandTag() = isValueTag() && !isOutOfBandTag()
 
     override fun toString() = registeredName
 

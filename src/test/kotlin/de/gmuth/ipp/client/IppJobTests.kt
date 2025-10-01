@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2021-2024 Gerhard Muth
+ * Copyright (c) 2021-2025 Gerhard Muth
  */
 
 import de.gmuth.ipp.attributes.JobState
@@ -16,6 +16,7 @@ import org.junit.Test
 import java.io.File
 import java.io.FileInputStream
 import java.net.URI
+import java.nio.file.Files
 import java.util.logging.Logger.getLogger
 import kotlin.io.path.createTempDirectory
 import kotlin.test.assertEquals
@@ -177,7 +178,7 @@ class IppJobTests {
         job.cupsGetDocument().apply {
             logger.info { toString() }
             log(logger)
-            save(directory = createTempDirectory().toFile()).delete()
+            Files.delete(save(directory = createTempDirectory()))
             assertEquals("job-2366-gmuth-A4-blank.pdf", filename())
         }
     }
@@ -208,7 +209,7 @@ class IppJobTests {
     @Test
     fun cupsGetAndSaveDocuments() {
         ippClientMock.mockResponse(cupsDocumentResponse("application/postscript"))
-        job.cupsGetDocuments(save = true, directory = createTempDirectory().toFile())
+        job.cupsGetDocuments(save = true, directory = createTempDirectory())
     }
 
     @Test

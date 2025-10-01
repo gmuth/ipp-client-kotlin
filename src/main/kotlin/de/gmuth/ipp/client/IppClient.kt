@@ -14,11 +14,11 @@ import de.gmuth.ipp.core.IppTag.Unsupported
 import de.gmuth.ipp.core.appendAttributeIfGroupContainsKey
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import java.io.ByteArrayInputStream
-import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URI
+import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.logging.Level.FINEST
 import java.util.logging.Level.WARNING
@@ -37,11 +37,11 @@ open class IppClient(val config: IppConfig = IppConfig()) {
     var saveEvents: Boolean = false
     var saveMessages: Boolean = false
     var saveDocuments: Boolean = false
-    var saveMessagesDirectory: File = createTempDirectory().toFile()
+    var saveMessagesDirectory: Path = createTempDirectory()
     var onExceptionSaveMessages: Boolean = false
     var throwWhenNotSuccessful: Boolean = true
     var disconnectAfterHttpPost: Boolean = false
-    var defaultPrinterUri: URI? = URI.create("ipp://ippbin:12345")
+    var defaultPrinterUri: URI? = URI.create("ipp://ippbin.net:12345")
 
     fun basicAuth(user: String, password: String) {
         config.userName = user
@@ -167,7 +167,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
                 if (status == ClientErrorNotFound) ClientErrorNotFoundException(request, response)
                 else IppOperationException(request, response)
             if (onExceptionSaveMessages)
-                exception.saveMessages("${request.operation}_${status}_${request.requestId}")
+                exception.saveMessages(fileNameWithoutSuffix = "${request.operation}_${status}_${request.requestId}")
             if (throwWhenNotSuccessful)
                 throw exception
         }
@@ -229,7 +229,9 @@ open class IppClient(val config: IppConfig = IppConfig()) {
             read(contentStream)
         } catch (throwable: Throwable) {
             throw IppOperationException(request, this, "Failed to decode ipp response", throwable).apply {
-                if (onExceptionSaveMessages) saveMessages("decoding_ipp_response_${request.requestId}_failed")
+                if (onExceptionSaveMessages) saveMessages(
+                    fileNameWithoutSuffix = "decoding_ipp_response_${request.requestId}_from_${request.operation}_failed"
+                )
             }
         }
     }

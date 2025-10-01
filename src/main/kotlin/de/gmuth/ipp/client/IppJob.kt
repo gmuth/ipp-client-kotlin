@@ -15,6 +15,8 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
 import java.net.URI
+import java.nio.file.Files
+import java.nio.file.Path
 import java.time.Duration
 import java.time.ZonedDateTime
 import java.util.logging.Level
@@ -264,7 +266,18 @@ class IppJob(
         documentName: String? = null,
         documentNaturalLanguage: String? = null,
         documentFormat: DocumentFormat? = null
-    ) = sendDocument(FileInputStream(file), lastDocument, documentName, documentNaturalLanguage, documentFormat)
+    ) =
+        sendDocument(FileInputStream(file), lastDocument, documentName, documentNaturalLanguage, documentFormat)
+
+    @JvmOverloads
+    fun sendDocument(
+        path: Path,
+        lastDocument: Boolean = true,
+        documentName: String? = null,
+        documentNaturalLanguage: String? = null,
+        documentFormat: DocumentFormat? = null
+    ) =
+        sendDocument(Files.newInputStream(path), lastDocument, documentName, documentNaturalLanguage, documentFormat)
 
     //----------------------
     // Send-URI (depreacted)
@@ -375,7 +388,7 @@ class IppJob(
     @JvmOverloads
     fun cupsGetDocuments(
         save: Boolean = false,
-        directory: File = printer.printerDirectory,
+        directory: Path = printer.printerDirectory,
         optionalCommandToHandleFile: String? = null
     ) =
         (1..getNumberOfDocumentsOrDocumentCount())
@@ -426,7 +439,7 @@ class IppJob(
             if (it.containsKey("job-name")) append(", name=$name")
             if (it.containsKey("job-impressions-completed")) append(", impressions-completed=$impressionsCompleted")
             if (it.containsKey("job-originating-host-name")) append(", originating-host-name=$originatingHostName")
-            if (it["job-originating-user-name"]?.tag?.`is ValueTag and is not OutOfBandTag`() == true)
+            if (it["job-originating-user-name"]?.tag?.isValueTagAndIsNotOutOfBandTag() == true)
                 append(", originating-user-name=$originatingUserName")
             if (it.containsKey("com.apple.print.JobInfo.PMJobOwner")) append(", appleJobOwner=$appleJobOwner")
             if (it.containsKey("number-of-documents") || it.containsKey("document-count"))

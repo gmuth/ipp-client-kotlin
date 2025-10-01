@@ -1,17 +1,22 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2024 Gerhard Muth
+ * Copyright (c) 2020-2025 Gerhard Muth
  */
 
 import de.gmuth.ipp.attributes.Compression
 import de.gmuth.ipp.core.IppTag.*
 import java.io.*
+import java.nio.charset.Charset
+import java.nio.file.Files
+import java.nio.file.Files.newBufferedWriter
+import java.nio.file.Path
 import java.util.logging.Level
 import java.util.logging.Level.INFO
 import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
-import java.nio.charset.Charset as javaCharset
+import kotlin.io.path.createDirectories
+import kotlin.io.path.name
 
 abstract class IppMessage() {
 
@@ -34,7 +39,7 @@ abstract class IppMessage() {
 
     abstract val codeDescription: String // request operation or response status
 
-    constructor(version: String, requestId: Int, charset: java.nio.charset.Charset, naturalLanguage: String) : this() {
+    constructor(version: String, requestId: Int, charset: Charset, naturalLanguage: String) : this() {
         this.version = version
         this.requestId = requestId
         createAttributesGroup(Operation).run {
@@ -77,14 +82,11 @@ abstract class IppMessage() {
 
     fun hasDocument() = documentInputStream != null
 
-    val attributesCharset: javaCharset
+    val attributesCharset: Charset
         get() = operationGroup.getValue("attributes-charset")
 
     val naturalLanguage: String
         get() = operationGroup.getValue("attributes-natural-language")
-
-    val requestingUserName: String
-        get() = operationGroup.getValue<IppString>("requesting-user-name").text
 
     val compression: Compression
         get() = Compression.fromString(operationGroup.getValue("compression"))
@@ -113,6 +115,9 @@ abstract class IppMessage() {
 
     fun write(file: File, writeDocumentIfAvailable: Boolean = false) =
         write(FileOutputStream(file), writeDocumentIfAvailable)
+
+    fun write(path: Path, writeDocumentIfAvailable: Boolean = false) =
+        write(Files.newOutputStream(path), writeDocumentIfAvailable)
 
     @JvmOverloads
     fun encode(appendDocumentIfAvailable: Boolean = true) = ByteArrayOutputStream().use {
@@ -151,6 +156,11 @@ abstract class IppMessage() {
         read(FileInputStream(file))
     }
 
+    fun read(path: Path) {
+        logger.finer { "Read path ${path.toAbsolutePath()}: ${Files.size(path)} bytes" }
+        read(Files.newInputStream(path))
+    }
+
     fun decode(byteArray: ByteArray) {
         logger.finer { "Decode ${byteArray.size} bytes" }
         read(ByteArrayInputStream(byteArray))
@@ -183,18 +193,29 @@ abstract class IppMessage() {
         } else copyUnconsumedDocumentInputStream(outputStream)
     }
 
-    fun saveDocument(file: File) = file.apply {
+    fun saveDocument(file: File) = file.run {
         writeDocument(outputStream())
         logger.info { "Saved ${length()} document bytes to $path" }
     }
 
+    fun saveDocument(path: Path) {
+        writeDocument(Files.newOutputStream(path))
+        logger.info { "Saved ${Files.size(path)} document bytes to $path" }
+    }
+
     fun writeBytes(outputStream: OutputStream) =
         if (rawBytes == null) throw IppException("No raw bytes to write. You must call read/decode or write/encode before.")
-        else outputStream.write(rawBytes)
+        else outputStream.write(rawBytes!!)
 
-    fun saveBytes(file: File) = file.apply {
+    fun saveBytes1(file: File) = file.run {
         outputStream().use { writeBytes(it) }
         logger.info { "Saved $path (${length()} bytes)" }
+    }
+
+    fun saveBytes(path: Path) {
+        path.parent?.createDirectories()
+        Files.newOutputStream(path).use { writeBytes(it) }
+        logger.info { "Saved $path (${Files.size(path)} bytes)" }
     }
 
     fun writeText(printWriter: PrintWriter, title: String? = null) = printWriter.apply {
@@ -208,17 +229,34 @@ abstract class IppMessage() {
         attributesGroups.forEach { it.writeText(this) }
     }
 
+    fun writeText(writer: Writer, title: String? = null) =
+        writeText(PrintWriter(writer), title)
+
     fun saveText(file: File) = file.apply {
         printWriter().use { writeText(it, title = "File: $name") }
         logger.info { "Saved $path (${length()} bytes)" }
     }
 
+    fun saveText(path: Path) {
+        path.parent?.createDirectories()
+        newBufferedWriter(path).use { writeText(it, title = "File: ${path.fileName}") }
+        logger.info { "Saved $path (${Files.size(path)} bytes)" }
+    }
+
     fun readBytesAndSaveText(
         bytesFile: File,
         textFile: File = with(bytesFile) { File(parentFile, "$name.txt") }
-    ) = textFile.apply {
+    ) {
         read(bytesFile)
         saveText(textFile)
+    }
+
+    fun readBytesAndSaveText(
+        bytesPath: Path,
+        textPath: Path = bytesPath.parent.resolve("${bytesPath.name}.txt")
+    ) {
+        read(bytesPath)
+        saveText(textPath)
     }
 
     // -------
