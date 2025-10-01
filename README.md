@@ -1,4 +1,4 @@
-# ipp-client v3.4-SNAPSHOT
+# ipp-client v3.3
 
 A client implementation of the ipp protocol for java and kotlin.
 RFCs 
