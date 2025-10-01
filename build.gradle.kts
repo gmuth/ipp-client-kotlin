@@ -4,7 +4,7 @@ import org.jetbrains.dokka.gradle.DokkaTask
 // where is the jar? build/lib/ipp-client-kotlin...jar
 
 // update gradle wrapper
-// ./gradlew wrapper --gradle-version 7.6.4
+// ./gradlew wrapper --gradle-version 7.6.6
 // gradle 8? should be done when moved to kotlin.jvm plugin 1.9.x (to remove deprecation warnings)
 
 plugins {
@@ -16,10 +16,11 @@ plugins {
     id("java-library")                              // https://docs.gradle.org/7.6.2/userguide/java_library_plugin.html
     id("signing")                                   // https://docs.gradle.org/7.6.2/userguide/signing_plugin.html
     id("jacoco")                                    // https://docs.gradle.org/7.6.2/userguide/jacoco_plugin.html
+    //kotlin("jvm")
 }
 
 group = "de.gmuth"
-version = "3.4-SNAPSHOT"
+version = "3.4"
 
 repositories {
     mavenCentral()
@@ -28,6 +29,7 @@ repositories {
 dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     //testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
+    //implementation(kotlin("stdlib-jdk8"))
 }
 
 // gradlew clean -x test build publishToMavenLocal
@@ -38,19 +40,19 @@ val javaVersion = "1.8" // JvmTarget.JVM_1_6, default depends on kotlin release
 val kotlinVersion = "1.7"
 tasks.apply {
 
-    // Kotlin
-    compileKotlin {
-        kotlinOptions {
-            jvmTarget = javaVersion
-            languageVersion = kotlinVersion
-        }
-    }
-    compileTestKotlin {
-        kotlinOptions {
-            jvmTarget = javaVersion
-            languageVersion = kotlinVersion
-        }
-    }
+//    // Kotlin
+//    compileKotlin {
+//        kotlinOptions {
+//            jvmTarget = javaVersion
+//            languageVersion = kotlinVersion
+//        }
+//    }
+//    compileTestKotlin {
+//        kotlinOptions {
+//            jvmTarget = javaVersion
+//            languageVersion = kotlinVersion
+//        }
+//    }
 
 // Java
 //    compileJava {
@@ -232,4 +234,8 @@ tasks.sonar {
 //    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 //    from(configurations.runtimeClasspath.get().map(::zipTree))
 //    with(tasks.jar.get())
+//}
+
+//kotlin {
+//    jvmToolchain(17)
 //}
