@@ -86,11 +86,7 @@ open class IppPrinter(
         } else if (attributes.isEmpty()) {
             try {
                 updateAttributes(requestedAttributesOnInit)
-                if (isStopped()) {
-                    logger.fine { toString() }
-                    alert?.let { logger.info { "alert: $it" } }
-                    alertDescription?.let { logger.info { "alert-description: $it" } }
-                }
+                ifStoppedLogAlertAndAlertdescription()
             } catch (ippOperationException: IppOperationException) {
                 if (ippOperationException.statusIs(ClientErrorNotFound))
                     logger.severe { ippOperationException.message }
@@ -98,16 +94,24 @@ open class IppPrinter(
                     logger.severe { "Failed to get printer attributes on init. Workaround: getPrinterAttributesOnInit=false" }
                     ippOperationException.response.apply {
                         logger.warning { toString() } // IppClient logs request and response
-                        if (containsGroup(Printer)) logger.warning { "${printerGroup.size} attributes parsed" }
+                        if (containsGroup(Printer)) logger.warning { "${printerGroup.size} printer attributes parsed" }
                     }
                 }
                 throw ippOperationException
             }
         }
-        initPrinterDirectory()
+        configurePrinterDirectory()
     }
 
-    private fun initPrinterDirectory() {
+    fun ifStoppedLogAlertAndAlertdescription() {
+        if (isStopped()) {
+            logger.fine { toString() }
+            alert?.let { logger.info { "alert: $it" } }
+            alertDescription?.let { logger.info { "alert-description: $it" } }
+        }
+    }
+
+    private fun configurePrinterDirectory() {
         printerDirectory =
             if (attributes.isEmpty()) createTempDirectory()
             else Path.of((if (isCups()) "CUPS_" else "") + makeAndModel.text.replace("\\s+".toRegex(), "_"))
