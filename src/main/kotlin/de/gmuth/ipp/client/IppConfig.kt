@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2021-2024 Gerhard Muth
+ * Copyright (c) 2021-2025 Gerhard Muth
  */
 
 import java.nio.charset.Charset
@@ -23,7 +23,7 @@ class IppConfig(
 
     // HTTP config
     var timeout: Duration = Duration.ofSeconds(30),
-    var userAgent: String? = "ipp-client/3.4",
+    var userAgent: String? = "ipp-client/3.5",
     var password: String? = null,
     var sslContext: SSLContext? = null,
     // trust any certificate: sslContextForAnyCertificate()
