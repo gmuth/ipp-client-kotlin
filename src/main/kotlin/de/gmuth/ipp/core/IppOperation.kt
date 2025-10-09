@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2024 Gerhard Muth
+ * Copyright (c) 2020-2025 Gerhard Muth
  */
 
 import java.util.logging.Logger.getLogger
@@ -114,6 +114,9 @@ enum class IppOperation(val code: Int) {
     GetPrinterResources(0x0065),
     GetUserPrinterAttributes(0x0066),
     RestartOnePrinter(0x0067),
+    AcknowledgeEncryptedJobAttributes(0x0068),
+    FetchEncryptedJobAttributes(0x0069),
+    GetEncryptedJobAttributes(0x006A),
 
     // CUPS Operations
     CupsGetDefault(0x4001),
