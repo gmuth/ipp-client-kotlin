@@ -100,7 +100,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
             httpPost(httpUri, request).also {
                 log(logger, FINEST, ">>> ") //  this=request
                 it.log(logger, FINEST, "<<< ") // it=response
-                IppRequestExchangedEvent(request, it).run {
+                IppRequestExchangedEvent(request, it, ippUri).run {
                     logger.fine { toString() }
                     if (saveEvents || saveDocuments || saveMessages)
                         save(saveMessagesDirectory, saveEvents, saveDocuments, saveMessages)
@@ -114,7 +114,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
         request: IppRequest,
         ippUri: URI = onExchangeOverrideRequestPrinterOrJobUri ?: request.printerOrJobUri
     ) =
-        IppRequestExchangedEvent(request, exchange(request, ippUri))
+        IppRequestExchangedEvent(request, exchange(request, ippUri), ippUri)
 
     @SuppressWarnings("kotlin:S108")
     fun exchangeWrapped(request: IppRequest) = exchange(request).also {

@@ -9,16 +9,23 @@ import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppResponse
 import java.io.File
 import java.io.PrintWriter
+import java.net.URI
 import java.nio.file.Files
+import java.nio.file.Files.newBufferedWriter
 import java.nio.file.Path
 import java.time.LocalDateTime.now
 import java.time.format.DateTimeFormatter.ofPattern
+import java.util.logging.Level
+import java.util.logging.Level.INFO
 import java.util.logging.Logger
-import kotlin.io.path.inputStream
-import java.nio.file.Files.newBufferedWriter
 import kotlin.io.path.createDirectories
+import kotlin.io.path.inputStream
 
-class IppRequestExchangedEvent(val request: IppRequest, val response: IppResponse) {
+class IppRequestExchangedEvent(
+    val request: IppRequest,
+    val response: IppResponse,
+    val uri: URI? = null
+) {
 
     constructor(requestPath: Path, responsePath: Path) : this(
         IppRequest().apply { read(requestPath.inputStream()) },
@@ -29,6 +36,13 @@ class IppRequestExchangedEvent(val request: IppRequest, val response: IppRespons
 
     override fun toString() =
         "#%04d %-60s = #%04d %s".format(request.requestId, request, response.requestId, response)
+
+    fun log(logger: Logger, level: Level = INFO) {
+        logger.log(level, "-".repeat(50) + " request" + if (uri == null) "" else " to $uri")
+        request.log(logger, level)
+        logger.log(level, "-".repeat(50) + " response" + if (uri == null) "" else " from $uri")
+        response.log(logger, level)
+    }
 
     fun save(
         directory: Path,
