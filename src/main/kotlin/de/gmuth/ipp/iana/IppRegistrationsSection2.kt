@@ -181,7 +181,8 @@ object IppRegistrationsSection2 {
 
     // See also IppRegistrationSection2Tests
     // Here we should only need to list attributes used as IppAttributesBuilders for requests.
-    // All other attributes should be explicitly added to the correct group.
+    // All other attributes should otherwise be explicitly added to the correct group.
+    // However, to be on the safe side, all attributes listed as "Operation" in the iana csv file have been added.
     internal val attributesForGroupOperation = listOf(
         "attributes-charset",
         "attributes-natural-language",
@@ -207,6 +208,8 @@ object IppRegistrationsSection2 {
         "document-password",
         "document-preprocessed",
         "document-uri",
+        "encrypted-job-request-format",
+        "encrypted-job-request-id",
         "fetch-status-code",
         "fetch-status-message",
         "first-index",
@@ -250,6 +253,8 @@ object IppRegistrationsSection2 {
         "output-attributes",
         "output-device-job-states",
         "output-device-uuid",
+        "output-device-x509-certificate",
+        "output-device-x509-request",
         "preferred-attributes",
         "printer-ids",
         "printer-uri",
@@ -257,6 +262,7 @@ object IppRegistrationsSection2 {
         "profile-uri-actual",
         "requested-attributes",
         "requesting-user-name",
+        "requesting-user-pkcs7-public-key",
         "requesting-user-uri",
         "resource-format-accepted",
         "resource-formats",
