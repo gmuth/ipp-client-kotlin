@@ -7,6 +7,7 @@ package de.gmuth.ipp.client
 import de.gmuth.ipp.attributes.*
 import de.gmuth.ipp.attributes.CommunicationChannel.Companion.getCommunicationChannelsSupported
 import de.gmuth.ipp.attributes.Marker.Companion.getMarkers
+import de.gmuth.ipp.attributes.PrinterFirmware.Companion.getPrinterFirmware
 import de.gmuth.ipp.attributes.PrinterState.*
 import de.gmuth.ipp.client.IppOperationException.ClientErrorNotFoundException
 import de.gmuth.ipp.core.*
@@ -205,6 +206,12 @@ open class IppPrinter(
 
     val communicationChannelsSupported: List<CommunicationChannel>
         get() = getCommunicationChannelsSupported(attributes)
+
+    val printerFirmware: List<PrinterFirmware>
+        get() = getPrinterFirmware(attributes)
+
+    val printerIcons: List<URI>
+        get() = attributes.getValues("printer-icons")
 
     val geoLocation: Pair<Double, Double> // Coordinates
         get() = attributes.getValue<URI>("printer-geo-location")
@@ -695,9 +702,8 @@ open class IppPrinter(
             printerGroup.saveText(printerDirectory.resolve("${makeAndModel.text}.txt"))
         }
 
-    fun savePrinterIcons(): Collection<Path> = attributes
-        .getValues<List<URI>>("printer-icons")
-        .map { it.save() }
+    fun savePrinterIcons(): Collection<Path> =
+        printerIcons.map { it.save() }
 
     fun getPrinterStringsUri(language: String): URI {
         checkIfValueIsSupported("printer-strings-languages", language, false)
