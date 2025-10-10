@@ -98,8 +98,8 @@ object IppValueSupport {
             true -> logger.finer { "$value is supported according to $supportedAttributeName" }
             false -> {
                 logger.warning {
-                    "According to printer attributes value '${supportedAttribute.enumNameOrValue(value)}' is not supported." +
-                            if (attributeName == "operations") "" else " for attribute '$attributeName'."
+                    "According to printer attributes value '${supportedAttribute.enumNameOrValue(value)}' is not supported" +
+                            if (attributeName == "operations") "." else " for attribute '$attributeName'."
                 }
                 logger.warning { "$supportedAttribute" }
             }
