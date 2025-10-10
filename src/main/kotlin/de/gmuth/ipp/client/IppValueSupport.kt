@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020-2024 Gerhard Muth
+ * Copyright (c) 2020-2025 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.*
@@ -21,8 +21,14 @@ object IppValueSupport {
         throwIfSupportedAttributeIsNotAvailable: Boolean
     ) {
         val supportedAttribute = printerAttributes["${attribute.name}-supported"]
-        if (supportedAttribute == null) logger.warning { "${attribute.name}-supported not available in printer attributes" }
-        else checkIfValueIsSupported(printerAttributes, attribute.name, attribute.value as Any, throwIfSupportedAttributeIsNotAvailable)
+        if (supportedAttribute == null)
+            logger.warning { "${attribute.name}-supported not available in printer attributes" }
+        else checkIfValueIsSupported(
+            printerAttributes,
+            attribute.name,
+            attribute.value as Any,
+            throwIfSupportedAttributeIsNotAvailable
+        )
     }
 
     fun checkIfValueIsSupported(
@@ -36,11 +42,16 @@ object IppValueSupport {
 
         if (value is Collection<*>) { // instead of providing another signature just check collections iteratively
             for (collectionValue in value) {
-                checkIfValueIsSupported(printerAttributes, attributeName, collectionValue!!, throwIfSupportedAttributeIsNotAvailable)
+                checkIfValueIsSupported(
+                    printerAttributes,
+                    attributeName,
+                    collectionValue!!,
+                    throwIfSupportedAttributeIsNotAvailable
+                )
             }
         } else {
             val supportedAttributeName = "$attributeName-supported"
-            if(!printerAttributes.containsKey(supportedAttributeName) && throwIfSupportedAttributeIsNotAvailable)
+            if (!printerAttributes.containsKey(supportedAttributeName) && throwIfSupportedAttributeIsNotAvailable)
                 throw IppException("Unable to check value '$value' because printer attribute '$supportedAttributeName' is not available.")
             isAttributeValueSupported(printerAttributes, attributeName, value)
         }
@@ -86,7 +97,10 @@ object IppValueSupport {
             null -> logger.warning { "Unable to check if value '$value' is supported by $supportedAttribute" }
             true -> logger.finer { "$value is supported according to $supportedAttributeName" }
             false -> {
-                logger.warning { "According to printer attributes value '${supportedAttribute.enumNameOrValue(value)}' is not supported for attribute '$attributeName'." }
+                logger.warning {
+                    "According to printer attributes value '${supportedAttribute.enumNameOrValue(value)}' is not supported." +
+                            if (attributeName == "operations") "" else " for attribute '$attributeName'."
+                }
                 logger.warning { "$supportedAttribute" }
             }
         }
