@@ -93,6 +93,11 @@ class IppRequest : IppMessage {
     fun connectionName() =
         "${httpUserAgent ?: "unknown"} -- $printerOrJobUri".replace("//", "")
 
+    override fun log(logger: Logger, level: Level, prefix: String) {
+        httpUserAgent?.let { logger.log(level) { "${prefix}httpUserAgent = $it" } }
+        super.log(logger, level, prefix)
+    }
+
     override fun toString() = StringBuilder().apply {
         append(operation)
         val details = attributesGroups
