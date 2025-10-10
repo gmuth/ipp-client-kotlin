@@ -20,6 +20,7 @@ import java.net.HttpURLConnection
 import java.net.URI
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.logging.Level
 import java.util.logging.Level.FINEST
 import java.util.logging.Level.WARNING
 import java.util.logging.Logger
@@ -43,6 +44,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
     var disconnectAfterHttpPost: Boolean = false
     var defaultPrinterUri: URI? = URI.create("ipp://ippbin.net:12345")
     var onExchangeOverrideRequestPrinterOrJobUri: URI? = null // Useful for reverse proxies or NAT
+    var onExchangeLogRequestAndResponseWithLevel: Level = FINEST
 
     fun basicAuth(user: String, password: String) {
         config.userName = user
@@ -98,8 +100,10 @@ open class IppClient(val config: IppConfig = IppConfig()) {
                 )
             }
             httpPost(httpUri, request).also {
-                log(logger, FINEST, ">>> ") //  this=request
-                it.log(logger, FINEST, "<<< ") // it=response
+                logger.log(onExchangeLogRequestAndResponseWithLevel, "-".repeat(50) + " request to $ippUri")
+                log(logger, onExchangeLogRequestAndResponseWithLevel) //  this=request
+                logger.log(onExchangeLogRequestAndResponseWithLevel, "-".repeat(50) + " response from $ippUri")
+                it.log(logger, onExchangeLogRequestAndResponseWithLevel) // it=response
                 IppRequestExchangedEvent(request, it, ippUri).run {
                     logger.fine { toString() }
                     if (saveEvents || saveDocuments || saveMessages)
