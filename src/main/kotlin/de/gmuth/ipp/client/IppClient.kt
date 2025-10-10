@@ -42,6 +42,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
     var throwWhenNotSuccessful: Boolean = true
     var disconnectAfterHttpPost: Boolean = false
     var defaultPrinterUri: URI? = URI.create("ipp://ippbin.net:12345")
+    var onExchangeOverrideRequestPrinterOrJobUri: URI? = null // Useful for reverse proxies or NAT
 
     fun basicAuth(user: String, password: String) {
         config.userName = user
@@ -85,28 +86,35 @@ open class IppClient(val config: IppConfig = IppConfig()) {
     //------------------------------------
 
     @JvmOverloads
-    fun exchange(request: IppRequest, ippUri: URI = request.printerOrJobUri) = with(request) {
-        val httpUri = with(ippUri) {
-            URI(
-                scheme.replace("ipp", "http"), userInfo, host,
-                if (port == -1) 631 else port, path, query, fragment
-            )
-        }
-        httpPost(httpUri, request).also {
-            log(logger, FINEST, ">>> ") //  this=request
-            it.log(logger, FINEST, "<<< ") // it=response
-            IppRequestExchangedEvent(request, it).run {
-                logger.fine { toString() }
-                if (saveEvents || saveDocuments || saveMessages)
-                    save(saveMessagesDirectory, saveEvents, saveDocuments, saveMessages)
+    fun exchange(
+        request: IppRequest,
+        ippUri: URI = onExchangeOverrideRequestPrinterOrJobUri ?: request.printerOrJobUri
+    ) =
+        with(request) {
+            val httpUri = with(ippUri) {
+                URI(
+                    scheme.replace("ipp", "http"), userInfo, host,
+                    if (port == -1) 631 else port, path, query, fragment
+                )
             }
-            responseInterceptor?.invoke(request, it)
-            validateIppResponse(request, it)
+            httpPost(httpUri, request).also {
+                log(logger, FINEST, ">>> ") //  this=request
+                it.log(logger, FINEST, "<<< ") // it=response
+                IppRequestExchangedEvent(request, it).run {
+                    logger.fine { toString() }
+                    if (saveEvents || saveDocuments || saveMessages)
+                        save(saveMessagesDirectory, saveEvents, saveDocuments, saveMessages)
+                }
+                responseInterceptor?.invoke(request, it)
+                validateIppResponse(request, it)
+            }
         }
-    }
 
-    fun exchangeForEvent(request: IppRequest) =
-        IppRequestExchangedEvent(request, exchange(request))
+    fun exchangeForEvent(
+        request: IppRequest,
+        ippUri: URI = onExchangeOverrideRequestPrinterOrJobUri ?: request.printerOrJobUri
+    ) =
+        IppRequestExchangedEvent(request, exchange(request, ippUri))
 
     @SuppressWarnings("kotlin:S108")
     fun exchangeWrapped(request: IppRequest) = exchange(request).also {
