@@ -699,8 +699,9 @@ open class IppPrinter(
 
     fun savePrinterAttributes() =
         exchange(ippRequest(GetPrinterAttributes)).run {
-            printerDirectory = Path("")
-            val name = if (attributes.containsKey("printer-make-and-model")) makeAndModel.text else printerUri.host
+
+            val name = if (attributes.containsKey("printer-make-and-model")) makeAndModel.text
+            else printerUri.host.also { printerDirectory = Path("") }
             saveBytes(printerDirectory.resolve("$name.bin"))
             printerGroup.saveText(printerDirectory.resolve("$name.txt"))
         }
