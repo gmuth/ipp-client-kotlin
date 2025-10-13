@@ -17,7 +17,7 @@ class IppCollectionTests {
 
     @Test
     fun toStringValue() {
-        assertEquals("{foo=a,b}", collection.toString())
+        assertEquals("{foo=a, b}", collection.toString())
     }
 
     @Test

@@ -113,7 +113,7 @@ class IppAttributeTests {
 
     @Test
     fun attributeToString() {
-        assertEquals("foo (1setOf integer) = 1,2,3", IppAttribute("foo", Integer, 1, 2, 3).toString())
+        assertEquals("foo (1setOf integer) = 1, 2, 3", IppAttribute("foo", Integer, 1, 2, 3).toString())
     }
 
     @Test
