@@ -143,7 +143,7 @@ class IppAttributesGroup(val tag: IppTag) : LinkedHashMap<String, IppAttribute<*
     fun saveText(path: Path) {
         path.parent?.createDirectories()
         Files.newBufferedWriter(path).use {
-            writeText(it, "File: $name", "")
+            writeText(it, "File: $path", "")
             logger.info { "Saved $path" }
         }
     }

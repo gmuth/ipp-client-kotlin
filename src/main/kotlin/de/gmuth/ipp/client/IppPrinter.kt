@@ -29,6 +29,7 @@ import java.util.logging.Level
 import java.util.logging.Level.*
 import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
+import kotlin.io.path.Path
 import kotlin.io.path.createTempDirectory
 
 @SuppressWarnings("kotlin:S1192")
@@ -698,8 +699,10 @@ open class IppPrinter(
 
     fun savePrinterAttributes() =
         exchange(ippRequest(GetPrinterAttributes)).run {
-            saveBytes(printerDirectory.resolve("${makeAndModel.text}.bin"))
-            printerGroup.saveText(printerDirectory.resolve("${makeAndModel.text}.txt"))
+            printerDirectory = Path("")
+            val name = if (attributes.containsKey("printer-make-and-model")) makeAndModel.text else printerUri.host
+            saveBytes(printerDirectory.resolve("$name.bin"))
+            printerGroup.saveText(printerDirectory.resolve("$name.txt"))
         }
 
     fun savePrinterIcons(): Collection<Path> =
