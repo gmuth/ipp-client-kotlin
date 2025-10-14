@@ -1,14 +1,17 @@
 package de.gmuth.ipp.iana
 
 /**
- * Copyright (c) 2020-2024 Gerhard Muth
+ * Copyright (c) 2020-2025 Gerhard Muth
  */
 
+import de.gmuth.ipp.attributes.ColorMode
 import de.gmuth.ipp.attributes.DocumentFormat
 import de.gmuth.ipp.attributes.TemplateAttributes.jobName
+import de.gmuth.ipp.core.IppAttribute
 import de.gmuth.ipp.core.IppAttributeBuilder
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppTag
+import de.gmuth.ipp.core.IppTag.Keyword
 import de.gmuth.ipp.core.IppTag.Operation
 import de.gmuth.ipp.iana.IppRegistrationsSection2.selectGroupForAttribute
 import de.gmuth.log.Logging
@@ -48,7 +51,17 @@ class IppRegistrationSection2Tests {
         assertEquals(Operation, selectGroupForAttribute(DocumentFormat("pdf")))
     }
 
-    fun selectGroupForAttribute(attributeBuilder: IppAttributeBuilder) =
-        selectGroupForAttribute(attributeBuilder.buildIppAttribute(IppAttributesGroup(IppTag.Printer)).name)
+    @Test
+    fun unknownAttributes() {
+        assertEquals(IppTag.Job, selectGroupForAttribute(IppAttribute("Ink", Keyword, "MONO")))
+        assertEquals(IppTag.Job, selectGroupForAttribute(ColorMode("mono")))
+    }
 
+    fun selectGroupForAttribute(attributeBuilder: IppAttributeBuilder) = selectGroupForAttribute(
+        attributeBuilder.buildIppAttribute(
+            IppAttributesGroup(IppTag.Printer).apply {
+                attribute("output-mode-supported", Keyword, ColorMode.Monochrome.keyword)
+            }
+        ).name
+    )
 }

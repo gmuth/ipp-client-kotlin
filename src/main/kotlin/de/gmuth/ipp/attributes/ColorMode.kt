@@ -1,7 +1,7 @@
 package de.gmuth.ipp.attributes
 
 /**
- * Copyright (c) 2020-2023 Gerhard Muth
+ * Copyright (c) 2020-2025 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppAttribute
@@ -11,7 +11,7 @@ import de.gmuth.ipp.core.IppException
 import de.gmuth.ipp.core.IppTag.Keyword
 
 // https://ftp.pwg.org/pub/pwg/candidates/cs-ippjobprinterext3v10-20120727-5100.13.pdf  - 5.2.3
-class ColorMode(private val keyword: String) : IppAttributeBuilder {
+class ColorMode(val keyword: String) : IppAttributeBuilder {
 
     companion object {
         @JvmField

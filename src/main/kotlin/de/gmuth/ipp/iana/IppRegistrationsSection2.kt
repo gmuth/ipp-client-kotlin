@@ -111,18 +111,21 @@ object IppRegistrationsSection2 {
         getAttribute(name, false)?.is1setOf()
 
     fun selectGroupForAttribute(name: String) =
-        getAttribute(name, false)?.collectionGroupTag().also {
-            // Also lookup via hard coded list. In the future I might remove the rather large csv files.
-            val groupTagWithoutCSV = if (attributesForGroupOperation.contains(name)) Operation else Job
-            if (it != groupTagWithoutCSV) StringBuilder().run {
-                if(name !in listOf("output-mode")) {
-                    append("Incorrect attribute group for attribute '$name': is $groupTagWithoutCSV, expected $it.")
-                }
-                it?.run {
+        (if (attributesForGroupOperation.contains(name)) Operation else Job).also {
+            // Compare with IANA file. In the future I might remove the rather large csv files.
+            val groupTagFromCSV = getAttribute(name, false)?.collectionGroupTag()
+            val isKnownAttribute = name in listOf("output-mode") // okay but not IANA registered
+            if (groupTagFromCSV == null) {
+                if(!isKnownAttribute) logger.warning { "Attribute '$name' is not registered in IANA Section 2" }
+            } else {
+                if (groupTagFromCSV != it) StringBuilder().run {
+                    if (!isKnownAttribute) {
+                        append("Incorrect attribute group for attribute '$name': is $it, expected $groupTagFromCSV.")
+                    }
                     append(" This should to be fixed in IppRegistrationSection2.attributesForGroupOperation!")
                     append(" Please open a bug ticket on https://github.com/gmuth/ipp-client-kotlin/issues.")
+                    throw IppException(toString())
                 }
-                throw IppException(toString())
             }
         }
 

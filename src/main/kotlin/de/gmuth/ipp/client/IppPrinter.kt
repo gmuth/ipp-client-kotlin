@@ -509,8 +509,8 @@ open class IppPrinter(
     ) = ippRequest(operation).apply {
         for (attributeBuilder in attributeBuilders) with(attributeBuilder.build()) {
             checkIfValueIsSupported(name, values, false)
-            // put attribute in operation or job group?
-            val groupTag = IppRegistrationsSection2.selectGroupForAttribute(name) ?: Job
+            // Put attribute in operation or job group?
+            val groupTag = IppRegistrationsSection2.selectGroupForAttribute(name)
             if (!containsGroup(groupTag)) createAttributesGroup(groupTag)
             logger.finer { "$groupTag put $this" }
             getSingleAttributesGroup(groupTag).put(this)
