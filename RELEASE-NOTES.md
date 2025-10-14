@@ -8,6 +8,7 @@
 * Convenient logging config: `ippClient.onExchangeLogRequestAndResponseWithLevel`
 * Support for NAT and reverse proxy scenarios: `ippClient.onExchangeOverrideRequestPrinterOrJobUri`
 * Support printer firmware attributes: `ippPrinter.printerFirmware`
+* Fixed issue where unknown (not IANA registered) attributes could not be added to a request
 
 Previous Versions
 -----------------
