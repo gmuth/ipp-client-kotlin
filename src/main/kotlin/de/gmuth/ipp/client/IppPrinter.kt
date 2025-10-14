@@ -169,8 +169,8 @@ open class IppPrinter(
     val stateReasons: List<String>
         get() = attributes.getValues("printer-state-reasons")
 
-    val stateMessage: IppString?
-        get() = attributes.getValueOrNull("printer-state-message")
+    val stateMessage: IppString
+        get() = attributes.getValue("printer-state-message")
 
     val documentFormatSupported: List<String>
         get() = attributes.getValues("document-format-supported")
