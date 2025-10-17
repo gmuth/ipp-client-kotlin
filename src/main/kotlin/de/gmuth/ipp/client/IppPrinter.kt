@@ -682,7 +682,7 @@ open class IppPrinter(
         if (attributes.containsKey("printer-name")) append(" $name")
         if (attributes.containsKey("printer-make-and-model")) append(" ($makeAndModel)")
         append(", state=$state, stateReasons=$stateReasons")
-        stateMessage?.let { if (it.text.isNotEmpty()) append(", stateMessage=$stateMessage") }
+        stateMessage.let { if (it.text.isNotEmpty()) append(", stateMessage=$stateMessage") }
         if (attributes.containsKey("printer-is-accepting-jobs")) append(", isAcceptingJobs=$isAcceptingJobs")
         if (attributes.containsKey("printer-location")) append(", location=$location")
         if (attributes.containsKey("printer-info")) append(", info=$info")

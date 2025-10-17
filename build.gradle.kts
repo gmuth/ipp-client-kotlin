@@ -36,33 +36,43 @@ dependencies {
 defaultTasks("assemble")
 
 // https://docs.gradle.org/current/userguide/compatibility.html
-val javaVersion = "1.8" // JvmTarget.JVM_1_6, default depends on kotlin release
-val kotlinVersion = "1.7"
 tasks.apply {
 
-//    // Kotlin
-//    compileKotlin {
-//        kotlinOptions {
-//            jvmTarget = javaVersion
-//            languageVersion = kotlinVersion
-//        }
-//    }
-//    compileTestKotlin {
-//        kotlinOptions {
-//            jvmTarget = javaVersion
-//            languageVersion = kotlinVersion
-//        }
-//    }
+    // class files versions depend on Kotlin compiler (default is 1.8)
+    // module.json includes "org.gradle.jvm.version" of jdk used by gradle
+    // https://docs.gradle.org/8.5/userguide/variant_attributes.html#sub:jvm_default_attributes
+    // for other projects using gradle this could cause issues like
+    // "Incompatible because this component declares a component,
+    // compatible with Java 21 and the consumer needed a component, compatible with Java 17"
+    // Hence we explicitly set the Kotlin and Java version here
 
-// Java
-//    compileJava {
-//        sourceCompatibility = javaVersion
-//        targetCompatibility = javaVersion
-//    }
-//    compileTestJava {
-//        sourceCompatibility = javaVersion
-//        targetCompatibility = javaVersion
-//    }
+    val javaVersion = "1.8" // JvmTarget.JVM_1_6, default depends on kotlin release
+    val kotlinVersion = "1.7"
+
+    // Kotlin
+    compileKotlin {
+        kotlinOptions {
+            jvmTarget = javaVersion
+            languageVersion = kotlinVersion
+        }
+    }
+    compileTestKotlin {
+        kotlinOptions {
+            jvmTarget = javaVersion
+            languageVersion = kotlinVersion
+        }
+    }
+
+    // Java
+    compileJava {
+        sourceCompatibility = javaVersion
+        targetCompatibility = javaVersion
+    }
+    compileTestJava {
+        sourceCompatibility = javaVersion
+        targetCompatibility = javaVersion
+    }
+
     jar {
         manifest {
             attributes(
@@ -113,8 +123,9 @@ publishing {
                 // https://central.sonatype.org/publish/publish-portal-snapshots/#publishing-snapshot-releases-for-your-project
                 // https://central.sonatype.com/repository/maven-snapshots/
                 // https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/
+                val isSNAPSHOT = version.toString().endsWith("-SNAPSHOT")
                 url = uri(
-                    if (version.toString().endsWith("-SNAPSHOT")) "https://central.sonatype.com/repository/maven-snapshots/"
+                    if (isSNAPSHOT) "https://central.sonatype.com/repository/maven-snapshots/"
                     else "https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/"
                 )
                 println("> publish.url: $url")
