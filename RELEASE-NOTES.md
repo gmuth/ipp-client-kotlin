@@ -10,6 +10,7 @@
 * Support printer firmware attributes: `ippPrinter.printerFirmware`
 * Fixed issue where unknown (not IANA registered) attributes could not be added to a request
 * In publications `module.json` indicate the correct JVM version compatibility
+* Fixed operation codes for ResubmitJob and CloseJob
 
 Previous Versions
 -----------------
