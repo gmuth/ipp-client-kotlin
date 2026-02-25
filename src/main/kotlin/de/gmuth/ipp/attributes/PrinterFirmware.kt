@@ -1,7 +1,7 @@
 package de.gmuth.ipp.attributes
 
 /**
- * Copyright (c) 2025 Gerhard Muth
+ * Copyright (c) 2025-2026 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppAttributesGroup
@@ -23,10 +23,10 @@ class PrinterFirmware(
             val patchesList = getValuesOrNull<List<IppString>>("printer-firmware-patches")
             nameList.indices.map {
                 PrinterFirmware(
-                    nameList[it].text,
-                    versionList[it],
-                    stringVersionList[it].text,
-                    patchesList?.get(it)?.text
+                    name = nameList[it].text,
+                    stringVersion = stringVersionList[it].text,
+                    version = versionList[it],
+                    patches = patchesList?.get(it)?.text
                 )
             }
         }
