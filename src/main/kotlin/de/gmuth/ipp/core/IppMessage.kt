@@ -207,7 +207,7 @@ abstract class IppMessage() {
         if (rawBytes == null) throw IppException("No raw bytes to write. You must call read/decode or write/encode before.")
         else outputStream.write(rawBytes!!)
 
-    fun saveBytes1(file: File) = file.run {
+    fun saveBytes(file: File) = file.run {
         outputStream().use { writeBytes(it) }
         logger.info { "Saved $path (${length()} bytes)" }
     }
