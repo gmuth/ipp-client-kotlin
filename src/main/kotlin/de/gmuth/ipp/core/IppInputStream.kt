@@ -115,7 +115,7 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
         }
 
         Charset -> {
-            Charset.forName(readString())
+            java.nio.charset.Charset.forName(readString())
         }
 
         Uri -> {

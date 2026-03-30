@@ -8,7 +8,7 @@ import org.jetbrains.dokka.gradle.DokkaTask
 // gradle 8? should be done when moved to kotlin.jvm plugin 1.9.x (to remove deprecation warnings)
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.7.22" // https://kotlinlang.org/docs/gradle-configure-project.html
+    id("org.jetbrains.kotlin.jvm") version "2.3.20" // https://kotlinlang.org/docs/gradle-configure-project.html
     id("org.jetbrains.dokka") version "1.7.20"      // https://kotlinlang.org/docs/dokka-get-started.html
     id("org.sonarqube") version "5.0.0.4638"        // https://plugins.gradle.org/plugin/org.sonarqube
     //id("org.sonarqube") version "3.5.0.2730"      // supports java 8, dropped with 4.1
