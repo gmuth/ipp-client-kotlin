@@ -125,7 +125,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
         try {
             exchange(wrap(request, it))
         } catch (throwable: Throwable) {
-            logger.finer(throwable.cause?.toString())
+            logger.finest(throwable.cause?.toString())
         }
     }
 
