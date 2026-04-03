@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2023-2025 Gerhard Muth
+ * Copyright (c) 2023-2026 Gerhard Muth
  */
 
 import de.gmuth.ipp.attributes.*
@@ -10,6 +10,11 @@ import de.gmuth.ipp.core.IppOperation.*
 import java.net.URI
 import java.nio.file.Path
 import java.util.logging.Logger.getLogger
+
+fun main(args: Array<String>) {
+    val printerUri = URI(if (args.isEmpty()) "ipp://localhost:8632/ipp/print/laser" else args[0])
+    IppInspector().inspect(printerUri)
+}
 
 class IppInspector {
 
@@ -70,12 +75,12 @@ class IppInspector {
         }
 
         ippClient.saveMessages = false
-        if(attributes.containsKey("printer-strings-languages-supported")) {
+        if (attributes.containsKey("printer-strings-languages-supported")) {
             logger.info { "> Save all printer strings" }
             saveAllPrinterStrings()
-        } else if(attributes.containsKey("printer-strings-uri")) {
+        } else if (attributes.containsKey("printer-strings-uri")) {
             attributes.getValueOrNull<String>("natural-language-configured")?.also {
-                logger.info { "> Save printer strings for configured language $it"}
+                logger.info { "> Save printer strings for configured language $it" }
                 savePrinterStrings(it)
             }
         }
