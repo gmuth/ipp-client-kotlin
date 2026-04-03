@@ -10,7 +10,7 @@ import org.jetbrains.dokka.gradle.DokkaTask
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.9.25" // https://kotlinlang.org/docs/gradle-configure-project.html
     id("org.jetbrains.dokka") version "1.9.20"      // https://kotlinlang.org/docs/dokka-get-started.html
-    id("org.sonarqube") version "5.1.0.4882"        // https://plugins.gradle.org/plugin/org.sonarqube
+    id("org.sonarqube") version "6.0.1.5171"        // https://plugins.gradle.org/plugin/org.sonarqube
     //id("org.sonarqube") version "3.5.0.2730"      // supports java 8, dropped with 4.1
     id("maven-publish")                             // https://docs.gradle.org/7.6.2/userguide/publishing_maven.html
     id("java-library")                              // https://docs.gradle.org/7.6.2/userguide/java_library_plugin.html
