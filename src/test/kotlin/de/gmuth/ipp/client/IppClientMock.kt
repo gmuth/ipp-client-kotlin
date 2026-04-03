@@ -7,6 +7,7 @@ package de.gmuth.ipp.client
 import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppStatus
+import de.gmuth.log.Logging
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.net.URI
@@ -18,13 +19,8 @@ class IppClientMock(var directory: String = "printers") : IppClient() {
     val logger: Logger = getLogger(javaClass.name)
 
     init {
-        try {
-            // Logging configure()
-            mockResponse(IppResponse(IppStatus.SuccessfulOk))
-        } catch(exception: Exception) {
-            logger.severe("failed to initialize IppClientMock: ${exception.message}")
-            throw exception
-        }
+        Logging.configure()
+        mockResponse(IppResponse(IppStatus.SuccessfulOk))
     }
 
     lateinit var rawResponse: ByteArray
