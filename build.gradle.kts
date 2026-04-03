@@ -4,18 +4,22 @@ import org.jetbrains.dokka.gradle.DokkaTask
 // where is the jar? build/lib/ipp-client-kotlin...jar
 
 // update gradle wrapper
-// ./gradlew wrapper --gradle-version 7.6.6
+// ./gradlew wrapper --gradle-version 8.1.1
+// first check compatibiloty with kotlin gradle plugin
+// https://kotlinlang.org/docs/gradle-configure-project.html#apply-the-plugin
+// 8.1.1 for KGP 1.9.25
 // gradle 8? should be done when moved to kotlin.jvm plugin 1.9.x (to remove deprecation warnings)
+// Gradle 8 requires Java 17
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.9.25" // https://kotlinlang.org/docs/gradle-configure-project.html
+    kotlin("jvm") version "1.9.25" // https://kotlinlang.org/docs/gradle-configure-project.html#targeting-the-jvm
+    //id("org.jetbrains.kotlin.jvm") version "1.9.25" // https://kotlinlang.org/docs/gradle-configure-project.html
     id("org.jetbrains.dokka") version "1.9.20"      // https://kotlinlang.org/docs/dokka-get-started.html
     id("org.sonarqube") version "7.2.2.6593"        // https://plugins.gradle.org/plugin/org.sonarqube
     id("maven-publish")                             // https://docs.gradle.org/7.6.2/userguide/publishing_maven.html
     id("java-library")                              // https://docs.gradle.org/7.6.2/userguide/java_library_plugin.html
     id("signing")                                   // https://docs.gradle.org/7.6.2/userguide/signing_plugin.html
     id("jacoco")                                    // https://docs.gradle.org/7.6.2/userguide/jacoco_plugin.html
-    //kotlin("jvm")
 }
 
 group = "de.gmuth"
@@ -55,19 +59,19 @@ tasks.apply {
     // Hence we explicitly set the Kotlin and Java version here
 
     val javaVersion = "1.8" // JvmTarget.JVM_1_6, default depends on kotlin release
-    val kotlinVersion = "1.9"
+    val kotlinLanguageVersion = "1.9"
 
     // Kotlin
     compileKotlin {
         kotlinOptions {
             jvmTarget = javaVersion
-            languageVersion = kotlinVersion
+            languageVersion = kotlinLanguageVersion
         }
     }
     compileTestKotlin {
         kotlinOptions {
             jvmTarget = javaVersion
-            languageVersion = kotlinVersion
+            languageVersion = kotlinLanguageVersion
         }
     }
 
@@ -221,6 +225,7 @@ tasks.jacocoTestReport {
         xml.required.set(true)
         csv.required.set(false)
         html.required.set(false)
+        // html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
     }
 }
 
