@@ -1,4 +1,4 @@
-# ipp-client v3.5
+# ipp-client v3.6-SNAPSHOT
 
 A client implementation of the ipp protocol for java and kotlin.
 RFCs 
@@ -13,7 +13,7 @@ RFCs
 [![Build](https://github.com/gmuth/ipp-client-kotlin/workflows/build/badge.svg)](https://github.com/gmuth/ipp-client-kotlin/actions?query=workflow%3Abuild)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=gmuth_ipp-client-kotlin&metric=alert_status)](https://sonarcloud.io/summary/overall?id=gmuth_ipp-client-kotlin)
 [![Sonar Coverage](https://img.shields.io/sonar/coverage/gmuth_ipp-client-kotlin?color=00AA00&server=https%3A%2F%2Fsonarcloud.io)](https://sonarcloud.io/component_measures?metric=Coverage&view=list&id=gmuth_ipp-client-kotlin)
-[![Maven Central](https://img.shields.io/maven-central/v/de.gmuth/ipp-client.svg?label=maven%20central)](https://central.sonatype.com/artifact/de.gmuth/ipp-client/3.5/overview)
+[![Maven Central](https://img.shields.io/maven-central/v/de.gmuth/ipp-client.svg?label=maven%20central)](https://central.sonatype.com/artifact/de.gmuth/ipp-client/3.6/overview)
 
 ## Usage
 
@@ -23,7 +23,7 @@ supports printer lookup by queue name.
 Repository [ipp-samples](https://github.com/gmuth/ipp-samples) contains examples how to use jmDNS.
 
 ```
-implementation("de.gmuth:ipp-client:3.5")
+implementation("de.gmuth:ipp-client:3.6")
 ```
 
 [README.md for version 2.x](https://github.com/gmuth/ipp-client-kotlin/blob/2.5/README.md) is still available.

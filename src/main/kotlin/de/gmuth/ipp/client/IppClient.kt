@@ -81,7 +81,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
 
     init {
         logger.info { "IppClient ${Manifest.mavenCoordinates}" }
-        if (Manifest.checksum() != "255fb2fe539bf1a0b090420bc11c999fb187ec6ff3a4b022d10ab0b6b19be76f") {
+        if (Manifest.checksum() != "e4d75c8f5931ffac895a17c69357dd4fa8e2fc488801b98b5b6c8fd26296fc50") {
             throw IppException("Invalid maven artifact")
         }
     }

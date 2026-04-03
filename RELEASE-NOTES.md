@@ -1,3 +1,9 @@
+
+3.6
+---
+
+* Upgrated to Kotlin 1.9
+
 3.5
 ---
 

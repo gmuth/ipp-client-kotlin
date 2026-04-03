@@ -8,9 +8,9 @@ import org.jetbrains.dokka.gradle.DokkaTask
 // gradle 8? should be done when moved to kotlin.jvm plugin 1.9.x (to remove deprecation warnings)
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.8.22" // https://kotlinlang.org/docs/gradle-configure-project.html
-    id("org.jetbrains.dokka") version "1.8.20"      // https://kotlinlang.org/docs/dokka-get-started.html
-    id("org.sonarqube") version "5.0.0.4638"        // https://plugins.gradle.org/plugin/org.sonarqube
+    id("org.jetbrains.kotlin.jvm") version "1.9.25" // https://kotlinlang.org/docs/gradle-configure-project.html
+    id("org.jetbrains.dokka") version "1.9.20"      // https://kotlinlang.org/docs/dokka-get-started.html
+    id("org.sonarqube") version "5.1.0.4882"        // https://plugins.gradle.org/plugin/org.sonarqube
     //id("org.sonarqube") version "3.5.0.2730"      // supports java 8, dropped with 4.1
     id("maven-publish")                             // https://docs.gradle.org/7.6.2/userguide/publishing_maven.html
     id("java-library")                              // https://docs.gradle.org/7.6.2/userguide/java_library_plugin.html
@@ -20,7 +20,7 @@ plugins {
 }
 
 group = "de.gmuth"
-version = "3.5"
+version = "3.6-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -56,7 +56,7 @@ tasks.apply {
     // Hence we explicitly set the Kotlin and Java version here
 
     val javaVersion = "1.8" // JvmTarget.JVM_1_6, default depends on kotlin release
-    val kotlinVersion = "1.8"
+    val kotlinVersion = "1.9"
 
     // Kotlin
     compileKotlin {
