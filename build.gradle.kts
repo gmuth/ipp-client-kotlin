@@ -8,8 +8,8 @@ import org.jetbrains.dokka.gradle.DokkaTask
 // gradle 8? should be done when moved to kotlin.jvm plugin 1.9.x (to remove deprecation warnings)
 
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.7.22" // https://kotlinlang.org/docs/gradle-configure-project.html
-    id("org.jetbrains.dokka") version "1.7.20"      // https://kotlinlang.org/docs/dokka-get-started.html
+    id("org.jetbrains.kotlin.jvm") version "1.8.22" // https://kotlinlang.org/docs/gradle-configure-project.html
+    id("org.jetbrains.dokka") version "1.8.20"      // https://kotlinlang.org/docs/dokka-get-started.html
     id("org.sonarqube") version "5.0.0.4638"        // https://plugins.gradle.org/plugin/org.sonarqube
     //id("org.sonarqube") version "3.5.0.2730"      // supports java 8, dropped with 4.1
     id("maven-publish")                             // https://docs.gradle.org/7.6.2/userguide/publishing_maven.html
@@ -35,6 +35,15 @@ dependencies {
 // gradlew clean -x test build publishToMavenLocal
 defaultTasks("assemble")
 
+//tasks.withType<KotlinCompile>().configureEach {
+    //kotlinOptions {
+    //    jvmTarget = "1.8"
+    //}
+//}
+
+//kotlin {
+    //jvmToolchain(17)
+//}
 // https://docs.gradle.org/current/userguide/compatibility.html
 tasks.apply {
 
@@ -47,7 +56,7 @@ tasks.apply {
     // Hence we explicitly set the Kotlin and Java version here
 
     val javaVersion = "1.8" // JvmTarget.JVM_1_6, default depends on kotlin release
-    val kotlinVersion = "1.7"
+    val kotlinVersion = "1.8"
 
     // Kotlin
     compileKotlin {
@@ -78,7 +87,8 @@ tasks.apply {
             attributes(
                 "Maven-Artifact-Name" to project.name,
                 "Maven-Artifact-Group" to project.group,
-                "Maven-Artifact-Version" to project.version
+                "Maven-Artifact-Version" to project.version,
+                "Maven-Checksum" to "255fb2fe539bf1a0b090420bc11c999fb187ec6ff3a4b02dd10ab0b6b19be76f"
             )
         }
     }
@@ -200,7 +210,7 @@ println("isRunningOnGithub=$isRunningOnGithub")
 // https://docs.gradle.org/current/userguide/jacoco_plugin.html
 jacoco {
     // https://mvnrepository.com/artifact/org.jacoco/jacoco-maven-plugin
-    toolVersion = "0.8.11"
+    toolVersion = "0.8.14"
 }
 
 // required for sonarqube code coverage

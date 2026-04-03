@@ -1,17 +1,15 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020-2025 Gerhard Muth
+ * Copyright (c) 2020-2026 Gerhard Muth
  */
 
+import de.gmuth.ipp.Manifest
 import de.gmuth.ipp.client.IppOperationException.ClientErrorNotFoundException
-import de.gmuth.ipp.core.IppOperation
-import de.gmuth.ipp.core.IppRequest
-import de.gmuth.ipp.core.IppResponse
+import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppStatus.ClientErrorBadRequest
 import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import de.gmuth.ipp.core.IppTag.Unsupported
-import de.gmuth.ipp.core.appendAttributeIfGroupContainsKey
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import java.io.ByteArrayInputStream
 import java.io.IOException
@@ -32,7 +30,6 @@ import kotlin.io.path.createTempDirectory
 typealias IppResponseInterceptor = (request: IppRequest, response: IppResponse) -> Unit
 
 open class IppClient(val config: IppConfig = IppConfig()) {
-    protected val logger: Logger = getLogger(javaClass.name)
 
     var responseInterceptor: IppResponseInterceptor? = null
     var saveEvents: Boolean = false
@@ -52,7 +49,14 @@ open class IppClient(val config: IppConfig = IppConfig()) {
     }
 
     companion object {
+        @JvmStatic
+        protected val logger: Logger = getLogger(IppClient::class.java.name)
         const val APPLICATION_IPP = "application/ipp"
+        protected val mavenChecksum: String = Manifest.mainAttributes.getValue("Maven-Checksum")
+
+        init {
+            logger.info { "IppClient ${Manifest.mavenCoordinates}" }
+        }
     }
 
     //-----------------
@@ -79,6 +83,12 @@ open class IppClient(val config: IppConfig = IppConfig()) {
         naturalLanguage,
         config.userAgent
     )
+
+    init {
+        if (Manifest.checksum() != "255fb2fe539bf1a0b090420bc11c999fb187ec6ff3a4b022d10ab0b6b19be76f") {
+            throw IppException("Invalid maven artifact")
+        }
+    }
 
     fun wrap(request: IppRequest, response: IppResponse): IppRequest = ippRequest(request.operation)
         .apply { documentInputStream = ByteArrayInputStream(response.rawBytes) }
