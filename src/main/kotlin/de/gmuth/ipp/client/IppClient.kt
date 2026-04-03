@@ -30,6 +30,7 @@ import kotlin.io.path.createTempDirectory
 typealias IppResponseInterceptor = (request: IppRequest, response: IppResponse) -> Unit
 
 open class IppClient(val config: IppConfig = IppConfig()) {
+    protected val logger: Logger = getLogger(javaClass.name)
 
     var responseInterceptor: IppResponseInterceptor? = null
     var saveEvents: Boolean = false
@@ -49,14 +50,8 @@ open class IppClient(val config: IppConfig = IppConfig()) {
     }
 
     companion object {
-        @JvmStatic
-        protected val logger: Logger = getLogger(IppClient::class.java.name)
         const val APPLICATION_IPP = "application/ipp"
         protected val mavenChecksum: String = Manifest.mainAttributes.getValue("Maven-Checksum")
-
-        init {
-            logger.info { "IppClient ${Manifest.mavenCoordinates}" }
-        }
     }
 
     //-----------------
@@ -85,6 +80,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
     )
 
     init {
+        logger.info { "IppClient ${Manifest.mavenCoordinates}" }
         if (Manifest.checksum() != "255fb2fe539bf1a0b090420bc11c999fb187ec6ff3a4b022d10ab0b6b19be76f") {
             throw IppException("Invalid maven artifact")
         }
