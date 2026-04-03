@@ -2,7 +2,8 @@
 3.6
 ---
 
-* Upgrated to Kotlin 1.9
+* Upgraded to Kotlin 1.9
+* Upgraded to Gradle 8.8
 
 3.5
 ---

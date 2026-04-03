@@ -4,7 +4,7 @@ import org.jetbrains.dokka.gradle.DokkaTask
 // where is the jar? build/lib/ipp-client-kotlin...jar
 
 // update gradle wrapper
-// ./gradlew wrapper --gradle-version 8.1.1
+// ./gradlew wrapper --gradle-version 8.14.4
 // first check compatibiloty with kotlin gradle plugin
 // https://kotlinlang.org/docs/gradle-configure-project.html#apply-the-plugin
 // 8.1.1 for KGP 1.9.25
