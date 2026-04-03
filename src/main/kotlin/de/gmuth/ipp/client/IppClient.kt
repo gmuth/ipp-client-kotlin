@@ -30,7 +30,7 @@ import kotlin.io.path.createTempDirectory
 typealias IppResponseInterceptor = (request: IppRequest, response: IppResponse) -> Unit
 
 open class IppClient(val config: IppConfig = IppConfig()) {
-    protected val logger: Logger = getLogger(javaClass.name)
+    private val logger: Logger = getLogger(javaClass.name)
 
     var responseInterceptor: IppResponseInterceptor? = null
     var saveEvents: Boolean = false

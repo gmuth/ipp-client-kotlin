@@ -1,22 +1,30 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2023 Gerhard Muth
+ * Copyright (c) 2023-2026 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppRequest
 import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppStatus
-import de.gmuth.log.Logging
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.net.URI
+import java.util.logging.Logger
+import java.util.logging.Logger.getLogger
 
 class IppClientMock(var directory: String = "printers") : IppClient() {
 
+    val logger: Logger = getLogger(javaClass.name)
+
     init {
-        Logging.configure()
-        mockResponse(IppResponse(IppStatus.SuccessfulOk))
+        try {
+            // Logging configure()
+            mockResponse(IppResponse(IppStatus.SuccessfulOk))
+        } catch(exception: Exception) {
+            logger.severe("failed to initialize IppClientMock: ${exception.message}")
+            throw exception
+        }
     }
 
     lateinit var rawResponse: ByteArray
