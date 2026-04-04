@@ -12,7 +12,7 @@ class CupsDevice(
     val id: String,
     val uri: URI,
     val info: String,
-    val _class: String,
+    val deviceClass: String,
     val location: String,
     val makeAndModel: String
 ) {
@@ -28,7 +28,7 @@ class CupsDevice(
     override fun toString() = StringBuilder().run {
         append(info)
         append(", $makeAndModel")
-        append(", class=\"$_class\"")
+        append(", class=\"$deviceClass\"")
         append(", uri=\"$uri\"")
         if (location.isNotEmpty()) append(", location=$location")
         if (id.isNotEmpty()) append(", id=\"$id\"")
