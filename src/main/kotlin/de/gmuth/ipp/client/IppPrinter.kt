@@ -649,7 +649,7 @@ open class IppPrinter(
 
     fun exchange(request: IppRequest): IppResponse = request.run {
         checkIfValueIsSupported("ipp-versions", version!!, throwIfSupportedAttributeIsNotAvailable)
-        checkIfValueIsSupported("operations", code!!.toInt(), throwIfSupportedAttributeIsNotAvailable)
+        checkIfValueIsSupported("operations", code!!, throwIfSupportedAttributeIsNotAvailable)
         checkIfValueIsSupported("charset", attributesCharset, throwIfSupportedAttributeIsNotAvailable)
         ippClient.exchange(this)
     }
