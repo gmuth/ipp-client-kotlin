@@ -20,6 +20,7 @@ import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Files.newOutputStream
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.time.Duration
 import java.time.Instant
 import java.time.Instant.now
@@ -29,7 +30,6 @@ import java.util.logging.Level
 import java.util.logging.Level.*
 import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
-import kotlin.io.path.Path
 import kotlin.io.path.createTempDirectory
 
 @SuppressWarnings("kotlin:S1192")
@@ -116,7 +116,7 @@ open class IppPrinter(
     private fun configurePrinterDirectory() {
         printerDirectory =
             if (attributes.isEmpty()) createTempDirectory()
-            else Path.of((if (isCups()) "CUPS_" else "") + makeAndModel.text.replace("\\s+".toRegex(), "_"))
+            else Paths.get((if (isCups()) "CUPS_" else "") + makeAndModel.text.replace("\\s+".toRegex(), "_"))
         ippClient.saveMessagesDirectory =
             printerDirectory.resolve(ofPattern("yyyyMMdd-HHmmss").format(LocalDateTime.now()))
     }
@@ -700,7 +700,7 @@ open class IppPrinter(
     fun savePrinterAttributes() =
         exchange(ippRequest(GetPrinterAttributes)).run {
             val name = if (attributes.containsKey("printer-make-and-model")) makeAndModel.text
-            else printerUri.host.also { printerDirectory = Path("") }
+            else printerUri.host.also { printerDirectory = Paths.get("") }
             saveBytes(printerDirectory.resolve("$name.bin"))
             printerGroup.saveText(printerDirectory.resolve("$name.txt"))
         }
