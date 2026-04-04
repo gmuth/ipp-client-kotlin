@@ -694,7 +694,7 @@ open class IppPrinter(
     }
 
     @JvmOverloads
-    fun log(logger: Logger, level: Level = INFO) =
+    open fun log(logger: Logger, level: Level = INFO) =
         attributes.log(logger, level, title = "PRINTER $name ($makeAndModel)")
 
     // ----------------------------------------------------------
