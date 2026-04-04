@@ -232,11 +232,6 @@ From version 3.0 onwards the library
 uses [Java Logging](https://docs.oracle.com/javase/8/docs/technotes/guides/logging/overview.html) - configure as you
 like.
 Tests can use Logging.configure() to load logging.properties from test/resources.
-The behaviour of my previously
-used [ConsoleLogger](https://github.com/gmuth/logging-kotlin/blob/main/src/main/kotlin/de/gmuth/log/ConsoleLogger.kt) is
-now implemented by StdoutHandler and SimpleClassNameFormatter.
-I moved all of my custom logging code to its own
-repository [logging-kotlin](https://github.com/gmuth/logging-kotlin/tree/main/src/main/kotlin/de/gmuth/log).
 
 To debug printer communication change the log level of IppClient:
 ```
@@ -247,7 +242,7 @@ de.gmuth.ipp.client.IppClient.level=FINEST
 
 ## Sources
 
-To build the jar make sure you have JDK 11 installed.
+To build the jar make sure you have JDK 17 installed.
 The default tasks build the jar in `build/libs`.
 
     ./gradlew
@@ -261,6 +256,7 @@ The build produces the jar, sources and javadoc artifacts. This software has **n
 [CUPS](https://www.cups.org) or
 [ipptool](https://www.cups.org/doc/man-ipptool.html).
 Operation has mostly been tested for target `jvm`. Android is supported since v1.6.
+Run `buildWithDocker` if you don't want to install a java toolchain.
 
 Package
 [`de.gmuth.ipp.core`](https://github.com/gmuth/ipp-client-kotlin/tree/master/src/main/kotlin/de/gmuth/ipp/core)
