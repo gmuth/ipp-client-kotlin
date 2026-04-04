@@ -1,7 +1,7 @@
 package de.gmuth.ipp.attributes
 
 /**
- * Copyright (c) 2020-2024 Gerhard Muth
+ * Copyright (c) 2020-2026 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppAttributesGroup
@@ -19,7 +19,7 @@ import de.gmuth.ipp.core.IppCollection
  * Unit: 1/100 mm, e.g. 2540 = 1 inch
  */
 
-class MediaSizeSupported(val supportedSizes: Collection<SupportedSize>) {
+data class MediaSizeSupported(val supportedSizes: Collection<SupportedSize>) {
 
     companion object {
         fun fromAttributes(attributes: IppAttributesGroup) = MediaSizeSupported(

@@ -1,7 +1,7 @@
 package de.gmuth.ipp.attributes
 
 /**
- * Copyright (c) 2020-2023 Gerhard Muth
+ * Copyright (c) 2020-2026 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppAttributesGroup
@@ -9,7 +9,7 @@ import de.gmuth.ipp.core.IppString
 import java.util.logging.Logger.getLogger
 
 // https://www.cups.org/doc/spec-ipp.html
-class Marker(
+data class Marker(
     val type: String,
     val name: String,
     val level: Int,
