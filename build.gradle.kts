@@ -31,6 +31,7 @@ repositories {
     mavenCentral()
 }
 
+// Default kotlin-stdlib depends on kotlin gradle plugin, explicitly downgrade to support kotlin >= 1.9
 val kotlinStdLibVersion = "1.9.25"
 
 dependencies {
@@ -38,7 +39,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinStdLibVersion")
 }
 
-// Messing up KGP dependencies
+// Messing with KGP dependencies
 //configurations.all {
 //    resolutionStrategy.eachDependency {
 //        if (requested.group == "org.jetbrains.kotlin") {
@@ -101,7 +102,7 @@ tasks.apply {
                 "Maven-Artifact-Name" to project.name,
                 "Maven-Artifact-Group" to project.group,
                 "Maven-Artifact-Version" to project.version,
-                "Maven-Checksum" to "255fb2fe539bf1a0b090420bc11c999fb187ec6ff3a4b02dd10ab0b6b19be76f"
+                "Maven-Checksum" to "355fb2fe539bf1a0b090420bc11c999fb187ec6ff3a4b02dd10ab0b6b19bf76f"
             )
         }
     }
