@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020-2025 Gerhard Muth
+ * Copyright (c) 2020-2026 Gerhard Muth
  */
 
 import de.gmuth.ipp.attributes.*
@@ -352,8 +352,12 @@ open class IppPrinter(
     fun releaseHeldNewJobs() = exchange(ippRequest(ReleaseHeldNewJobs))
     fun cancelJobs() = exchange(ippRequest(CancelJobs))
     fun cancelMyJobs() = exchange(ippRequest(CancelMyJobs))
+
     fun cupsAcceptJobs() = exchange(ippRequest(CupsAcceptJobs))
+        .also { updateAttributes("printer-is-accepting-jobs") }
+
     fun cupsRejectJobs() = exchange(ippRequest(CupsRejectJobs))
+        .also { updateAttributes("printer-is-accepting-jobs") }
 
     fun cupsGetPPD(copyTo: OutputStream? = null) = exchange(ippRequest(CupsGetPPD))
         .apply { copyTo?.let { documentInputStream!!.copyTo(it) } }
