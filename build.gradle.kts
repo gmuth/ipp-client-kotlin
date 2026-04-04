@@ -49,7 +49,7 @@ dependencies {
 //}
 
 // gradlew clean -x test build publishToMavenLocal
-defaultTasks("assemble")
+defaultTasks("publishToMavenLocal")
 
 //kotlin {
     //jvmToolchain(17)
