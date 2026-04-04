@@ -7,7 +7,7 @@ package de.gmuth.ipp.attributes
 import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppString
 
-class PrinterFirmware(
+data class PrinterFirmware(
     val name: String,
     val stringVersion: String,
     val version: String, // octetString

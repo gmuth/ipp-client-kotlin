@@ -1,14 +1,14 @@
 package de.gmuth.ipp.attributes
 
 /**
- * Copyright (c) 2021-2023 Gerhard Muth
+ * Copyright (c) 2021-2026 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppAttributesGroup
 import java.net.URI
 
 // RFC 8011, page 26
-class CommunicationChannel(
+data class CommunicationChannel(
     val uri: URI,
     val security: String,
     val authentication: String
