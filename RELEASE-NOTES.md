@@ -2,7 +2,7 @@
 3.6
 ---
 
-* support CupsGetDevices operation
+* Support CUPS operations: `CupsGetDevices`, `CupsGetClasses`
 * Update `printer-is-accepting-jobs` attribute after `CupsAcceptJobs` or `CupsRejectJobs` operation
 * Upgraded to Gradle 9.3.0
 * Upgraded to Kotlin Gradle Plugin 2.2.21
