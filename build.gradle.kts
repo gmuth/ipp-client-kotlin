@@ -11,6 +11,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinVersion.*
 // 8.1.1 for KGP 1.9.25
 // gradle 8? should be done when moved to kotlin.jvm plugin 1.9.x (to remove deprecation warnings)
 // Gradle 8 requires Java 17
+// support Kotlin 1.9
 
 plugins {
     kotlin("jvm") version "2.2.21" // https://kotlinlang.org/docs/gradle-configure-project.html#targeting-the-jvm
@@ -30,24 +31,29 @@ repositories {
     mavenCentral()
 }
 
+val kotlinStdLibVersion = "1.9.25"
+
 dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test")
-    //testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
-    //implementation(kotlin("stdlib-jdk8"))
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinStdLibVersion")
 }
+
+// Messing up KGP dependencies
+//configurations.all {
+//    resolutionStrategy.eachDependency {
+//        if (requested.group == "org.jetbrains.kotlin") {
+//            useVersion("1.9.25")
+//        }
+//    }
+//}
 
 // gradlew clean -x test build publishToMavenLocal
 defaultTasks("assemble")
 
-//tasks.withType<KotlinCompile>().configureEach {
-    //kotlinOptions {
-    //    jvmTarget = "1.8"
-    //}
-//}
-
 //kotlin {
     //jvmToolchain(17)
 //}
+
 // https://docs.gradle.org/current/userguide/compatibility.html
 tasks.apply {
 
@@ -59,21 +65,23 @@ tasks.apply {
     // compatible with Java 21 and the consumer needed a component, compatible with Java 17"
     // Hence we explicitly set the Kotlin and Java version here
 
-    val kotlinLanguageVersion = KOTLIN_2_2
-    val javaTarget = JVM_1_8 // default depends on kotlin release
+    val kotlinVersion = KOTLIN_1_9 // also adjust kotlinStdLibVersion
+    val javaTarget = JVM_1_8 // default is 17
     val javaVersion = JavaVersion.VERSION_1_8.toString()
 
     // Kotlin
     compileKotlin {
         compilerOptions {
             jvmTarget = javaTarget
-            languageVersion = kotlinLanguageVersion
+            languageVersion = kotlinVersion
+            apiVersion = kotlinVersion
         }
     }
     compileTestKotlin {
         compilerOptions {
             jvmTarget = javaTarget
-            languageVersion = kotlinLanguageVersion
+            languageVersion = kotlinVersion
+            apiVersion = kotlinVersion
         }
     }
 
