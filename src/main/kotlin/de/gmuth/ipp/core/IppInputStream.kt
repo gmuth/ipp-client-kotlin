@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2023 Gerhard Muth
+ * Copyright (c) 2020-2026 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppTag.*
@@ -115,7 +115,7 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
         }
 
         Charset -> {
-            Charset.forName(readString())
+            java.nio.charset.Charset.forName(readString())
         }
 
         Uri -> {
