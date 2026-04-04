@@ -12,7 +12,7 @@ class CupsDevice(
     val id: String,
     val uri: URI,
     val info: String,
-    val deviceClass: String,
+    val deviceClass: String, // file, direct, serial, network
     val location: String,
     val makeAndModel: String
 ) {

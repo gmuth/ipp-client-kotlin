@@ -376,9 +376,16 @@ open class CupsClient(
     // Get Devices
     // -----------
 
-    fun getDevices() =
-        exchange(ippRequest(CupsGetDevices))
-            .getAttributesGroups(Printer)
-            .map { CupsDevice(it) }
+    fun getDevices() = exchange(ippRequest(CupsGetDevices))
+        .getAttributesGroups(Printer)
+        .map { CupsDevice(it) }
+
+    // -----------
+    // Get Classes
+    // -----------
+
+    fun getClasses() = exchange(ippRequest(CupsGetClasses))
+        .getAttributesGroups(Printer)
+        .map { CupsClass(it, ippClient) }
 
 }
