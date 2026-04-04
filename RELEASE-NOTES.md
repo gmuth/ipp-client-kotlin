@@ -3,7 +3,8 @@
 ---
 
 * Upgraded to Kotlin 1.9
-* Upgraded to Gradle 8.8
+* Upgraded to Gradle 8.14
+* Experimental support for Java 8
 
 3.5
 ---
