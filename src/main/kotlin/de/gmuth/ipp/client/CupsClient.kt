@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020-2025 Gerhard Muth
+ * Copyright (c) 2020-2026 Gerhard Muth
  */
 
 import de.gmuth.ipp.client.IppOperationException.ClientErrorNotFoundException
@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.logging.Logger.getLogger
 
 // https://www.cups.org/doc/spec-ipp.html
-class CupsClient(
+open class CupsClient(
     val cupsUri: URI = URI.create("ipps://localhost"),
     val ippClient: IppClient = IppClient()
 ) {
@@ -87,13 +87,11 @@ class CupsClient(
             throw clientErrorNotFoundException
         }
 
-    fun getDefault() = IppPrinter(
-        exchange(ippRequest(CupsGetDefault)).printerGroup, ippClient
-    )
+    fun getDefault() =
+        IppPrinter(exchange(ippRequest(CupsGetDefault)).printerGroup, ippClient)
 
-    fun setDefault(printerName: String) = exchange(
-        cupsPrinterRequest(CupsSetDefault, printerName)
-    )
+    fun setDefault(printerName: String) =
+        exchange(cupsPrinterRequest(CupsSetDefault, printerName))
 
     // https://www.cups.org/doc/spec-ipp.html#CUPS_ADD_MODIFY_PRINTER
     fun addModifyPrinter(
@@ -167,7 +165,7 @@ class CupsClient(
     // Build request for a named CUPS printer
     // --------------------------------------
 
-    private fun cupsPrinterRequest(
+    protected fun cupsPrinterRequest(
         operation: IppOperation,
         printerName: String,
         deviceUri: URI? = null,
@@ -194,10 +192,10 @@ class CupsClient(
     fun basicAuth(user: String, password: String) =
         ippClient.basicAuth(user, password)
 
-    private fun ippRequest(operation: IppOperation, printerURI: URI = cupsUri) =
+    protected fun ippRequest(operation: IppOperation, printerURI: URI = cupsUri) =
         ippClient.ippRequest(operation, printerURI)
 
-    private fun exchange(ippRequest: IppRequest) =
+    protected fun exchange(ippRequest: IppRequest) =
         ippClient.exchange(ippRequest).also { this.httpServer = it.httpServer }
 
     var httpServer: String? = null // from response after message exchange
@@ -373,4 +371,14 @@ class CupsClient(
                 }
             }
     }
+
+    // -----------
+    // Get Devices
+    // -----------
+
+    fun getDevices() =
+        exchange(ippRequest(CupsGetDevices))
+            .getAttributesGroups(Printer)
+            .map { CupsDevice(it) }
+
 }
