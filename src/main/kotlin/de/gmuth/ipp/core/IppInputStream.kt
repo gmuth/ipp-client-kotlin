@@ -9,7 +9,6 @@ import java.io.BufferedInputStream
 import java.io.DataInputStream
 import java.io.EOFException
 import java.net.URI
-import java.nio.charset.Charset
 import java.util.logging.Logger.getLogger
 
 class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputStream) {
@@ -21,7 +20,7 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
     internal val logger = getLogger(javaClass.name)
 
     // character encoding for text and name attributes, RFC 8011 4.1.4.1
-    internal lateinit var attributesCharset: Charset
+    internal lateinit var attributesCharset: java.nio.charset.Charset
 
     fun readMessage(message: IppMessage) {
         with(message) {
@@ -81,7 +80,7 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
             }
         }
         // remember attributes-charset for name and text value decoding
-        if (name == "attributes-charset") attributesCharset = value as Charset
+        if (name == "attributes-charset") attributesCharset = value as java.nio.charset.Charset
     }
 
     internal fun readAttributeValue(tag: IppTag): Any = when (tag) {
@@ -210,7 +209,7 @@ class IppInputStream(inputStream: BufferedInputStream) : DataInputStream(inputSt
     }
 
     // RFC 8011 4.1.4.1 -> use attributes-charset
-    internal fun readString(charset: Charset = Charsets.US_ASCII) =
+    internal fun readString(charset: java.nio.charset.Charset = Charsets.US_ASCII) =
         String(readLengthAndValue(), charset)
             .also { logger.finest { "readString($charset): \"$it\"" } }
 
