@@ -1,7 +1,7 @@
 package de.gmuth.ipp.attributes
 
 /**
- * Copyright (c) 2020-2025 Gerhard Muth
+ * Copyright (c) 2020-2026 Gerhard Muth
  */
 
 enum class Orientation(val code: Int) {
@@ -12,6 +12,6 @@ enum class Orientation(val code: Int) {
     None(7); // PWG 5100.13
 
     companion object {
-        fun fromInt(code: Int) = values().single { it.code == code }
+        fun fromInt(code: Int) = entries.single { it.code == code }
     }
 }

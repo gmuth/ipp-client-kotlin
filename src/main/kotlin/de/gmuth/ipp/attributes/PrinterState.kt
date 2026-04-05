@@ -6,7 +6,7 @@ import de.gmuth.ipp.core.IppAttributesGroup
 import de.gmuth.ipp.core.IppTag
 
 /**
- * Copyright (c) 2020-2023 Gerhard Muth
+ * Copyright (c) 2020-2026 Gerhard Muth
  */
 
 enum class PrinterState(val code: Int) : IppAttributeBuilder {
@@ -22,7 +22,7 @@ enum class PrinterState(val code: Int) : IppAttributeBuilder {
         IppAttribute("printer-state", IppTag.Enum, code)
 
     companion object {
-        fun fromInt(code: Int) = values().single { it.code == code }
+        fun fromInt(code: Int) = entries.single { it.code == code }
     }
 
 }

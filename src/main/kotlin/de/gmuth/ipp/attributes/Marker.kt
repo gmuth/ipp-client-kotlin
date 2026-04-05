@@ -37,7 +37,7 @@ data class Marker(
 
         companion object {
             private val logger = getLogger(Color::class.java.name)
-            fun fromString(code: String) = values().find { it.code == code.uppercase() }
+            fun fromString(code: String) = entries.find { it.code == code.uppercase() }
                 ?: UNKNOWN.apply { logger.warning { "Unknown color code: $code" } }
         }
     }
