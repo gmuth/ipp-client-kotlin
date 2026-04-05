@@ -15,7 +15,6 @@ import de.gmuth.ipp.core.IppTag.*
 import java.io.File
 import java.io.InputStream
 import java.net.URI
-import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicInteger
@@ -47,7 +46,7 @@ open class CupsClient(
     }
 
     private fun cupsPrinterUri(printerName: String) =
-        cupsUri.run { URI("$scheme://$host${if (port > 0) ":$port" else ":631"}/printers/$printerName") }
+        cupsUri.run { URI("$scheme://$host${if (port > 0) ":$port" else ""}/printers/$printerName") }
             .apply { logger.finer { "cupsPrinterUri($printerName) = $this" } }
 
     val version: String by lazy {
@@ -415,13 +414,17 @@ open class CupsClient(
             throw clientErrorNotFoundException
         }
 
-    fun addModifyClass(className: String, memberUris: List<URI>) = exchange(
-        ippRequest(CupsAddModifyClass, cupsClassUri(className)).apply {
-            createAttributesGroup(Printer).apply {
-                attribute("member-uris", Uri, memberUris)
+    fun createClass(className: String, memberUris: Collection<URI>): CupsPrinterClass {
+        exchange(
+            ippRequest(CupsAddModifyClass, cupsClassUri(className)).apply {
+                createAttributesGroup(Printer).apply {
+                    attribute("member-uris", Uri, memberUris)
+                }
             }
-        }
-    )
+        )
+        logger.info { "Created printer class: $className (${memberUris.size} members)" }
+        return getClass(className)
+    }
 
     fun deleteClass(className: String) =
         exchange(ippRequest(CupsDeleteClass, cupsClassUri(className)))
