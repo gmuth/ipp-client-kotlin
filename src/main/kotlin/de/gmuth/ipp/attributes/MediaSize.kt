@@ -1,7 +1,7 @@
 package de.gmuth.ipp.attributes
 
 /**
- * Copyright (c) 2020-2025 Gerhard Muth
+ * Copyright (c) 2020-2026 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppAttribute
@@ -22,10 +22,7 @@ data class MediaSize(val xDimension: Int, val yDimension: Int) : IppAttributeBui
         )
     )
 
-    override fun toString() = StringBuilder().run {
-        append("${xDimension}x${yDimension}")
-        toString()
-    }
+    override fun toString() = "${xDimension}x${yDimension}"
 
     fun equalsByDimensions(other: MediaSize) =
         compareByDimensions.compare(this, other) == 0
