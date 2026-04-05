@@ -72,26 +72,26 @@ class CupsPrinterClass(
         }
     )
 
-    private fun updateMemberAttrbites() =
+    fun updateMemberAttributes() =
         updateAttributes("member-uris", "member-names")
 
     fun addMembers(printerUris: Collection<URI>) =
         addModifyClass(memberUris + printerUris).apply {
-            updateMemberAttrbites()
             logger.info { "Added members: ${printerUris.joinToString(", ")}" }
+            updateMemberAttributes()
         }
 
-    fun addMember(printerUri: URI) =
-        addMembers(listOf(printerUri))
+    fun addMember(printerUri: URI) = addMembers(listOf(printerUri))
+    fun addMember(printer: IppPrinter) = addMember(printer.printerUri)
 
     fun removeMembers(printerUris: Collection<URI>) =
         addModifyClass(memberUris - printerUris).apply {
-            updateMemberAttrbites()
             logger.info { "Removed members: ${printerUris.joinToString(", ")}" }
+            updateMemberAttributes()
         }
 
-    fun removeMember(printerUri: URI) =
-        removeMembers(listOf(printerUri))
+    fun removeMember(printerUri: URI) = removeMembers(listOf(printerUri))
+    fun removeMember(printer: IppPrinter) = removeMember(printer.printerUri)
 
     override fun log(logger: Logger, level: Level) {
         logger.log(level) { toString() }

@@ -386,14 +386,13 @@ open class CupsClient(
         .getAttributesGroups(Printer)
         .map { CupsDevice(it) }
 
-    // -----------
-    // Get Classes
-    // -----------
+    // ------------------------
+    // Printer class operations
+    // ------------------------
 
     fun getClasses() = exchange(ippRequest(CupsGetClasses))
         .getAttributesGroups(Printer)
         .map { CupsPrinterClass(it, cupsClient = this) }
-
 
     private fun cupsClassUri(className: String) =
         cupsUri.run { URI("$scheme://$host${if (port > 0) ":$port" else ""}/classes/$className") }
@@ -425,6 +424,10 @@ open class CupsClient(
         logger.info { "Created printer class: $className (${memberUris.size} members)" }
         return getClass(className)
     }
+
+    @JvmName("createClassByIppPrinters")
+    fun createClass(className: String, members: Collection<IppPrinter>) =
+        createClass(className, members.map { it.printerUri })
 
     fun deleteClass(className: String) =
         exchange(ippRequest(CupsDeleteClass, cupsClassUri(className)))
