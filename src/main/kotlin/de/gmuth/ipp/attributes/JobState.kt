@@ -1,7 +1,7 @@
 package de.gmuth.ipp.attributes
 
 /**
- * Copyright (c) 2020-2023 Gerhard Muth
+ * Copyright (c) 2020-2026 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppAttribute
@@ -35,7 +35,7 @@ enum class JobState(val code: Int, private val registeredName: String) : IppAttr
         IppAttribute("job-state", IppTag.Enum, code)
 
     companion object {
-        private fun fromInt(code: Int) = values().single { it.code == code }
+        private fun fromInt(code: Int) = entries.single { it.code == code }
         fun fromAttributes(attributes: IppAttributesGroup) = fromInt(attributes.getValue("job-state"))
     }
 

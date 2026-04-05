@@ -1,7 +1,7 @@
 package de.gmuth.ipp.attributes
 
 /**
- * Copyright (c) 2020-2024 Gerhard Muth
+ * Copyright (c) 2020-2026 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppAttribute
@@ -49,7 +49,7 @@ class PrinterType(val value: Int) : IppAttributeBuilder {
     }
 
     fun toSet(): Set<Capability> =
-        Capability.values().filter { value.and(it.value) != 0 }.toSet()
+        Capability.entries.filter { value.and(it.value) != 0 }.toSet()
 
     fun contains(capability: Capability) =
         toSet().contains(capability)

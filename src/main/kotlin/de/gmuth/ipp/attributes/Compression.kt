@@ -1,7 +1,7 @@
 package de.gmuth.ipp.attributes
 
 /**
- * Copyright (c) 2024 Gerhard Muth
+ * Copyright (c) 2024-2026 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.IppAttribute
@@ -26,8 +26,7 @@ enum class Compression(val keyword: String) : IppAttributeBuilder {
         IppAttribute("compression", Keyword, keyword)
 
     companion object {
-        fun fromString(string: String) =
-            Compression.values().single { it.keyword == string }
+        fun fromString(string: String) = entries.single { it.keyword == string }
     }
 
     fun getCompressingOutputStream(outputStream: OutputStream) = when (this) {
