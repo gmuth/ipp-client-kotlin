@@ -39,7 +39,7 @@ class CupsPrinterClass(
         val name: String,
         val uri: URI
     ) {
-        val printer: IppPrinter by lazy { printerClass.cupsClient.getPrinter(name) }
+        val printer: IppPrinter by lazy { IppPrinter(uri, ippClient = printerClass.ippClient) }
         override fun toString() = "$name, $uri"
     }
 
@@ -61,7 +61,7 @@ class CupsPrinterClass(
     private val logger = getLogger(javaClass.name)
 
     override fun toString() =
-        "PrinterClass $name (${members.size} members), ${communicationChannelsSupported.first()}"
+        "PrinterClass $name ($state, ${members.size} members), ${communicationChannelsSupported.joinToString(", ")}"
 
     fun addModifyClass(printerUris: Collection<URI>) = exchange(
         ippRequest(CupsAddModifyClass).apply {
@@ -92,6 +92,13 @@ class CupsPrinterClass(
 
     fun removeMember(printerUri: URI) = removeMembers(listOf(printerUri))
     fun removeMember(printer: IppPrinter) = removeMember(printer.printerUri)
+
+    fun delete() = cupsClient.run {
+        getJobs(WhichJobs.NotCompleted).run {
+            if(isNotEmpty()) logger.warning { "Printer class $name has $size active jobs" }
+        }
+        deleteClass(name.text)
+    }
 
     override fun log(logger: Logger, level: Level) {
         logger.log(level) { toString() }
