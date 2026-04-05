@@ -78,7 +78,7 @@ open class IppPrinter(
     }
 
     init {
-        logger.fine { "Create IppPrinter for $printerUri" }
+        logger.fine { "Create IppPrinter for $printerUri (initialized with ${attributes.size} attributes)" }
         requireNotNull(printerUri.scheme) { "URI scheme required" }
         with(printerUri.scheme) {
             require(startsWith("ipp") || startsWith("http")) { "URI scheme unsupported: $this" }
