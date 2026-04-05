@@ -9,6 +9,7 @@ import de.gmuth.ipp.attributes.TemplateAttributes.jobName
 import de.gmuth.ipp.core.IppOperation.*
 import java.net.URI
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.logging.Logger.getLogger
 
 fun main(args: Array<String>) {
@@ -20,7 +21,7 @@ class IppInspector {
 
     companion object {
         const val pdfA4 = "blank_A4.pdf"
-        var inspectorDirectory: Path = Path.of("inspected-printers")
+        var inspectorDirectory: Path = Paths.get("inspected-printers")
         private val logger = getLogger(IppInspector::class.java.name)
         private fun getModel(printerUri: URI) = StringBuilder().run {
             // use another IppPrinter instance to leave request-id-counter untouched

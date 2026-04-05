@@ -16,24 +16,25 @@ import java.io.File
 import java.io.InputStream
 import java.net.URI
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.logging.Logger.getLogger
 
 // https://www.cups.org/doc/spec-ipp.html
 open class CupsClient(
-    val cupsUri: URI = URI.create("ipps://localhost"),
+    val cupsUri: URI = URI.create("ipps://localhost:631"),
     val ippClient: IppClient = IppClient()
 ) {
     @JvmOverloads
-    constructor(cupsUri: URI = URI.create("ipps://localhost")) : this(cupsUri, IppClient())
+    constructor(cupsUri: URI = URI.create("ipps://localhost:631")) : this(cupsUri, IppClient())
 
     private val logger = getLogger(javaClass.name)
     val config: IppConfig by ippClient::config
     var userName: String? by config::userName
 
     var cupsDirectory = with(cupsUri) {
-        Path.of("CUPS" + (if (host in listOf("localhost", "127.0.0.1")) "-" else File.separator) + host)
+        Paths.get("CUPS" + (if (host in listOf("localhost", "127.0.0.1")) "-" else File.separator) + host)
     }
 
     private val cupsServer =
@@ -46,7 +47,7 @@ open class CupsClient(
     }
 
     private fun cupsPrinterUri(printerName: String) =
-        cupsUri.run { URI("$scheme://$host${if (port > 0) ":$port" else ""}/printers/$printerName") }
+        cupsUri.run { URI("$scheme://$host${if (port > 0) ":$port" else ":631"}/printers/$printerName") }
             .apply { logger.finer { "cupsPrinterUri($printerName) = $this" } }
 
     val version: String by lazy {
@@ -60,11 +61,14 @@ open class CupsClient(
         }
     }
 
-    fun getPrinters() =
+    fun getPrinters(): List<IppPrinter> =
         try {
             exchange(ippRequest(CupsGetPrinters))
                 .getAttributesGroups(Printer)
-                .map { IppPrinter(it, ippClient) }
+                .map {
+                    if (it.containsKey("member-names")) CupsPrinterClass(it, this)
+                    else IppPrinter(it, ippClient)
+                }
         } catch (clientErrorNotFoundException: ClientErrorNotFoundException) {
             emptyList()
         }
@@ -81,8 +85,11 @@ open class CupsClient(
                 printerDirectory = cupsDirectory.resolve(printerName)
             }
         } catch (clientErrorNotFoundException: ClientErrorNotFoundException) {
+            logger.warning("Printer not found: $printerName")
             with(getPrinters()) {
-                if (isNotEmpty()) logger.warning { "Available CUPS printers: ${map { it.name }}" }
+                if (isNotEmpty()) {
+                    logger.warning { "Available printers: ${map { it.name }.joinToString(", ")}" }
+                }
             }
             throw clientErrorNotFoundException
         }
@@ -386,6 +393,38 @@ open class CupsClient(
 
     fun getClasses() = exchange(ippRequest(CupsGetClasses))
         .getAttributesGroups(Printer)
-        .map { CupsClass(it, ippClient) }
+        .map { CupsPrinterClass(it, cupsClient = this) }
+
+
+    private fun cupsClassUri(className: String) =
+        cupsUri.run { URI("$scheme://$host${if (port > 0) ":$port" else ""}/classes/$className") }
+            .apply { logger.finer { "cupsClassUri($className) = $this" } }
+
+    fun getClass(className: String) =
+        try {
+            CupsPrinterClass(cupsClassUri(className), cupsClient = this).apply {
+                printerDirectory = cupsDirectory.resolve(className)
+            }
+        } catch (clientErrorNotFoundException: ClientErrorNotFoundException) {
+            logger.warning("Printer class not found: $className")
+            with(getClasses()) {
+                if (isNotEmpty()) {
+                    logger.warning { "Available printer classes: ${map { it.name }.joinToString(", ")}" }
+                }
+            }
+            throw clientErrorNotFoundException
+        }
+
+    fun addModifyClass(className: String, memberUris: List<URI>) = exchange(
+        ippRequest(CupsAddModifyClass, cupsClassUri(className)).apply {
+            createAttributesGroup(Printer).apply {
+                attribute("member-uris", Uri, memberUris)
+            }
+        }
+    )
+
+    fun deleteClass(className: String) =
+        exchange(ippRequest(CupsDeleteClass, cupsClassUri(className)))
+            .apply { logger.info { "Printer class deleted: $className" } }
 
 }
