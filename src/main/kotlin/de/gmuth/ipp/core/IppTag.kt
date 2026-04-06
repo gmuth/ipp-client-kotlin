@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2025 Gerhard Muth
+ * Copyright (c) 2020-2026 Gerhard Muth
  */
 
 // RFC 8010 and RFC 3380
@@ -85,9 +85,9 @@ enum class IppTag(
 
     companion object {
         fun fromByte(code: Byte): IppTag =
-            values().singleOrNull { it.code == code } ?: throw IppException("Unknown tag 0x%02X".format(code))
+            entries.singleOrNull { it.code == code } ?: throw IppException("Unknown tag 0x%02X".format(code))
 
         fun fromString(name: String): IppTag =
-            values().singleOrNull { it.registeredName == name } ?: throw IppException("Unknown tag name '$name'")
+            entries.singleOrNull { it.registeredName == name } ?: throw IppException("Unknown tag name '$name'")
     }
 }

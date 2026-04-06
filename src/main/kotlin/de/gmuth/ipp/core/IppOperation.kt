@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2025 Gerhard Muth
+ * Copyright (c) 2020-2026 Gerhard Muth
  */
 
 import java.util.logging.Logger.getLogger
@@ -148,7 +148,7 @@ enum class IppOperation(val code: Int) {
 
     companion object {
         val logger = getLogger(IppOperation::class.java.name)
-        fun fromInt(code: Int): IppOperation = values()
+        fun fromInt(code: Int): IppOperation = entries
             .find { it.code == code }
             ?: Unknown.also { logger.warning("Unknown operation code %04x".format(code)) }
     }
