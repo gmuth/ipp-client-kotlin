@@ -14,6 +14,7 @@ import java.util.logging.Level
 import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
 
+@Suppress("kotlin:S1192")
 class CupsPrinterClass(
     classUri: URI,
     attributes: IppAttributesGroup = IppAttributesGroup(Printer),
@@ -42,7 +43,6 @@ class CupsPrinterClass(
         override fun toString() = "$name, $uri"
     }
 
-    @Suppress("kotlin:S1192")
     private val memberUris: List<URI>
         get() = attributes.getValues("member-uris")
 
