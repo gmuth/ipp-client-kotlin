@@ -42,6 +42,7 @@ class CupsPrinterClass(
         override fun toString() = "$name, $uri"
     }
 
+    @Suppress("kotlin:S1192")
     private val memberUris: List<URI>
         get() = attributes.getValues("member-uris")
 
