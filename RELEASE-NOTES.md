@@ -6,9 +6,9 @@
 * Upgraded to Gradle 9.3.0
 * Experimental support for Java 8
 * Upgraded to Kotlin Gradle Plugin 2.2.21
-* Update `printer-is-accepting-jobs` attribute after `CupsAcceptJobs` or `CupsRejectJobs` operation
+* Update `printer-is-accepting-jobs` attribute after `CUPS-Accept-Jobs` or `CUPS-Reject-Jobs` operation
 * CUPSClient supports class operations: create, modify and delete
-* CUPSClient supports operations `CupsGetDevices`
+* CUPSClient supports operations `CUPS-Get-Devices`, `CUPS-Get-PPDs`
 * CUPSClient explicitly uses port 631 in URIs
 
 3.5
