@@ -1,7 +1,7 @@
 package de.gmuth.ipp.client
 
 /**
- * Copyright (c) 2020-2025 Gerhard Muth
+ * Copyright (c) 2020-2026 Gerhard Muth
  */
 
 import de.gmuth.ipp.attributes.DocumentFormat
@@ -24,7 +24,7 @@ import java.util.logging.Logger
 import java.util.logging.Logger.getLogger
 
 @SuppressWarnings("kotlin:S1192")
-class IppJob(
+open class IppJob(
     val printer: IppPrinter,
     val attributes: IppAttributesGroup,
 ) {
@@ -214,7 +214,7 @@ class IppJob(
                 printer.updateStateAttributes()
                 logPrinterStringWhenChanged()
                 if (printer.isStopped()) { // back off, manual interaction might be required
-                    Thread.sleep(Duration.ofSeconds(5).toMillis())
+                    Thread.sleep(Duration.ofSeconds(15).toMillis())
                 }
             }
         }
@@ -298,7 +298,7 @@ class IppJob(
         attributes.put(exchange(request).jobGroup)
     }
 
-    private fun documentRequest(
+    protected fun documentRequest(
         operation: IppOperation,
         lastDocument: Boolean,
         documentName: String?,
@@ -313,7 +313,7 @@ class IppJob(
         }
     }
 
-    private fun IppAttributesGroup.put(attributeBuilder: IppAttributeBuilder?) =
+    protected fun IppAttributesGroup.put(attributeBuilder: IppAttributeBuilder?) =
         attributeBuilder?.let { put(printer.buildIppAttribute(it)) }
 
     //--------------
