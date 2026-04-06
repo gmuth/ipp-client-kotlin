@@ -409,6 +409,7 @@ open class CupsClient(
         exchange(
             ippRequest(CupsAddModifyClass, cupsClassUri(className)).apply {
                 createAttributesGroup(Printer).apply {
+                    if (memberUris.isEmpty()) throw IppException("memberUris is empty.")
                     attribute("member-uris", Uri, memberUris)
                 }
             }
@@ -417,6 +418,7 @@ open class CupsClient(
         return getClass(className).apply {
             enable()
             resume()
+            updateAttributes()
         }
     }
 
