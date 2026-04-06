@@ -5,7 +5,6 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.ipp.core.IppAttributesGroup
-import de.gmuth.ipp.core.IppException
 import de.gmuth.ipp.core.IppOperation.CupsAddModifyClass
 import de.gmuth.ipp.core.IppString
 import de.gmuth.ipp.core.IppTag.Printer
@@ -63,11 +62,11 @@ class CupsPrinterClass(
     override fun toString() =
         "PrinterClass $name ($state, ${members.size} members), ${communicationChannelsSupported.joinToString(", ")}"
 
-    fun addModifyClass(printerUris: Collection<URI>) = exchange(
+    fun addModifyClass(memberUris: Collection<URI>) = exchange(
         ippRequest(CupsAddModifyClass).apply {
             createAttributesGroup(Printer).apply {
-                if (printerUris.isEmpty()) throw IppException("printerUris is empty.")
-                attribute("member-uris", Uri, printerUris.toSet())
+                require(memberUris.isNotEmpty(), { "memberUris must not be empty." })
+                attribute("member-uris", Uri, memberUris.toSet())
             }
         }
     )
@@ -95,7 +94,7 @@ class CupsPrinterClass(
 
     fun delete() = cupsClient.run {
         getJobs(WhichJobs.NotCompleted).run {
-            if(isNotEmpty()) logger.warning { "Printer class $name has $size active jobs" }
+            if (isNotEmpty()) logger.warning { "Printer class $name has $size active jobs" }
         }
         deleteClass(name.text)
     }
