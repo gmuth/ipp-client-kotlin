@@ -430,4 +430,21 @@ open class CupsClient(
         exchange(ippRequest(CupsDeleteClass, cupsClassUri(className)))
             .apply { logger.info { "Printer class deleted: $className" } }
 
+    // -------------
+    // CUPS-Get-PPDs
+    // -------------
+
+    fun getPPDs(
+        limit: Int? = null,
+        make: String? = null
+    ) = exchange(
+        ippRequest(CupsGetPPDs).apply {
+            operationGroup.apply {
+                limit?.let { attribute("limit", Integer, it) }
+                make?.let { attribute("ppd-make", TextWithoutLanguage, it) }
+            }
+        }
+    )
+        .getAttributesGroups(Printer).map { CupsPPD(it) }
+        .apply { logger.info { "Fetched $size PPDs" } }
 }
