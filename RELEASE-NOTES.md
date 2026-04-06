@@ -2,13 +2,14 @@
 3.6
 ---
 
-* Support CUPS class operations: create, modify and delete printer classes
-* Support CUPS operation `CupsGetDevices`
-* Update `printer-is-accepting-jobs` attribute after `CupsAcceptJobs` or `CupsRejectJobs` operation
-* Upgraded to Gradle 9.3.0
-* Upgraded to Kotlin Gradle Plugin 2.2.21
 * Upgraded to Kotlin 1.9
+* Upgraded to Gradle 9.3.0
 * Experimental support for Java 8
+* Upgraded to Kotlin Gradle Plugin 2.2.21
+* Update `printer-is-accepting-jobs` attribute after `CupsAcceptJobs` or `CupsRejectJobs` operation
+* CUPSClient supports class operations: create, modify and delete
+* CUPSClient supports operations `CupsGetDevices`
+* CUPSClient explicitly uses port 631 in URIs
 
 3.5
 ---
@@ -22,7 +23,7 @@
 * Support printer firmware attributes: `ippPrinter.printerFirmware`
 * Fixed issue where unknown (not IANA registered) attributes could not be added to a request
 * In publications `module.json` indicate the correct JVM version compatibility
-* Fixed operation codes for ResubmitJob and CloseJob
+* Fixed operation codes for `ResubmitJob` and `CloseJob`
 * Upgraded to Kotlin 1.8
 
 Previous Versions
