@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2023 Gerhard Muth
+ * Copyright (c) 2020-2026 Gerhard Muth
  */
 
 import java.util.logging.Level
@@ -81,7 +81,7 @@ enum class IppStatus(val code: Int) {
 
     companion object {
         fun fromInt(code: Int): IppStatus =
-            values().find { it.code == code } ?: throw IppException("Unknown status code %04X".format(code))
+            entries.find { it.code == code } ?: throw IppException("Unknown status code %04X".format(code))
     }
 
 }
