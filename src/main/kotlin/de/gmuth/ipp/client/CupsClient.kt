@@ -46,7 +46,7 @@ open class CupsClient(
     }
 
     private fun cupsPrinterUri(printerName: String) =
-        cupsUri.run { URI("$scheme://$host${if (port > 0) ":$port" else ""}/printers/$printerName") }
+        cupsUri.run { URI("$scheme://$host${if (port > 0) ":$port" else ":631"}/printers/$printerName") }
             .apply { logger.finer { "cupsPrinterUri($printerName) = $this" } }
 
     val version: String by lazy {
@@ -72,11 +72,8 @@ open class CupsClient(
             emptyList()
         }
 
-    fun getPrinterNames() =
-        getPrinters().map { it.name.toString() }
-
-    fun printerExists(printerName: String) =
-        getPrinterNames().contains(printerName)
+    fun getPrinterNames() = getPrinters().map { it.name.text }
+    fun printerExists(printerName: String) = getPrinterNames().contains(printerName)
 
     fun getPrinter(printerName: String) =
         try {
@@ -217,23 +214,15 @@ open class CupsClient(
     ) =
         cupsServer.getJobs(whichJobs = whichJobs, limit = limit, requestedAttributes = requestedAttributes)
 
-    fun getJob(id: Int) =
-        cupsServer.getJob(id)
+    fun getJob(id: Int) = cupsServer.getJob(id)
 
     //------------------
     // Get Subscriptions
     //------------------
 
-    fun getSubscriptions() =
-        cupsServer.getSubscriptions()
-
-    fun getSubscription(id: Int) =
-        cupsServer.getSubscription(id)
-
-    fun getOwnersOfAllSubscriptions() =
-        getSubscriptions()
-            .map { it.subscriberUserName }
-            .toSet()
+    fun getSubscriptions() = cupsServer.getSubscriptions()
+    fun getSubscription(id: Int) = cupsServer.getSubscription(id)
+    fun getOwnersOfAllSubscriptions() = getSubscriptions().map { it.subscriberUserName }.toSet()
 
     //--------------------
     // Create Subscription
@@ -395,7 +384,7 @@ open class CupsClient(
         .map { CupsPrinterClass(it, cupsClient = this) }
 
     private fun cupsClassUri(className: String) =
-        cupsUri.run { URI("$scheme://$host${if (port > 0) ":$port" else ""}/classes/$className") }
+        cupsUri.run { URI("$scheme://$host${if (port > 0) ":$port" else ":631"}/classes/$className") }
             .apply { logger.finer { "cupsClassUri($className) = $this" } }
 
     fun getClass(className: String) =
@@ -413,6 +402,9 @@ open class CupsClient(
             throw clientErrorNotFoundException
         }
 
+    fun getClassNames() = getClasses().map { it.name.text }
+    fun classExists(className: String) = getClassNames().contains(className)
+
     fun createClass(className: String, memberUris: Collection<URI>): CupsPrinterClass {
         exchange(
             ippRequest(CupsAddModifyClass, cupsClassUri(className)).apply {
@@ -422,7 +414,10 @@ open class CupsClient(
             }
         )
         logger.info { "Created printer class: $className (${memberUris.size} members)" }
-        return getClass(className)
+        return getClass(className).apply {
+            enable()
+            resume()
+        }
     }
 
     @JvmName("createClassByIppPrinters")
