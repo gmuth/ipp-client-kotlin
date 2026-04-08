@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2025 Gerhard Muth
+ * Copyright (c) 2020-2026 Gerhard Muth
  */
 
 import de.gmuth.ipp.client.IppOperationException
@@ -20,7 +20,6 @@ class IppRequest : IppMessage {
     var httpUserAgent: String? = null
 
     val printerOrJobUri: URI
-        @SuppressWarnings("kotlin:S1192")
         get() = operationGroup.run {
             when {
                 containsKey("printer-uri") -> getValueAsURI("printer-uri")
@@ -31,7 +30,7 @@ class IppRequest : IppMessage {
         }
 
     override val codeDescription: String
-        get() = operation.toString()
+        get() = operation.registeredName()
 
     val operation: IppOperation
         get() = IppOperation.fromInt(code!!)
@@ -78,8 +77,8 @@ class IppRequest : IppMessage {
         attribute("notify-pull-method", Keyword, "ippget")
         notifyJobId?.let { attribute("notify-job-id", Integer, it) }
         notifyEvents?.let { attribute("notify-events", Keyword, it) }
-        notifyTimeInterval?.let { attribute("notify-time-interval", Integer, it.toSeconds()) }
-        notifyLeaseDuration?.let { attribute("notify-lease-duration", Integer, it.toSeconds()) }
+        notifyTimeInterval?.let { attribute("notify-time-interval", Integer, it.seconds) }
+        notifyLeaseDuration?.let { attribute("notify-lease-duration", Integer, it.seconds) }
     }
 
     fun decodeOrThrowIppOperationException(byteArray: ByteArray, status: IppStatus = ClientErrorBadRequest) =
