@@ -95,7 +95,7 @@ class CupsPrinterClass(
 
     fun delete() = cupsClient.run {
         getJobs(WhichJobs.NotCompleted).run {
-            if (isNotEmpty()) logger.warning { "Printer class $name has $size active jobs" }
+            if (isNotEmpty()) logger.warning { "Printer class $name has $size not completed jobs" }
         }
         deleteClass(name.text)
     }
