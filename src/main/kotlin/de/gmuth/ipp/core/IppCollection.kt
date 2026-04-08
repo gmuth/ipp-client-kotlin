@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2024 Gerhard Muth
+ * Copyright (c) 2020-2026 Gerhard Muth
  */
 
 import java.util.logging.Level
@@ -14,7 +14,7 @@ data class IppCollection(val members: MutableCollection<IppAttribute<*>> = mutab
     constructor(vararg attributes: IppAttribute<*>) : this(attributes.toMutableList())
 
     fun addAttribute(name: String, tag: IppTag, vararg values: Any) =
-        add(IppAttribute(name, tag, values.toMutableList()))
+        add(IppAttribute(name, tag, values.toList()))
 
     fun add(attribute: IppAttribute<*>) =
         members.add(attribute)
