@@ -1,7 +1,7 @@
 package de.gmuth.ipp.core
 
 /**
- * Copyright (c) 2020-2023 Gerhard Muth
+ * Copyright (c) 2020-2026 Gerhard Muth
  */
 
 // RFC 8011 5.1.16.
@@ -20,7 +20,7 @@ data class IppResolution(val x: Int, val y: Int, val unit: Int) {
 
         companion object {
             fun fromInt(code: Int) =
-                values().singleOrNull() { it.code == code } ?: throw IppException("Unknown unit code $code")
+                entries.singleOrNull() { it.code == code } ?: throw IppException("Unknown unit code $code")
         }
     }
 
