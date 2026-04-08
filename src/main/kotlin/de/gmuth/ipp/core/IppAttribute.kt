@@ -34,11 +34,6 @@ data class IppAttribute<T>(val name: String, val tag: IppTag) : IppAttributeBuil
 
     constructor(name: String, tag: IppTag, vararg values: T) : this(name, tag, values.toList())
 
-    constructor(name: String, vararg values: T) : this(name, NoValue, values.toList()) {
-        val tag = IppRegistrationsSection2.tagForAttribute(name) ?: throw IppException("No tag found for '$name'")
-        throw IllegalArgumentException("Use constructor with tag: IppAttribute(\"$name\", IppTag.${tag.name}, ...)")
-    }
-
     val value: T
         get() = when {
             attributeIs1setOf(name) == true -> throw IppException("'$name' is registered as '1setOf', use 'values' instead")
