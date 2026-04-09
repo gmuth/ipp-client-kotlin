@@ -43,7 +43,7 @@ data class Marker(
     }
 
     companion object {
-        fun getMarkers(attributes: IppAttributesGroup): Collection<Marker> = with(attributes) {
+        fun getMarkers(attributes: IppAttributesGroup): List<Marker> = with(attributes) {
             val types = getValues<List<String>>("marker-types")
             val names = getValues<List<IppString>>("marker-names")
             val levels = getValues<List<Int>>("marker-levels")

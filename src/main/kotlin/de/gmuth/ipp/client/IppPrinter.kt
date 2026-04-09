@@ -251,11 +251,11 @@ open class IppPrinter(
     )
 
     // ----------------------------------------------
-    // Extensions supported by cups and some printers
+    // Extensions supported by CUPS and some printers
     // https://www.cups.org/doc/spec-ipp.html
     // ----------------------------------------------
 
-    val markers: Collection<Marker>
+    val markers: List<Marker>
         get() = getMarkers(attributes)
 
     fun marker(color: Marker.Color) =
