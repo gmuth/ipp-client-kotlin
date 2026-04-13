@@ -1,17 +1,16 @@
 package de.gmuth.ipp
 
-import de.gmuth.ipp.client.IppClient
-import java.util.jar.Manifest
+import java.security.MessageDigest
 
 /**
- * Copyright (c) 2025 Gerhard Muth
+ * Copyright (c) 2025-2026 Gerhard Muth
  */
 
-class Manifest {
+class IppManifest {
     companion object {
-        private val instance = Manifest::class.java
+        private val instance = IppManifest::class.java
             .getResourceAsStream("/META-INF/MANIFEST.MF")
-            .use { java.util.jar.Manifest(it) }
+            .use { Manifest(it) }
         val mainAttributes = instance.mainAttributes
         val mavenArtifactName = mainAttributes.getValue("Maven-Artifact-Name")
         val mavenArtifactGroup = mainAttributes.getValue("Maven-Artifact-Group")
