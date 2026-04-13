@@ -51,7 +51,6 @@ open class IppClient(val config: IppConfig = IppConfig()) {
 
     companion object {
         const val APPLICATION_IPP = "application/ipp"
-        protected val mavenChecksum: String = Manifest.mainAttributes.getValue("Maven-Checksum")
     }
 
     //-----------------
