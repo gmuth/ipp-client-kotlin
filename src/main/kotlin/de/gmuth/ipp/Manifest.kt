@@ -9,10 +9,17 @@ import java.util.jar.Manifest
 
 class Manifest {
     companion object {
-        private val instance = Manifest(IppClient::class.java.getResourceAsStream("/META-INF/MANIFEST.MF"))
+        private val instance = Manifest::class.java
+            .getResourceAsStream("/META-INF/MANIFEST.MF")
+            .use { java.util.jar.Manifest(it) }
         val mainAttributes = instance.mainAttributes
         val mavenArtifactName = mainAttributes.getValue("Maven-Artifact-Name")
         val mavenArtifactGroup = mainAttributes.getValue("Maven-Artifact-Group")
         val mavenArtifactVersion = mainAttributes.getValue("Maven-Artifact-Version")
+        val mavenCoordinates = "$mavenArtifactGroup:$mavenArtifactName:$mavenArtifactVersion"
+
+        fun checksum() = MessageDigest.getInstance("SHA-256")
+            .digest(mavenCoordinates.toByteArray())
+            .joinToString("") { "%02x".format(it) }
     }
 }
