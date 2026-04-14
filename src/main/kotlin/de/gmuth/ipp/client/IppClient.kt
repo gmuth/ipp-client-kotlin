@@ -4,7 +4,6 @@ package de.gmuth.ipp.client
  * Copyright (c) 2020-2026 Gerhard Muth
  */
 
-import de.gmuth.ipp.Manifest
 import de.gmuth.ipp.client.IppOperationException.ClientErrorNotFoundException
 import de.gmuth.ipp.core.*
 import de.gmuth.ipp.core.IppStatus.ClientErrorBadRequest
