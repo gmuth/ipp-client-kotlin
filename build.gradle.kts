@@ -1,5 +1,5 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget.*
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion.*
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_1_9
 
 // how to build? run ./gradlew
 // where is the jar? build/lib/ipp-client-kotlin...jar
@@ -52,7 +52,7 @@ dependencies {
 defaultTasks("publishToMavenLocal")
 
 //kotlin {
-    //jvmToolchain(17)
+//jvmToolchain(17)
 //}
 
 // https://docs.gradle.org/current/userguide/compatibility.html
@@ -99,10 +99,8 @@ tasks.apply {
     jar {
         manifest {
             attributes(
-                "Maven-Artifact-Name" to project.name,
-                "Maven-Artifact-Group" to project.group,
-                "Maven-Artifact-Version" to project.version,
-                "Maven-Checksum" to "355fb2fe539bf1a0b090420bc11c999fb187ec6ff3a4b02dd10ab0b6b19bf76f"
+                "Implementation-Title" to with(project) { "$group:$name" },
+                "Implementation-Version" to project.version,
             )
         }
     }

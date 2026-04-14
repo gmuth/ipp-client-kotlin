@@ -5,10 +5,13 @@ package de.gmuth.ipp.client
  */
 
 import de.gmuth.ipp.client.IppOperationException.ClientErrorNotFoundException
-import de.gmuth.ipp.core.*
+import de.gmuth.ipp.core.IppOperation
+import de.gmuth.ipp.core.IppRequest
+import de.gmuth.ipp.core.IppResponse
 import de.gmuth.ipp.core.IppStatus.ClientErrorBadRequest
 import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import de.gmuth.ipp.core.IppTag.Unsupported
+import de.gmuth.ipp.core.appendAttributeIfGroupContainsKey
 import de.gmuth.ipp.iana.IppRegistrationsSection2
 import java.io.ByteArrayInputStream
 import java.io.IOException
@@ -50,6 +53,8 @@ open class IppClient(val config: IppConfig = IppConfig()) {
 
     companion object {
         const val APPLICATION_IPP = "application/ipp"
+        val title = IppClient::class.java.`package`.implementationTitle ?: ""
+        val version = IppClient::class.java.`package`.implementationVersion ?: ""
     }
 
     //-----------------
@@ -76,6 +81,10 @@ open class IppClient(val config: IppConfig = IppConfig()) {
         naturalLanguage,
         config.userAgent
     )
+
+    init {
+        logger.info { "IppClient $title $version" }
+    }
 
     fun wrap(request: IppRequest, response: IppResponse): IppRequest = ippRequest(request.operation)
         .apply { documentInputStream = ByteArrayInputStream(response.rawBytes) }

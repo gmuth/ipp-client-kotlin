@@ -2,6 +2,7 @@
 3.6
 ---
 
+* Replace Manifest class in favor of Implementation Title and Version attributes
 * Upgraded to Kotlin 1.9
 * Upgraded to Gradle 9.3.0
 * Experimental support for Java 8

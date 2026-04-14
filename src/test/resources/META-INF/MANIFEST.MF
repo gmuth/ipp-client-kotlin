@@ -1,5 +1,0 @@
-Manifest-Version: 1.0
-Maven-Artifact-Name: ipp-client
-Maven-Artifact-Group: de.gmuth
-Maven-Artifact-Version: 3.6-SNAPSHOT
-Maven-Checksum: e4d75c8f5931ffac895a17c69357dd4fa8e2fc488801b98b5b6c8fd26296fc50

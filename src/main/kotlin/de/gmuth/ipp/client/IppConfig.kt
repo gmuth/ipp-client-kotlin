@@ -23,7 +23,7 @@ class IppConfig(
 
     // HTTP config
     var timeout: Duration = Duration.ofSeconds(30),
-    var userAgent: String? = "ipp-client/3.6",
+    var userAgent: String? = "ipp-client/${IppClient.version}",
     var password: String? = null,
     var sslContext: SSLContext? = null,
     // trust any certificate: sslContextForAnyCertificate()
