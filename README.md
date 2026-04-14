@@ -1,4 +1,4 @@
-# ipp-client v3.5
+# ipp-client v3.5.1
 
 A client implementation of the ipp protocol for java and kotlin.
 RFCs 
@@ -23,7 +23,7 @@ supports printer lookup by queue name.
 Repository [ipp-samples](https://github.com/gmuth/ipp-samples) contains examples how to use jmDNS.
 
 ```
-implementation("de.gmuth:ipp-client:3.5")
+implementation("de.gmuth:ipp-client:3.5.1")
 ```
 
 [README.md for version 2.x](https://github.com/gmuth/ipp-client-kotlin/blob/2.5/README.md) is still available.

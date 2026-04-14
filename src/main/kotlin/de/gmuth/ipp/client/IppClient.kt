@@ -78,13 +78,6 @@ open class IppClient(val config: IppConfig = IppConfig()) {
         config.userAgent
     )
 
-    init {
-        logger.info { "IppClient ${Manifest.mavenCoordinates}" }
-        if (Manifest.checksum() != "255fb2fe539bf1a0b090420bc11c999fb187ec6ff3a4b022d10ab0b6b19be76f") {
-            throw IppException("Invalid maven artifact")
-        }
-    }
-
     fun wrap(request: IppRequest, response: IppResponse): IppRequest = ippRequest(request.operation)
         .apply { documentInputStream = ByteArrayInputStream(response.rawBytes) }
 
