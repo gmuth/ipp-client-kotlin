@@ -2,6 +2,7 @@
 3.6
 ---
 
+* Updated IANA registration files (LF changed to CRLF)
 * Replace Manifest class in favor of Implementation Title and Version attributes
 * Upgraded to Kotlin 1.9
 * Upgraded to Gradle 9.3.0
