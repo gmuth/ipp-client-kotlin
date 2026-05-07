@@ -12,6 +12,7 @@
 * CUPSClient supports class operations: create, modify and delete
 * CUPSClient supports operations `CUPS-Get-Devices`, `CUPS-Get-PPDs`
 * CUPSClient explicitly uses port 631 in URIs
+* Refactored CUPS PPD method signatures to be more consistent and intuitive
 
 3.5
 ---

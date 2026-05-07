@@ -284,7 +284,7 @@ open class CupsClient(
         enable()
         resume()
         updateAttributes()
-        if (savePPD) savePPD()
+        if (savePPD) cupsGetAndSavePPD()
     }
 
     // ---------------------------

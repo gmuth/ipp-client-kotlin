@@ -359,14 +359,13 @@ open class IppPrinter(
     fun cupsRejectJobs() = exchange(ippRequest(CupsRejectJobs))
         .also { updateAttributes("printer-is-accepting-jobs") }
 
-    fun cupsGetPPD(copyTo: OutputStream? = null) = exchange(ippRequest(CupsGetPPD))
-        .apply { copyTo?.let { documentInputStream!!.copyTo(it) } }
+    fun cupsGetPPD() = exchange(ippRequest(CupsGetPPD))
 
-    fun savePPD(
+    fun cupsGetAndSavePPD(
         directory: Path = printerDirectory,
         filename: String = "$makeAndModel.ppd"
     ) = directory.resolve(filename).also {
-        cupsGetPPD(newOutputStream(it))
+        cupsGetPPD().documentInputStream!!.copyTo(newOutputStream(it))
         logger.info { "Saved $it (${Files.size(it)} bytes)" }
     }
 

@@ -89,7 +89,7 @@ class IppInspector {
 
         if (supportsOperations(CupsGetPPD)) {
             logger.info { "> CUPS Get PPD" }
-            savePPD(filename = "$printerModel.ppd")
+            cupsGetAndSavePPD(filename = "$printerModel.ppd")
         }
 
         if (supportsOperations(IdentifyPrinter)) {
