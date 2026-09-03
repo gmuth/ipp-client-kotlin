@@ -1,7 +1,7 @@
 package de.gmuth.ipp.iana
 
 /**
- * Copyright (c) 2020-2025 Gerhard Muth
+ * Copyright (c) 2020-2026 Gerhard Muth
  */
 
 import de.gmuth.ipp.core.*
@@ -142,16 +142,16 @@ object IppRegistrationsSection2 {
         }
     }
 
-    fun validate(ippMessage: IppMessage) {
-        for (group in ippMessage.attributesGroups) {
-            for (attribute in group.values) {
-                validate(attribute)
-            }
-        }
+    fun IppMessage.validate() {
+        attributesGroups.forEach { it.validate() }
+    }
+
+    fun IppAttributesGroup.validate() {
+        values.forEach { it.validate() }
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun validate(ippAttribute: IppAttribute<*>) = with(ippAttribute) {
+    fun IppAttribute<*>.validate() {
         checkSyntaxOfAttribute(name, tag)
         if (isCollection()) validate(name, values as List<IppCollection>)
         if (!tag.isOutOfBandTag() && values.isEmpty()) logger.warning { "'$name' ($tag) has no values" }
@@ -159,7 +159,7 @@ object IppRegistrationsSection2 {
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun validate(name: String, ippCollections: List<IppCollection>) {
+    internal fun validate(name: String, ippCollections: List<IppCollection>) {
         logger.finer { "validate collection '$name'" }
         val resolvedName = resolveAlias(name)
         for (ippCollection in ippCollections) {

@@ -12,7 +12,7 @@ import de.gmuth.ipp.core.IppStatus.ClientErrorBadRequest
 import de.gmuth.ipp.core.IppStatus.ClientErrorNotFound
 import de.gmuth.ipp.core.IppTag.Unsupported
 import de.gmuth.ipp.core.appendAttributeIfGroupContainsKey
-import de.gmuth.ipp.iana.IppRegistrationsSection2
+import de.gmuth.ipp.iana.IppRegistrationsSection2.validate
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStream
@@ -42,7 +42,6 @@ open class IppClient(val config: IppConfig = IppConfig()) {
     var onExceptionSaveMessages: Boolean = false
     var throwWhenNotSuccessful: Boolean = true
     var disconnectAfterHttpPost: Boolean = false
-    var defaultPrinterUri: URI? = URI.create("ipp://ippbin.net:12345")
     var onExchangeOverrideRequestPrinterOrJobUri: URI? = null // Useful for reverse proxies or NAT
     var onExchangeLogRequestAndResponseWithLevel: Level = FINEST
 
@@ -66,7 +65,7 @@ open class IppClient(val config: IppConfig = IppConfig()) {
     @JvmOverloads
     fun ippRequest(
         operation: IppOperation,
-        printerUri: URI? = defaultPrinterUri,
+        printerUri: URI? = null,
         requestedAttributes: Collection<String>? = null,
         userName: String? = config.userName,
         naturalLanguage: String = config.naturalLanguage,
@@ -178,9 +177,11 @@ open class IppClient(val config: IppConfig = IppConfig()) {
             request.log(logger, WARNING, prefix = "REQUEST: ")
             response.log(logger, WARNING, prefix = "RESPONSE: ")
         }
-        if (containsGroup(Unsupported)) unsupportedGroup.values.forEach { logger.warning() { "Unsupported: $it" } }
+        if (containsGroup(Unsupported)) {
+            unsupportedGroup.values.forEach { logger.warning { "Unsupported: $it" } }
+        }
         if (!isSuccessful()) {
-            IppRegistrationsSection2.validate(request)
+            request.validate()
             val exception =
                 if (status == ClientErrorNotFound) ClientErrorNotFoundException(request, response)
                 else IppOperationException(request, response)
