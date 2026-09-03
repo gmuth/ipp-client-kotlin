@@ -3,7 +3,7 @@
 ---
 
 * Updated IANA registration files
-* Replace Manifest class in favor of Implementation Title and Version attributes
+* Replaced Manifest class in favor of Implementation Title and Version attributes
 * Upgraded to Kotlin 1.9
 * Upgraded to Gradle 9.3.0
 * Experimental support for Java 8
@@ -13,6 +13,8 @@
 * CUPSClient supports operations `CUPS-Get-Devices`, `CUPS-Get-PPDs`
 * CUPSClient explicitly uses port 631 in URIs
 * Refactored CUPS PPD method signatures to be more consistent and intuitive
+* Refactored IanaRegistrationSection2 validation signatures
+* Removed unused defaultPrinterUri
 
 3.5
 ---
