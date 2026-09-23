@@ -15,6 +15,7 @@
 * Refactored CUPS PPD method signatures to be more consistent and intuitive
 * Refactored IanaRegistrationSection2 validation signatures
 * Removed unused defaultPrinterUri
+* Use prefix "ippclient" for temporary directories
 
 3.5
 ---

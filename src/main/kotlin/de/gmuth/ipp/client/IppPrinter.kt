@@ -115,7 +115,7 @@ open class IppPrinter(
 
     private fun configurePrinterDirectory() {
         printerDirectory =
-            if (attributes.isEmpty()) createTempDirectory()
+            if (attributes.isEmpty()) createTempDirectory("ippclient")
             else Paths.get((if (isCups()) "CUPS_" else "") + makeAndModel.text.replace("\\s+".toRegex(), "_"))
         ippClient.saveMessagesDirectory =
             printerDirectory.resolve(ofPattern("yyyyMMdd-HHmmss").format(LocalDateTime.now()))

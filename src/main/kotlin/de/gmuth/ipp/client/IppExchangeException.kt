@@ -24,7 +24,7 @@ open class IppExchangeException(
     }
 
     open fun saveMessages(
-        directory: Path = createTempDirectory("ipp-client-"),
+        directory: Path = createTempDirectory("ippclient"),
         fileNameWithoutSuffix: String = "ipp_exchange_exception"
     ) =
         request.saveBytes(directory.resolve("$fileNameWithoutSuffix.request"))
